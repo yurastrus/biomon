@@ -1,0 +1,42 @@
+# ОНОВЛЕННЯ ЧЕРЕЗ git
+    git add .
+    git commit -m "Sync"
+    git push origin main
+    git push production main
+
+
+    git pull
+
+# АКТИВАЦІЯ ВІРТУАЛЬНОГО СЕРЕДОВИЩА
+    cd /var/www/wuos
+    source venv/bin/activate
+
+# ПЕРЕКЛАДИ
+    # 1. Витягнути рядки для перекладу (з крапкою в кінці!)
+    pybabel extract -F babel.cfg -k _l -o messages.pot .
+
+    # 2. Оновити існуючі переклади
+    pybabel update -i messages.pot -d translations
+
+    # 3. Після перекладу - скомпілювати
+    pybabel compile -d translations
+
+# ПЕРЕЗАПУСК ВЕБСАЙТУ
+    sudo systemctl daemon-reload
+    sudo systemctl restart wuos # переважно достаньо цього
+
+    sudo systemctl status wuos.service # перевірка статусу
+
+# СТВОРЕННЯ КОРИСТУВАЧІВ
+    flask create-user yurastrus ******* admin
+    flask create-user fzs ******* fzs_user
+    flask create-user vasylyna ******* roztochya_user
+
+
+    # Windows venv activation
+    .\venv\Scripts\activate
+
+    pip install -r requirements.txt
+
+
+tree -I "venv|__pycache__|node_modules"

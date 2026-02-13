@@ -1,0 +1,7 @@
+# файли які ігнорурються
+venv/
+__pycache__/
+*.pyc
+app.py
+instance/
+.env

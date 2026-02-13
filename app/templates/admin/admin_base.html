@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-container">
+    <aside class="admin-sidebar">
+        <h3>{{ _('Адмін-панель') }}</h3>
+            <nav>
+                <a href="{{ url_for('admin.dashboard', lang_code=g.lang_code) }}" 
+                    class="nav-link {% if request.endpoint == 'admin.dashboard' %}current{% endif %}">
+                    {{ _('Оглядова панель') }}
+                </a>
+                {# === ОНОВЛЕНІ ПОСИЛАННЯ === #}
+                <a href="{{ url_for('admin.list_issues', lang_code=g.lang_code) }}" 
+                    class="nav-link {% if 'issue' in request.endpoint %}current{% endif %}">
+                    {{ _('Керування випусками') }}
+                </a>
+                <a href="{{ url_for('admin.list_articles', lang_code=g.lang_code) }}" 
+                    class="nav-link {% if 'article' in request.endpoint %}current{% endif %}">
+                    {{ _('Керування статтями') }}
+                </a>
+                <a href="{{ url_for('admin.list_tags', lang_code=g.lang_code) }}" 
+                    class="nav-link {% if 'tag' in request.endpoint %}current{% endif %}">
+                    {{ _('Керування тегами') }}
+                </a>
+            </nav>
+    </aside>
+    <main class="admin-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flashes">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block admin_content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}

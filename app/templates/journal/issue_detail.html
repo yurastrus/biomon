@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}{{ issue.display_name }} | {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="journal-page">
+    <p class="back-link">
+        <a href="{{ url_for('journal.index') }}">
+            ← {{ _('До архіву випусків') }}
+        </a>
+    </p>
+    
+    <div class="issue-header">
+        <h1>{{ issue.display_name }}</h1>
+        <h2>{{ _('Зміст') }}</h2>
+    </div>
+
+    {# Фільтр за тегами в межах випуску #}
+    {% if tags_in_issue %}
+    <div class="tag-filter">
+        <strong>{{ _('Фільтрувати статті за тегом:') }}</strong>
+        <div>
+            {% for tag in tags_in_issue %}
+                <a href="{{ url_for('journal.articles_by_tag', slug=tag.slug) }}" class="tag-link">
+                    {{ tag.get_translation(g.lang_code).name if tag.get_translation(g.lang_code) else tag.slug }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="articles-container">
+        {% for article in articles %}
+            {% set trans = article.get_translation(g.lang_code) %}
+            {% if trans %}
+            <div class="article-card">
+                <div class="article-card-header">
+                    <p class="article-authors">{{ trans.authors }}</p>
+                    <h3 class="article-title">{{ trans.title }}</h3>
+                </div>
+                
+                <div class="article-card-footer">
+                    <div class="article-tags">
+                        {% for tag in article.tags %}
+                            <a href="{{ url_for('journal.articles_by_tag', slug=tag.slug) }}" class="tag-link-small">
+                                {{ tag.get_translation(g.lang_code).name if tag.get_translation(g.lang_code) else tag.slug }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                    
+                    <a href="{{ url_for('static', filename=article.pdf_file) }}" target="_blank" class="button-pdf">
+                        PDF
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="article-card">
+                <p style="text-align: center; color: #666; margin: 20px 0;">
+                    {{ _('У цьому випуску ще немає статей.') }}
+                </p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

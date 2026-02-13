@@ -1,0 +1,589 @@
+/* =================================================================
+   Base & Global Styles
+   ================================================================= */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4; /* Світло-сірий фон для сторінки */
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.page-wrapper {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* =================================================================
+   Header
+   ================================================================= */
+header {
+    background: #333;
+    color: #fff;
+    padding: 20px 0;
+    border-bottom: 3px solid #555;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header #branding h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: normal;
+}
+
+header #branding .highlight {
+    font-weight: bold;
+}
+
+header nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+}
+
+header nav li {
+    margin-left: 20px;
+}
+
+header nav a {
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    padding: 5px 0;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s ease;
+}
+
+header nav a:hover,
+header nav li.current a {
+    border-bottom-color: #fff;
+}
+
+#user-actions {
+    display: flex;
+    align-items: center;
+}
+
+#user-actions .lang-link {
+    color: #fff;
+    background: #555;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+#user-actions .lang-link:hover {
+    background: #777;
+}
+
+/* =================================================================
+   Main Content
+   ================================================================= */
+main {
+    flex-grow: 1;
+    padding: 40px 0;
+}
+
+.welcome-content {
+    background: #fff;
+    padding: 50px 40px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.welcome-text p {
+    font-size: 1.1rem;
+    max-width: 700px;
+    margin: 0 auto;
+    color: #666;
+}
+
+/* Стилі для інших сторінок (напр. About) */
+main h2 {
+    font-size: 2.2rem;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+main p {
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+
+/* =================================================================
+   Footer
+   ================================================================= */
+footer {
+    background: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+    flex-shrink: 0;
+}
+
+footer p {
+    margin: 0;
+}
+
+
+/* =================================================================
+   Responsive Design
+   ================================================================= */
+@media (max-width: 768px) {
+    header .container {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    header nav ul {
+        padding: 0;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    header nav li {
+        margin: 5px 10px;
+    }
+
+    .welcome-title {
+        font-size: 2rem;
+    }
+
+    .welcome-text p {
+        font-size: 1rem;
+    }
+}
+
+
+/* =================================================================
+   Додаткові стилі для журналу "Troglodytes"
+   Додайте це до вашого основного style.css файлу
+   ================================================================= */
+
+/* =================================================================
+   Journal Layout & General Styles
+   ================================================================= */
+.journal-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.journal-page h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.journal-page h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Back navigation link */
+.back-link {
+    margin-bottom: 20px;
+}
+
+.back-link a {
+    color: #0779e4;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.back-link a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* =================================================================
+   Archive Page - Year Sections
+   ================================================================= */
+.year-section {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease;
+}
+
+.year-section:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.year-section h2 {
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #0779e4;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+.issue-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.issue-list li {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.issue-list li:hover {
+    border-color: #0779e4;
+    box-shadow: 0 2px 8px rgba(7, 121, 228, 0.15);
+    transform: translateY(-1px);
+}
+
+.issue-list a {
+    display: block;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.issue-list a:hover {
+    color: #0779e4;
+}
+
+/* =================================================================
+   Issue Detail Page Layout
+   ================================================================= */
+.issue-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.issue-header h1 {
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+}
+
+.issue-header h2 {
+    font-size: 1.5rem;
+    color: #666;
+    font-weight: normal;
+    margin-bottom: 30px;
+}
+
+/* Tag filter section */
+.tag-filter {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.tag-filter strong {
+    display: block;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 16px;
+}
+
+.tag-filter .tag-link {
+    display: inline-block;
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    text-decoration: none;
+    margin: 0 8px 8px 0;
+    transition: all 0.2s ease;
+}
+
+.tag-filter .tag-link:hover {
+    background-color: #0779e4;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* =================================================================
+   Articles Display
+   ================================================================= */
+.articles-container {
+    display: grid;
+    gap: 25px;
+}
+
+.article-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.article-card:hover {
+    border-color: #0779e4;
+    box-shadow: 0 4px 15px rgba(7, 121, 228, 0.1);
+    transform: translateY(-2px);
+}
+
+.article-card-header {
+    margin-bottom: 15px;
+}
+
+.article-authors {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.article-title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0;
+    color: #333;
+}
+
+.article-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+}
+
+.tag-link-small {
+    display: inline-block;
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.tag-link-small:hover {
+    background-color: #0779e4;
+    color: #fff;
+}
+
+/* PDF Button */
+.button-pdf,
+.button-pdf-inline {
+    background: #dc3545;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.button-pdf:hover,
+.button-pdf-inline:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+}
+
+.button-pdf::before,
+.button-pdf-inline::before {
+    content: "📄";
+    font-size: 12px;
+}
+
+/* =================================================================
+   Tag Archive Page
+   ================================================================= */
+.tag-archive-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.tag-highlight {
+    background: linear-gradient(120deg, #e9ecef 0%, #f8f9fa 100%);
+    color: #0779e4;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    border: 1px solid #dee2e6;
+}
+
+.article-list-flat {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.article-list-flat li {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px 25px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.article-list-flat li:hover {
+    border-color: #0779e4;
+    box-shadow: 0 3px 10px rgba(7, 121, 228, 0.1);
+    transform: translateY(-1px);
+}
+
+.article-list-flat .article-authors {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.article-list-flat .article-title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.article-meta span {
+    font-weight: 500;
+}
+
+/* =================================================================
+   Responsive Design for Journal
+   ================================================================= */
+@media (max-width: 768px) {
+    .journal-page {
+        padding: 20px 15px;
+    }
+    
+    .journal-page h1 {
+        font-size: 1.8rem;
+    }
+    
+    .issue-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .year-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .article-card {
+        padding: 20px;
+    }
+    
+    .article-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .tag-filter {
+        padding: 15px;
+        text-align: left;
+    }
+    
+    .tag-filter .tag-link {
+        margin: 0 5px 5px 0;
+        padding: 5px 10px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .journal-page h1 {
+        font-size: 1.5rem;
+    }
+    
+    .article-card,
+    .year-section {
+        padding: 15px;
+    }
+    
+    .article-title {
+        font-size: 16px;
+    }
+    
+    .button-pdf,
+    .button-pdf-inline {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}

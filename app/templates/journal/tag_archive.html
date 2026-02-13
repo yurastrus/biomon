@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Статті за тегом') }} "{{ tag_name }}" | {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="journal-page">
+    <p class="back-link">
+        <a href="{{ url_for('journal.index') }}">
+            ← {{ _('До архіву випусків') }}
+        </a>
+    </p>
+    
+    <div class="tag-archive-header">
+        <h1>
+            {{ _('Статті за тегом:') }} 
+            <span class="tag-highlight">{{ tag_name }}</span>
+        </h1>
+    </div>
+
+    {% if articles %}
+        <ul class="article-list-flat">
+            {% for article in articles %}
+                {% set trans = article.get_translation(g.lang_code) %}
+                {% if trans %}
+                <li>
+                    <p class="article-authors">{{ trans.authors }}</p>
+                    <h3 class="article-title">{{ trans.title }}</h3>
+                    <div class="article-meta">
+                        <span>{{ article.issue.display_name }}</span>
+                        <a href="{{ url_for('static', filename=article.pdf_file) }}" target="_blank" class="button-pdf-inline">
+                            PDF
+                        </a>
+                    </div>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="article-card">
+            <p style="text-align: center; color: #666; font-size: 18px; margin: 40px 0;">
+                {{ _('Не знайдено статей з таким тегом.') }}
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

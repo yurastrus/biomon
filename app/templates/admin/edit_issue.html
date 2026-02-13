@@ -1,0 +1,28 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<h2>{{ title }}</h2>
+<form method="POST" action="" class="styled-form">
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+        {{ form.year.label(class="form-label") }}
+        {{ form.year(class="form-control", type="number") }}
+        {% if form.year.errors %}<div class="errors">{{ form.year.errors|join(', ') }}</div>{% endif %}
+    </div>
+
+    <div class="form-group">
+        {{ form.number.label(class="form-label") }}
+        {{ form.number(class="form-control") }}
+        {% if form.number.errors %}<div class="errors">{{ form.number.errors|join(', ') }}</div>{% endif %}
+    </div>
+    
+    <div class="form-group">
+        {{ form.published(class="form-check") }} {{ form.published.label }}
+    </div>
+    
+    <br>
+    <button type="submit" class="button">{{ form.submit.label.text }}</button>
+    <a href="{{ url_for('admin.list_issues', lang_code=g.lang_code) }}" class="button button-secondary">{{ _('Скасувати') }}</a>
+</form>
+{% endblock %}

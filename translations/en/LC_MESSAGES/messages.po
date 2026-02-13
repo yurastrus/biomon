@@ -1,0 +1,60 @@
+# English translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-06 10:35+0300\n"
+"PO-Revision-Date: 2025-08-05 22:27+0300\n"
+"Last-Translator: FULL NAME EMAIL@ADDRESS\n"
+"Language: en\n"
+"Language-Team: en <EMAIL@ADDRESS>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app/routes/main.py:77 app/templates/base.html:20
+msgid "ГОЛОВНА"
+msgstr "HOME"
+
+#: app/routes/main.py:78 app/templates/base.html:22
+msgid "ПРО ПРОЕКТ"
+msgstr "ABOUT"
+
+#: app/routes/main.py:79 app/templates/base.html:21
+msgid "ЖУРНАЛ"
+msgstr "JOURNAL"
+
+#: app/routes/main.py:80 app/templates/base.html:23
+msgid "КОНТАКТИ"
+msgstr "CONTACTS"
+
+#: app/templates/about.html:3 app/templates/base.html:6
+#: app/templates/contacts.html:3 app/templates/index.html:3
+#: app/templates/journal.html:3
+msgid "Заголовок сторінки"
+msgstr "Page title"
+
+#: app/templates/about.html:7 app/templates/contacts.html:7
+#: app/templates/index.html:7 app/templates/journal.html:7
+msgid "Ласкаво просимо!"
+msgstr "Welcome!"
+
+#: app/templates/about.html:9 app/templates/contacts.html:9
+#: app/templates/index.html:9 app/templates/journal.html:9
+msgid "Якийсь текст."
+msgstr "Some text."
+
+#: app/templates/base.html:15
+msgid "Назва сайту"
+msgstr "Site name"
+
+#: app/templates/base.html:63
+msgid "Юрій Струс, ©"
+msgstr "Yuriy Strus, ©"
+

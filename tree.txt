@@ -1,0 +1,47 @@
+wuos-project
+│   .env
+│   .gitignore
+│   app.py
+│   babel.cfg
+│   config.py
+│   instruction.txt
+│   messages.pot
+│   requirements.txt
+│   wsgi.py
+│
+├───app
+│   │   extensions.py
+│   │   __init__.py
+│   │
+│   ├───models
+│   │       __init__.py
+│   │
+│   ├───routes
+│   │   │   main.py
+│   │   │   __init__.py
+│   │            
+│   ├───static
+│   │   └───css
+│   │           style.css
+│   │
+│   ├───templates
+│   │       about.html
+│   │       base.html
+│   │       contacts.html
+│   │       index.html
+│   │       journal.html
+│   │
+│   ├───utils
+│       │   i18n.py
+│       │   __init__.py
+│            
+├───translations
+    ├───en
+    │   └───LC_MESSAGES
+    │           messages.mo
+    │           messages.po
+    │
+    └───uk
+        └───LC_MESSAGES
+                messages.mo
+                messages.po
