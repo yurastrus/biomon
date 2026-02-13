@@ -12,11 +12,11 @@ html {
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4; /* Світло-сірий фон для сторінки */
+    background: #f4f4f4;
     color: #333;
     display: flex;
     flex-direction: column;
@@ -24,15 +24,13 @@ body {
 }
 
 .page-wrapper {
-    flex: 1 0 auto;
-    display: flex;
-    flex-direction: column;
+    flex-grow: 1;
 }
 
 .container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
     padding: 0 20px;
 }
 
@@ -42,548 +40,831 @@ body {
 header {
     background: #333;
     color: #fff;
-    padding: 20px 0;
-    border-bottom: 3px solid #555;
+    padding: 1rem 0;
+    border-bottom: #0779e4 3px solid;
 }
 
 header .container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
+    flex-wrap: nowrap;
+}
+
+header #branding {
+    margin-right: auto;
+    line-height: 1;
 }
 
 header #branding h1 {
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: normal;
+    font-size: 28px;
 }
 
-header #branding .highlight {
-    font-weight: bold;
-}
-
-header nav ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-}
-
-header nav li {
-    margin-left: 20px;
-}
-
-header nav a {
+header a {
     color: #fff;
     text-decoration: none;
     text-transform: uppercase;
-    font-size: 0.9rem;
-    padding: 5px 0;
-    border-bottom: 2px solid transparent;
-    transition: border-color 0.3s ease;
+    font-size: 15px;
 }
 
-header nav a:hover,
-header nav li.current a {
-    border-bottom-color: #fff;
+header ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+header li {
+    display: inline;
+    padding: 0 10px;
+}
+
+header .current a {
+    color: #2397fd;
+}
+
+header a:hover {
+    color: #ff6f00;
+    text-shadow: 0 0 0.5px currentColor;
+}
+
+#lang-switcher {
+    margin-left: 20px;
+}
+
+.lang-link {
+    display: block;
+    padding: 2px 6px;
+    border: 1px solid #fff;
+    border-radius: 3px;
+    transition: background 0.3s, color 0.3s;
+    font-size: 15px;
+    align-items: center;
+}
+
+.lang-link:hover {
+    background: #fff;
+    color: #333;
 }
 
 #user-actions {
     display: flex;
     align-items: center;
+    gap: 5px;
+    margin-left: auto;
 }
 
-#user-actions .lang-link {
-    color: #fff;
-    background: #555;
-    padding: 5px 10px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: background-color 0.3s ease;
-}
-
-#user-actions .lang-link:hover {
-    background: #777;
+#auth-status {
+    display: flex;
+    align-items: center;
 }
 
 /* =================================================================
-   Main Content
+   Main Content & Generic Elements
    ================================================================= */
 main {
-    flex-grow: 1;
     padding: 40px 0;
-}
-
-.welcome-content {
     background: #fff;
-    padding: 50px 40px;
+}
+
+main .container:not(.maplistcontainer) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
 }
 
-.welcome-title {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    font-weight: bold;
-}
-
-.welcome-text p {
-    font-size: 1.1rem;
-    max-width: 700px;
-    margin: 0 auto;
-    color: #666;
-}
-
-/* Стилі для інших сторінок (напр. About) */
 main h2 {
-    font-size: 2.2rem;
-    text-align: center;
-    margin-bottom: 25px;
+    font-size: 28px;
+    margin-bottom: 20px;
 }
 
 main p {
-    font-size: 1.1rem;
+    margin-bottom: 30px;
+    max-width: 700px;
+}
+
+a.button,
+input.button,
+button.button {
+    display: inline-block;
+    background: #0779e4;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    transition: background 0.3s;
+    border: none;
+    min-width: 300px;
+    text-align: center;
+    font-family: inherit;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+a.button:hover,
+input.button:hover,
+button.button:hover {
+    background: #0056b3;
+}
+
+.button.cancel {
+    background-color: #dc3545;
+}
+
+.button.cancel:hover {
+    background-color: #c82333;
+}
+
+/* =================================================================
+   Articles & Tags
+   ================================================================= */
+.full-article {
+    text-align: left;
+    width: 100%;
+    max-width: 800px;
+}
+
+.article-content p,
+.article-content ul,
+.article-content ol,
+.article-content h2,
+.article-content h3,
+.article-content blockquote {
+    margin-bottom: 1.2em;
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3 {
+    font-weight: bold;
+}
+
+.article-content ul,
+.article-content ol {
+    padding-left: 25px;
+}
+
+.articles-list {
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+    width: 100%;
+}
+
+.article-item {
+    background: #fdfdfd;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 25px;
+    margin-bottom: 20px;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.article-item:hover {
+    border-color: #c0c0c0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.article-item-title a {
+    text-decoration: none;
+    color: #333;
+    font-size: 22px;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.article-item-title a:hover {
+    color: #0779e4;
+}
+
+.article-item .article-meta {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+.article-meta .meta-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.article-tags {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tag-link {
+    display: inline-block;
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.tag-link:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.tag-highlight {
+    background-color: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 5px;
+    color: #0056b3;
+}
+
+/* === Article Page Layout (Sidebar + Main Content) === */
+.articles-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 20px;
+    align-items: flex-start;
+}
+
+.sidebar {
+    flex: 0 0 240px;
+    position: sticky;
+    top: 20px;
+}
+
+.sidebar h3 {
+    margin-top: 0;
+    font-size: 1.4em;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.sidebar-tags-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-tags-list li {
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#main-content {
+    flex: 1;
+    min-width: 0; /* Fixes flexbox overflow */
+}
+
+.sidebar .tag-link {
+    text-decoration: none;
+    color: #0056b3;
+    background-color: transparent;
+    padding: 0;
+    font-size: 1em;
+}
+
+.sidebar .tag-link:hover {
+    text-decoration: underline;
+    background-color: transparent;
+    color: #0056b3;
+}
+
+.tag-count {
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.sidebar-tags-list .all-articles {
+    font-weight: bold;
+    color: #333;
+}
+
+.back-link {
+    font-size: 0.9em;
+    margin-top: 0;
+}
+
+
+/* =================================================================
+   Component-specific Styles
+   ================================================================= */
+
+/* === Maplist === */
+.maplistcontainer {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f0f8ff;
+    border: 1px solid #d0e7ff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    display: block;
+}
+
+.maplistcontainer h3,
+.maplistcontainer h4 {
+    margin: 15px 0 10px 0;
+    color: #333;
+}
+
+.maplistcontainer p {
+    margin: 10px auto;
     text-align: center;
 }
 
+.maplistcontainer em {
+    color: #FF0000;
+    font-style: italic;
+}
+
+.maplistcontainer a.button {
+    display: block;
+    margin: 15px auto;
+    width: fit-content;
+}
+
+/* === Admin Layout & Components === */
+.admin-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px 0;
+    align-items: flex-start;
+}
+
+.admin-sidebar {
+    flex: 0 0 10px;
+    padding-right: 30px;
+}
+
+.admin-main-content {
+    flex: 1;
+    min-width: 0; /* Важливо для flexbox */
+}
+
+/* Горизонтальна навігація в адмін-панелі */
+.admin-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 5px; /* Відступ під навігацією */
+}
+
+.admin-nav .nav-link {
+    padding: 8px 15px;
+    background-color: #f8f9fa;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    transition: all 0.2s ease-in-out;
+}
+
+.admin-nav .nav-link:hover {
+    background-color: #e9ecef;
+    border-color: #ccc;
+    color: #000;
+}
+
+.admin-nav .nav-link.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Стилі для бейджів */
+.badge {
+    display: inline-block;
+    padding: .25em .4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25rem;
+}
+
+.badge-success {
+    color: #fff;
+    background-color: #28a745;
+}
+
+.badge-secondary {
+    color: #fff;
+    background-color: #6c757d;
+}
+
+/* === Admin Table === */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 0.95em;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.admin-table th,
+.admin-table td {
+    border: 1px solid #ddd;
+    padding: 10px 5px;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #333;
+}
+
+.admin-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Загальний стиль для посилань в таблиці */
+.admin-table td a {
+    color: #007bff;
+    text-decoration: none;
+}
+.admin-table td a:hover {
+    text-decoration: underline;
+}
+
+/* Виправлення для кнопок в адмін-таблиці */
+.admin-table td a.button-small,
+.admin-table td a.button-danger {
+    color: #fff !important;
+    text-decoration: none;
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 2px;
+    border-radius: 3px;
+    font-size: 12px;
+    text-align: center;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.admin-table td a.button-small {
+    background-color: #007bff;
+}
+
+.admin-table td a.button-danger {
+    background-color: #dc3545;
+}
+
+/* Скидання стилів :hover для кнопок */
+.admin-table td a.button-small:hover,
+.admin-table td a.button-danger:hover {
+    text-decoration: none;
+    color: #fff;
+}
+
+.admin-table td a.button-small:hover {
+    background-color: #0056b3;
+}
+
+.admin-table td a.button-danger:hover {
+    background-color: #c82333;
+}
+
+/* =================================================================
+   СТИЛІ ДЛЯ МОДУЛЯ ФОТОПАСТОК ТА ДАШБОРДІВ
+   ================================================================= */
+.dashboard-wrapper { 
+    width: 100%; 
+    text-align: left; 
+}
+
+.page-header { 
+    text-align: center; 
+    margin-bottom: 30px; 
+}
+.page-header h1 { 
+    margin-bottom: 10px; 
+}
+.page-header .lead, .page-header h4 { 
+    color: #666; 
+    font-size: 18px; 
+    margin-bottom: 0; 
+}
+
+/* --- Панель фільтрів --- */
+.filters-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 15px;
+    padding: 20px;
+    background-color: #f0f4f8;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+.filters-panel .filter-group { 
+    flex-grow: 1; 
+    min-width: auto; /*180px;*/ 
+}
+.filters-panel label { 
+    display: block; 
+    margin-bottom: 5px; 
+    font-weight: 500; 
+    font-size: 14px; 
+}
+.filters-panel .form-control { 
+    width: 100%; 
+    padding: 8px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px;
+}
+.action-group {
+    display: flex;
+    gap: 15px;
+    flex-grow: 0; /* Запобігає розтягуванню групи кнопок */
+}
+
+/* --- Загальні стилі для дашбордів --- */
+.dashboard-section { 
+    background-color: #f8f9fa; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 8px; 
+    padding: 25px; 
+    margin-bottom: 30px; 
+    display: flex; 
+    flex-direction: column; 
+}
+.section-title { 
+    font-size: 22px; 
+    margin-top: 0; 
+    margin-bottom: 20px; 
+    border-bottom: 2px solid #eee; 
+    padding-bottom: 8px; 
+    color: #333; 
+}
+.quick-actions { 
+    display: flex; 
+    gap: 15px; 
+    flex-wrap: wrap; 
+}
+.btn { 
+    padding: 12px 25px; 
+    background-color: #0779e4; 
+    color: white; 
+    border: none; 
+    border-radius: 4px; 
+    font-size: 14px; 
+    cursor: pointer; 
+    text-decoration: none; 
+    display: inline-block; 
+    transition: background-color 0.3s; 
+    min-width: 180px; 
+    text-align: center; 
+}
+.btn:hover { 
+    background-color: #0056b3; 
+    text-decoration: none; 
+    color: white; 
+}
+.btn.btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+    text-decoration: none;
+}
+.btn.btn-secondary:hover {
+    background-color: #5a6268;
+}
+.btn-lg { 
+    padding: 15px 30px; 
+    font-size: 16px; 
+    min-width: 220px; 
+}
+.btn-success { background-color: #28a745; }
+.btn-success:hover { background-color: #218838; }
+.btn-info { background-color: #17a2b8; }
+.btn-info:hover { background-color: #138496; }
+
+/* --- Макети та сітки --- */
+.dashboard-layout { 
+    display: flex; 
+    gap: 25px; 
+    align-items: stretch; 
+}
+.dashboard-sidebar, .dashboard-main { 
+    display: flex; 
+    flex-direction: column; 
+}
+.dashboard-sidebar { flex: 1 1 35%; }
+.dashboard-main { flex: 1 1 65%; }
+
+.stats-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px; 
+}
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+/* --- Компоненти дашбордів (карти, діаграми, списки) --- */
+.stat-card { 
+    background-color: white; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 8px; 
+    padding: 20px; 
+    text-align: center; 
+}
+.stat-card h5 { 
+    margin: 0 0 10px 0; 
+    font-size: 16px; 
+    color: #555; 
+    font-weight: 500; 
+}
+.stat-card .stat-value { 
+    font-size: 28px; 
+    font-weight: 600; 
+    color: #0779e4; 
+    margin: 0; 
+}
+.contributors-list { 
+    background-color: white; 
+    border-radius: 8px; 
+    overflow: hidden; 
+}
+.contributor-item { 
+    padding: 15px 20px; 
+    border-bottom: 1px solid #eee; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+.chart-container { 
+    background-color: white; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 8px; 
+    padding: 20px; 
+    min-height: 400px; 
+    flex-grow: 1; 
+}
+.chart-section {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+}
+.chart-title {
+    font-size: 20px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+}
+#locationsMap { 
+    height: 400px; 
+    border-radius: 8px; 
+    border: 1px solid #ddd; 
+}
+.dashboard-section > #locationsMap, .dashboard-section > .contributors-list { 
+    flex-grow: 1; 
+}
+
+/* --- Повідомлення --- */
+.message-container, .info-message { 
+    padding: 20px; 
+    border-radius: 8px; 
+    text-align: center; 
+    background-color: #e7f3fe; 
+    border: 1px solid #d0e7ff; 
+}
+.error-message { 
+    padding: 20px; 
+    border-radius: 8px; 
+    text-align: center; 
+    background-color: #f8d7da; 
+    border: 1px solid #f5c6cb; 
+}
+
+/* --- Стилі для бібліотеки Select2 --- */
+.select2-container .select2-selection--single {
+    height: 38px !important;
+}
+.select2-container--default .select2-selection--single {
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px !important;
+}
+
+/* --- Адаптивність для дашбордів --- */
+@media (max-width: 992px) {
+    .dashboard-grid, .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .dashboard-layout, .filters-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
 
 /* =================================================================
    Footer
    ================================================================= */
 footer {
-    background: #333;
+    padding: 5px;
     color: #fff;
+    background-color: #333;
     text-align: center;
-    padding: 20px 0;
-    flex-shrink: 0;
 }
-
-footer p {
-    margin: 0;
-}
-
 
 /* =================================================================
    Responsive Design
    ================================================================= */
-@media (max-width: 768px) {
+@media(max-width: 768px) {
     header .container {
         flex-direction: column;
+        align-items: center;
         gap: 20px;
     }
 
-    header nav ul {
-        padding: 0;
-        flex-wrap: wrap;
+    header #branding {
+        margin-right: 0;
+        text-align: center;
+    }
+
+    header nav li {
+        display: block;
+        text-align: center;
+        padding: 8px 0;
+    }
+
+    #user-actions {
+        margin-left: 0;
         justify-content: center;
     }
-    
-    header nav li {
-        margin: 5px 10px;
+
+    #lang-switcher {
+        margin-left: 0;
     }
 
-    .welcome-title {
-        font-size: 2rem;
+    .container,
+    .maplistcontainer {
+        width: 95%;
+        padding: 0 10px;
     }
 
-    .welcome-text p {
-        font-size: 1rem;
+    .button,
+    a.button,
+    input.button,
+    button.button {
+        display: block;
+        width: 90%;
+        margin: 15px auto;
+        min-width: auto;
     }
-}
 
-
-/* =================================================================
-   Додаткові стилі для журналу "Troglodytes"
-   Додайте це до вашого основного style.css файлу
-   ================================================================= */
-
-/* =================================================================
-   Journal Layout & General Styles
-   ================================================================= */
-.journal-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
-}
-
-.journal-page h1 {
-    font-size: 2.5rem;
-    text-align: center;
-    margin-bottom: 30px;
-    color: #333;
-}
-
-.journal-page h2 {
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-/* Back navigation link */
-.back-link {
-    margin-bottom: 20px;
-}
-
-.back-link a {
-    color: #0779e4;
-    text-decoration: none;
-    font-size: 16px;
-    transition: color 0.3s ease;
-}
-
-.back-link a:hover {
-    color: #0056b3;
-    text-decoration: underline;
-}
-
-/* =================================================================
-   Archive Page - Year Sections
-   ================================================================= */
-.year-section {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    margin-bottom: 30px;
-    padding: 25px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: box-shadow 0.3s ease;
-}
-
-.year-section:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.year-section h2 {
-    font-size: 1.8rem;
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #0779e4;
-    border-bottom: 2px solid #e9ecef;
-    padding-bottom: 10px;
-}
-
-.issue-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 15px;
-}
-
-.issue-list li {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-}
-
-.issue-list li:hover {
-    border-color: #0779e4;
-    box-shadow: 0 2px 8px rgba(7, 121, 228, 0.15);
-    transform: translateY(-1px);
-}
-
-.issue-list a {
-    display: block;
-    padding: 15px 20px;
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-    font-size: 16px;
-    transition: color 0.3s ease;
-}
-
-.issue-list a:hover {
-    color: #0779e4;
-}
-
-/* =================================================================
-   Issue Detail Page Layout
-   ================================================================= */
-.issue-header {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.issue-header h1 {
-    font-size: 2.2rem;
-    margin-bottom: 15px;
-}
-
-.issue-header h2 {
-    font-size: 1.5rem;
-    color: #666;
-    font-weight: normal;
-    margin-bottom: 30px;
-}
-
-/* Tag filter section */
-.tag-filter {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-.tag-filter strong {
-    display: block;
-    margin-bottom: 15px;
-    color: #333;
-    font-size: 16px;
-}
-
-.tag-filter .tag-link {
-    display: inline-block;
-    background-color: #e9ecef;
-    color: #495057;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    text-decoration: none;
-    margin: 0 8px 8px 0;
-    transition: all 0.2s ease;
-}
-
-.tag-filter .tag-link:hover {
-    background-color: #0779e4;
-    color: #fff;
-    transform: translateY(-1px);
-}
-
-/* =================================================================
-   Articles Display
-   ================================================================= */
-.articles-container {
-    display: grid;
-    gap: 25px;
-}
-
-.article-card {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 25px;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.article-card:hover {
-    border-color: #0779e4;
-    box-shadow: 0 4px 15px rgba(7, 121, 228, 0.1);
-    transform: translateY(-2px);
-}
-
-.article-card-header {
-    margin-bottom: 15px;
-}
-
-.article-authors {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.article-title {
-    font-size: 18px;
-    font-weight: 600;
-    line-height: 1.4;
-    margin: 0;
-    color: #333;
-}
-
-.article-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
-}
-
-.article-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 0;
-}
-
-.tag-link-small {
-    display: inline-block;
-    background-color: #e9ecef;
-    color: #495057;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-
-.tag-link-small:hover {
-    background-color: #0779e4;
-    color: #fff;
-}
-
-/* PDF Button */
-.button-pdf,
-.button-pdf-inline {
-    background: #dc3545;
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.button-pdf:hover,
-.button-pdf-inline:hover {
-    background: #c82333;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
-}
-
-.button-pdf::before,
-.button-pdf-inline::before {
-    content: "📄";
-    font-size: 12px;
-}
-
-/* =================================================================
-   Tag Archive Page
-   ================================================================= */
-.tag-archive-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.tag-highlight {
-    background: linear-gradient(120deg, #e9ecef 0%, #f8f9fa 100%);
-    color: #0779e4;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    border: 1px solid #dee2e6;
-}
-
-.article-list-flat {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.article-list-flat li {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px 25px;
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
-}
-
-.article-list-flat li:hover {
-    border-color: #0779e4;
-    box-shadow: 0 3px 10px rgba(7, 121, 228, 0.1);
-    transform: translateY(-1px);
-}
-
-.article-list-flat .article-authors {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.article-list-flat .article-title {
-    font-size: 18px;
-    font-weight: 600;
-    line-height: 1.4;
-    margin: 0 0 15px 0;
-    color: #333;
-}
-
-.article-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-    font-size: 14px;
-    color: #666;
-}
-
-.article-meta span {
-    font-weight: 500;
-}
-
-/* =================================================================
-   Responsive Design for Journal
-   ================================================================= */
-@media (max-width: 768px) {
-    .journal-page {
-        padding: 20px 15px;
+    .maplistcontainer {
+        margin: 15px auto;
+        padding: 15px;
     }
-    
-    .journal-page h1 {
-        font-size: 1.8rem;
-    }
-    
-    .issue-list {
-        grid-template-columns: 1fr;
-    }
-    
-    .year-section {
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    
-    .article-card {
-        padding: 20px;
-    }
-    
-    .article-card-footer {
+
+    /* Адаптивний макет для статей */
+    .articles-layout {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
     }
-    
-    .tag-filter {
-        padding: 15px;
-        text-align: left;
-    }
-    
-    .tag-filter .tag-link {
-        margin: 0 5px 5px 0;
-        padding: 5px 10px;
-        font-size: 13px;
-    }
-}
 
-@media (max-width: 480px) {
-    .journal-page h1 {
-        font-size: 1.5rem;
+    .sidebar {
+        flex-basis: auto;
+        width: 100%;
+        position: static; /* Вимкнути "липке" позиціонування */
     }
-    
-    .article-card,
-    .year-section {
-        padding: 15px;
+
+    /* Адаптивний макет для адмін-панелі */
+    .admin-wrapper {
+        flex-direction: column;
     }
-    
-    .article-title {
-        font-size: 16px;
-    }
-    
-    .button-pdf,
-    .button-pdf-inline {
-        padding: 6px 12px;
-        font-size: 12px;
+
+    .admin-sidebar {
+        width: 100%;
+        padding-right: 0;
+        margin-bottom: 20px;
     }
 }

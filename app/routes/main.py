@@ -25,13 +25,6 @@ def about(lang_code):
         return redirect(url_for('main.root'))
     return render_template('about.html')
 
-@bp.route('/<lang_code>/webmaps')
-def webmaps(lang_code):
-    """Сторінка веб-карт"""
-    if lang_code not in current_app.config['LANGUAGES']:
-        return redirect(url_for('main.root'))
-    return render_template('webmaps.html')
-
 @bp.route('/<lang_code>/journal')
 def journal(lang_code):
     """Сторінка журналу (тепер перенаправляє на новий blueprint)"""

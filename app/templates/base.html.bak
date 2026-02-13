@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="{{ g.lang_code }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ _('Заголовок сторінки') }}{% endblock %}</title>
+    <!-- Підключення зовнішнього файлу стилів -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header>
+            <div class="container">
+                <div id="branding">
+                    <h1><span class="highlight">{{ _('Назва сайту') }}</h1>
+                </div>
+                
+                <nav>
+                    <ul>
+                        <li class="{{ 'current' if request.endpoint == 'main.index' else '' }}"><a href="{{ url_for('main.index', lang_code=g.lang_code) }}">{{ _('ГОЛОВНА') }}</a></li>
+                        <li class="{{ 'current' if request.blueprint == 'journal' else '' }}"><a href="{{ url_for('main.journal', lang_code=g.lang_code) }}">{{ _('ЖУРНАЛ') }}</a></li>
+                        <li class="{{ 'current' if request.endpoint == 'main.about' else '' }}"><a href="{{ url_for('main.about', lang_code=g.lang_code) }}">{{ _('ПРО ПРОЕКТ') }}</a></li>
+                        <li class="{{ 'current' if request.endpoint == 'main.contacts' else '' }}"><a href="{{ url_for('main.contacts', lang_code=g.lang_code) }}">{{ _('КОНТАКТИ') }}</a></li>
+                        <li class="{{ 'current' if request.blueprint == 'admin' else '' }}"><a href="{{ url_for('admin.dashboard', lang_code=g.lang_code) }}">{{ _('АДМІН') }}</a></li>
+                    </ul>
+                </nav>
+
+                <div id="user-actions">
+                    <div id="lang-switcher">
+                        {% if request.endpoint %}
+                            {% set current_args = request.view_args.copy() %}
+                            
+                            {# === ПОЧАТОК ВИПРАВЛЕННЯ: міняємо 'set' на 'do' === #}
+                            {% if g.lang_code == 'uk' %}
+                                {% do current_args.update({'lang_code': 'en'}) %} 
+                            {% else %}
+                                {% do current_args.update({'lang_code': 'uk'}) %} 
+                            {% endif %}
+                            {# === КІНЕЦЬ ВИПРАВЛЕННЯ === #}
+
+                            <a href="{{ url_for(request.endpoint, **current_args) }}" class="lang-link">
+                                {% if g.lang_code == 'uk' %}EN{% else %}UA{% endif %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="container">
+                {% block content %}
+                <!-- Сюди буде вставлено унікальний контент кожної сторінки -->
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <footer>
+        <p>{{ _('Юрій Струс, ©') }} {{ now.year }}</p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

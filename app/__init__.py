@@ -24,6 +24,10 @@ def create_app(config_class=Config):
 
     from app.journal import journal_bp
     app.register_blueprint(journal_bp)
+    
+    # Імпорт модуля фотопасток
+    from app.pam import pam_bp
+    app.register_blueprint(pam_bp)
 
     # Імпортуємо моделі, щоб вони були видимі для Flask-Migrate
     from app.models import journal_models

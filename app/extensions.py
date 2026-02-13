@@ -6,14 +6,16 @@ from flask_babel import Babel
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 #from flask_bcrypt import Bcrypt
-#from flask_login import LoginManager
+from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 #from flask_mail import Mail
 
 babel = Babel()
 db = SQLAlchemy()
 migrate = Migrate()
 #bcrypt = Bcrypt()
-#login_manager = LoginManager()
+login_manager = LoginManager()
+csrf = CSRFProtect()
 #mail = Mail()
 
 def init_extensions(app):
@@ -22,6 +24,13 @@ def init_extensions(app):
      # Ініціалізація бази даних та міграцій
     db.init_app(app)
     migrate.init_app(app, db)
+
+    login_manager.init_app(app) # Ініціалізуйте його для додатка
+    csrf.init_app(app)
+    # Налаштування для переадресації, якщо користувач не залогінений
+    login_manager.login_view = 'main.login' 
+    login_manager.login_message = "Будь ласка, увійдіть, щоб отримати доступ."
+
     
     # ВАЖЛИВО: Ініціалізація Babel з правильними налаштуваннями
     babel.init_app(app, locale_selector=get_locale_function)
@@ -46,4 +55,5 @@ def before_request_handler():
     """Before request handler"""
     from app.utils.i18n import before_request_handler as handler
     return handler()
+
 
