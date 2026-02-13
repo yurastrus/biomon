@@ -1,0 +1,3 @@
+[submodule "app/pam"]
+	path = app/pam
+	url = https://github.com/yurastrus/shared-pam.git
