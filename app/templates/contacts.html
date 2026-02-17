@@ -3,10 +3,17 @@
 {% block title %}{{ _('Заголовок сторінки') }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>{{ _('Ласкаво просимо!') }}</h1>
-    <div>
-        <p>{{ _('Якийсь текст.') }}</p>
+<div class="container" style="text-align: center; padding: 50px 0;">
+    <h1>{{ _('Зв’язок з автором') }}</h1>
+    
+    <div style="margin-top: 20px; font-size: 1.2rem;">
+        <p>
+            {{ _('Якщо у вас є запитання, або пропозиції щодо проекту, ви можете задати їх через форму на персональному сайті автора ') }}
+            <br><br>
+            <a href="https://yurastrus.dev/{{ g.lang_code }}/contact" class="button" style="text-decoration: none; font-weight: bold; min-width: auto">
+                {{ _('Форма') }} →
+            </a>
+        </p>
     </div>
 </div>
 {% endblock %}

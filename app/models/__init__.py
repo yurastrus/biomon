@@ -1,5 +1,3 @@
-from .journal_models import Tag, TagTranslation, Issue, JournalArticle, JournalArticleTranslation
-
 from flask_login import UserMixin
 from datetime import datetime
 from app.extensions import db
@@ -95,10 +93,6 @@ class User(db.Model, UserMixin):
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True, nullable=False)
-    #articles = db.relationship('Article', secondary=article_roles, back_populates='required_roles')
-    #webmaps = db.relationship('WebMap', secondary=webmap_roles, back_populates='required_roles')
-    #rs_tools = db.relationship('RSTool', secondary=rs_tool_roles, back_populates='required_roles')
-
     def __repr__(self):
         return f"Role('{self.name}')"
     

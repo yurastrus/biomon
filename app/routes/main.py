@@ -2,7 +2,7 @@
 # app/routes/main.py - Спрощені маршрути
 # ==============================================
 from flask import render_template, session, redirect, url_for, current_app, request, g, jsonify, flash
-from flask_login import login_required, current_user, login_user
+from flask_login import login_required, current_user, login_user, logout_user
 from app.utils.forms import LoginForm, ContactForm
 from app.utils.utils import is_safe_url
 from flask_babel import lazy_gettext as _l
@@ -32,11 +32,6 @@ def about(lang_code):
     if lang_code not in current_app.config['LANGUAGES']:
         return redirect(url_for('main.root'))
     return render_template('about.html')
-
-@bp.route('/<lang_code>/journal')
-def journal(lang_code):
-    """Сторінка журналу (тепер перенаправляє на новий blueprint)"""
-    return redirect(url_for('journal.index', lang_code=lang_code))
 
 @bp.route('/<lang_code>/contacts')
 def contacts(lang_code):
@@ -69,42 +64,3 @@ def login(lang_code):
 def logout(lang_code):
     logout_user()
     return redirect(url_for('main.index', lang_code=lang_code))
-
-@bp.route('/<lang_code>/contact', methods=['GET', 'POST'])
-def contact_page(lang_code):
-    form = ContactForm()
-    # Якщо користувач не пройшов капчу, метод поверне False.
-    if form.validate_on_submit():
-        try:
-            # 1. Зберігаємо повідомлення в БД
-            msg = ContactMessage(
-                name=form.name.data,
-                email=form.email.data,
-                subject=form.subject.data,
-                message=form.message.data
-            )
-            db.session.add(msg)
-            db.session.commit()
-
-            # 2. Відправляємо email (бажано обгорнути в try-except, щоб помилка пошти не валила сайт)
-            send_async_email(
-                current_app._get_current_object(),
-                form.name.data,
-                form.email.data,
-                form.subject.data,
-                form.message.data
-            )
-            
-            flash(_l('Ваше повідомлення було успішно надіслано! Ми зв\'яжемося з вами найближчим часом.'), 'success')
-            # Використовуємо redirect, щоб уникнути повторної відправки форми при оновленні сторінки (PRG Pattern)
-            return redirect(url_for('main.contact_page', lang_code=lang_code))
-            
-        except Exception as e:
-            # Логуємо помилку, якщо щось пішло не так з БД або поштою
-            db.session.rollback()
-            current_app.logger.error(f"Error sending contact message: {e}")
-            flash(_l('Сталася помилка при відправці повідомлення. Спробуйте пізніше.'), 'danger')
-        
-    # Якщо валідація не пройшла (в т.ч. помилка капчі), 
-    # сторінка просто перезавантажиться з відображенням помилок.
-    return render_template('contacts.html', title=_l('Зворотній зв\'язок'), form=form)

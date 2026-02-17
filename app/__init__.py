@@ -2,12 +2,17 @@
 # app/__init__.py
 # ==============================================
 from flask import Flask
-from config import Config
+from config import config
+import os
 
-def create_app(config_class=Config):
+def create_app(config_name=None):
     """Application factory для створення додатку"""
+    if config_name is None:
+        config_name = os.environ.get('FLASK_CONFIG', 'default')
+    
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    
+    app.config.from_object(config[config_name])
     
     app.jinja_env.add_extension('jinja2.ext.do')
     
@@ -22,14 +27,12 @@ def create_app(config_class=Config):
     from app.admin import admin_bp
     app.register_blueprint(admin_bp)
 
-    from app.journal import journal_bp
-    app.register_blueprint(journal_bp)
-    
-    # Імпорт модуля фотопасток
+    # Імпорт модуля ПАМ
     from app.pam import pam_bp
     app.register_blueprint(pam_bp)
 
-    # Імпортуємо моделі, щоб вони були видимі для Flask-Migrate
-    from app.models import journal_models
+    # Імпорт модуля фотопасток
+    from app.camera_traps import camera_traps_bp
+    app.register_blueprint(camera_traps_bp, url_prefix='/<lang_code>/camera-traps')
     
     return app

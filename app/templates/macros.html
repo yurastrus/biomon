@@ -1,0 +1,27 @@
+<!-- templates/macros.html -->
+
+{% macro render_markdown(content) %}
+    {{ content | safe }}
+{% endmacro %}
+
+{% macro render_field(field) %}
+  {% set field_class = 'form-control ' + kwargs.get('class', '') %}
+  {% if field.errors %}
+    {% set field_class = field_class + ' is-invalid' %}
+  {% endif %}
+
+  <div class="form-group mb-3">
+    {# Явно використовуємо field.id для атрибута 'for', це найнадійніше #}
+    {{ field.label(class="form-label", for=field.id) }}
+    
+    {{ field(class=field_class, **kwargs) }}
+    
+    {% if field.errors %}
+      <div class="invalid-feedback d-block">
+        {% for error in field.errors %}
+          <span>{{ error }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endmacro %}

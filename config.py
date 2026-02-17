@@ -20,8 +20,8 @@ class Config:
     
     PAM_DATABASE_URI = os.environ.get('PAM_DATABASE_URL')
     CT_DATABASE_URI = os.environ.get('CT_DATABASE_URL')
-    GEODATA_DATABASE_URI = os.environ.get('GEODATA_DATABASE_URI')
-    
+    GEODATA_DATABASE_URI = os.environ.get('GEODATA_DATABASE_URI') 
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Налаштування мов
@@ -42,15 +42,12 @@ class Config:
         pass
 
 class DevelopmentConfig(Config):
-    """Конфігурація для розробки"""
     DEBUG = True
-    ENV = 'development'
+    GEOSERVER_URL = os.environ.get('GEOSERVER_URL') or 'http://91.99.138.240:8080/geoserver'
 
 class ProductionConfig(Config):
-    """Конфігурація для продакшену"""
     DEBUG = False
-    ENV = 'production'
-    SESSION_COOKIE_SECURE = True  # Тільки для HTTPS
+    GEOSERVER_URL = os.environ.get('GEOSERVER_URL') or '/geoserver'
 
 class TestingConfig(Config):
     """Конфігурація для тестування"""
