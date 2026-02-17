@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Увійти') }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; text-align: center;">
+    <h2>{{ _('Увійти в систему') }}</h2>
+    
+    <p>
+    {{ _('Вхід лише за запрошенням. Самостійна реєстрація на сайті відсутня. Для отримання доступу, 
+    будь ласка,') }} <a href="{{ url_for('main.contact_page', lang_code=g.lang_code) }}">{{ _('зв`яжіться з автором') }}</a>.
+    </p>
+
+    {#
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    #}
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group" style="margin-bottom: 1rem;">
+            {{ form.username.label(class="form-label") }}
+            {{ form.username(class="form-control", style="width: 100%; padding: 8px;") }}
+        </div>
+        <div class="form-group" style="margin-bottom: 1rem;">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control", style="width: 100%; padding: 8px;") }}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class="button") }}
+        </div>
+    </form>
+</div>
+
+<style>
+.alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+.alert-danger { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+.form-label { display: block; margin-bottom: .5rem; }
+</style>
+{% endblock %}

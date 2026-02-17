@@ -34,3 +34,4 @@ def role_required(*role_names):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+

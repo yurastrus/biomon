@@ -20,6 +20,7 @@ class Config:
     
     PAM_DATABASE_URI = os.environ.get('PAM_DATABASE_URL')
     CT_DATABASE_URI = os.environ.get('CT_DATABASE_URL')
+    GEODATA_DATABASE_URI = os.environ.get('GEODATA_DATABASE_URI')
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
