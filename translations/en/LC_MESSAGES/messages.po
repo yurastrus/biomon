@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-17 15:25+0200\n"
+"POT-Creation-Date: 2026-02-17 16:40+0200\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -22,7 +22,7 @@ msgstr ""
 msgid "У вас недостатньо прав для доступу до цієї сторінки."
 msgstr "You do not have sufficient permissions to access this page."
 
-#: app/camera_traps/routes.py:168 app/pam/templates/pam_overview.html:563
+#: app/camera_traps/routes.py:168
 msgid "Помилка завантаження статистики."
 msgstr "Error loading statistics."
 
@@ -31,7 +31,6 @@ msgid "Помилка завантаження сторінки аналізу."
 msgstr "Error loading the analysis page."
 
 #: app/camera_traps/routes.py:372
-#: app/pam/templates/pam_species_detailed.html:433
 msgid "-- Будь ласка, виберіть --"
 msgstr "-- Please select --"
 
@@ -132,17 +131,14 @@ msgid "Недостатньо прав для режиму перегляду"
 msgstr "Insufficient permissions for review mode"
 
 #: app/camera_traps/routes.py:931
-#: app/camera_traps/templates/identification.html:835
 msgid "Немає серій для перегляду, які б відповідали критеріям."
 msgstr "No series available for review that match the criteria."
 
 #: app/camera_traps/routes.py:933
-#: app/camera_traps/templates/identification.html:834
 msgid "Вітаємо! Ви ідентифікували всі доступні серії фотографій."
 msgstr "Congratulations! You have identified all available photo series."
 
 #: app/camera_traps/routes.py:977
-#: app/camera_traps/templates/photo_viewer.html:394
 msgid "Пусто (немає тварин)"
 msgstr "Empty (no animals)"
 
@@ -223,10 +219,6 @@ msgid "Помилка перерахунку консенсусу. Переві�
 msgstr "Consensus recalculation error. Please check the logs."
 
 #: app/camera_traps/routes.py:1241
-#: app/camera_traps/templates/identification.html:595
-#: app/camera_traps/templates/identification.html:883
-#: app/pam/templates/pam_verification_interface.html:368
-#: app/pam/templates/pam_verification_interface.html:515
 msgid "-- Всі види --"
 msgstr "-- All species --"
 
@@ -234,7 +226,7 @@ msgstr "-- All species --"
 msgid "Помилка завантаження галереї."
 msgstr "Gallery loading error."
 
-#: app/camera_traps/routes.py:1309 app/camera_traps/templates/gallery.html:478
+#: app/camera_traps/routes.py:1309
 msgid "Для вибраного виду немає фото у вибраному."
 msgstr "There are no photos available for the selected species."
 
@@ -285,7 +277,6 @@ msgid "Прогноз за кількістю фото"
 msgstr "Forecast by number of photos"
 
 #: app/camera_traps/routes.py:1822
-#: app/camera_traps/templates/service_log.html:385
 msgid "Прогноз за часом"
 msgstr "Forecast by time"
 
@@ -321,2759 +312,61 @@ msgstr "An error occurred during recalculation."
 msgid "Помилка завантаження сторінки."
 msgstr "Error loading page."
 
-#: app/camera_traps/templates/ct_data_export.html:5
-#: app/camera_traps/templates/dashboard.html:88
-#: app/pam/templates/pam_data_export.html:5 app/pam/templates/pam_home.html:159
-msgid "Експорт даних"
-msgstr "Export data"
-
-#: app/camera_traps/templates/ct_data_export.html:5
-msgid "Фотопастки"
-msgstr "Phototraps"
-
-#: app/camera_traps/templates/ct_data_export.html:39
-msgid "Підготовка даних для експорту - фотопастки"
-msgstr "Preparing data for export - camera traps"
-
-#: app/camera_traps/templates/ct_data_export.html:42
-#: app/pam/templates/pam_data_export.html:44
-#: app/pam/templates/pam_overview.html:284
-#: app/pam/templates/pam_yearly_table.html:51
-msgid "Клас:"
-msgstr "Class:"
-
-#: app/camera_traps/templates/ct_data_export.html:43
-#: app/pam/templates/pam_data_export.html:45
-#: app/pam/templates/pam_overview.html:288
-#: app/pam/templates/pam_yearly_table.html:52
-msgid "Ряд:"
-msgstr "Order:"
-
-#: app/camera_traps/templates/ct_data_export.html:44
-#: app/pam/templates/pam_data_export.html:46
-#: app/pam/templates/pam_overview.html:292
-#: app/pam/templates/pam_yearly_table.html:53
-msgid "Родина:"
-msgstr "Family:"
-
-#: app/camera_traps/templates/ct_data_export.html:45
-#: app/pam/templates/pam_data_export.html:47
-#: app/pam/templates/pam_overview.html:296
-#: app/pam/templates/pam_yearly_table.html:54
-msgid "Рід:"
-msgstr "Genus:"
-
-#: app/camera_traps/templates/ct_data_export.html:47
-#: app/pam/templates/pam_data_export.html:49
-msgid "Види (оберіть один або декілька):"
-msgstr "Species (select one or more):"
-
-#: app/camera_traps/templates/ct_data_export.html:50
-#: app/pam/templates/pam_data_export.html:52
-msgid "Дата початку:"
-msgstr "Start date:"
-
-#: app/camera_traps/templates/ct_data_export.html:51
-#: app/pam/templates/pam_data_export.html:53
-msgid "Дата завершення:"
-msgstr "End date:"
-
-#: app/camera_traps/templates/ct_data_export.html:52
-msgid "Тип даних для експорту:"
-msgstr "Type of data for export:"
-
-#: app/camera_traps/templates/ct_data_export.html:52
-msgid "Тільки тварини"
-msgstr "Animals only"
-
-#: app/camera_traps/templates/ct_data_export.html:52
-msgid "Всі записи"
-msgstr "All records"
-
-#: app/camera_traps/templates/ct_data_export.html:53
-#: app/pam/templates/pam_data_export.html:64
-msgid "Рівень агрегації:"
-msgstr "Aggregation level:"
-
-#: app/camera_traps/templates/ct_data_export.html:53
-msgid "Без агрегації"
-msgstr "Without aggregation"
-
-#: app/camera_traps/templates/ct_data_export.html:53
-msgid "Агрегувати до дня і локації"
-msgstr "Aggregate by day and location"
-
-#: app/camera_traps/templates/ct_data_export.html:54
-#: app/pam/templates/pam_data_export.html:78
-msgid "Код інституції:"
-msgstr "Institution code:"
-
-#: app/camera_traps/templates/ct_data_export.html:54
-#: app/pam/templates/pam_data_export.html:78
-msgid "За замовчуванням: RSNR"
-msgstr "By default: RSNR"
-
-#: app/camera_traps/templates/ct_data_export.html:57
-#: app/pam/templates/pam_data_export.html:81
-msgid "Підготувати дані"
-msgstr "Prepare data"
-
-#: app/camera_traps/templates/ct_data_export.html:58
-#: app/pam/templates/pam_data_export.html:82
-msgid "Скинути фільтри"
-msgstr "Reset filters"
-
-#: app/camera_traps/templates/ct_data_export.html:65
-#: app/pam/templates/pam_data_export.html:90
-msgid "Завантажити повний CSV-файл"
-msgstr "Download full CSV file"
-
-#: app/camera_traps/templates/ct_data_export.html:121
-#: app/pam/templates/pam_data_export.html:154
-#: app/pam/templates/pam_yearly_table.html:149
-msgid "Всі класи"
-msgstr "All classes"
-
-#: app/camera_traps/templates/ct_data_export.html:122
-#: app/pam/templates/pam_data_export.html:155
-#: app/pam/templates/pam_yearly_table.html:150
-msgid "Всі ряди"
-msgstr "All orders"
-
-#: app/camera_traps/templates/ct_data_export.html:123
-#: app/pam/templates/pam_data_export.html:156
-#: app/pam/templates/pam_yearly_table.html:151
-msgid "Всі родини"
-msgstr "All families"
-
-#: app/camera_traps/templates/ct_data_export.html:124
-#: app/pam/templates/pam_data_export.html:157
-#: app/pam/templates/pam_yearly_table.html:152
-msgid "Всі роди"
-msgstr "All genuses"
-
-#: app/camera_traps/templates/ct_data_export.html:125
-#: app/pam/templates/pam_data_export.html:158
-msgid "Всі види"
-msgstr "All species"
-
-#: app/camera_traps/templates/ct_data_export.html:130
-#: app/camera_traps/templates/service_log.html:287
-#: app/camera_traps/templates/species_detailed.html:240
-#: app/camera_traps/templates/upload.html:189
-#: app/camera_traps/templates/upload.html:343
-#: app/pam/templates/pam_data_export.html:114
-#: app/pam/templates/pam_evaluation_results.html:414
-#: app/pam/templates/pam_service_log.html:226
-#: app/pam/templates/pam_verification_interface.html:481
-#: app/pam/templates/pam_verification_segments.html:413
-msgid "Завантаження..."
-msgstr "Loading..."
-
-#: app/camera_traps/templates/ct_data_export.html:207
-#: app/camera_traps/templates/ct_data_export.html:255
-#: app/pam/templates/pam_data_export.html:341
-msgid "Будь ласка, оберіть хоча б один таксон."
-msgstr "Please select at least one taxon."
-
-#: app/camera_traps/templates/ct_data_export.html:219
-#, python-brace-format
-msgid "Попередній перегляд (перші 20 записів з ${data.total_count})"
-msgstr "Preview (first 20 records out of ${data.total_count})"
-
-#: app/camera_traps/templates/ct_data_export.html:242
-#: app/pam/templates/pam_data_export.html:326
-msgid "Дані за вибраними критеріями не знайдено."
-msgstr "No data found for the selected criteria."
-
-#: app/camera_traps/templates/ct_data_export.html:247
-#: app/camera_traps/templates/species_detailed.html:252
-#: app/pam/templates/pam_data_export.html:331
-msgid "Помилка"
-msgstr "Error"
-
-#: app/camera_traps/templates/ct_data_export.html:248
-#: app/camera_traps/templates/manage_locations.html:280
-#: app/pam/templates/manage_pam_locations.html:275
-#: app/pam/templates/pam_data_export.html:332
-msgid "Помилка завантаження даних:"
-msgstr "Data loading error."
-
-#: app/camera_traps/templates/daily_activity.html:3
-#: app/camera_traps/templates/daily_activity.html:172
-msgid "Добова активність видів"
-msgstr "Daily activity of species"
-
-#: app/camera_traps/templates/daily_activity.html:180
-#: app/camera_traps/templates/species_detailed.html:114
-msgid "Період з:"
-msgstr "Period from:"
-
-#: app/camera_traps/templates/daily_activity.html:184
-#: app/camera_traps/templates/species_detailed.html:118
-msgid "до:"
-msgstr "to:"
-
-#: app/camera_traps/templates/daily_activity.html:188
-msgid "Тип даних:"
-msgstr "Data type:"
-
-#: app/camera_traps/templates/daily_activity.html:190
-msgid "Кількість спостережень на 100 пастко-днів"
-msgstr "Number of observations per 100 trap-days"
-
-#: app/camera_traps/templates/daily_activity.html:191
-#: app/camera_traps/templates/daily_activity.html:522
-#: app/camera_traps/templates/species_dashboard.html:426
-msgid "Індекс DR"
-msgstr "DR Index"
-
-#: app/camera_traps/templates/daily_activity.html:193
-msgid "Відсоток від загальної активності виду"
-msgstr "Percent of total species activity"
-
-#: app/camera_traps/templates/daily_activity.html:194
-#, python-format
-msgid "Частка (%%)"
-msgstr "Fraction (%%)"
-
-#: app/camera_traps/templates/daily_activity.html:201
-msgid "Довірчі інтервали:"
-msgstr "Confidence intervals:"
-
-#: app/camera_traps/templates/daily_activity.html:208
-msgid "CI тільки для авторизованих"
-msgstr "CI for authorized users only"
-
-#: app/camera_traps/templates/daily_activity.html:216
-msgid "Згладжування (KDE):"
-msgstr "Smoothing (KDE)"
-
-#: app/camera_traps/templates/daily_activity.html:222
-msgid "Різко"
-msgstr "Sharp"
-
-#: app/camera_traps/templates/daily_activity.html:224
-msgid "Гладко"
-msgstr "Smooth"
-
-#: app/camera_traps/templates/daily_activity.html:232
-msgid "Види (можна декілька):"
-msgstr "Species (select one or more):"
-
-#: app/camera_traps/templates/daily_activity.html:248
-msgid "Побудувати"
-msgstr "Generate"
-
-#: app/camera_traps/templates/daily_activity.html:253
-msgid "Завантажити CSV"
-msgstr "Download CSV"
-
-#: app/camera_traps/templates/daily_activity.html:271
-msgid "Матриця перекриття активності"
-msgstr "Activity overlap matrix"
-
-#: app/camera_traps/templates/daily_activity.html:274
-#, python-format
-msgid "Значення від 0%% (повне уникання) до 100%% (ідентична активність)."
-msgstr "Values range from 0%% (complete avoidance) to 100%% (identical activity)."
-
-#: app/camera_traps/templates/daily_activity.html:275
-msgid "Високий відсоток вказує на те, що види активні в один і той же час."
-msgstr "A high percentage indicates that the species are active at the same time."
-
-#: app/camera_traps/templates/daily_activity.html:299
-msgid "-- Виберіть види --"
-msgstr "-- Select species --"
-
-#: app/camera_traps/templates/daily_activity.html:342
-msgid "Будь ласка, виберіть хоча б один вид."
-msgstr "Please select at least one species."
-
-#: app/camera_traps/templates/daily_activity.html:348
-msgid "Зачекайте..."
-msgstr "Wait..."
-
-#: app/camera_traps/templates/daily_activity.html:371
-msgid "Недостатньо даних для побудови графіка за вибраними критеріями."
-msgstr "Not enouh data available for the selected criteria"
-
-#: app/camera_traps/templates/daily_activity.html:382
-#: app/pam/templates/pam_overview.html:635
-#: app/pam/templates/pam_species_detailed.html:643
-#: app/pam/templates/pam_species_detailed.html:659
-#: app/pam/templates/pam_species_detailed.html:666
-msgid "Помилка завантаження даних."
-msgstr "Data loading error."
-
-#: app/camera_traps/templates/daily_activity.html:511
-msgid "Година доби"
-msgstr "Day hours"
-
-#: app/camera_traps/templates/daily_activity.html:522
-#, python-format
-msgid "Щільність активності (%%)"
-msgstr "Activiy density (%%)"
-
-#: app/camera_traps/templates/daily_activity.html:648
-msgid "Загальние зусилля за період:"
-msgstr "Overal effort for the period:"
-
-#: app/camera_traps/templates/daily_activity.html:648
-msgid "пастко-днів"
-msgstr "trap-days"
-
-#: app/camera_traps/templates/dashboard.html:3
-msgid "Аналітичний дашборд"
-msgstr "Analytics Dashboard"
-
-#: app/camera_traps/templates/dashboard.html:71
-msgid "Аналітичний дашборд фотопасток"
-msgstr "Camera Trap Analytics Dashboard"
-
-#: app/camera_traps/templates/dashboard.html:72
-msgid ""
-"Загальний огляд результатів і доступ до основних функцій. Якщо у вас є "
-"доступ, увійдіть і зможете перейти до перегляду фото та ідентифікації."
-msgstr ""
-"A general overview of the results and access to the main functions. If "
-"you have access, log in to view photos and perform identifications."
-
-#: app/camera_traps/templates/dashboard.html:78
-msgid "Швидкі дії"
-msgstr "Quick Actions"
-
-#: app/camera_traps/templates/dashboard.html:81
-msgid "Ідентифікувати"
-msgstr "Identify"
-
-#: app/camera_traps/templates/dashboard.html:84
-msgid "Завантажити фото"
-msgstr "Upload Photos"
-
-#: app/camera_traps/templates/dashboard.html:85
-msgid "Обслуговування"
-msgstr "Service"
-
-#: app/camera_traps/templates/dashboard.html:91
-#: app/camera_traps/templates/manage_locations.html:3
-msgid "Управління локаціями"
-msgstr "Location management"
-
-#: app/camera_traps/templates/dashboard.html:94
-msgid ""
-"Це запустить повний перерахунок всієї аналітики для графіків. Процес може"
-" зайняти кілька хвилин, залежно від обсягу даних. Продовжити?"
-msgstr ""
-
-#: app/camera_traps/templates/dashboard.html:95
-msgid "Перерахувати аналітику"
-msgstr "Recalculate analytics"
-
-#: app/camera_traps/templates/dashboard.html:101
-msgid "Перерахувати консенсус"
-msgstr "Recalculate Consensus"
-
-#: app/camera_traps/templates/dashboard.html:106
-msgid "Ви впевнені, що хочете видалити файли старих фотографій?"
-msgstr "Are you sure you want to delete old photo files?"
-
-#: app/camera_traps/templates/dashboard.html:107
-msgid "Видалити визначені фото"
-msgstr "Delete Identified Photos"
-
-#: app/camera_traps/templates/dashboard.html:112
-msgid ""
-"УВАГА! Будуть видалені ВСІ оригінали фото, крім тих, що позначені як "
-"'вибране'. Мініатюри залишаться. Ця дія НЕЗВОРОТНЯ. Продовжити?"
-msgstr ""
-
-#: app/camera_traps/templates/dashboard.html:113
-msgid "Видалити оригінали"
-msgstr "Delete originals"
-
-#: app/camera_traps/templates/dashboard.html:118
-msgid ""
-"Це видалить файли та дані від незавершених завантажень, які старші 24 "
-"годин. Ця дія незворотня. Продовжити?"
-msgstr ""
-
-#: app/camera_traps/templates/dashboard.html:119
-msgid "Очистити невдалі завантаження"
-msgstr "Clean stale batches"
-
-#: app/camera_traps/templates/dashboard.html:130
-msgid "Початкова дата:"
-msgstr "Start date:"
-
-#: app/camera_traps/templates/dashboard.html:134
-msgid "Кінцева дата:"
-msgstr "End date:"
-
-#: app/camera_traps/templates/dashboard.html:138
-msgid "Біотоп:"
-msgstr "Habitat:"
-
-#: app/camera_traps/templates/dashboard.html:149
-#: app/camera_traps/templates/identification.html:608
-#: app/camera_traps/templates/species_detailed.html:134
-#: app/pam/templates/pam_species_detailed.html:266
-#: app/pam/templates/pam_verification_interface.html:376
-#: app/pam/templates/pam_verification_segments.html:358
-msgid "Застосувати"
-msgstr "Apply"
-
-#: app/camera_traps/templates/dashboard.html:150
-msgid "Тренди"
-msgstr "Trends"
-
-#: app/camera_traps/templates/dashboard.html:151
-msgid "Добова активність"
-msgstr "Daily activity"
-
-#: app/camera_traps/templates/dashboard.html:152
-msgid "Мапа"
-msgstr "Map"
-
-#: app/camera_traps/templates/dashboard.html:153
-msgid "Галерея"
-msgstr "Gallery"
-
-#: app/camera_traps/templates/dashboard.html:162
-#: app/pam/templates/pam_overview.html:336
-#: app/pam/templates/pam_species_detailed.html:284
-msgid "Загальна статистика"
-msgstr "General statistics"
-
-#: app/camera_traps/templates/dashboard.html:164
-msgid "Всього фото"
-msgstr "Total photos"
-
-#: app/camera_traps/templates/dashboard.html:165
-#: app/pam/templates/pam_overview.html:556
-msgid "Локацій"
-msgstr "Locations"
-
-#: app/camera_traps/templates/dashboard.html:166
-msgid "Спостережень"
-msgstr "Observations"
-
-#: app/camera_traps/templates/dashboard.html:167
-#: app/pam/templates/pam_overview.html:555
-msgid "Видів"
-msgstr "Species"
-
-#: app/camera_traps/templates/dashboard.html:168
-msgid "В очікуванні"
-msgstr "Pending"
-
-#: app/camera_traps/templates/dashboard.html:169
-msgid "Днів зйомки"
-msgstr "Survey days"
-
-#: app/camera_traps/templates/dashboard.html:173
-msgid "Найактивніші учасники"
-msgstr "Most Active Contributors"
-
-#: app/camera_traps/templates/dashboard.html:179
-msgid "ідентифікацій"
-msgstr "identifications"
-
-#: app/camera_traps/templates/dashboard.html:184
-msgid "За цей період немає даних про ідентифікації."
-msgstr "There is no identification data for this period."
-
-#: app/camera_traps/templates/dashboard.html:189
-msgid "Повний набір даних можна завантажити через"
-msgstr "The full dataset can be downloaded via"
-
-#: app/camera_traps/templates/dashboard.html:197
-msgid "Статистика детекцій видів"
-msgstr "Species Detection Statistics"
-
-#: app/camera_traps/templates/dashboard.html:203
-#: app/pam/templates/pam_overview.html:345
-msgid "Карта локацій"
-msgstr "Map of locations"
-
-#: app/camera_traps/templates/dashboard.html:244
-#: app/pam/templates/pam_overview.html:420
-#: app/pam/templates/pam_overview.html:511
-#: app/pam/templates/pam_species_detailed.html:434
-#: app/pam/templates/pam_species_detailed.html:487
-msgid "-- Всі біотопи --"
-msgstr "-- All habitats --"
-
-#: app/camera_traps/templates/dashboard.html:285
-msgid "За цей період даних для діаграми немає."
-msgstr "There is no data for the chart for this period."
-
-#: app/camera_traps/templates/dashboard.html:293
-msgid "Кількість спостережень"
-msgstr "Number of observations"
-
-#: app/camera_traps/templates/dashboard.html:342
-msgid "К-ть фото:"
-msgstr "Photo count:"
-
-#: app/camera_traps/templates/dashboard.html:344
-msgid "Включити у фільтр"
-msgstr "Include into filtering"
-
-#: app/camera_traps/templates/dashboard.html:371
-msgid "Вибрати всі"
-msgstr "Check all"
-
-#: app/camera_traps/templates/dashboard.html:372
-msgid "Зняти виділення"
-msgstr "Uncheck all"
-
-#: app/camera_traps/templates/dashboard.html:373
-msgid "Інвертувати"
-msgstr "Invert"
-
-#: app/camera_traps/templates/gallery.html:3
-#: app/camera_traps/templates/gallery.html:299
-msgid "Галерея вибраних фото"
-msgstr "Selected Photos Gallery"
-
-#: app/camera_traps/templates/gallery.html:301
-msgid ""
-"Тут відображаться фото, які ще не були автоматично очищені системою, а "
-"також ті, що ідентифікатори додали у вибране. Більше фото можна знайти у "
-"нашому проекті на"
-msgstr ""
-"This section displays photos that haven't been automatically cleared by "
-"the system yet, along with those that have been added to favorites. You "
-"can find more photos in our project on"
-
-#: app/camera_traps/templates/gallery.html:309
-#: app/camera_traps/templates/species_dashboard.html:217
-#: app/pam/templates/pam_species_dashboard.html:57
-#: app/pam/templates/pam_species_detailed.html:227
-#: app/pam/templates/pam_yearly_trends.html:129
-msgid "Виберіть вид:"
-msgstr "Select species:"
-
-#: app/camera_traps/templates/gallery.html:318
-msgid "Показати фото"
-msgstr "Show photos"
-
-#: app/camera_traps/templates/gallery.html:335
-msgid ""
-"Будь ласка, виберіть вид та натисніть \"Показати фото\" для перегляду "
-"галереї."
-msgstr "Please select a species and click \"Show photos\" to view the gallery."
-
-#: app/camera_traps/templates/gallery.html:345
-msgid "Фото з галереї"
-msgstr "Photos from the gallery"
-
-#: app/camera_traps/templates/gallery.html:356
-#: app/pam/templates/pam_home.html:153
-msgid "Управління"
-msgstr "Management"
-
-#: app/camera_traps/templates/gallery.html:358
-msgid "Прибрати з вибраного"
-msgstr "Remove from favorites"
-
-#: app/camera_traps/templates/gallery.html:360
-msgid "Тільки для модераторів та адмінів"
-msgstr "Only for admins and moderators"
-
-#: app/camera_traps/templates/gallery.html:366
-msgid "Інформація про фото"
-msgstr "Photo details"
-
-#: app/camera_traps/templates/gallery.html:430
-#: app/camera_traps/templates/species_dashboard.html:276
-#: app/pam/templates/pam_species_dashboard.html:115
-#: app/pam/templates/pam_yearly_trends.html:187
-msgid "-- Пошук та вибір виду --"
-msgstr "-- Search and select a species --"
-
-#: app/camera_traps/templates/gallery.html:444
-#: app/camera_traps/templates/species_dashboard.html:315
-#: app/pam/templates/pam_species_dashboard.html:141
-#: app/pam/templates/pam_species_detailed.html:545
-#: app/pam/templates/pam_yearly_trends.html:212
-msgid "Будь ласка, виберіть вид."
-msgstr "Please select a species."
-
-#: app/camera_traps/templates/gallery.html:452
-msgid "Завантаження фото..."
-msgstr "Loading photos..."
-
-#: app/camera_traps/templates/gallery.html:473
-msgid "Помилка завантаження фото."
-msgstr "Error loading photo."
-
-#: app/camera_traps/templates/gallery.html:499
-#: app/camera_traps/templates/gallery.html:511
-#: app/camera_traps/templates/photo_viewer.html:330
-#: app/pam/templates/pam_verification_interface.html:417
-msgid "Локація:"
-msgstr "Location:"
-
-#: app/camera_traps/templates/gallery.html:500
-#: app/camera_traps/templates/photo_viewer.html:331
-msgid "Час:"
-msgstr "Time:"
-
-#: app/camera_traps/templates/gallery.html:501
-#: app/camera_traps/templates/identification.html:830
-#: app/camera_traps/templates/photo_viewer.html:352
-msgid "Фото"
-msgstr "Photo"
-
-#: app/camera_traps/templates/gallery.html:507
-#: app/camera_traps/templates/identification.html:593
-#: app/pam/templates/pam_verification_segments.html:330
-msgid "Вид:"
-msgstr "Species:"
-
-#: app/camera_traps/templates/gallery.html:515
-msgid "Дата зйомки:"
-msgstr "Date taken:"
-
-#: app/camera_traps/templates/gallery.html:520
-msgid "Додано у вибране:"
-msgstr "Added to favorites:"
-
-#: app/camera_traps/templates/gallery.html:525
-#: app/camera_traps/templates/photo_viewer.html:367
-#: app/camera_traps/templates/service_log.html:225
-#: app/camera_traps/templates/service_log.html:228
-#: app/camera_traps/templates/service_log.html:385
-#: app/pam/templates/pam_verification_segments.html:339
-msgid "Статус:"
-msgstr "Status:"
-
-#: app/camera_traps/templates/gallery.html:527
-#: app/camera_traps/templates/photo_viewer.html:374
-msgid "У вибраному"
-msgstr "In favorites"
-
-#: app/camera_traps/templates/gallery.html:532
-msgid "№ в серії:"
-msgstr "# in a series:"
-
-#: app/camera_traps/templates/gallery.html:577
-msgid "Ви впевнені, що хочете прибрати це фото з вибраного?"
-msgstr "Are you sure you want to remove this photo from favorites?"
-
-#: app/camera_traps/templates/gallery.html:614
-msgid "Фото успішно видалено з вибраного"
-msgstr "The photo was successfully removed from favorites."
-
-#: app/camera_traps/templates/gallery.html:618
-msgid "Помилка видалення з вибраного"
-msgstr "Error removing from favorites"
-
-#: app/camera_traps/templates/identification.html:4
-#: app/camera_traps/templates/identification.html:573
-msgid "Ідентифікація тварин"
-msgstr "Animal Identification"
-
-#: app/camera_traps/templates/identification.html:580
-msgid "🔍 РЕЖИМ ПЕРЕГЛЯДУ: Перевіряється вже визначена серія"
-msgstr "🔍 REVIEW MODE: Checking already identified series"
-
-#: app/camera_traps/templates/identification.html:587
-msgid "Користувач:"
-msgstr "User:"
-
-#: app/camera_traps/templates/identification.html:589
-#: app/camera_traps/templates/identification.html:877
-msgid "-- Всі користувачі --"
-msgstr "-- All users --"
-
-#: app/camera_traps/templates/identification.html:599
-msgid "Сортування:"
-msgstr "Sorting:"
-
-#: app/camera_traps/templates/identification.html:601
-msgid "Випадково"
-msgstr "Random"
-
-#: app/camera_traps/templates/identification.html:602
-msgid "Дата (спочатку нові)"
-msgstr "By date (newer first)
-
-#: app/camera_traps/templates/identification.html:603
-msgid "Дата (спочатку старі)"
-msgstr "By date (older first)"
-
-#: app/camera_traps/templates/identification.html:604
-msgid "К-ть фото (спочатку більше)"
-msgstr "Number of photos (desc)"
-
-#: app/camera_traps/templates/identification.html:615
-msgid "Існуючі ідентифікації серії:"
-msgstr "Existing series identifications:"
-
-#: app/camera_traps/templates/identification.html:628
-msgid "Фото для ідентифікації"
-msgstr "Photo for Identification"
-
-#: app/camera_traps/templates/identification.html:632
-msgid "Відкрити у повному розмірі"
-msgstr "Open in full size"
-
-#: app/camera_traps/templates/identification.html:666
-msgid "Надіслати"
-msgstr "Send"
-
-#: app/camera_traps/templates/identification.html:667
-#: app/pam/templates/pam_verification_interface.html:462
-msgid "Пропустити"
-msgstr "Skip"
-
-#: app/camera_traps/templates/identification.html:683
-msgid "Режим перегляду визначених серій"
-msgstr "Review mode for identified series"
-
-#: app/camera_traps/templates/identification.html:693
-msgid "Загальні опції"
-msgstr "General Options"
-
-#: app/camera_traps/templates/identification.html:705
-msgid "Ссавці"
-msgstr "Mammals"
-
-#: app/camera_traps/templates/identification.html:706
-msgid "Птахи"
-msgstr "Birds."
-
-#: app/camera_traps/templates/identification.html:707
-msgid "Інші"
-msgstr "Other"
-
-#: app/camera_traps/templates/identification.html:725
-msgid "Інші категорії"
-msgstr "Other categories"
-
-#: app/camera_traps/templates/identification.html:828
-#: app/pam/templates/pam_verification_segments.html:576
-msgid "Локація"
-msgstr "Location"
-
-#: app/camera_traps/templates/identification.html:829
-msgid "Час"
-msgstr "Time"
-
-#: app/camera_traps/templates/identification.html:831
-msgid "Будь ласка, виберіть вид, або опцію \"Пусто\"."
-msgstr "Please select a species, or the \"Empty\" option."
-
-#: app/camera_traps/templates/identification.html:832
-#: app/camera_traps/templates/manage_locations.html:334
-#: app/camera_traps/templates/service_log.html:395
-#: app/pam/templates/manage_pam_locations.html:323
-#: app/pam/templates/pam_service_log.html:307
-msgid "Помилка збереження:"
-msgstr "Save error:"
-
-#: app/camera_traps/templates/identification.html:833
-msgid "Не вдалося завантажити дані."
-msgstr "Failed to load data."
-
-#: app/camera_traps/templates/identification.html:836
-msgid "Залишилось вам:"
-msgstr "Pending for you:"
-
-#: app/camera_traps/templates/manage_locations.html:72
-msgid "Управління локаціями фотопасток"
-msgstr "Management of phototraps locations"
-
-#: app/camera_traps/templates/manage_locations.html:93
-#: app/pam/templates/manage_pam_locations.html:93
-msgid "Виберіть локацію зі списку або на карті, щоб почати редагування."
-msgstr "Select a location from the list or on the map to start editing."
-
-#: app/camera_traps/templates/manage_locations.html:100
-msgid "Назва локації"
-msgstr "Location name"
-
-#: app/camera_traps/templates/manage_locations.html:105
-msgid "Опис локації"
-msgstr "Description"
-
-#: app/camera_traps/templates/manage_locations.html:111
-#: app/pam/templates/manage_pam_locations.html:111
-msgid "Широта (Lat)"
-msgstr "Latitude (Lat)"
-
-#: app/camera_traps/templates/manage_locations.html:115
-#: app/pam/templates/manage_pam_locations.html:115
-msgid "Довгота (Lng)"
-msgstr "Longitude (Lng)"
-
-#: app/camera_traps/templates/manage_locations.html:120
-#: app/pam/templates/manage_pam_locations.html:120
-msgid "Біотопи"
-msgstr "Habitats"
-
-#: app/camera_traps/templates/manage_locations.html:128
-#: app/pam/templates/manage_pam_locations.html:130
-msgid "Зберегти зміни"
-msgstr "Save changes"
-
-#: app/camera_traps/templates/manage_locations.html:129
-#: app/pam/templates/manage_pam_locations.html:131
-msgid "Скасувати"
-msgstr "Cancel"
-
-#: app/camera_traps/templates/manage_locations.html:225
-#: app/camera_traps/templates/upload.html:287
-#: app/pam/templates/manage_pam_locations.html:220
-msgid "Квартальна сітка ПЗ Розточчя"
-msgstr "Quarters grid of the Roztochya SNR"
-
-#: app/camera_traps/templates/manage_locations.html:226
-#: app/camera_traps/templates/upload.html:288
-#: app/pam/templates/manage_pam_locations.html:221
-msgid "Видільна сітка ПЗ Розточчя"
-msgstr "Sections grid of the Roztochya SNR"
-
-#: app/camera_traps/templates/manage_locations.html:287
-#: app/pam/templates/manage_pam_locations.html:282
-msgid "Редагування:"
-msgstr "Editing:"
-
-#: app/camera_traps/templates/photo_viewer.html:3
-msgid "Перегляд фото #"
-msgstr "Viewing Photo #"
-
-#: app/camera_traps/templates/photo_viewer.html:319
-#: app/pam/templates/pam_verification_segments.html:361
-msgid "Скинути"
-msgstr "Reset"
-
-#: app/camera_traps/templates/photo_viewer.html:326
-msgid "Фото #"
-msgstr "Photo #"
-
-#: app/camera_traps/templates/photo_viewer.html:332
-msgid "ID:"
-msgstr ""
-
-#: app/camera_traps/templates/photo_viewer.html:343
-msgid "Серія спостереження"
-msgstr "Observation Series"
-
-#: app/camera_traps/templates/photo_viewer.html:364
-msgid "Деталі фотографії"
-msgstr "Photo details"
-
-#: app/camera_traps/templates/photo_viewer.html:370
-msgid "Оригінальна назва:"
-msgstr "Original filename:"
-
-#: app/camera_traps/templates/photo_viewer.html:382
-msgid "Ідентифікації"
-msgstr "Identifications"
-
-#: app/camera_traps/templates/photo_viewer.html:389
-msgid "Користувач видалений"
-msgstr "User deleted"
-
-#: app/camera_traps/templates/photo_viewer.html:396
-msgid "Інший вид (немає у списку)"
-msgstr "Other species (not in the list)"
-
-#: app/camera_traps/templates/photo_viewer.html:401
-msgid "К-сть:"
-msgstr "Count:"
-
-#: app/camera_traps/templates/photo_viewer.html:407
-msgid "Для цього фото ще немає ідентифікацій."
-msgstr "There are no identifications for this photo yet."
-
-#: app/camera_traps/templates/service_log.html:3
-msgid "Журнал обслуговування фотопасток"
-msgstr "Camera trap maintenance log"
-
-#: app/camera_traps/templates/service_log.html:63
-#: app/pam/templates/pam_home.html:171
-msgid "Журнал обслуговування"
-msgstr "Maintenance log"
-
-#: app/camera_traps/templates/service_log.html:65
-msgid "Оновити статистику для розрахунку прогнозів"
-msgstr "Update statistics to calculate forecasts"
-
-#: app/camera_traps/templates/service_log.html:67
-msgid "Оновити статистику"
-msgstr "Update statistics"
-
-#: app/camera_traps/templates/service_log.html:69
-msgid "На дашборд"
-msgstr "To Dashboard"
-
-#: app/camera_traps/templates/service_log.html:83
-#: app/pam/templates/pam_service_log.html:38
-msgid "Додати новий запис"
-msgstr "Add new record"
-
-#: app/camera_traps/templates/service_log.html:84
-#: app/pam/templates/pam_service_log.html:39
-msgid "Виберіть локацію на карті, щоб почати."
-msgstr "Select a location on the map to start."
-
-#: app/camera_traps/templates/service_log.html:90
-#: app/pam/templates/pam_service_log.html:45
-msgid "Дата та час візиту"
-msgstr "Date and time of visit"
-
-#: app/camera_traps/templates/service_log.html:94
-#: app/pam/templates/pam_service_log.html:50
-msgid "Результат візиту"
-msgstr "Visit results"
-
-#: app/camera_traps/templates/service_log.html:96
-#: app/pam/templates/pam_service_log.html:52
-#: app/pam/templates/pam_service_log.html:72
-msgid "-- Виберіть --"
-msgstr "-- Select --"
-
-#: app/camera_traps/templates/service_log.html:105
-#: app/pam/templates/pam_service_log.html:61
-msgid "Заміна елементів живлення"
-msgstr "Battery replacement"
-
-#: app/camera_traps/templates/service_log.html:107
-#: app/pam/templates/pam_service_log.html:63
-msgid "-- Без заміни --"
-msgstr "-- Wothout replacement --"
-
-#: app/camera_traps/templates/service_log.html:114
-msgid "Стан камери"
-msgstr "Camera condition"
-
-#: app/camera_traps/templates/service_log.html:118
-msgid "Працювала"
-msgstr "Working"
-
-#: app/camera_traps/templates/service_log.html:122
-msgid "Не працювала"
-msgstr "Not working"
-
-#: app/camera_traps/templates/service_log.html:126
-#: app/camera_traps/templates/service_log.html:303
-#: app/pam/templates/pam_service_log.html:97
-#: app/pam/templates/pam_service_log.html:240
-msgid "Невідомо"
-msgstr "Unknown"
-
-#: app/camera_traps/templates/service_log.html:136
-msgid "Проведено заміну SD-карти"
-msgstr "SD card replaced"
-
-#: app/camera_traps/templates/service_log.html:141
-msgid "К-ть фото на карті (необов'язково)"
-msgstr "Number of photos on the map (optional)"
-
-#: app/camera_traps/templates/service_log.html:146
-#: app/pam/templates/pam_service_log.html:103
-msgid "Коментарі"
-msgstr "Comments"
-
-#: app/camera_traps/templates/service_log.html:149
-#: app/pam/templates/pam_service_log.html:106
-msgid "Зберегти запис"
-msgstr "Save record"
-
-#: app/camera_traps/templates/service_log.html:155
-#: app/pam/templates/pam_service_log.html:111
-msgid "Історія обслуговування"
-msgstr "Service history"
-
-#: app/camera_traps/templates/service_log.html:156
-#: app/pam/templates/pam_service_log.html:112
-msgid "Немає даних для відображення."
-msgstr "No data to show"
-
-#: app/camera_traps/templates/service_log.html:220
-#: app/camera_traps/templates/service_log.html:385
-#: app/pam/templates/pam_service_log.html:178
-msgid "Останній візит:"
-msgstr "Last visit:"
-
-#: app/camera_traps/templates/service_log.html:233
-#: app/camera_traps/templates/service_log.html:385
-msgid "Днів тому:"
-msgstr "Days ago:"
-
-#: app/camera_traps/templates/service_log.html:233
-#: app/camera_traps/templates/service_log.html:385
-msgid "міс."
-msgstr "month(s)"
-
-#: app/camera_traps/templates/service_log.html:236
-msgid "Прогноз фото:"
-msgstr "Photo forecast:"
-
-#: app/camera_traps/templates/service_log.html:271
-#: app/pam/templates/pam_service_log.html:215
-msgid "Новий запис для:"
-msgstr "New record for:"
-
-#: app/camera_traps/templates/service_log.html:300
-#: app/camera_traps/templates/service_log.html:314
-#: app/pam/templates/pam_service_log.html:237
-msgid "Так"
-msgstr "Yes"
-
-#: app/camera_traps/templates/service_log.html:302
-#: app/camera_traps/templates/service_log.html:314
-#: app/pam/templates/pam_service_log.html:239
-msgid "Ні"
-msgstr "No"
-
-#: app/camera_traps/templates/service_log.html:312
-msgid "Стан камери:"
-msgstr "Camera conditon:"
-
-#: app/camera_traps/templates/service_log.html:313
-#: app/pam/templates/pam_service_log.html:251
-msgid "Батарейки:"
-msgstr "Batteries:"
-
-#: app/camera_traps/templates/service_log.html:314
-msgid "SD-карта замінена:"
-msgstr "SD-card replaced:"
-
-#: app/camera_traps/templates/service_log.html:323
-#: app/pam/templates/pam_service_log.html:261
-msgid "Помилка завантаження історії."
-msgstr "Error loading history."
-
-#: app/camera_traps/templates/service_log.html:333
-#: app/pam/templates/pam_service_log.html:269
-msgid "Збереження..."
-msgstr "Saving..."
-
-#: app/camera_traps/templates/service_log.html:391
-#: app/pam/templates/pam_service_log.html:304
-#: app/pam/templates/pam_verification_upload.html:431
-msgid "Невідома помилка"
-msgstr "Unknown error"
-
-#: app/camera_traps/templates/service_log.html:410
-msgid ""
-"Це може зайняти деякий час. Ви впевнені, що хочете запустити повний "
-"перерахунок статистики для всіх локацій?"
-msgstr ""
-
-#: app/camera_traps/templates/service_log.html:415
-msgid "Розрахунок..."
-msgstr "Calculation..."
-
-#: app/camera_traps/templates/service_log.html:437
-msgid "Критична помилка запиту."
-msgstr "Critical request error."
-
-#: app/camera_traps/templates/species_dashboard.html:3
-#: app/camera_traps/templates/species_dashboard.html:210
-msgid "Аналіз трендів по видах"
-msgstr "Analysis of species trends"
-
-#: app/camera_traps/templates/species_dashboard.html:227
-#: app/pam/templates/pam_species_dashboard.html:66
-#: app/pam/templates/pam_yearly_trends.html:139
-msgid "Початковий рік:"
-msgstr "Start year:"
-
-#: app/camera_traps/templates/species_dashboard.html:236
-#: app/pam/templates/pam_species_dashboard.html:74
-#: app/pam/templates/pam_yearly_trends.html:148
-msgid "Кінцевий рік:"
-msgstr "End year:"
-
-#: app/camera_traps/templates/species_dashboard.html:245
-#: app/pam/templates/pam_species_dashboard.html:82
-msgid "Побудувати графіки"
-msgstr "Generate Charts"
-
-#: app/camera_traps/templates/species_dashboard.html:246
-msgid "До загального аналізу"
-msgstr "o general analysis"
-
-#: app/camera_traps/templates/species_dashboard.html:254
-#: app/pam/templates/pam_species_dashboard.html:91
-msgid "Будь ласка, виберіть вид та натисніть \"Побудувати графіки\" для аналізу."
-msgstr "Please select a species and click \"Generate Charts\" to analyze."
-
-#: app/camera_traps/templates/species_dashboard.html:336
-#: app/pam/templates/pam_species_dashboard.html:157
-msgid "Не вдалося завантажити дані для аналізу."
-msgstr "Failed to load data for analysis."
-
-#: app/camera_traps/templates/species_dashboard.html:341
-#: app/pam/templates/pam_species_dashboard.html:162
-#: app/pam/templates/pam_yearly_trends.html:235
-msgid "Завантаження даних..."
-msgstr "Loading data..."
-
-#: app/camera_traps/templates/species_dashboard.html:350
-#: app/pam/templates/pam_species_dashboard.html:174
-msgid "Для вибраного виду та періоду немає даних."
-msgstr "No data is available for the selected species and period."
-
-#: app/camera_traps/templates/species_dashboard.html:357
-#: app/pam/templates/pam_species_dashboard.html:181
-msgid "Сезонна активність (кількість детекцій)"
-msgstr "Seasonal Activity (number of detections)"
-
-#: app/camera_traps/templates/species_dashboard.html:361
-msgid "Багаторічна динаміка (індекс відносної чисельності, DR)"
-msgstr "Long-term Dynamics (detection rate, DR)"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Січ"
-msgstr "Jan"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Лют"
-msgstr "Feb"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Бер"
-msgstr "Mar"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Кві"
-msgstr "Apr"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Тра"
-msgstr "May"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Чер"
-msgstr "Jun"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Лип"
-msgstr "Jul"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Сер"
-msgstr "Aug"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Вер"
-msgstr "Sep"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Жов"
-msgstr "Oct"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Лис"
-msgstr "Nov"
-
-#: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
-msgid "Гру"
-msgstr "Dec"
-
-#: app/camera_traps/templates/species_dashboard.html:380
-#: app/camera_traps/templates/species_detailed.html:206
-#: app/camera_traps/templates/species_detailed.html:381
-#: app/pam/templates/pam_species_dashboard.html:209
-#: app/pam/templates/pam_species_detailed.html:807
-msgid "Кількість детекцій"
-msgstr "Number of detections"
-
-#: app/camera_traps/templates/species_dashboard.html:393
-msgid "Середній тренд"
-msgstr "Mean trend"
-
-#: app/camera_traps/templates/species_dashboard.html:402
-#: app/pam/templates/pam_species_dashboard.html:221
-#: app/pam/templates/pam_yearly_trends.html:274
-#, python-format
-msgid "95%% Довірчий інтервал"
-msgstr "95%% Confidence interval"
-
-#: app/camera_traps/templates/species_detailed.html:3
-#: app/camera_traps/templates/species_detailed.html:108
-msgid "Карта детекцій видів фотопастками"
-msgstr "Map of species detections by camera traps"
-
-#: app/camera_traps/templates/species_detailed.html:122
-msgid "Вид тварини:"
-msgstr "Animal species:"
-
-#: app/camera_traps/templates/species_detailed.html:142
-msgid "Всього детекцій"
-msgstr "Total detections"
-
-#: app/camera_traps/templates/species_detailed.html:146
-msgid "Активних локацій"
-msgstr "Active locations"
-
-#: app/camera_traps/templates/species_detailed.html:150
-msgid "Середній DR"
-msgstr "Mean DR"
-
-#: app/camera_traps/templates/species_detailed.html:171
-msgid "-- Виберіть вид --"
-msgstr "-- Select species --"
-
-#: app/camera_traps/templates/species_detailed.html:201
-msgid "Карта (OSM)"
-msgstr "Map (OSM)"
-
-#: app/camera_traps/templates/species_detailed.html:202
-msgid "Супутник (Esri)"
-msgstr "Satellite (ESRI)"
-
-#: app/camera_traps/templates/species_detailed.html:207
-msgid "DR (Детекцій на 100 днів)"
-msgstr "DR (Detections per 100 days)"
-
-#: app/camera_traps/templates/species_detailed.html:216
-msgid "Завантажте дані..."
-msgstr "Load data..."
-
-#: app/camera_traps/templates/species_detailed.html:233
-msgid "Будь ласка, заповніть всі поля"
-msgstr "Please, fill out all fields"
-
-#: app/camera_traps/templates/species_detailed.html:251
-msgid "Помилка отримання даних"
-msgstr "Data retrieval error"
-
-#: app/camera_traps/templates/species_detailed.html:273
-msgid "Дані відсутні"
-msgstr "Data not available"
-
-#: app/camera_traps/templates/species_detailed.html:302
-#: app/pam/templates/pam_overview.html:598
-#: app/pam/templates/pam_species_detailed.html:614
-msgid "Детекцій:"
-msgstr "Detections:"
-
-#: app/camera_traps/templates/species_detailed.html:303
-msgid "Днів роботи:"
-msgstr "Days working:"
-
-#: app/camera_traps/templates/species_detailed.html:304
-msgid "DR:"
-msgstr ""
-
-#: app/camera_traps/templates/species_detailed.html:304
-msgid "дет./день"
-msgstr "det./day"
-
-#: app/camera_traps/templates/species_detailed.html:385
-msgid "DR (на 100 днів)"
-msgstr "DR (per 100 days)"
-
-#: app/camera_traps/templates/species_detailed.html:389
-msgid "Немає даних"
-msgstr "No data"
-
-#: app/camera_traps/templates/upload.html:5
-msgid "Завантаження даних фотопасток"
-msgstr "Uploading camera trap data"
-
-#: app/camera_traps/templates/upload.html:137
-msgid "Завантаження фотографій з фотопасток"
-msgstr "Uploading photos from camera traps"
-
-#: app/camera_traps/templates/upload.html:141
-msgid "Крок 1: Вкажіть місце зйомки"
-msgstr "Step 1: Specify the location"
-
-#: app/camera_traps/templates/upload.html:152
-msgid "Дані місця зйомки"
-msgstr "Location data"
-
-#: app/camera_traps/templates/upload.html:159
-msgid "Створити та вибрати місце"
-msgstr "Create and select location"
-
-#: app/camera_traps/templates/upload.html:172
-msgid "Крок 2: Завантажте фотографії"
-msgstr "Step 2: Upload the photos"
-
-#: app/camera_traps/templates/upload.html:175
-msgid "Вибрати файли"
-msgstr "Select files"
-
-#: app/camera_traps/templates/upload.html:178
-msgid "Дозволені файли: .jpg, .jpeg"
-msgstr "Only .jpg or .jpeg files are allowed."
-
-#: app/camera_traps/templates/upload.html:180
-#: app/camera_traps/templates/upload.html:332
-msgid "Файли не вибрані"
-msgstr "No files were selected."
-
-#: app/camera_traps/templates/upload.html:186
-msgid "Зберігати повнорозмірні (оригінальні) фотографії"
-msgstr "Save full size (original) photos"
-
-#: app/camera_traps/templates/upload.html:190
-#: app/camera_traps/templates/upload.html:332
-#: app/pam/templates/pam_verification_upload.html:266
-#: app/pam/templates/pam_verification_upload.html:441
-msgid "Завантажити та обробити"
-msgstr "Upload and Process"
-
-#: app/camera_traps/templates/upload.html:191
-msgid "Файли успішно завантажені!"
-msgstr "Files uploaded successfully!"
-
-#: app/camera_traps/templates/upload.html:191
-msgid "Тепер ви можете перейти до їх розпізнавання."
-msgstr "You can now proceed to their identification."
-
-#: app/camera_traps/templates/upload.html:191
-msgid "Перейти до ідентифікації"
-msgstr "Go to Identification"
-
-#: app/camera_traps/templates/upload.html:332
-msgid "Будь ласка, спочатку виберіть файли для завантаження."
-msgstr "Please select the files to upload first."
-
-#: app/camera_traps/templates/upload.html:332
-msgid "Будь ласка, виберіть дійсне місце перед завантаженням."
-msgstr "Please select a valid location before uploading."
-
-#: app/camera_traps/templates/upload.html:332
-msgid "Групування фото в серії..."
-msgstr "Grouping photos into series..."
-
-#: app/camera_traps/templates/upload.html:332
-msgid "Успішно згруповано"
-msgstr "Successfully grouped"
-
-#: app/camera_traps/templates/upload.html:332
-msgid "фото в серії"
-msgstr "photos in a series"
-
-#: app/camera_traps/templates/upload.html:332
-msgid "Завантаження завершено:"
-msgstr "Upload completed:"
-
-#: app/camera_traps/templates/upload.html:332
-msgid "успішно,"
-msgstr "successfully,"
-
-#: app/camera_traps/templates/upload.html:332
-msgid "з помилками"
-msgstr "with errors"
-
-#: app/camera_traps/templates/upload.html:332
-msgid "Помилка групування:"
-msgstr "Grouping error:"
-
-#: app/camera_traps/templates/upload.html:343
-msgid "Завантажую файл"
-msgstr "Uploading file"
-
-#: app/camera_traps/templates/upload.html:343
-#: app/pam/templates/pam_evaluation_results.html:622
-msgid "з"
-msgstr "from"
-
-#: app/camera_traps/templates/upload.html:343
-msgid "завантажується..."
-msgstr "uploading..."
-
-#: app/camera_traps/templates/upload.html:343
-msgid "завантажено"
-msgstr "uploaded"
-
-#: app/camera_traps/templates/upload.html:343
-msgid "помилка:"
-msgstr "error:"
-
-#: app/camera_traps/templates/upload.html:343
-msgid "Підготовка до завантаження..."
-msgstr "Preparing to upload..."
-
-#: app/camera_traps/templates/upload.html:380
-msgid ""
-"Не вдалося завантажити деталі локації, але ви можете продовжити "
-"завантаження."
-msgstr "Failed to load location details, but you can continue with the upload."
-
-#: app/camera_traps/templates/upload.html:396
-msgid "Назва та координати є обов\"язковими для створення нового місця."
-msgstr "Name and coordinates are required to create a new location."
-
-#: app/pam/templates/manage_pam_locations.html:3
-#: app/pam/templates/pam_home.html:184
-msgid "Управління локаціями ПАМ"
-msgstr "PAM locations management"
-
-#: app/pam/templates/manage_pam_locations.html:72
-msgid "Управління локаціями пасивного моніторингу (ПАМ)"
-msgstr "Management of PAM locations"
-
-#: app/pam/templates/manage_pam_locations.html:100
-msgid "Назва локації (українською)"
-msgstr "Location name (Ukrainian)"
-
-#: app/pam/templates/manage_pam_locations.html:105
-msgid "Назва локації (англійською)"
-msgstr "Location name (English)"
-
-#: app/pam/templates/pam_data_export.html:5 app/pam/templates/pam_home.html:3
-#: app/pam/templates/pam_overview.html:3
-#: app/pam/templates/pam_species_detailed.html:3
-#: app/pam/templates/pam_yearly_table.html:4
-#: app/pam/templates/pam_yearly_trends.html:3
-msgid "Акустичний моніторинг"
-msgstr "Acoustic Monitoring"
-
-#: app/pam/templates/pam_data_export.html:40
-msgid "Підготовка даних для експорту - ПАМ"
-msgstr "Preparing data for export - PAM"
-
-#: app/pam/templates/pam_data_export.html:55
-msgid "Режим експорту:"
-msgstr "Export mode:"
-
-#: app/pam/templates/pam_data_export.html:57
-msgid "Розумний фільтр"
-msgstr "Clever filter"
-
-#: app/pam/templates/pam_data_export.html:58
-msgid "Частково верифіковані"
-msgstr "Partially verified"
-
-#: app/pam/templates/pam_data_export.html:59
-msgid "Повністю верифіковані"
-msgstr "Fully verified"
-
-#: app/pam/templates/pam_data_export.html:60
-msgid "Простий фільтр"
-msgstr "Simple filter"
-
-#: app/pam/templates/pam_data_export.html:66
-msgid "Без агрегації (Всі записи)"
-msgstr "Without aggregation (all records)"
-
-#: app/pam/templates/pam_data_export.html:67
-msgid "1 запис на день для локації"
-msgstr "1 record per day and location"
-
-#: app/pam/templates/pam_data_export.html:68
-msgid "1 запис за інтервал часу для локації"
-msgstr "1 record per time period and location"
-
-#: app/pam/templates/pam_data_export.html:72
-msgid "Мін. впевненість:"
-msgstr "Min. confidence:"
-
-#: app/pam/templates/pam_data_export.html:75
-msgid "Інтервал агрегації (хвилин):"
-msgstr "Aggregation interval (minutes)"
-
-#: app/pam/templates/pam_data_export.html:79
-msgid "Назва класифікатора:"
-msgstr "Classifier name:"
-
-#: app/pam/templates/pam_data_export.html:79
-msgid "За замовчуванням: BirdNET 2.4"
-msgstr "By default: BirdNET 2.4"
-
-#: app/pam/templates/pam_data_export.html:284
-msgid "Будь ласка, оберіть хоча б один таксон (Клас, Ряд, Родина або Вид)."
-msgstr "Please select at least one taxon (Class, Order, Family, Species)."
-
-#: app/pam/templates/pam_data_export.html:296
-msgid "Попередній перегляд (n ="
-msgstr "Preview (n ="
-
-#: app/pam/templates/pam_evaluation_results.html:3
-#: app/pam/templates/pam_evaluation_results.html:257
-msgid "Результати оцінки точності BirdNET"
-msgstr "BirdNET Accuracy Assessment Results"
-
-#: app/pam/templates/pam_evaluation_results.html:3
-#: app/pam/templates/pam_home.html:3
-#: app/pam/templates/pam_verification_interface.html:3
-#: app/pam/templates/pam_verification_segments.html:3
-#: app/pam/templates/pam_verification_upload.html:3
-msgid "yurastrus | персональний сайт"
-msgstr "yurastrus | personal website"
-
-#: app/pam/templates/pam_evaluation_results.html:258
-msgid ""
-"Метрики точності автоматичної класифікації видів на основі людських "
-"верифікацій"
-msgstr ""
-"Accuracy metrics for automatic species classification based on human "
-"verifications"
-
-#: app/pam/templates/pam_evaluation_results.html:264
-msgid "Оцінених видів"
-msgstr "Evaluated species"
-
-#: app/pam/templates/pam_evaluation_results.html:266
-msgid "з верифікованими даними"
-msgstr "with verified data"
-
-#: app/pam/templates/pam_evaluation_results.html:269
-msgid "Всього зразків"
-msgstr "Total samples"
-
-#: app/pam/templates/pam_evaluation_results.html:271
-msgid "верифіковано"
-msgstr "verified"
-
-#: app/pam/templates/pam_evaluation_results.html:274
-msgid "Логістична регресія"
-msgstr "Logistic regression"
-
-#: app/pam/templates/pam_evaluation_results.html:276
-msgid "видів з розрахованою регресією"
-msgstr "species with calculated regression"
-
-#: app/pam/templates/pam_evaluation_results.html:283
-msgid "Адміністраторські функції"
-msgstr "Administrator functions"
-
-#: app/pam/templates/pam_evaluation_results.html:292
-msgid "Мін. вер."
-msgstr "Min. ver."
-
-#: app/pam/templates/pam_evaluation_results.html:301
-#: app/pam/templates/pam_evaluation_results.html:439
-#: app/pam/templates/pam_overview.html:620
-#: app/pam/templates/pam_verification_segments.html:574
-#: app/pam/templates/pam_yearly_table.html:172
-msgid "Вид"
-msgstr "Species"
-
-#: app/pam/templates/pam_evaluation_results.html:305
-msgid "Усі види"
-msgstr "All species"
-
-#: app/pam/templates/pam_evaluation_results.html:307
-msgid "Окремі види"
-msgstr "Separate species"
-
-#: app/pam/templates/pam_evaluation_results.html:322
-msgid "Підтвердіть перерахунок метрик."
-msgstr "Confirm recalculation of metrics."
-
-#: app/pam/templates/pam_evaluation_results.html:323
-msgid "Запустити перерахунок"
-msgstr "Start recalculation"
-
-#: app/pam/templates/pam_evaluation_results.html:324
-msgid "Перерахувати"
-msgstr "Recalculate"
-
-#: app/pam/templates/pam_evaluation_results.html:331
-msgid "Останній перерахунок:"
-msgstr "Last recalculation:"
-
-#: app/pam/templates/pam_evaluation_results.html:338
-msgid ""
-"Метрики ще не розраховувались. Натисніть \"Перерахувати метрики\" для "
-"початкового розрахунку."
-msgstr ""
-"Metrics have not been calculated yet. Click \"Recalculate metrics\" for "
-"the initial calculation."
-
-#: app/pam/templates/pam_evaluation_results.html:347
-msgid "УВАГА! Це видалить файли завершених верифікацій. Продовжити?"
-msgstr "WARNING! This will delete completed verification files. Continue?"
-
-#: app/pam/templates/pam_evaluation_results.html:348
-msgid "Видалити завершені файли"
-msgstr "Delete completed files"
-
-#: app/pam/templates/pam_evaluation_results.html:355
-msgid "Додати сонограми"
-msgstr "Add spectrograms"
-
-#: app/pam/templates/pam_evaluation_results.html:358
-msgid ""
-"Це перегенерує ВСІ спектрограми і може зайняти дуже багато часу. Ви "
-"впевнені?"
-msgstr ""
-"This will regenerate ALL spectrograms and may take a lot of time. Are you"
-" sure?"
-
-#: app/pam/templates/pam_evaluation_results.html:362
-msgid "Замінити сонограми"
-msgstr "Change spectrograms"
-
-#: app/pam/templates/pam_evaluation_results.html:366
-msgid ""
-"УВАГА! Це конвертує всі файли .wav у .flac та видалить оригінали. Ця дія "
-"незворотна. Продовжити?"
-msgstr ""
-"WARNING! This will convert all .wav files to .flac and delete the "
-"originals. This action is irreversible. Continue?"
-
-#: app/pam/templates/pam_evaluation_results.html:369
-msgid "Конвертувати WAV → FLAC"
-msgstr "Convert WAV → FLAC"
-
-#: app/pam/templates/pam_evaluation_results.html:381
-msgid "Детальні результати по всіх видах"
-msgstr "Detailed results for all species"
-
-#: app/pam/templates/pam_evaluation_results.html:386
-msgid "Сортувати за:"
-msgstr "Sort by:"
-
-#: app/pam/templates/pam_evaluation_results.html:388
-msgid "Precision"
-msgstr ""
-
-#: app/pam/templates/pam_evaluation_results.html:389
-msgid "Кількість зразків"
-msgstr "Number of samples"
-
-#: app/pam/templates/pam_evaluation_results.html:390
-msgid "R² (якість моделі)"
-msgstr "R² (model quality)"
-
-#: app/pam/templates/pam_evaluation_results.html:391
-#: app/pam/templates/pam_evaluation_results.html:441
-#, python-format
-msgid "Поріг 90%%"
-msgstr "Threshold 90%%"
-
-#: app/pam/templates/pam_evaluation_results.html:392
-#: app/pam/templates/pam_evaluation_results.html:442
-#, python-format
-msgid "Поріг 95%%"
-msgstr "Threshold 95%%"
-
-#: app/pam/templates/pam_evaluation_results.html:393
-#: app/pam/templates/pam_evaluation_results.html:443
-#, python-format
-msgid "Поріг 99%%"
-msgstr "Threshold 99%%"
-
-#: app/pam/templates/pam_evaluation_results.html:397
-msgid "Порядок:"
-msgstr "Order:"
-
-#: app/pam/templates/pam_evaluation_results.html:399
-msgid "За спаданням"
-msgstr "Descending"
-
-#: app/pam/templates/pam_evaluation_results.html:400
-msgid "За зростанням"
-msgstr "Ascending"
-
-#: app/pam/templates/pam_evaluation_results.html:405
-msgid "Оновити"
-msgstr "Update"
-
-#: app/pam/templates/pam_evaluation_results.html:440
-msgid "Зразків"
-msgstr "Samples"
-
-#: app/pam/templates/pam_evaluation_results.html:444
-msgid "Немає даних для відображення"
-msgstr "No data to show"
-
-#: app/pam/templates/pam_evaluation_results.html:486
-msgid "Помилка завантаження результатів"
-msgstr "Error loading results"
-
-#: app/pam/templates/pam_evaluation_results.html:576
-msgid "Відкрити графік регресії"
-msgstr ""
-
-#: app/pam/templates/pam_evaluation_results.html:621
-#: app/pam/templates/pam_verification_segments.html:689
-msgid "← Попередня"
-msgstr "← Previous"
-
-#: app/pam/templates/pam_evaluation_results.html:622
-msgid "Сторінка"
-msgstr "Page"
-
-#: app/pam/templates/pam_evaluation_results.html:623
-#: app/pam/templates/pam_verification_segments.html:713
-msgid "Наступна →"
-msgstr "Next →"
-
-#: app/pam/templates/pam_evaluation_species_detail.html:3
-msgid "Детальна оцінка"
-msgstr ""
-
-#: app/pam/templates/pam_evaluation_species_detail.html:37
-msgid "Аналіз логістичної регресії BirdNET"
-msgstr "Analysis of model quality with logistic regression"
-
-#: app/pam/templates/pam_evaluation_species_detail.html:42
-msgid "Експорт (.xlsx)"
-msgstr "Export (.xlsx)"
-
-#: app/pam/templates/pam_evaluation_species_detail.html:45
-msgid "Закрити"
-msgstr "Close"
-
-#: app/pam/templates/pam_evaluation_species_detail.html:61
-msgid "Параметри моделі"
-msgstr "Model parameters"
-
-#: app/pam/templates/pam_evaluation_species_detail.html:66
-msgid "R² (псевдо):"
-msgstr "R² (pseudo):"
-
-#: app/pam/templates/pam_evaluation_species_detail.html:70
-msgid "β0 (Intercept):"
-msgstr ""
-
-#: app/pam/templates/pam_evaluation_species_detail.html:74
-msgid "β1 (Slope):"
-msgstr ""
-
-#: app/pam/templates/pam_evaluation_species_detail.html:78
-msgid "Всього точок:"
-msgstr "Total points:"
-
-#: app/pam/templates/pam_evaluation_species_detail.html:84
-msgid "Пороги (Thresholds)"
-msgstr "Thresholds"
-
-#: app/pam/templates/pam_evaluation_species_detail.html:90
-#, python-format
-msgid "Precision 90%%"
-msgstr ""
-
-#: app/pam/templates/pam_evaluation_species_detail.html:91
-#, python-format
-msgid "Precision 95%%"
-msgstr ""
-
-#: app/pam/templates/pam_evaluation_species_detail.html:92
-#, python-format
-msgid "Precision 99%%"
-msgstr ""
-
-#: app/pam/templates/pam_evaluation_species_detail.html:97
-msgid "Формула:"
-msgstr "Formula: "
-
-#: app/pam/templates/pam_evaluation_species_detail.html:145
-msgid "Дані"
-msgstr "Data"
-
-#: app/pam/templates/pam_evaluation_species_detail.html:160
-msgid "Модель"
-msgstr "Model"
-
-#: app/pam/templates/pam_home.html:26
-msgid "Пасивний Акустичний Моніторинг (PAM)"
-msgstr "Passive Acoustic Monitoring (PAM)"
-
-#: app/pam/templates/pam_home.html:30
-msgid ""
-"Цей розділ присвячений аналізу та візуалізації даних, отриманих за "
-"допомогою пасивного акустичного моніторингу. Тут ви можете ознайомитися з"
-" результатами досліджень фауни Розточчя з використанням ПАМ, переглянути "
-"динаміку детекцій різних видів тварин та дослідити їх добову активність."
-msgstr ""
-"This section is dedicated to the analysis and visualization of data "
-"obtained through passive acoustic monitoring. Here you can explore the "
-"results of studies on the fauna of Roztochya using PAM, view the dynamics"
-" of detections of various animal species, and examine their daily "
-"activity."
-
-#: app/pam/templates/pam_home.html:31
-msgid "Cирі дані частково вже доступні через"
-msgstr "Partially, raw data are already available via"
-
-#: app/pam/templates/pam_home.html:37
-msgid "Дослідження фауни Розточчя методами ПАМ"
-msgstr "Study of the Fauna of Roztochya Using PAM Methods"
-
-#: app/pam/templates/pam_home.html:43
-msgid "Загальна динамічна таблиця з списком видів"
-msgstr "General dynamic table with the list of species"
-
-#: app/pam/templates/pam_home.html:49
-msgid ""
-"Рейтингова таблиця видів за кількістю автоматичних детекцій за допомогою "
-"алгоритму BirdNET."
-msgstr ""
-"Ranked table of species by the number of automatic detections using the "
-"BirdNET algorithm."
-
-#: app/pam/templates/pam_home.html:56
-msgid "Детальний повидовий аналіз"
-msgstr "Detailed species-by-species analysis"
-
-#: app/pam/templates/pam_home.html:61
-msgid ""
-"Інтерактивні графіки та карта для конкретного виду. Як і у загальній "
-"таблиці, використано дані автоматичної класифікації видів на основі "
-"алгоритму BirdNET."
-msgstr ""
-"Interactive graphs and map for a specific species. As in the general "
-"table, data from automatic species classification based on the BirdNET "
-"algorithm was used."
-
-#: app/pam/templates/pam_home.html:67 app/pam/templates/pam_overview.html:325
-#: app/pam/templates/pam_species_dashboard.html:3
-#: app/pam/templates/pam_species_dashboard.html:49
-msgid "Аналіз багаторічних трендів"
-msgstr "Analysis of multiyear trends"
-
-#: app/pam/templates/pam_home.html:72
-msgid ""
-"Міжрічні тренди детекцій та сезонна активність видів агрегована до "
-"місяців."
-msgstr ""
-"Interannual detection trends and seasonal species activity aggregated by "
-"months."
-
-#: app/pam/templates/pam_home.html:78
-msgid "Міжрічна порівняльна таблиця"
-msgstr "Interannual comparison table"
-
-#: app/pam/templates/pam_home.html:83
-msgid ""
-"Міжрічна динамічна порівняльна таблиця, що показує нормалізовану "
-"кількість детекцій (на 24 год записів) видів."
-msgstr ""
-"Interannual dynamic comparison table showing the normalized number of "
-"species detections (per 24 hours of recordings)"
-
-#: app/pam/templates/pam_home.html:90
-msgid "Верифікація класифікацій BirdNET"
-msgstr "BirdNET Classification Verification"
-
-#: app/pam/templates/pam_home.html:97
-#: app/pam/templates/pam_verification_upload.html:3
-msgid "Завантаження аудіосегментів"
-msgstr "Audio Segment Upload"
-
-#: app/pam/templates/pam_home.html:103
-msgid ""
-"Завантаження ZIP архівів з аудіосегментами для верифікації точності "
-"автоматичних класифікацій."
-msgstr ""
-"Uploading ZIP archives with audio segments to verify the accuracy of "
-"automatic classifications."
-
-#: app/pam/templates/pam_home.html:112
-msgid "Верифікація сегментів"
-msgstr "Segment Verification"
-
-#: app/pam/templates/pam_home.html:118
-msgid ""
-"Прослуховування та верифікація аудіосегментів для оцінки точності BirdNET"
-" класифікацій."
-msgstr ""
-"Listening to and verifying audio segments to assess the accuracy of "
-"BirdNET classifications."
-
-#: app/pam/templates/pam_home.html:124
-#: app/pam/templates/pam_verification_segments.html:3
-#: app/pam/templates/pam_verification_segments.html:322
-msgid "Перегляд завантажених сегментів"
-msgstr "Review uploaded segments"
-
-#: app/pam/templates/pam_home.html:130
-msgid ""
-"Перегляд списку завантажених аудіосегментів з фільтрацією по видах та "
-"статусу верифікації."
-msgstr ""
-"View the list of uploaded audio segments with filtering by species and "
-"verification status."
-
-#: app/pam/templates/pam_home.html:138
-msgid "Результати оцінки точності"
-msgstr "Accuracy Assessment Results"
-
-#: app/pam/templates/pam_home.html:144
-msgid ""
-"Перегляд метрик точності (precision, recall, F1) для різних видів на "
-"основі верифікованих даних."
-msgstr ""
-"View accuracy metrics (precision, recall, F1) for different species based"
-" on verified data."
-
-#: app/pam/templates/pam_home.html:165
-msgid "Експорт даних ПАМ моніторнгу у CSV таблиці."
-msgstr "Export PAM data as CVS tables."
-
-#: app/pam/templates/pam_home.html:177
-msgid ""
-"Журнал обслуговування акустичних ресиверів, з інтерактивною картою і "
-"прогнозуванням роботи приладів."
-msgstr ""
-"Maintenance log of acoustic receivers with an interactive map and device "
-"performance forecasting."
-
-#: app/pam/templates/pam_home.html:190
-msgid "Редагування назв та біотопів для точок акустичного моніторингу."
-msgstr "Editing names and habitats for acoustic monitoring points"
-
-#: app/pam/templates/pam_overview.html:3
-msgid "Загальний огляд"
-msgstr "General overview"
-
-#: app/pam/templates/pam_overview.html:271
-msgid "Рейтингова таблиця видів за кількістю акустичних детекцій"
-msgstr "Ranked table of species by the number of acoustic detections"
-
-#: app/pam/templates/pam_overview.html:276
-#: app/pam/templates/pam_species_detailed.html:236
-msgid "Діапазон дат:"
-msgstr "Date range:"
-
-#: app/pam/templates/pam_overview.html:301
-#: app/pam/templates/pam_species_detailed.html:245
-#: app/pam/templates/pam_yearly_table.html:57
-msgid "Біотопи:"
-msgstr "Habitats:"
-
-#: app/pam/templates/pam_overview.html:305
-#: app/pam/templates/pam_species_detailed.html:249
-#: app/pam/templates/pam_yearly_table.html:58
-msgid "Локації:"
-msgstr "Locations:"
-
-#: app/pam/templates/pam_overview.html:311
-#: app/pam/templates/pam_species_detailed.html:255
-#: app/pam/templates/pam_yearly_table.html:61
-msgid "Впевненість:"
-msgstr "Confidence:"
-
-#: app/pam/templates/pam_overview.html:315
-#: app/pam/templates/pam_species_detailed.html:260
-msgid "Мін. детекцій:"
-msgstr "Min. detections:"
-
-#: app/pam/templates/pam_overview.html:320
-#: app/pam/templates/pam_yearly_table.html:65
-msgid "Згенерувати таблицю"
-msgstr "Generate table"
-
-#: app/pam/templates/pam_overview.html:322
-msgid "Детальний аналіз по видах"
-msgstr "Detailed species-by-species analysis"
-
-#: app/pam/templates/pam_overview.html:339
-msgid ""
-"Налаштуйте фільтри та натисніть \"Згенерувати таблицю\" для відображення "
-"статистики."
-msgstr "Adjust the filters and click \"Generate table\" to display the statistics."
-
-#: app/pam/templates/pam_overview.html:348
-msgid "Карта буде відображена після застосування фільтрів."
-msgstr "The map will be displayed after applying filters."
-
-#: app/pam/templates/pam_overview.html:357
-msgid "Рейтинг видів за кількістю детекцій"
-msgstr "Species ranking by number of detections"
-
-#: app/pam/templates/pam_overview.html:360
-msgid ""
-"Налаштуйте фільтри та натисніть \"Згенерувати таблицю\" для відображення "
-"рейтингу видів."
-msgstr ""
-"Adjust the filters and click \"Generate table\" to display the species "
-"ranking."
-
-#: app/pam/templates/pam_overview.html:413
-#: app/pam/templates/pam_overview.html:505
-msgid "-- Всі класи --"
-msgstr "-- All classes --"
-
-#: app/pam/templates/pam_overview.html:414
-#: app/pam/templates/pam_overview.html:506
-msgid "-- Всі ряди --"
-msgstr "-- All orders --"
-
-#: app/pam/templates/pam_overview.html:415
-#: app/pam/templates/pam_overview.html:507
-msgid "-- Всі родини --"
-msgstr "-- All families --"
-
-#: app/pam/templates/pam_overview.html:416
-#: app/pam/templates/pam_overview.html:508
-msgid "-- Всі роди --"
-msgstr "-- All genuses --"
-
-#: app/pam/templates/pam_overview.html:425
-#: app/pam/templates/pam_overview.html:512
-#: app/pam/templates/pam_species_detailed.html:435
-#: app/pam/templates/pam_species_detailed.html:488
-msgid "-- Всі локації --"
-msgstr "-- All locations --"
-
-#: app/pam/templates/pam_overview.html:554
-msgid "Детекцій"
-msgstr "Detections"
-
-#: app/pam/templates/pam_overview.html:557
-msgid "Днів"
-msgstr "Days"
-
-#: app/pam/templates/pam_overview.html:577
-msgid "Помилка завантаження карти."
-msgstr "Map loading error."
-
-#: app/pam/templates/pam_overview.html:599
-msgid "Видів:"
-msgstr "Species:"
-
-#: app/pam/templates/pam_overview.html:609
-msgid "Для вибраних фільтрів немає локацій з детекціями."
-msgstr "There are no locations with detections for the selected filters."
-
-#: app/pam/templates/pam_overview.html:620
-msgid "#"
-msgstr ""
-
-#: app/pam/templates/pam_overview.html:620
-#: app/pam/templates/pam_species_detailed.html:597
-#: app/pam/templates/pam_species_detailed.html:685
-msgid "Детекції"
-msgstr "Detections"
-
-#: app/pam/templates/pam_overview.html:630
-msgid "Дані не знайдено. Спробуйте змінити фільтри."
-msgstr "No data found. Try changing the filters."
-
-#: app/pam/templates/pam_service_log.html:3
-#: app/pam/templates/pam_service_log.html:30
-msgid "Журнал обслуговування PAM"
-msgstr "ARU Maintenance Log"
-
-#: app/pam/templates/pam_service_log.html:31
-msgid "На головну PAM"
-msgstr "To the main PAM page"
-
-#: app/pam/templates/pam_service_log.html:70
-msgid "Статус SD-карти"
-msgstr "SD-card status"
-
-#: app/pam/templates/pam_service_log.html:81
-msgid "Годин запису на добу"
-msgstr "Recording hours per day"
-
-#: app/pam/templates/pam_service_log.html:85
-msgid "Стан приладу"
-msgstr "Device condition"
-
-#: app/pam/templates/pam_service_log.html:89
-msgid "Працював"
-msgstr "Working"
-
-#: app/pam/templates/pam_service_log.html:93
-msgid "Не працював"
-msgstr "Not working"
-
-#: app/pam/templates/pam_service_log.html:181
-msgid "Днів після візиту:"
-msgstr "Days after visit:"
-
-#: app/pam/templates/pam_service_log.html:184
-msgid "Прогноз АКБ:"
-msgstr "Battery forecast:"
-
-#: app/pam/templates/pam_service_log.html:184
-#: app/pam/templates/pam_service_log.html:187
-msgid "дн."
-msgstr "d."
-
-#: app/pam/templates/pam_service_log.html:187
-msgid "Прогноз SD:"
-msgstr "SD forecast:"
-
-#: app/pam/templates/pam_service_log.html:250
-msgid "Стан приладу:"
-msgstr "Device conditon:"
-
-#: app/pam/templates/pam_service_log.html:252
-msgid "SD-карта:"
-msgstr "SD-card:"
-
-#: app/pam/templates/pam_species_dashboard.html:50
-msgid ""
-"УВАГА! Це експериментальна сторінка. Не варто тренди на основі ПАМ "
-"сприймати за справжню популяційну динаміку."
-msgstr ""
-"ATTENTION! This is an experimental page. The trends based on PAM should "
-"not be interpreted as actual population dynamics."
-
-#: app/pam/templates/pam_species_dashboard.html:83
-msgid "До головної сторінки ПАМ"
-msgstr "To PAM home page"
-
-#: app/pam/templates/pam_species_dashboard.html:185
-msgid "Багаторічна динаміка (індекс RAI)"
-msgstr "Long-term dynamics (DR)"
-
-#: app/pam/templates/pam_species_dashboard.html:190
-msgid "ЕКСПЕРИМЕНТ! Відносна активність у біотопах (детекцій / годину)"
-msgstr "EXPERIMENT! Relative activity in habitats (detections per hour)"
-
-#: app/pam/templates/pam_species_dashboard.html:220
-msgid "Середній тренд (RAI)"
-msgstr "Mean trend (DR)"
-
-#: app/pam/templates/pam_species_dashboard.html:227
-msgid "Індекс RAI (детекцій/год)"
-msgstr "DR (detections per hour)"
-
-#: app/pam/templates/pam_species_dashboard.html:295
-msgid "Відносна активність (детекцій / годину)"
-msgstr "Relative activity (detections / hour)"
-
-#: app/pam/templates/pam_species_detailed.html:3
-msgid "Моніторинг Розточчя"
-msgstr "Monitoring of Roztochya"
-
-#: app/pam/templates/pam_species_detailed.html:221
-msgid "Аналіз даних акустичного моніторингу фауни Розточчя"
-msgstr "Analysis of data from the acoustic monitoring of the fauna of Roztochya"
-
-#: app/pam/templates/pam_species_detailed.html:267
-msgid "Спочатку виберіть вид."
-msgstr "Select species first."
-
-#: app/pam/templates/pam_species_detailed.html:268
-#: app/pam/templates/pam_species_detailed.html:514
-msgid "Поріг p≥0.95"
-msgstr "Threshold p≥0.95"
-
-#: app/pam/templates/pam_species_detailed.html:271
-msgid "До загальної таблиці"
-msgstr "To general table"
-
-#: app/pam/templates/pam_species_detailed.html:274
-msgid "Застосуйте фільтри для активації"
-msgstr ""
-
-#: app/pam/templates/pam_species_detailed.html:275
-msgid "Експорт в Excel"
-msgstr "Export Excel"
-
-#: app/pam/templates/pam_species_detailed.html:286
-msgid "Карта виявлень"
-msgstr "Map of detections"
-
-#: app/pam/templates/pam_species_detailed.html:290
-msgid "Візуалізація даних"
-msgstr "Data visualization"
-
-#: app/pam/templates/pam_species_detailed.html:296
-msgid "Підтверджено людиною"
-msgstr "Confirmed by human"
-
-#: app/pam/templates/pam_species_detailed.html:300
-msgid "Відхилено людиною"
-msgstr "Rejected by human"
-
-#: app/pam/templates/pam_species_detailed.html:304
-msgid "Лише автоматична ідентифікація"
-msgstr "Automatic identification only"
-
-#: app/pam/templates/pam_species_detailed.html:313
-msgid "Накласти погоду:"
-msgstr "Overlay weather:"
-
-#: app/pam/templates/pam_species_detailed.html:317
-msgid "Т cер."
-msgstr "T mean"
-
-#: app/pam/templates/pam_species_detailed.html:322
-msgid "Т мін"
-msgstr "T min"
-
-#: app/pam/templates/pam_species_detailed.html:327
-msgid "Т макс"
-msgstr "T max"
-
-#: app/pam/templates/pam_species_detailed.html:332
-msgid "Опади"
-msgstr "Precip."
-
-#: app/pam/templates/pam_species_detailed.html:337
-msgid "Вітер"
-msgstr "Wind"
-
-#: app/pam/templates/pam_species_detailed.html:342
-msgid "Вологість"
-msgstr "Humidity"
-
-#: app/pam/templates/pam_species_detailed.html:346
-msgid "Тиск"
-msgstr "Pressure"
-
-#: app/pam/templates/pam_species_detailed.html:358
-msgid "Будь ласка, виберіть вид, налаштуйте фільтри та натисніть \"Застосувати\"."
-msgstr "Please select a species, adjust the filters, and click \"Apply\"."
-
-#: app/pam/templates/pam_species_detailed.html:361
-msgid "Помилка:"
-msgstr "Error:"
-
-#: app/pam/templates/pam_species_detailed.html:361
-msgid "Не вдалося завантажити список видів."
-msgstr "Failed to load the list of species."
-
-#: app/pam/templates/pam_species_detailed.html:510
-msgid "Поріг"
-msgstr "Threshold"
-
-#: app/pam/templates/pam_species_detailed.html:598
-msgid "Локалітети"
-msgstr "Localities"
-
-#: app/pam/templates/pam_species_detailed.html:599
-msgid "Дні з детекціями"
-msgstr "Days with detections"
-
-#: app/pam/templates/pam_species_detailed.html:600
-msgid "Частка від усіх"
-msgstr "Share of all"
-
-#: app/pam/templates/pam_species_detailed.html:602
-msgid "Помилка статистики."
-msgstr "Statistics error."
-
-#: app/pam/templates/pam_species_detailed.html:673
-#: app/pam/templates/pam_yearly_table.html:163
-msgid "Дані не знайдено."
-msgstr "Data not found."
-
-#: app/pam/templates/pam_species_detailed.html:701
-msgid "Темп. (°C)"
-msgstr "Temp. (°C)"
-
-#: app/pam/templates/pam_species_detailed.html:712
-msgid "Темп. мін. (°C)"
-msgstr "Temp. min (°C)"
-
-#: app/pam/templates/pam_species_detailed.html:724
-msgid "Темп. макс (°C)"
-msgstr "Temp. max (°C)"
-
-#: app/pam/templates/pam_species_detailed.html:735
-msgid "Опади (мм)"
-msgstr "Precipitation (mm)"
-
-#: app/pam/templates/pam_species_detailed.html:747
-msgid "Вітер макс. (км/год)"
-msgstr "Wind speed max (km/h)"
-
-#: app/pam/templates/pam_species_detailed.html:759
-#, python-format
-msgid "Вологість (%%)"
-msgstr "Humidity (%%)"
-
-#: app/pam/templates/pam_species_detailed.html:772
-msgid "Тиск (гПа)"
-msgstr "Pressure (hPa)"
-
-#: app/pam/templates/pam_species_detailed.html:789
-msgid "Кількість детекцій за день"
-msgstr "Number of detections per day"
-
-#: app/pam/templates/pam_species_detailed.html:803
-#: app/pam/templates/pam_species_detailed.html:874
-#: app/pam/templates/pam_species_detailed.html:917
-msgid "Дата"
-msgstr "Date"
-
-#: app/pam/templates/pam_species_detailed.html:814
-msgid "Погодні показники"
-msgstr "Weather parameters"
-
-#: app/pam/templates/pam_species_detailed.html:845
-#: app/pam/templates/pam_species_detailed.html:895
-msgid "Не перевірено"
-msgstr "Not verified"
-
-#: app/pam/templates/pam_species_detailed.html:851
-#: app/pam/templates/pam_species_detailed.html:901
-msgid "Відхилено"
-msgstr "Rejected"
-
-#: app/pam/templates/pam_species_detailed.html:857
-#: app/pam/templates/pam_species_detailed.html:907
-msgid "Підтверджено"
-msgstr "Confirmed"
-
-#: app/pam/templates/pam_species_detailed.html:866
-msgid "Схід"
-msgstr "Sunrise"
-
-#: app/pam/templates/pam_species_detailed.html:867
-msgid "Захід"
-msgstr "Sunset"
-
-#: app/pam/templates/pam_species_detailed.html:871
-msgid "Добовий розподіл детекцій"
-msgstr "Daily distribution of detections"
-
-#: app/pam/templates/pam_species_detailed.html:873
-msgid "Час доби"
-msgstr "Time of day"
-
-#: app/pam/templates/pam_species_detailed.html:878
-#: app/pam/templates/pam_species_detailed.html:926
-msgid "Дані для цього графіка не знайдено."
-msgstr "No data found for the scatter plot."
-
-#: app/pam/templates/pam_species_detailed.html:915
-msgid "Усі детекції та їх точність (confidence)"
-msgstr "All detections and their confidence"
-
-#: app/pam/templates/pam_species_detailed.html:916
-msgid "Рівень впевненості"
-msgstr "Confidence level"
-
-#: app/pam/templates/pam_verification_interface.html:3
-msgid "Верифікація аудіосегментів"
-msgstr "Audio Segment Verification"
-
-#: app/pam/templates/pam_verification_interface.html:366
-msgid "Вид для верифікації аудіосегментів BirdNET:"
-msgstr "Species for BirdNET Audio Segment Verification"
-
-#: app/pam/templates/pam_verification_interface.html:384
-msgid "Моя статистика"
-msgstr "My statistics"
-
-#: app/pam/templates/pam_verification_interface.html:387
-msgid "Всього"
-msgstr "Total"
-
-#: app/pam/templates/pam_verification_interface.html:391
-msgid "Залишилось"
-msgstr "Pending"
-
-#: app/pam/templates/pam_verification_interface.html:396
-msgid "Позитивних"
-msgstr "Positive"
-
-#: app/pam/templates/pam_verification_interface.html:400
-msgid "Негативних"
-msgstr "Negative"
-
-#: app/pam/templates/pam_verification_interface.html:405
-msgid "Пропущених"
-msgstr "Skipped"
-
-#: app/pam/templates/pam_verification_interface.html:421
-msgid "Дата запису:"
-msgstr "Recording date:"
-
-#: app/pam/templates/pam_verification_interface.html:425
-msgid "Час запису:"
-msgstr "Recording time:"
-
-#: app/pam/templates/pam_verification_interface.html:437
-msgid "Сонограма аудіосегменту"
-msgstr "Audio segment spectrogram"
-
-#: app/pam/templates/pam_verification_interface.html:449
-msgid "Ваш браузер не підтримує аудіо плеєр."
-msgstr "Your browser does not support the audio player."
-
-#: app/pam/templates/pam_verification_interface.html:456
-msgid "ТАК - правильно"
-msgstr "YES - correct"
-
-#: app/pam/templates/pam_verification_interface.html:459
-msgid "НІ - неправильно"
-msgstr "NO - incorrect"
-
-#: app/pam/templates/pam_verification_interface.html:474
-msgid "Сегменти для верифікації відсутні"
-msgstr "No segments available for verification"
-
-#: app/pam/templates/pam_verification_interface.html:475
-msgid ""
-"Немає сегментів для верифікації за вибраними критеріями, або ви вже "
-"верифікували всі доступні сегменти."
-msgstr ""
-"There are no segments for verification that match the selected criteria, "
-"or you have already verified all available segments."
-
-#: app/pam/templates/pam_verification_interface.html:644
-msgid "Помилка завантаження сегменту"
-msgstr "Error loading segment."
-
-#: app/pam/templates/pam_verification_interface.html:679
-msgid "Немає активного сегменту для верифікації"
-msgstr "No active segment for verification"
-
-#: app/pam/templates/pam_verification_interface.html:698
-msgid "Верифікацію збережено! (Підтверджено)"
-msgstr "Verification saved! (Confirmed)"
-
-#: app/pam/templates/pam_verification_interface.html:699
-msgid "Верифікацію збережено! (Відхилено)"
-msgstr "Verification saved! (Rejected)"
-
-#: app/pam/templates/pam_verification_interface.html:700
-msgid "Сегмент пропущено"
-msgstr "(Segment skipped)"
-
-#: app/pam/templates/pam_verification_interface.html:707
-msgid "Помилка збереження"
-msgstr "Save error:"
-
-#: app/pam/templates/pam_verification_interface.html:708
-msgid "Помилка: "
-msgstr "Error: "
-
-#: app/pam/templates/pam_verification_segments.html:323
-msgid ""
-"Перегляд та фільтрація завантажених аудіосегментів з інформацією про "
-"статус верифікації"
-msgstr ""
-"Viewing and filtering uploaded audio segments with information about "
-"their verification status"
-
-#: app/pam/templates/pam_verification_segments.html:332
-#: app/pam/templates/pam_verification_segments.html:454
-msgid "-- Усі види --"
-msgstr "-- All species --"
-
-#: app/pam/templates/pam_verification_segments.html:341
-msgid "-- Усі статуси --"
-msgstr "-- All statuses --"
-
-#: app/pam/templates/pam_verification_segments.html:342
-#: app/pam/templates/pam_verification_segments.html:377
-#: app/pam/templates/pam_verification_segments.html:661
-#: app/pam/templates/pam_verification_upload.html:224
-msgid "На верифікацію"
-msgstr "Pending verification"
-
-#: app/pam/templates/pam_verification_segments.html:343
-#: app/pam/templates/pam_verification_segments.html:381
-#: app/pam/templates/pam_verification_segments.html:662
-msgid "Завершено"
-msgstr "Completed"
-
-#: app/pam/templates/pam_verification_segments.html:344
-#: app/pam/templates/pam_verification_segments.html:385
-#: app/pam/templates/pam_verification_segments.html:663
-msgid "Архівовано"
-msgstr "Archived"
-
-#: app/pam/templates/pam_verification_segments.html:348
-msgid "На сторінці:"
-msgstr "Per page:"
-
-#: app/pam/templates/pam_verification_segments.html:369
-msgid "Загальна статистика (відфільтровано)"
-msgstr "General statistics (filtered)"
-
-#: app/pam/templates/pam_verification_segments.html:373
-msgid "Сегментів"
-msgstr "Segments"
-
-#: app/pam/templates/pam_verification_segments.html:389
-msgid "Сер. точність"
-msgstr "Avg. confidence"
-
-#: app/pam/templates/pam_verification_segments.html:396
-msgid "Топ верифікаторів (за фільтром)"
-msgstr "Top verifiers (filtered)"
-
-#: app/pam/templates/pam_verification_segments.html:408
-msgid "Список сегментів"
-msgstr "Segment list"
-
-#: app/pam/templates/pam_verification_segments.html:526
-msgid "Помилка завантаження даних"
-msgstr "Data loading error."
-
-#: app/pam/templates/pam_verification_segments.html:555
-msgid "Помилка завантаження рейтингу"
-msgstr "Rating loading error"
-
-#: app/pam/templates/pam_verification_segments.html:565
-msgid "Сегменти не знайдено за вибраними критеріями"
-msgstr "No segments found for the selected criteria"
-
-#: app/pam/templates/pam_verification_segments.html:573
-msgid "Файл"
-msgstr "File"
-
-#: app/pam/templates/pam_verification_segments.html:575
-msgid "Точність"
-msgstr "Confidence"
-
-#: app/pam/templates/pam_verification_segments.html:577
-msgid "Дата запису"
-msgstr "Recording date"
-
-#: app/pam/templates/pam_verification_segments.html:578
-msgid "Час запису"
-msgstr "Recording time"
-
-#: app/pam/templates/pam_verification_segments.html:579
-msgid "Статус"
-msgstr "Status"
-
-#: app/pam/templates/pam_verification_segments.html:580
-msgid "Верифікації"
-msgstr "Verifications"
-
-#: app/pam/templates/pam_verification_segments.html:627
-msgid "Дані для рейтингу відсутні за вибраними критеріями"
-msgstr "No rating data available for the selected criteria"
-
-#: app/pam/templates/pam_verification_segments.html:642
-msgid "верифікацій"
-msgstr "verifications"
-
-#: app/pam/templates/pam_verification_upload.html:209
-msgid "Завантаження ZIP архівів з аудіосегментами"
-msgstr "Uploading ZIP archives with audio segments"
-
-#: app/pam/templates/pam_verification_upload.html:210
-msgid "Завантажуйте архіви з аудіосегментами для верифікації класифікацій BirdNET"
-msgstr "Upload archives with audio segments to verify BirdNET classifications"
-
-#: app/pam/templates/pam_verification_upload.html:218
-msgid "Всього сегментів"
-msgstr "Total segments"
-
-#: app/pam/templates/pam_verification_upload.html:230
-msgid "Завершених"
-msgstr "Completed"
-
-#: app/pam/templates/pam_verification_upload.html:236
-msgid "Видів у системі"
-msgstr "Species in system"
-
-#: app/pam/templates/pam_verification_upload.html:252
-msgid "Вибрати ZIP файл"
-msgstr "Select ZIP file"
-
-#: app/pam/templates/pam_verification_upload.html:255
-msgid "або перетягніть файл сюди"
-msgstr "or drag and drop the file here"
-
-#: app/pam/templates/pam_verification_upload.html:278
-msgid "Найбільше сегментів по видах"
-msgstr "Most segments by species"
-
-#: app/pam/templates/pam_verification_upload.html:291
-msgid "Інструкції"
-msgstr "Instructions"
-
-#: app/pam/templates/pam_verification_upload.html:293
-msgid "ZIP архів повинен містити папки з латинськими назвами видів"
-msgstr "The ZIP archive must contain folders with the Latin names of the species"
-
-#: app/pam/templates/pam_verification_upload.html:294
-msgid ""
-"У кожній папці - .wav файли з іменами у форматі: "
-"точність_локація_дата_час.wav"
-msgstr ""
-"In each folder - .wav files with names in the format: "
-"confidence_location_date_time.wav"
-
-#: app/pam/templates/pam_verification_upload.html:295
-msgid "Приклад: 0.804_STAVY_20250303_184602.wav"
-msgstr "Example: 0.804_STAVY_20250303_184602.wav"
-
-#: app/pam/templates/pam_verification_upload.html:296
-msgid "Файли-дублікати автоматично пропускаються"
-msgstr "Duplicate files are automatically skipped"
-
-#: app/pam/templates/pam_verification_upload.html:297
-msgid "Невідомі види логуються, але не обробляються"
-msgstr "Unknown species are logged but not processed"
-
-#: app/pam/templates/pam_verification_upload.html:354
-msgid "Будь ласка, виберіть ZIP файл"
-msgstr "Please select a ZIP file."
-
-#: app/pam/templates/pam_verification_upload.html:375
-msgid "Вибрано файл: "
-msgstr "File selected: "
-
-#: app/pam/templates/pam_verification_upload.html:388
-msgid "Будь ласка, виберіть файл"
-msgstr "Please select a file."
-
-#: app/pam/templates/pam_verification_upload.html:401
-msgid "Обробляється..."
-msgstr "Processing..."
-
-#: app/pam/templates/pam_verification_upload.html:436
-msgid "Помилка сервера. Перевірте логи."
-msgstr "Server error. Please check the logs."
-
-#: app/pam/templates/pam_verification_upload.html:457
-msgid "Архів успішно оброблено!"
-msgstr "Archive processed successfully!"
-
-#: app/pam/templates/pam_verification_upload.html:460
-msgid "Всього файлів:"
-msgstr "Total files:"
-
-#: app/pam/templates/pam_verification_upload.html:464
-msgid "Оброблено:"
-msgstr "Processed:"
-
-#: app/pam/templates/pam_verification_upload.html:468
-msgid "Дублікатів:"
-msgstr "Duplicates:"
-
-#: app/pam/templates/pam_verification_upload.html:472
-msgid "Помилок:"
-msgstr "Errors:"
-
-#: app/pam/templates/pam_verification_upload.html:482
-msgid "Попередньо верифіковані файли:"
-msgstr "Pre-verified files:"
-
-#: app/pam/templates/pam_verification_upload.html:484
-msgid "Позитивні:"
-msgstr "Positive:"
-
-#: app/pam/templates/pam_verification_upload.html:485
-msgid "Негативні:"
-msgstr "Negative:"
-
-#: app/pam/templates/pam_verification_upload.html:486
-msgid "Неверифіковані:"
-msgstr "Unverified:"
-
-#: app/pam/templates/pam_verification_upload.html:494
-msgid "Оброблені види:"
-msgstr "Processed species:"
-
-#: app/pam/templates/pam_verification_upload.html:500
-msgid "Деталі помилок:"
-msgstr "Errors details:"
-
-#: app/pam/templates/pam_verification_upload.html:505
-msgid "Папка виду"
-msgstr "Species folder"
-
-#: app/pam/templates/pam_verification_upload.html:506
-msgid "Файл та причина помилки"
-msgstr "Fail and error cause"
-
-#: app/pam/templates/pam_verification_upload.html:542
-msgid "Помилка обробки"
-msgstr "Processing error"
-
-#: app/pam/templates/pam_verification_upload.html:544
-msgid "Перевірте логи сервера для детальної інформації про помилку."
-msgstr "Check the server logs for detailed error information."
-
-#: app/pam/templates/pam_yearly_table.html:4
-#: app/pam/templates/pam_yearly_trends.html:3
-msgid "Багаторічні тренди"
-msgstr ""
-
-#: app/pam/templates/pam_yearly_table.html:44
-msgid "Порівняльна таблиця річної активності видів"
-msgstr "Comparative table of annual species activity"
-
-#: app/pam/templates/pam_yearly_table.html:47
-msgid "Рік початку:"
-msgstr "Start year:"
-
-#: app/pam/templates/pam_yearly_table.html:48
-msgid "Рік кінця:"
-msgstr "End year:"
-
-#: app/pam/templates/pam_yearly_table.html:62
-msgid "Мін. детекцій на рік:"
-msgstr "Min. detections per year:"
-
-#: app/pam/templates/pam_yearly_table.html:68
-msgid "Налаштуйте фільтри та натисніть \"Згенерувати таблицю\"."
-msgstr "Adjust the filters and click \"Generate table\"."
-
-#: app/pam/templates/pam_yearly_table.html:93
-#: app/pam/templates/pam_yearly_table.html:147
-msgid "Всі біотопи"
-msgstr "All habitats"
-
-#: app/pam/templates/pam_yearly_table.html:94
-#: app/pam/templates/pam_yearly_table.html:148
-msgid "Всі локації"
-msgstr "All locations"
-
-#: app/pam/templates/pam_yearly_table.html:160
-msgid "Помилка сервера"
-msgstr "Server error"
-
-#: app/pam/templates/pam_yearly_table.html:174
-msgid "Разом"
-msgstr "Total"
-
-#: app/pam/templates/pam_yearly_trends.html:122
-msgid "Багаторічні тренди видів за даними акустичного моніторингу"
-msgstr "Multiyear species trends according to PAM data"
-
-#: app/pam/templates/pam_yearly_trends.html:157
-msgid "Побудувати графік"
-msgstr "Generate chart"
-
-#: app/pam/templates/pam_yearly_trends.html:165
-msgid "Будь ласка, виберіть вид та натисніть \"Побудувати графік\" для аналізу."
-msgstr "Please select a species and click \"Generate Chart\" to analyze."
-
-#: app/pam/templates/pam_yearly_trends.html:230
-msgid "Не вдалося завантажити дані для аналізу. Спробуйте пізніше."
-msgstr "Failed to load data for analysis. Try later."
-
-#: app/pam/templates/pam_yearly_trends.html:244
-msgid "Для вибраного виду та періоду немає розрахованих даних."
-msgstr "No data is available for the selected species and period."
-
-#: app/pam/templates/pam_yearly_trends.html:265
-msgid "Індекс відносної чисельності (RAI)"
-msgstr "Relativ activity index (DR)"
-
-#: app/pam/templates/pam_yearly_trends.html:298
-msgid "RAI (детекцій на годину)"
-msgstr "DR (detections per hour)"
-
-#: app/pam/templates/pam_yearly_trends.html:301
-msgid "Рік"
-msgstr "Year"
-
 #: app/templates/about.html:7
 msgid "Про проєкт"
-msgstr ""
+msgstr "About project"
 
 #: app/templates/about.html:26
 msgid "Контент для цієї сторінки ще не завантажено в базу даних."
 msgstr ""
+
+#: app/templates/base.html:8
+msgid "DBU - біомоніторинг"
+msgstr ""
+
+#: app/templates/base.html:17
+msgid "DBU"
+msgstr ""
+
+#: app/templates/base.html:17
+msgid "біомоніторинг"
+msgstr "biomonitoring"
+
+#: app/templates/base.html:22
+msgid "ГОЛОВНА"
+msgstr "HOME"
+
+#: app/templates/base.html:23
+msgid "ПАМ"
+msgstr "PAM"
+
+#: app/templates/base.html:24
+msgid "ФОТОПАСТКИ"
+msgstr "PHOTOTRAPS"
+
+#: app/templates/base.html:25
+msgid "ПРО ПРОЕКТ"
+msgstr "ABOUT PROJECT"
+
+#: app/templates/base.html:26
+msgid "КОНТАКТИ"
+msgstr "CONTACTS"
+
+#: app/templates/base.html:28
+msgid "АДМІН"
+msgstr "ADMIN"
+
+#: app/templates/base.html:37
+msgid "Вийти"
+msgstr "Exit"
+
+#: app/templates/base.html:40 app/templates/login.html:2
+msgid "Увійти"
+msgstr "Enter"
+
+#: app/templates/base.html:85
+msgid "Юрій Струс, ©"
+msgstr "Iurii Strus, ©"
 
 #: app/templates/contacts.html:3
 msgid "Заголовок сторінки"
@@ -3081,7 +374,7 @@ msgstr "Page title"
 
 #: app/templates/contacts.html:7
 msgid "Зв’язок з автором"
-msgstr ""
+msgstr "Contact with author"
 
 #: app/templates/contacts.html:11
 msgid ""
@@ -3092,10 +385,6 @@ msgstr ""
 #: app/templates/contacts.html:14
 msgid "Форма"
 msgstr "Form"
-
-#: app/templates/login.html:2
-msgid "Увійти"
-msgstr "Enter"
 
 #: app/templates/login.html:6
 msgid "Увійти в систему"
@@ -3122,186 +411,1958 @@ msgstr ""
 msgid "Тут можуть бути якісь інструменти для панелі адміністратора."
 msgstr ""
 
-#~ msgid "ГОЛОВНА"
-#~ msgstr "HOME"
+#~ msgid "Експорт даних"
+#~ msgstr "Export data"
 
-#~ msgid "ПРО ПРОЕКТ"
-#~ msgstr "ABOUT"
+#~ msgid "Підготовка даних для експорту - фотопастки"
+#~ msgstr "Preparing data for export - camera traps"
 
-#~ msgid "ЖУРНАЛ"
-#~ msgstr "JOURNAL"
+#~ msgid "Клас:"
+#~ msgstr "Class:"
 
-#~ msgid "КОНТАКТИ"
-#~ msgstr "CONTACTS"
+#~ msgid "Ряд:"
+#~ msgstr "Order:"
 
-#~ msgid "Назва сайту"
-#~ msgstr "Site name"
+#~ msgid "Родина:"
+#~ msgstr "Family:"
 
-#~ msgid "Юрій Струс, ©"
-#~ msgstr "Yuriy Strus, ©"
+#~ msgid "Рід:"
+#~ msgstr "Genus:"
 
-#~ msgid "Оглядова панель"
-#~ msgstr "Dashboard"
+#~ msgid "Види (оберіть один або декілька):"
+#~ msgstr "Species (select one or more):"
 
-#~ msgid "Керування випусками"
+#~ msgid "Дата початку:"
+#~ msgstr "Start date:"
+
+#~ msgid "Дата завершення:"
+#~ msgstr "End date:"
+
+#~ msgid "Тип даних для експорту:"
+#~ msgstr "Type of data for export:"
+
+#~ msgid "Тільки тварини"
+#~ msgstr "Animals only"
+
+#~ msgid "Всі записи"
+#~ msgstr "All records"
+
+#~ msgid "Рівень агрегації:"
+#~ msgstr "Aggregation level:"
+
+#~ msgid "Без агрегації"
+#~ msgstr "Without aggregation"
+
+#~ msgid "Агрегувати до дня і локації"
+#~ msgstr "Aggregate by day and location"
+
+#~ msgid "Код інституції:"
+#~ msgstr "Institution code:"
+
+#~ msgid "За замовчуванням: RSNR"
+#~ msgstr "By default: RSNR"
+
+#~ msgid "Підготувати дані"
+#~ msgstr "Prepare data"
+
+#~ msgid "Скинути фільтри"
+#~ msgstr "Reset filters"
+
+#~ msgid "Завантажити повний CSV-файл"
+#~ msgstr "Download full CSV file"
+
+#~ msgid "Всі класи"
+#~ msgstr "All classes"
+
+#~ msgid "Всі ряди"
+#~ msgstr "All orders"
+
+#~ msgid "Всі родини"
+#~ msgstr "All families"
+
+#~ msgid "Всі роди"
+#~ msgstr "All genuses"
+
+#~ msgid "Всі види"
+#~ msgstr "All species"
+
+#~ msgid "Завантаження..."
+#~ msgstr "Loading..."
+
+#~ msgid "Будь ласка, оберіть хоча б один таксон."
+#~ msgstr "Please select at least one taxon."
+
+#~ msgid "Попередній перегляд (перші 20 записів з ${data.total_count})"
+#~ msgstr "Preview (first 20 records out of ${data.total_count})"
+
+#~ msgid "Дані за вибраними критеріями не знайдено."
+#~ msgstr "No data found for the selected criteria."
+
+#~ msgid "Помилка"
+#~ msgstr "Error"
+
+#~ msgid "Помилка завантаження даних:"
+#~ msgstr "Data loading error."
+
+#~ msgid "Добова активність видів"
+#~ msgstr "Daily activity of species"
+
+#~ msgid "Період з:"
+#~ msgstr "Period from:"
+
+#~ msgid "до:"
+#~ msgstr "to:"
+
+#~ msgid "Тип даних:"
+#~ msgstr "Data type:"
+
+#~ msgid "Кількість спостережень на 100 пастко-днів"
+#~ msgstr "Number of observations per 100 trap-days"
+
+#~ msgid "Індекс DR"
+#~ msgstr "DR Index"
+
+#~ msgid "Відсоток від загальної активності виду"
+#~ msgstr "Percent of total species activity"
+
+#~ msgid "Частка (%%)"
+#~ msgstr "Fraction (%%)"
+
+#~ msgid "Довірчі інтервали:"
+#~ msgstr "Confidence intervals:"
+
+#~ msgid "CI тільки для авторизованих"
+#~ msgstr "CI for authorized users only"
+
+#~ msgid "Згладжування (KDE):"
+#~ msgstr "Smoothing (KDE)"
+
+#~ msgid "Різко"
+#~ msgstr "Sharp"
+
+#~ msgid "Гладко"
+#~ msgstr "Smooth"
+
+#~ msgid "Види (можна декілька):"
+#~ msgstr "Species (select one or more):"
+
+#~ msgid "Побудувати"
+#~ msgstr "Generate"
+
+#~ msgid "Завантажити CSV"
+#~ msgstr "Download CSV"
+
+#~ msgid "Матриця перекриття активності"
+#~ msgstr "Activity overlap matrix"
+
+#~ msgid "Значення від 0%% (повне уникання) до 100%% (ідентична активність)."
+#~ msgstr ""
+#~ "Values range from 0%% (complete "
+#~ "avoidance) to 100%% (identical activity)."
+
+#~ msgid "Високий відсоток вказує на те, що види активні в один і той же час."
+#~ msgstr ""
+#~ "A high percentage indicates that the "
+#~ "species are active at the same "
+#~ "time."
+
+#~ msgid "-- Виберіть види --"
+#~ msgstr "-- Select species --"
+
+#~ msgid "Будь ласка, виберіть хоча б один вид."
+#~ msgstr "Please select at least one species."
+
+#~ msgid "Зачекайте..."
+#~ msgstr "Wait..."
+
+#~ msgid "Недостатньо даних для побудови графіка за вибраними критеріями."
+#~ msgstr "Not enouh data available for the selected criteria"
+
+#~ msgid "Помилка завантаження даних."
+#~ msgstr "Data loading error."
+
+#~ msgid "Година доби"
+#~ msgstr "Day hours"
+
+#~ msgid "Щільність активності (%%)"
+#~ msgstr "Activiy density (%%)"
+
+#~ msgid "Загальние зусилля за період:"
+#~ msgstr "Overal effort for the period:"
+
+#~ msgid "пастко-днів"
+#~ msgstr "trap-days"
+
+#~ msgid "Аналітичний дашборд"
+#~ msgstr "Analytics Dashboard"
+
+#~ msgid "Аналітичний дашборд фотопасток"
+#~ msgstr "Camera Trap Analytics Dashboard"
+
+#~ msgid ""
+#~ "Загальний огляд результатів і доступ до"
+#~ " основних функцій. Якщо у вас є "
+#~ "доступ, увійдіть і зможете перейти до"
+#~ " перегляду фото та ідентифікації."
+#~ msgstr ""
+#~ "A general overview of the results "
+#~ "and access to the main functions. "
+#~ "If you have access, log in to "
+#~ "view photos and perform identifications."
+
+#~ msgid "Швидкі дії"
+#~ msgstr "Quick Actions"
+
+#~ msgid "Ідентифікувати"
+#~ msgstr "Identify"
+
+#~ msgid "Завантажити фото"
+#~ msgstr "Upload Photos"
+
+#~ msgid "Обслуговування"
+#~ msgstr "Service"
+
+#~ msgid "Управління локаціями"
+#~ msgstr "Location management"
+
+#~ msgid ""
+#~ "Це запустить повний перерахунок всієї "
+#~ "аналітики для графіків. Процес може "
+#~ "зайняти кілька хвилин, залежно від "
+#~ "обсягу даних. Продовжити?"
 #~ msgstr ""
 
-#~ msgid "Випуск успішно створено!"
+#~ msgid "Перерахувати аналітику"
+#~ msgstr "Recalculate analytics"
+
+#~ msgid "Перерахувати консенсус"
+#~ msgstr "Recalculate Consensus"
+
+#~ msgid "Ви впевнені, що хочете видалити файли старих фотографій?"
+#~ msgstr "Are you sure you want to delete old photo files?"
+
+#~ msgid "Видалити визначені фото"
+#~ msgstr "Delete Identified Photos"
+
+#~ msgid ""
+#~ "УВАГА! Будуть видалені ВСІ оригінали "
+#~ "фото, крім тих, що позначені як "
+#~ "'вибране'. Мініатюри залишаться. Ця дія "
+#~ "НЕЗВОРОТНЯ. Продовжити?"
 #~ msgstr ""
 
-#~ msgid "Створити новий випуск"
+#~ msgid "Видалити оригінали"
+#~ msgstr "Delete originals"
+
+#~ msgid ""
+#~ "Це видалить файли та дані від "
+#~ "незавершених завантажень, які старші 24 "
+#~ "годин. Ця дія незворотня. Продовжити?"
 #~ msgstr ""
 
-#~ msgid "Випуск успішно оновлено!"
+#~ msgid "Очистити невдалі завантаження"
+#~ msgstr "Clean stale batches"
+
+#~ msgid "Початкова дата:"
+#~ msgstr "Start date:"
+
+#~ msgid "Кінцева дата:"
+#~ msgstr "End date:"
+
+#~ msgid "Біотоп:"
+#~ msgstr "Habitat:"
+
+#~ msgid "Застосувати"
+#~ msgstr "Apply"
+
+#~ msgid "Тренди"
+#~ msgstr "Trends"
+
+#~ msgid "Добова активність"
+#~ msgstr "Daily activity"
+
+#~ msgid "Мапа"
+#~ msgstr "Map"
+
+#~ msgid "Галерея"
+#~ msgstr "Gallery"
+
+#~ msgid "Загальна статистика"
+#~ msgstr "General statistics"
+
+#~ msgid "Всього фото"
+#~ msgstr "Total photos"
+
+#~ msgid "Локацій"
+#~ msgstr "Locations"
+
+#~ msgid "Спостережень"
+#~ msgstr "Observations"
+
+#~ msgid "Видів"
+#~ msgstr "Species"
+
+#~ msgid "В очікуванні"
+#~ msgstr "Pending"
+
+#~ msgid "Днів зйомки"
+#~ msgstr "Survey days"
+
+#~ msgid "Найактивніші учасники"
+#~ msgstr "Most Active Contributors"
+
+#~ msgid "ідентифікацій"
+#~ msgstr "identifications"
+
+#~ msgid "За цей період немає даних про ідентифікації."
+#~ msgstr "There is no identification data for this period."
+
+#~ msgid "Повний набір даних можна завантажити через"
+#~ msgstr "The full dataset can be downloaded via"
+
+#~ msgid "Статистика детекцій видів"
+#~ msgstr "Species Detection Statistics"
+
+#~ msgid "Карта локацій"
+#~ msgstr "Map of locations"
+
+#~ msgid "-- Всі біотопи --"
+#~ msgstr "-- All habitats --"
+
+#~ msgid "За цей період даних для діаграми немає."
+#~ msgstr "There is no data for the chart for this period."
+
+#~ msgid "Кількість спостережень"
+#~ msgstr "Number of observations"
+
+#~ msgid "К-ть фото:"
+#~ msgstr "Photo count:"
+
+#~ msgid "Включити у фільтр"
+#~ msgstr "Include into filtering"
+
+#~ msgid "Вибрати всі"
+#~ msgstr "Check all"
+
+#~ msgid "Зняти виділення"
+#~ msgstr "Uncheck all"
+
+#~ msgid "Інвертувати"
+#~ msgstr "Invert"
+
+#~ msgid "Галерея вибраних фото"
+#~ msgstr "Selected Photos Gallery"
+
+#~ msgid ""
+#~ "Тут відображаться фото, які ще не "
+#~ "були автоматично очищені системою, а "
+#~ "також ті, що ідентифікатори додали у "
+#~ "вибране. Більше фото можна знайти у "
+#~ "нашому проекті на"
+#~ msgstr ""
+#~ "This section displays photos that "
+#~ "haven't been automatically cleared by "
+#~ "the system yet, along with those "
+#~ "that have been added to favorites. "
+#~ "You can find more photos in our"
+#~ " project on"
+
+#~ msgid "Виберіть вид:"
+#~ msgstr "Select species:"
+
+#~ msgid "Показати фото"
+#~ msgstr "Show photos"
+
+#~ msgid ""
+#~ "Будь ласка, виберіть вид та натисніть"
+#~ " \"Показати фото\" для перегляду галереї."
+#~ msgstr "Please select a species and click \"Show photos\" to view the gallery."
+
+#~ msgid "Фото з галереї"
+#~ msgstr "Photos from the gallery"
+
+#~ msgid "Управління"
+#~ msgstr "Management"
+
+#~ msgid "Прибрати з вибраного"
+#~ msgstr "Remove from favorites"
+
+#~ msgid "Тільки для модераторів та адмінів"
+#~ msgstr "Only for admins and moderators"
+
+#~ msgid "Інформація про фото"
+#~ msgstr "Photo details"
+
+#~ msgid "-- Пошук та вибір виду --"
+#~ msgstr "-- Search and select a species --"
+
+#~ msgid "Будь ласка, виберіть вид."
+#~ msgstr "Please select a species."
+
+#~ msgid "Завантаження фото..."
+#~ msgstr "Loading photos..."
+
+#~ msgid "Помилка завантаження фото."
+#~ msgstr "Error loading photo."
+
+#~ msgid "Локація:"
+#~ msgstr "Location:"
+
+#~ msgid "Час:"
+#~ msgstr "Time:"
+
+#~ msgid "Фото"
+#~ msgstr "Photo"
+
+#~ msgid "Вид:"
+#~ msgstr "Species:"
+
+#~ msgid "Дата зйомки:"
+#~ msgstr "Date taken:"
+
+#~ msgid "Додано у вибране:"
+#~ msgstr "Added to favorites:"
+
+#~ msgid "Статус:"
+#~ msgstr "Status:"
+
+#~ msgid "У вибраному"
+#~ msgstr "In favorites"
+
+#~ msgid "№ в серії:"
+#~ msgstr "# in a series:"
+
+#~ msgid "Ви впевнені, що хочете прибрати це фото з вибраного?"
+#~ msgstr "Are you sure you want to remove this photo from favorites?"
+
+#~ msgid "Фото успішно видалено з вибраного"
+#~ msgstr "The photo was successfully removed from favorites."
+
+#~ msgid "Помилка видалення з вибраного"
+#~ msgstr "Error removing from favorites"
+
+#~ msgid "Ідентифікація тварин"
+#~ msgstr "Animal Identification"
+
+#~ msgid "🔍 РЕЖИМ ПЕРЕГЛЯДУ: Перевіряється вже визначена серія"
+#~ msgstr "🔍 REVIEW MODE: Checking already identified series"
+
+#~ msgid "Користувач:"
+#~ msgstr "User:"
+
+#~ msgid "-- Всі користувачі --"
+#~ msgstr "-- All users --"
+
+#~ msgid "Сортування:"
+#~ msgstr "Sorting:"
+
+#~ msgid "Випадково"
+#~ msgstr "Random"
+
+#~ msgid "Дата (спочатку нові)"
+#~ msgstr "By date (newer first"
+
+#~ msgid "Дата (спочатку старі)"
+#~ msgstr "By date (older first)"
+
+#~ msgid "К-ть фото (спочатку більше)"
+#~ msgstr "Number of photos (desc)"
+
+#~ msgid "Існуючі ідентифікації серії:"
+#~ msgstr "Existing series identifications:"
+
+#~ msgid "Фото для ідентифікації"
+#~ msgstr "Photo for Identification"
+
+#~ msgid "Відкрити у повному розмірі"
+#~ msgstr "Open in full size"
+
+#~ msgid "Надіслати"
+#~ msgstr "Send"
+
+#~ msgid "Пропустити"
+#~ msgstr "Skip"
+
+#~ msgid "Режим перегляду визначених серій"
+#~ msgstr "Review mode for identified series"
+
+#~ msgid "Загальні опції"
+#~ msgstr "General Options"
+
+#~ msgid "Ссавці"
+#~ msgstr "Mammals"
+
+#~ msgid "Птахи"
+#~ msgstr "Birds."
+
+#~ msgid "Інші"
+#~ msgstr "Other"
+
+#~ msgid "Інші категорії"
+#~ msgstr "Other categories"
+
+#~ msgid "Локація"
+#~ msgstr "Location"
+
+#~ msgid "Час"
+#~ msgstr "Time"
+
+#~ msgid "Будь ласка, виберіть вид, або опцію \"Пусто\"."
+#~ msgstr "Please select a species, or the \"Empty\" option."
+
+#~ msgid "Помилка збереження:"
+#~ msgstr "Save error:"
+
+#~ msgid "Не вдалося завантажити дані."
+#~ msgstr "Failed to load data."
+
+#~ msgid "Залишилось вам:"
+#~ msgstr "Pending for you:"
+
+#~ msgid "Управління локаціями фотопасток"
+#~ msgstr "Management of phototraps locations"
+
+#~ msgid "Виберіть локацію зі списку або на карті, щоб почати редагування."
+#~ msgstr "Select a location from the list or on the map to start editing."
+
+#~ msgid "Назва локації"
+#~ msgstr "Location name"
+
+#~ msgid "Опис локації"
+#~ msgstr "Description"
+
+#~ msgid "Широта (Lat)"
+#~ msgstr "Latitude (Lat)"
+
+#~ msgid "Довгота (Lng)"
+#~ msgstr "Longitude (Lng)"
+
+#~ msgid "Біотопи"
+#~ msgstr "Habitats"
+
+#~ msgid "Зберегти зміни"
+#~ msgstr "Save changes"
+
+#~ msgid "Скасувати"
+#~ msgstr "Cancel"
+
+#~ msgid "Квартальна сітка ПЗ Розточчя"
+#~ msgstr "Quarters grid of the Roztochya SNR"
+
+#~ msgid "Видільна сітка ПЗ Розточчя"
+#~ msgstr "Sections grid of the Roztochya SNR"
+
+#~ msgid "Редагування:"
+#~ msgstr "Editing:"
+
+#~ msgid "Перегляд фото #"
+#~ msgstr "Viewing Photo #"
+
+#~ msgid "Скинути"
+#~ msgstr "Reset"
+
+#~ msgid "Фото #"
+#~ msgstr "Photo #"
+
+#~ msgid "ID:"
 #~ msgstr ""
 
-#~ msgid "Редагування випуску"
+#~ msgid "Серія спостереження"
+#~ msgstr "Observation Series"
+
+#~ msgid "Деталі фотографії"
+#~ msgstr "Photo details"
+
+#~ msgid "Оригінальна назва:"
+#~ msgstr "Original filename:"
+
+#~ msgid "Ідентифікації"
+#~ msgstr "Identifications"
+
+#~ msgid "Користувач видалений"
+#~ msgstr "User deleted"
+
+#~ msgid "Інший вид (немає у списку)"
+#~ msgstr "Other species (not in the list)"
+
+#~ msgid "К-сть:"
+#~ msgstr "Count:"
+
+#~ msgid "Для цього фото ще немає ідентифікацій."
+#~ msgstr "There are no identifications for this photo yet."
+
+#~ msgid "Журнал обслуговування фотопасток"
+#~ msgstr "Camera trap maintenance log"
+
+#~ msgid "Журнал обслуговування"
+#~ msgstr "Maintenance log"
+
+#~ msgid "Оновити статистику для розрахунку прогнозів"
+#~ msgstr "Update statistics to calculate forecasts"
+
+#~ msgid "Оновити статистику"
+#~ msgstr "Update statistics"
+
+#~ msgid "На дашборд"
+#~ msgstr "To Dashboard"
+
+#~ msgid "Додати новий запис"
+#~ msgstr "Add new record"
+
+#~ msgid "Виберіть локацію на карті, щоб почати."
+#~ msgstr "Select a location on the map to start."
+
+#~ msgid "Дата та час візиту"
+#~ msgstr "Date and time of visit"
+
+#~ msgid "Результат візиту"
+#~ msgstr "Visit results"
+
+#~ msgid "-- Виберіть --"
+#~ msgstr "-- Select --"
+
+#~ msgid "Заміна елементів живлення"
+#~ msgstr "Battery replacement"
+
+#~ msgid "-- Без заміни --"
+#~ msgstr "-- Wothout replacement --"
+
+#~ msgid "Стан камери"
+#~ msgstr "Camera condition"
+
+#~ msgid "Працювала"
+#~ msgstr "Working"
+
+#~ msgid "Не працювала"
+#~ msgstr "Not working"
+
+#~ msgid "Невідомо"
+#~ msgstr "Unknown"
+
+#~ msgid "Проведено заміну SD-карти"
+#~ msgstr "SD card replaced"
+
+#~ msgid "К-ть фото на карті (необов'язково)"
+#~ msgstr "Number of photos on the map (optional)"
+
+#~ msgid "Коментарі"
+#~ msgstr "Comments"
+
+#~ msgid "Зберегти запис"
+#~ msgstr "Save record"
+
+#~ msgid "Історія обслуговування"
+#~ msgstr "Service history"
+
+#~ msgid "Немає даних для відображення."
+#~ msgstr "No data to show"
+
+#~ msgid "Останній візит:"
+#~ msgstr "Last visit:"
+
+#~ msgid "Днів тому:"
+#~ msgstr "Days ago:"
+
+#~ msgid "міс."
+#~ msgstr "month(s)"
+
+#~ msgid "Прогноз фото:"
+#~ msgstr "Photo forecast:"
+
+#~ msgid "Новий запис для:"
+#~ msgstr "New record for:"
+
+#~ msgid "Так"
+#~ msgstr "Yes"
+
+#~ msgid "Ні"
+#~ msgstr "No"
+
+#~ msgid "Стан камери:"
+#~ msgstr "Camera conditon:"
+
+#~ msgid "Батарейки:"
+#~ msgstr "Batteries:"
+
+#~ msgid "SD-карта замінена:"
+#~ msgstr "SD-card replaced:"
+
+#~ msgid "Помилка завантаження історії."
+#~ msgstr "Error loading history."
+
+#~ msgid "Збереження..."
+#~ msgstr "Saving..."
+
+#~ msgid "Невідома помилка"
+#~ msgstr "Unknown error"
+
+#~ msgid ""
+#~ "Це може зайняти деякий час. Ви "
+#~ "впевнені, що хочете запустити повний "
+#~ "перерахунок статистики для всіх локацій?"
 #~ msgstr ""
 
-#~ msgid "Випуск \"%(name)s\" та всі його статті було видалено."
+#~ msgid "Розрахунок..."
+#~ msgstr "Calculation..."
+
+#~ msgid "Критична помилка запиту."
+#~ msgstr "Critical request error."
+
+#~ msgid "Аналіз трендів по видах"
+#~ msgstr "Analysis of species trends"
+
+#~ msgid "Початковий рік:"
+#~ msgstr "Start year:"
+
+#~ msgid "Кінцевий рік:"
+#~ msgstr "End year:"
+
+#~ msgid "Побудувати графіки"
+#~ msgstr "Generate Charts"
+
+#~ msgid "До загального аналізу"
+#~ msgstr "o general analysis"
+
+#~ msgid ""
+#~ "Будь ласка, виберіть вид та натисніть"
+#~ " \"Побудувати графіки\" для аналізу."
+#~ msgstr "Please select a species and click \"Generate Charts\" to analyze."
+
+#~ msgid "Не вдалося завантажити дані для аналізу."
+#~ msgstr "Failed to load data for analysis."
+
+#~ msgid "Завантаження даних..."
+#~ msgstr "Loading data..."
+
+#~ msgid "Для вибраного виду та періоду немає даних."
+#~ msgstr "No data is available for the selected species and period."
+
+#~ msgid "Сезонна активність (кількість детекцій)"
+#~ msgstr "Seasonal Activity (number of detections)"
+
+#~ msgid "Багаторічна динаміка (індекс відносної чисельності, DR)"
+#~ msgstr "Long-term Dynamics (detection rate, DR)"
+
+#~ msgid "Січ"
+#~ msgstr "Jan"
+
+#~ msgid "Лют"
+#~ msgstr "Feb"
+
+#~ msgid "Бер"
+#~ msgstr "Mar"
+
+#~ msgid "Кві"
+#~ msgstr "Apr"
+
+#~ msgid "Тра"
+#~ msgstr "May"
+
+#~ msgid "Чер"
+#~ msgstr "Jun"
+
+#~ msgid "Лип"
+#~ msgstr "Jul"
+
+#~ msgid "Сер"
+#~ msgstr "Aug"
+
+#~ msgid "Вер"
+#~ msgstr "Sep"
+
+#~ msgid "Жов"
+#~ msgstr "Oct"
+
+#~ msgid "Лис"
+#~ msgstr "Nov"
+
+#~ msgid "Гру"
+#~ msgstr "Dec"
+
+#~ msgid "Кількість детекцій"
+#~ msgstr "Number of detections"
+
+#~ msgid "Середній тренд"
+#~ msgstr "Mean trend"
+
+#~ msgid "95%% Довірчий інтервал"
+#~ msgstr "95%% Confidence interval"
+
+#~ msgid "Карта детекцій видів фотопастками"
+#~ msgstr "Map of species detections by camera traps"
+
+#~ msgid "Вид тварини:"
+#~ msgstr "Animal species:"
+
+#~ msgid "Всього детекцій"
+#~ msgstr "Total detections"
+
+#~ msgid "Активних локацій"
+#~ msgstr "Active locations"
+
+#~ msgid "Середній DR"
+#~ msgstr "Mean DR"
+
+#~ msgid "-- Виберіть вид --"
+#~ msgstr "-- Select species --"
+
+#~ msgid "Карта (OSM)"
+#~ msgstr "Map (OSM)"
+
+#~ msgid "Супутник (Esri)"
+#~ msgstr "Satellite (ESRI)"
+
+#~ msgid "DR (Детекцій на 100 днів)"
+#~ msgstr "DR (Detections per 100 days)"
+
+#~ msgid "Завантажте дані..."
+#~ msgstr "Load data..."
+
+#~ msgid "Будь ласка, заповніть всі поля"
+#~ msgstr "Please, fill out all fields"
+
+#~ msgid "Помилка отримання даних"
+#~ msgstr "Data retrieval error"
+
+#~ msgid "Дані відсутні"
+#~ msgstr "Data not available"
+
+#~ msgid "Детекцій:"
+#~ msgstr "Detections:"
+
+#~ msgid "Днів роботи:"
+#~ msgstr "Days working:"
+
+#~ msgid "DR:"
 #~ msgstr ""
 
-#~ msgid "Керування статтями"
-#~ msgstr "Article Management"
+#~ msgid "дет./день"
+#~ msgstr "det./day"
 
-#~ msgid "Статтю успішно створено!"
-#~ msgstr "Article successfully created!"
+#~ msgid "DR (на 100 днів)"
+#~ msgstr "DR (per 100 days)"
 
-#~ msgid "Створити нову статтю"
-#~ msgstr "Create New Article"
+#~ msgid "Немає даних"
+#~ msgstr "No data"
 
-#~ msgid "Статтю успішно оновлено!"
-#~ msgstr "Article successfully updated!"
+#~ msgid "Завантаження даних фотопасток"
+#~ msgstr "Uploading camera trap data"
 
-#~ msgid "Редагування статті"
+#~ msgid "Завантаження фотографій з фотопасток"
+#~ msgstr "Uploading photos from camera traps"
+
+#~ msgid "Крок 1: Вкажіть місце зйомки"
+#~ msgstr "Step 1: Specify the location"
+
+#~ msgid "Дані місця зйомки"
+#~ msgstr "Location data"
+
+#~ msgid "Створити та вибрати місце"
+#~ msgstr "Create and select location"
+
+#~ msgid "Крок 2: Завантажте фотографії"
+#~ msgstr "Step 2: Upload the photos"
+
+#~ msgid "Вибрати файли"
+#~ msgstr "Select files"
+
+#~ msgid "Дозволені файли: .jpg, .jpeg"
+#~ msgstr "Only .jpg or .jpeg files are allowed."
+
+#~ msgid "Файли не вибрані"
+#~ msgstr "No files were selected."
+
+#~ msgid "Зберігати повнорозмірні (оригінальні) фотографії"
+#~ msgstr "Save full size (original) photos"
+
+#~ msgid "Завантажити та обробити"
+#~ msgstr "Upload and Process"
+
+#~ msgid "Файли успішно завантажені!"
+#~ msgstr "Files uploaded successfully!"
+
+#~ msgid "Тепер ви можете перейти до їх розпізнавання."
+#~ msgstr "You can now proceed to their identification."
+
+#~ msgid "Перейти до ідентифікації"
+#~ msgstr "Go to Identification"
+
+#~ msgid "Будь ласка, спочатку виберіть файли для завантаження."
+#~ msgstr "Please select the files to upload first."
+
+#~ msgid "Будь ласка, виберіть дійсне місце перед завантаженням."
+#~ msgstr "Please select a valid location before uploading."
+
+#~ msgid "Групування фото в серії..."
+#~ msgstr "Grouping photos into series..."
+
+#~ msgid "Успішно згруповано"
+#~ msgstr "Successfully grouped"
+
+#~ msgid "фото в серії"
+#~ msgstr "photos in a series"
+
+#~ msgid "Завантаження завершено:"
+#~ msgstr "Upload completed:"
+
+#~ msgid "успішно,"
+#~ msgstr "successfully,"
+
+#~ msgid "з помилками"
+#~ msgstr "with errors"
+
+#~ msgid "Помилка групування:"
+#~ msgstr "Grouping error:"
+
+#~ msgid "Завантажую файл"
+#~ msgstr "Uploading file"
+
+#~ msgid "з"
+#~ msgstr "from"
+
+#~ msgid "завантажується..."
+#~ msgstr "uploading..."
+
+#~ msgid "завантажено"
+#~ msgstr "uploaded"
+
+#~ msgid "помилка:"
+#~ msgstr "error:"
+
+#~ msgid "Підготовка до завантаження..."
+#~ msgstr "Preparing to upload..."
+
+#~ msgid ""
+#~ "Не вдалося завантажити деталі локації, "
+#~ "але ви можете продовжити завантаження."
+#~ msgstr "Failed to load location details, but you can continue with the upload."
+
+#~ msgid "Назва та координати є обов\"язковими для створення нового місця."
+#~ msgstr "Name and coordinates are required to create a new location."
+
+#~ msgid "Управління локаціями ПАМ"
+#~ msgstr "PAM locations management"
+
+#~ msgid "Управління локаціями пасивного моніторингу (ПАМ)"
+#~ msgstr "Management of PAM locations"
+
+#~ msgid "Назва локації (українською)"
+#~ msgstr "Location name (Ukrainian)"
+
+#~ msgid "Назва локації (англійською)"
+#~ msgstr "Location name (English)"
+
+#~ msgid "Акустичний моніторинг"
+#~ msgstr "Acoustic Monitoring"
+
+#~ msgid "Підготовка даних для експорту - ПАМ"
+#~ msgstr "Preparing data for export - PAM"
+
+#~ msgid "Режим експорту:"
+#~ msgstr "Export mode:"
+
+#~ msgid "Розумний фільтр"
+#~ msgstr "Clever filter"
+
+#~ msgid "Частково верифіковані"
+#~ msgstr "Partially verified"
+
+#~ msgid "Повністю верифіковані"
+#~ msgstr "Fully verified"
+
+#~ msgid "Простий фільтр"
+#~ msgstr "Simple filter"
+
+#~ msgid "Без агрегації (Всі записи)"
+#~ msgstr "Without aggregation (all records)"
+
+#~ msgid "1 запис на день для локації"
+#~ msgstr "1 record per day and location"
+
+#~ msgid "1 запис за інтервал часу для локації"
+#~ msgstr "1 record per time period and location"
+
+#~ msgid "Мін. впевненість:"
+#~ msgstr "Min. confidence:"
+
+#~ msgid "Інтервал агрегації (хвилин):"
+#~ msgstr "Aggregation interval (minutes)"
+
+#~ msgid "Назва класифікатора:"
+#~ msgstr "Classifier name:"
+
+#~ msgid "За замовчуванням: BirdNET 2.4"
+#~ msgstr "By default: BirdNET 2.4"
+
+#~ msgid "Будь ласка, оберіть хоча б один таксон (Клас, Ряд, Родина або Вид)."
+#~ msgstr "Please select at least one taxon (Class, Order, Family, Species)."
+
+#~ msgid "Попередній перегляд (n ="
+#~ msgstr "Preview (n ="
+
+#~ msgid "Результати оцінки точності BirdNET"
+#~ msgstr "BirdNET Accuracy Assessment Results"
+
+#~ msgid "yurastrus | персональний сайт"
+#~ msgstr "yurastrus | personal website"
+
+#~ msgid ""
+#~ "Метрики точності автоматичної класифікації "
+#~ "видів на основі людських верифікацій"
+#~ msgstr ""
+#~ "Accuracy metrics for automatic species "
+#~ "classification based on human verifications"
+
+#~ msgid "Оцінених видів"
+#~ msgstr "Evaluated species"
+
+#~ msgid "з верифікованими даними"
+#~ msgstr "with verified data"
+
+#~ msgid "Всього зразків"
+#~ msgstr "Total samples"
+
+#~ msgid "верифіковано"
+#~ msgstr "verified"
+
+#~ msgid "Логістична регресія"
+#~ msgstr "Logistic regression"
+
+#~ msgid "видів з розрахованою регресією"
+#~ msgstr "species with calculated regression"
+
+#~ msgid "Адміністраторські функції"
+#~ msgstr "Administrator functions"
+
+#~ msgid "Мін. вер."
+#~ msgstr "Min. ver."
+
+#~ msgid "Вид"
+#~ msgstr "Species"
+
+#~ msgid "Усі види"
+#~ msgstr "All species"
+
+#~ msgid "Окремі види"
+#~ msgstr "Separate species"
+
+#~ msgid "Підтвердіть перерахунок метрик."
+#~ msgstr "Confirm recalculation of metrics."
+
+#~ msgid "Запустити перерахунок"
+#~ msgstr "Start recalculation"
+
+#~ msgid "Перерахувати"
+#~ msgstr "Recalculate"
+
+#~ msgid "Останній перерахунок:"
+#~ msgstr "Last recalculation:"
+
+#~ msgid ""
+#~ "Метрики ще не розраховувались. Натисніть "
+#~ "\"Перерахувати метрики\" для початкового "
+#~ "розрахунку."
+#~ msgstr ""
+#~ "Metrics have not been calculated yet."
+#~ " Click \"Recalculate metrics\" for the "
+#~ "initial calculation."
+
+#~ msgid "УВАГА! Це видалить файли завершених верифікацій. Продовжити?"
+#~ msgstr "WARNING! This will delete completed verification files. Continue?"
+
+#~ msgid "Видалити завершені файли"
+#~ msgstr "Delete completed files"
+
+#~ msgid "Додати сонограми"
+#~ msgstr "Add spectrograms"
+
+#~ msgid ""
+#~ "Це перегенерує ВСІ спектрограми і може"
+#~ " зайняти дуже багато часу. Ви "
+#~ "впевнені?"
+#~ msgstr ""
+#~ "This will regenerate ALL spectrograms "
+#~ "and may take a lot of time. "
+#~ "Are you sure?"
+
+#~ msgid "Замінити сонограми"
+#~ msgstr "Change spectrograms"
+
+#~ msgid ""
+#~ "УВАГА! Це конвертує всі файли .wav "
+#~ "у .flac та видалить оригінали. Ця "
+#~ "дія незворотна. Продовжити?"
+#~ msgstr ""
+#~ "WARNING! This will convert all .wav "
+#~ "files to .flac and delete the "
+#~ "originals. This action is irreversible. "
+#~ "Continue?"
+
+#~ msgid "Конвертувати WAV → FLAC"
+#~ msgstr "Convert WAV → FLAC"
+
+#~ msgid "Детальні результати по всіх видах"
+#~ msgstr "Detailed results for all species"
+
+#~ msgid "Сортувати за:"
+#~ msgstr "Sort by:"
+
+#~ msgid "Precision"
 #~ msgstr ""
 
-#~ msgid "Керування тегами"
-#~ msgstr "Manage tags"
+#~ msgid "Кількість зразків"
+#~ msgstr "Number of samples"
 
-#~ msgid "Тег з таким URL (slug) вже існує."
-#~ msgstr "A tag with this URL (slug) already exists."
+#~ msgid "R² (якість моделі)"
+#~ msgstr "R² (model quality)"
 
-#~ msgid "Тег успішно оновлено!"
-#~ msgstr "Tag successfully updated!"
+#~ msgid "Поріг 90%%"
+#~ msgstr "Threshold 90%%"
 
-#~ msgid "Редагування тега: "
-#~ msgstr "Editing tag:"
+#~ msgid "Поріг 95%%"
+#~ msgstr "Threshold 95%%"
 
-#~ msgid "Тег \"%(slug)s\" було успішно видалено."
+#~ msgid "Поріг 99%%"
+#~ msgstr "Threshold 99%%"
+
+#~ msgid "Порядок:"
+#~ msgstr "Order:"
+
+#~ msgid "За спаданням"
+#~ msgstr "Descending"
+
+#~ msgid "За зростанням"
+#~ msgstr "Ascending"
+
+#~ msgid "Оновити"
+#~ msgstr "Update"
+
+#~ msgid "Зразків"
+#~ msgstr "Samples"
+
+#~ msgid "Немає даних для відображення"
+#~ msgstr "No data to show"
+
+#~ msgid "Помилка завантаження результатів"
+#~ msgstr "Error loading results"
+
+#~ msgid "Відкрити графік регресії"
 #~ msgstr ""
 
-#~ msgid "Адмін-панель"
-#~ msgstr "Admin panel"
+#~ msgid "← Попередня"
+#~ msgstr "← Previous"
 
-#~ msgid "Вітаємо в адмін-панелі! Оберіть розділ у меню ліворуч."
+#~ msgid "Сторінка"
+#~ msgstr "Page"
+
+#~ msgid "Наступна →"
+#~ msgstr "Next →"
+
+#~ msgid "Детальна оцінка"
 #~ msgstr ""
 
-#~ msgid "Поточна статистика:"
-#~ msgstr "Current statistics:"
+#~ msgid "Аналіз логістичної регресії BirdNET"
+#~ msgstr "Analysis of model quality with logistic regression"
 
-#~ msgid "Всього випусків"
+#~ msgid "Експорт (.xlsx)"
+#~ msgstr "Export (.xlsx)"
+
+#~ msgid "Закрити"
+#~ msgstr "Close"
+
+#~ msgid "Параметри моделі"
+#~ msgstr "Model parameters"
+
+#~ msgid "R² (псевдо):"
+#~ msgstr "R² (pseudo):"
+
+#~ msgid "β0 (Intercept):"
 #~ msgstr ""
 
-#~ msgid "Всього статей"
-#~ msgstr "Total articles"
-
-#~ msgid "Основна інформація"
+#~ msgid "β1 (Slope):"
 #~ msgstr ""
 
-#~ msgid "Оберіть один або кілька тегів (утримуючи Ctrl/Cmd)."
-#~ msgstr "Select one or more tags (hold Ctrl/Cmd)."
+#~ msgid "Всього точок:"
+#~ msgstr "Total points:"
 
-#~ msgid "Українська версія"
-#~ msgstr "Ukrainian version"
+#~ msgid "Пороги (Thresholds)"
+#~ msgstr "Thresholds"
 
-#~ msgid "English Version"
-#~ msgstr "English Version"
-
-#~ msgid "Додати нову статтю"
+#~ msgid "Precision 90%%"
 #~ msgstr ""
 
-#~ msgid "Заголовок (UK)"
-#~ msgstr "Page title"
-
-#~ msgid "Випуск"
+#~ msgid "Precision 95%%"
 #~ msgstr ""
 
-#~ msgid "Дії"
-#~ msgstr "Actions"
-
-#~ msgid "немає"
+#~ msgid "Precision 99%%"
 #~ msgstr ""
 
-#~ msgid "Редагувати"
-#~ msgstr "Edit"
+#~ msgid "Формула:"
+#~ msgstr "Formula: "
 
-#~ msgid "Ви впевнені?"
+#~ msgid "Дані"
+#~ msgstr "Data"
+
+#~ msgid "Модель"
+#~ msgstr "Model"
+
+#~ msgid "Пасивний Акустичний Моніторинг (PAM)"
+#~ msgstr "Passive Acoustic Monitoring (PAM)"
+
+#~ msgid ""
+#~ "Цей розділ присвячений аналізу та "
+#~ "візуалізації даних, отриманих за допомогою "
+#~ "пасивного акустичного моніторингу. Тут ви "
+#~ "можете ознайомитися з результатами досліджень"
+#~ " фауни Розточчя з використанням ПАМ, "
+#~ "переглянути динаміку детекцій різних видів "
+#~ "тварин та дослідити їх добову "
+#~ "активність."
+#~ msgstr ""
+#~ "This section is dedicated to the "
+#~ "analysis and visualization of data "
+#~ "obtained through passive acoustic monitoring."
+#~ " Here you can explore the results "
+#~ "of studies on the fauna of "
+#~ "Roztochya using PAM, view the dynamics"
+#~ " of detections of various animal "
+#~ "species, and examine their daily "
+#~ "activity."
+
+#~ msgid "Cирі дані частково вже доступні через"
+#~ msgstr "Partially, raw data are already available via"
+
+#~ msgid "Дослідження фауни Розточчя методами ПАМ"
+#~ msgstr "Study of the Fauna of Roztochya Using PAM Methods"
+
+#~ msgid "Загальна динамічна таблиця з списком видів"
+#~ msgstr "General dynamic table with the list of species"
+
+#~ msgid ""
+#~ "Рейтингова таблиця видів за кількістю "
+#~ "автоматичних детекцій за допомогою алгоритму"
+#~ " BirdNET."
+#~ msgstr ""
+#~ "Ranked table of species by the "
+#~ "number of automatic detections using the"
+#~ " BirdNET algorithm."
+
+#~ msgid "Детальний повидовий аналіз"
+#~ msgstr "Detailed species-by-species analysis"
+
+#~ msgid ""
+#~ "Інтерактивні графіки та карта для "
+#~ "конкретного виду. Як і у загальній "
+#~ "таблиці, використано дані автоматичної "
+#~ "класифікації видів на основі алгоритму "
+#~ "BirdNET."
+#~ msgstr ""
+#~ "Interactive graphs and map for a "
+#~ "specific species. As in the general "
+#~ "table, data from automatic species "
+#~ "classification based on the BirdNET "
+#~ "algorithm was used."
+
+#~ msgid "Аналіз багаторічних трендів"
+#~ msgstr "Analysis of multiyear trends"
+
+#~ msgid ""
+#~ "Міжрічні тренди детекцій та сезонна "
+#~ "активність видів агрегована до місяців."
+#~ msgstr ""
+#~ "Interannual detection trends and seasonal "
+#~ "species activity aggregated by months."
+
+#~ msgid "Міжрічна порівняльна таблиця"
+#~ msgstr "Interannual comparison table"
+
+#~ msgid ""
+#~ "Міжрічна динамічна порівняльна таблиця, що "
+#~ "показує нормалізовану кількість детекцій (на"
+#~ " 24 год записів) видів."
+#~ msgstr ""
+#~ "Interannual dynamic comparison table showing"
+#~ " the normalized number of species "
+#~ "detections (per 24 hours of recordings)"
+
+#~ msgid "Верифікація класифікацій BirdNET"
+#~ msgstr "BirdNET Classification Verification"
+
+#~ msgid "Завантаження аудіосегментів"
+#~ msgstr "Audio Segment Upload"
+
+#~ msgid ""
+#~ "Завантаження ZIP архівів з аудіосегментами "
+#~ "для верифікації точності автоматичних "
+#~ "класифікацій."
+#~ msgstr ""
+#~ "Uploading ZIP archives with audio "
+#~ "segments to verify the accuracy of "
+#~ "automatic classifications."
+
+#~ msgid "Верифікація сегментів"
+#~ msgstr "Segment Verification"
+
+#~ msgid ""
+#~ "Прослуховування та верифікація аудіосегментів "
+#~ "для оцінки точності BirdNET класифікацій."
+#~ msgstr ""
+#~ "Listening to and verifying audio "
+#~ "segments to assess the accuracy of "
+#~ "BirdNET classifications."
+
+#~ msgid "Перегляд завантажених сегментів"
+#~ msgstr "Review uploaded segments"
+
+#~ msgid ""
+#~ "Перегляд списку завантажених аудіосегментів з"
+#~ " фільтрацією по видах та статусу "
+#~ "верифікації."
+#~ msgstr ""
+#~ "View the list of uploaded audio "
+#~ "segments with filtering by species and"
+#~ " verification status."
+
+#~ msgid "Результати оцінки точності"
+#~ msgstr "Accuracy Assessment Results"
+
+#~ msgid ""
+#~ "Перегляд метрик точності (precision, recall,"
+#~ " F1) для різних видів на основі "
+#~ "верифікованих даних."
+#~ msgstr ""
+#~ "View accuracy metrics (precision, recall, "
+#~ "F1) for different species based on "
+#~ "verified data."
+
+#~ msgid "Експорт даних ПАМ моніторнгу у CSV таблиці."
+#~ msgstr "Export PAM data as CVS tables."
+
+#~ msgid ""
+#~ "Журнал обслуговування акустичних ресиверів, з"
+#~ " інтерактивною картою і прогнозуванням "
+#~ "роботи приладів."
+#~ msgstr ""
+#~ "Maintenance log of acoustic receivers "
+#~ "with an interactive map and device "
+#~ "performance forecasting."
+
+#~ msgid "Редагування назв та біотопів для точок акустичного моніторингу."
+#~ msgstr "Editing names and habitats for acoustic monitoring points"
+
+#~ msgid "Загальний огляд"
+#~ msgstr "General overview"
+
+#~ msgid "Рейтингова таблиця видів за кількістю акустичних детекцій"
+#~ msgstr "Ranked table of species by the number of acoustic detections"
+
+#~ msgid "Діапазон дат:"
+#~ msgstr "Date range:"
+
+#~ msgid "Біотопи:"
+#~ msgstr "Habitats:"
+
+#~ msgid "Локації:"
+#~ msgstr "Locations:"
+
+#~ msgid "Впевненість:"
+#~ msgstr "Confidence:"
+
+#~ msgid "Мін. детекцій:"
+#~ msgstr "Min. detections:"
+
+#~ msgid "Згенерувати таблицю"
+#~ msgstr "Generate table"
+
+#~ msgid "Детальний аналіз по видах"
+#~ msgstr "Detailed species-by-species analysis"
+
+#~ msgid ""
+#~ "Налаштуйте фільтри та натисніть \"Згенерувати"
+#~ " таблицю\" для відображення статистики."
+#~ msgstr ""
+#~ "Adjust the filters and click \"Generate"
+#~ " table\" to display the statistics."
+
+#~ msgid "Карта буде відображена після застосування фільтрів."
+#~ msgstr "The map will be displayed after applying filters."
+
+#~ msgid "Рейтинг видів за кількістю детекцій"
+#~ msgstr "Species ranking by number of detections"
+
+#~ msgid ""
+#~ "Налаштуйте фільтри та натисніть \"Згенерувати"
+#~ " таблицю\" для відображення рейтингу видів."
+#~ msgstr ""
+#~ "Adjust the filters and click \"Generate"
+#~ " table\" to display the species "
+#~ "ranking."
+
+#~ msgid "-- Всі класи --"
+#~ msgstr "-- All classes --"
+
+#~ msgid "-- Всі ряди --"
+#~ msgstr "-- All orders --"
+
+#~ msgid "-- Всі родини --"
+#~ msgstr "-- All families --"
+
+#~ msgid "-- Всі роди --"
+#~ msgstr "-- All genuses --"
+
+#~ msgid "-- Всі локації --"
+#~ msgstr "-- All locations --"
+
+#~ msgid "Детекцій"
+#~ msgstr "Detections"
+
+#~ msgid "Днів"
+#~ msgstr "Days"
+
+#~ msgid "Помилка завантаження карти."
+#~ msgstr "Map loading error."
+
+#~ msgid "Видів:"
+#~ msgstr "Species:"
+
+#~ msgid "Для вибраних фільтрів немає локацій з детекціями."
+#~ msgstr "There are no locations with detections for the selected filters."
+
+#~ msgid "#"
 #~ msgstr ""
 
-#~ msgid "Ще не створено жодних статей."
+#~ msgid "Детекції"
+#~ msgstr "Detections"
+
+#~ msgid "Дані не знайдено. Спробуйте змінити фільтри."
+#~ msgstr "No data found. Try changing the filters."
+
+#~ msgid "Журнал обслуговування PAM"
+#~ msgstr "ARU Maintenance Log"
+
+#~ msgid "На головну PAM"
+#~ msgstr "To the main PAM page"
+
+#~ msgid "Статус SD-карти"
+#~ msgstr "SD-card status"
+
+#~ msgid "Годин запису на добу"
+#~ msgstr "Recording hours per day"
+
+#~ msgid "Стан приладу"
+#~ msgstr "Device condition"
+
+#~ msgid "Працював"
+#~ msgstr "Working"
+
+#~ msgid "Не працював"
+#~ msgstr "Not working"
+
+#~ msgid "Днів після візиту:"
+#~ msgstr "Days after visit:"
+
+#~ msgid "Прогноз АКБ:"
+#~ msgstr "Battery forecast:"
+
+#~ msgid "дн."
+#~ msgstr "d."
+
+#~ msgid "Прогноз SD:"
+#~ msgstr "SD forecast:"
+
+#~ msgid "Стан приладу:"
+#~ msgstr "Device conditon:"
+
+#~ msgid "SD-карта:"
+#~ msgstr "SD-card:"
+
+#~ msgid ""
+#~ "УВАГА! Це експериментальна сторінка. Не "
+#~ "варто тренди на основі ПАМ сприймати "
+#~ "за справжню популяційну динаміку."
+#~ msgstr ""
+#~ "ATTENTION! This is an experimental page."
+#~ " The trends based on PAM should "
+#~ "not be interpreted as actual population"
+#~ " dynamics."
+
+#~ msgid "До головної сторінки ПАМ"
+#~ msgstr "To PAM home page"
+
+#~ msgid "Багаторічна динаміка (індекс RAI)"
+#~ msgstr "Long-term dynamics (DR)"
+
+#~ msgid "ЕКСПЕРИМЕНТ! Відносна активність у біотопах (детекцій / годину)"
+#~ msgstr "EXPERIMENT! Relative activity in habitats (detections per hour)"
+
+#~ msgid "Середній тренд (RAI)"
+#~ msgstr "Mean trend (DR)"
+
+#~ msgid "Індекс RAI (детекцій/год)"
+#~ msgstr "DR (detections per hour)"
+
+#~ msgid "Відносна активність (детекцій / годину)"
+#~ msgstr "Relative activity (detections / hour)"
+
+#~ msgid "Аналіз даних акустичного моніторингу фауни Розточчя"
+#~ msgstr "Analysis of data from the acoustic monitoring of the fauna of Roztochya"
+
+#~ msgid "Спочатку виберіть вид."
+#~ msgstr "Select species first."
+
+#~ msgid "Поріг p≥0.95"
+#~ msgstr "Threshold p≥0.95"
+
+#~ msgid "До загальної таблиці"
+#~ msgstr "To general table"
+
+#~ msgid "Застосуйте фільтри для активації"
 #~ msgstr ""
 
-#~ msgid "Номер"
+#~ msgid "Експорт в Excel"
+#~ msgstr "Export Excel"
+
+#~ msgid "Карта виявлень"
+#~ msgstr "Map of detections"
+
+#~ msgid "Візуалізація даних"
+#~ msgstr "Data visualization"
+
+#~ msgid "Підтверджено людиною"
+#~ msgstr "Confirmed by human"
+
+#~ msgid "Відхилено людиною"
+#~ msgstr "Rejected by human"
+
+#~ msgid "Лише автоматична ідентифікація"
+#~ msgstr "Automatic identification only"
+
+#~ msgid "Накласти погоду:"
+#~ msgstr "Overlay weather:"
+
+#~ msgid "Т cер."
+#~ msgstr "T mean"
+
+#~ msgid "Т макс"
+#~ msgstr "T max"
+
+#~ msgid "Опади"
+#~ msgstr "Precip."
+
+#~ msgid "Вітер"
+#~ msgstr "Wind"
+
+#~ msgid "Вологість"
+#~ msgstr "Humidity"
+
+#~ msgid "Тиск"
+#~ msgstr "Pressure"
+
+#~ msgid ""
+#~ "Будь ласка, виберіть вид, налаштуйте "
+#~ "фільтри та натисніть \"Застосувати\"."
+#~ msgstr "Please select a species, adjust the filters, and click \"Apply\"."
+
+#~ msgid "Помилка:"
+#~ msgstr "Error:"
+
+#~ msgid "Не вдалося завантажити список видів."
+#~ msgstr "Failed to load the list of species."
+
+#~ msgid "Поріг"
+#~ msgstr "Threshold"
+
+#~ msgid "Локалітети"
+#~ msgstr "Localities"
+
+#~ msgid "Дні з детекціями"
+#~ msgstr "Days with detections"
+
+#~ msgid "Частка від усіх"
+#~ msgstr "Share of all"
+
+#~ msgid "Помилка статистики."
+#~ msgstr "Statistics error."
+
+#~ msgid "Дані не знайдено."
+#~ msgstr "Data not found."
+
+#~ msgid "Темп. (°C)"
+#~ msgstr "Temp. (°C)"
+
+#~ msgid "Темп. мін. (°C)"
+#~ msgstr "Temp. min (°C)"
+
+#~ msgid "Темп. макс (°C)"
+#~ msgstr "Temp. max (°C)"
+
+#~ msgid "Опади (мм)"
+#~ msgstr "Precipitation (mm)"
+
+#~ msgid "Вітер макс. (км/год)"
+#~ msgstr "Wind speed max (km/h)"
+
+#~ msgid "Вологість (%%)"
+#~ msgstr "Humidity (%%)"
+
+#~ msgid "Тиск (гПа)"
+#~ msgstr "Pressure (hPa)"
+
+#~ msgid "Кількість детекцій за день"
+#~ msgstr "Number of detections per day"
+
+#~ msgid "Дата"
+#~ msgstr "Date"
+
+#~ msgid "Погодні показники"
+#~ msgstr "Weather parameters"
+
+#~ msgid "Не перевірено"
+#~ msgstr "Not verified"
+
+#~ msgid "Відхилено"
+#~ msgstr "Rejected"
+
+#~ msgid "Підтверджено"
+#~ msgstr "Confirmed"
+
+#~ msgid "Схід"
+#~ msgstr "Sunrise"
+
+#~ msgid "Захід"
+#~ msgstr "Sunset"
+
+#~ msgid "Добовий розподіл детекцій"
+#~ msgstr "Daily distribution of detections"
+
+#~ msgid "Час доби"
+#~ msgstr "Time of day"
+
+#~ msgid "Дані для цього графіка не знайдено."
+#~ msgstr "No data found for the scatter plot."
+
+#~ msgid "Усі детекції та їх точність (confidence)"
+#~ msgstr "All detections and their confidence"
+
+#~ msgid "Рівень впевненості"
+#~ msgstr "Confidence level"
+
+#~ msgid "Верифікація аудіосегментів"
+#~ msgstr "Audio Segment Verification"
+
+#~ msgid "Вид для верифікації аудіосегментів BirdNET:"
+#~ msgstr "Species for BirdNET Audio Segment Verification"
+
+#~ msgid "Моя статистика"
+#~ msgstr "My statistics"
+
+#~ msgid "Всього"
+#~ msgstr "Total"
+
+#~ msgid "Залишилось"
+#~ msgstr "Pending"
+
+#~ msgid "Позитивних"
+#~ msgstr "Positive"
+
+#~ msgid "Негативних"
+#~ msgstr "Negative"
+
+#~ msgid "Пропущених"
+#~ msgstr "Skipped"
+
+#~ msgid "Дата запису:"
+#~ msgstr "Recording date:"
+
+#~ msgid "Час запису:"
+#~ msgstr "Recording time:"
+
+#~ msgid "Сонограма аудіосегменту"
+#~ msgstr "Audio segment spectrogram"
+
+#~ msgid "Ваш браузер не підтримує аудіо плеєр."
+#~ msgstr "Your browser does not support the audio player."
+
+#~ msgid "ТАК - правильно"
+#~ msgstr "YES - correct"
+
+#~ msgid "НІ - неправильно"
+#~ msgstr "NO - incorrect"
+
+#~ msgid "Сегменти для верифікації відсутні"
+#~ msgstr "No segments available for verification"
+
+#~ msgid ""
+#~ "Немає сегментів для верифікації за "
+#~ "вибраними критеріями, або ви вже "
+#~ "верифікували всі доступні сегменти."
+#~ msgstr ""
+#~ "There are no segments for verification"
+#~ " that match the selected criteria, or"
+#~ " you have already verified all "
+#~ "available segments."
+
+#~ msgid "Помилка завантаження сегменту"
+#~ msgstr "Error loading segment."
+
+#~ msgid "Немає активного сегменту для верифікації"
+#~ msgstr "No active segment for verification"
+
+#~ msgid "Верифікацію збережено! (Підтверджено)"
+#~ msgstr "Verification saved! (Confirmed)"
+
+#~ msgid "Верифікацію збережено! (Відхилено)"
+#~ msgstr "Verification saved! (Rejected)"
+
+#~ msgid "Сегмент пропущено"
+#~ msgstr "(Segment skipped)"
+
+#~ msgid "Помилка збереження"
+#~ msgstr "Save error:"
+
+#~ msgid "Помилка: "
+#~ msgstr "Error: "
+
+#~ msgid ""
+#~ "Перегляд та фільтрація завантажених "
+#~ "аудіосегментів з інформацією про статус "
+#~ "верифікації"
+#~ msgstr ""
+#~ "Viewing and filtering uploaded audio "
+#~ "segments with information about their "
+#~ "verification status"
+
+#~ msgid "-- Усі види --"
+#~ msgstr "-- All species --"
+
+#~ msgid "-- Усі статуси --"
+#~ msgstr "-- All statuses --"
+
+#~ msgid "На верифікацію"
+#~ msgstr "Pending verification"
+
+#~ msgid "Завершено"
+#~ msgstr "Completed"
+
+#~ msgid "Архівовано"
+#~ msgstr "Archived"
+
+#~ msgid "На сторінці:"
+#~ msgstr "Per page:"
+
+#~ msgid "Загальна статистика (відфільтровано)"
+#~ msgstr "General statistics (filtered)"
+
+#~ msgid "Сегментів"
+#~ msgstr "Segments"
+
+#~ msgid "Сер. точність"
+#~ msgstr "Avg. confidence"
+
+#~ msgid "Топ верифікаторів (за фільтром)"
+#~ msgstr "Top verifiers (filtered)"
+
+#~ msgid "Список сегментів"
+#~ msgstr "Segment list"
+
+#~ msgid "Помилка завантаження даних"
+#~ msgstr "Data loading error."
+
+#~ msgid "Помилка завантаження рейтингу"
+#~ msgstr "Rating loading error"
+
+#~ msgid "Сегменти не знайдено за вибраними критеріями"
+#~ msgstr "No segments found for the selected criteria"
+
+#~ msgid "Файл"
+#~ msgstr "File"
+
+#~ msgid "Точність"
+#~ msgstr "Confidence"
+
+#~ msgid "Дата запису"
+#~ msgstr "Recording date"
+
+#~ msgid "Час запису"
+#~ msgstr "Recording time"
+
+#~ msgid "Статус"
+#~ msgstr "Status"
+
+#~ msgid "Верифікації"
+#~ msgstr "Verifications"
+
+#~ msgid "Дані для рейтингу відсутні за вибраними критеріями"
+#~ msgstr "No rating data available for the selected criteria"
+
+#~ msgid "верифікацій"
+#~ msgstr "verifications"
+
+#~ msgid "Завантаження ZIP архівів з аудіосегментами"
+#~ msgstr "Uploading ZIP archives with audio segments"
+
+#~ msgid ""
+#~ "Завантажуйте архіви з аудіосегментами для "
+#~ "верифікації класифікацій BirdNET"
+#~ msgstr "Upload archives with audio segments to verify BirdNET classifications"
+
+#~ msgid "Всього сегментів"
+#~ msgstr "Total segments"
+
+#~ msgid "Завершених"
+#~ msgstr "Completed"
+
+#~ msgid "Видів у системі"
+#~ msgstr "Species in system"
+
+#~ msgid "Вибрати ZIP файл"
+#~ msgstr "Select ZIP file"
+
+#~ msgid "або перетягніть файл сюди"
+#~ msgstr "or drag and drop the file here"
+
+#~ msgid "Найбільше сегментів по видах"
+#~ msgstr "Most segments by species"
+
+#~ msgid "Інструкції"
+#~ msgstr "Instructions"
+
+#~ msgid "ZIP архів повинен містити папки з латинськими назвами видів"
+#~ msgstr ""
+#~ "The ZIP archive must contain folders "
+#~ "with the Latin names of the "
+#~ "species"
+
+#~ msgid ""
+#~ "У кожній папці - .wav файли з "
+#~ "іменами у форматі: точність_локація_дата_час.wav"
+#~ msgstr ""
+#~ "In each folder - .wav files with"
+#~ " names in the format: "
+#~ "confidence_location_date_time.wav"
+
+#~ msgid "Приклад: 0.804_STAVY_20250303_184602.wav"
+#~ msgstr "Example: 0.804_STAVY_20250303_184602.wav"
+
+#~ msgid "Файли-дублікати автоматично пропускаються"
+#~ msgstr "Duplicate files are automatically skipped"
+
+#~ msgid "Невідомі види логуються, але не обробляються"
+#~ msgstr "Unknown species are logged but not processed"
+
+#~ msgid "Будь ласка, виберіть ZIP файл"
+#~ msgstr "Please select a ZIP file."
+
+#~ msgid "Вибрано файл: "
+#~ msgstr "File selected: "
+
+#~ msgid "Будь ласка, виберіть файл"
+#~ msgstr "Please select a file."
+
+#~ msgid "Обробляється..."
+#~ msgstr "Processing..."
+
+#~ msgid "Помилка сервера. Перевірте логи."
+#~ msgstr "Server error. Please check the logs."
+
+#~ msgid "Архів успішно оброблено!"
+#~ msgstr "Archive processed successfully!"
+
+#~ msgid "Всього файлів:"
+#~ msgstr "Total files:"
+
+#~ msgid "Оброблено:"
+#~ msgstr "Processed:"
+
+#~ msgid "Дублікатів:"
+#~ msgstr "Duplicates:"
+
+#~ msgid "Помилок:"
+#~ msgstr "Errors:"
+
+#~ msgid "Попередньо верифіковані файли:"
+#~ msgstr "Pre-verified files:"
+
+#~ msgid "Позитивні:"
+#~ msgstr "Positive:"
+
+#~ msgid "Негативні:"
+#~ msgstr "Negative:"
+
+#~ msgid "Неверифіковані:"
+#~ msgstr "Unverified:"
+
+#~ msgid "Оброблені види:"
+#~ msgstr "Processed species:"
+
+#~ msgid "Деталі помилок:"
+#~ msgstr "Errors details:"
+
+#~ msgid "Папка виду"
+#~ msgstr "Species folder"
+
+#~ msgid "Файл та причина помилки"
+#~ msgstr "Fail and error cause"
+
+#~ msgid "Помилка обробки"
+#~ msgstr "Processing error"
+
+#~ msgid "Перевірте логи сервера для детальної інформації про помилку."
+#~ msgstr "Check the server logs for detailed error information."
+
+#~ msgid "Багаторічні тренди"
 #~ msgstr ""
 
-#~ msgid "Опубліковано"
-#~ msgstr "Published"
+#~ msgid "Порівняльна таблиця річної активності видів"
+#~ msgstr "Comparative table of annual species activity"
 
-#~ msgid "Чорнетка"
-#~ msgstr ""
+#~ msgid "Рік початку:"
+#~ msgstr "Start year:"
 
-#~ msgid "УВАГА! Це видалить випуск і ВСІ статті в ньому. Ви впевнені?"
-#~ msgstr ""
+#~ msgid "Рік кінця:"
+#~ msgstr "End year:"
 
-#~ msgid "Ще не створено жодних випусків."
-#~ msgstr ""
+#~ msgid "Мін. детекцій на рік:"
+#~ msgstr "Min. detections per year:"
 
-#~ msgid "Назва (UK)"
-#~ msgstr "Title (UK)"
+#~ msgid "Налаштуйте фільтри та натисніть \"Згенерувати таблицю\"."
+#~ msgstr "Adjust the filters and click \"Generate table\"."
 
-#~ msgid "Назва (EN)"
-#~ msgstr "Title (EN)"
+#~ msgid "Всі біотопи"
+#~ msgstr "All habitats"
 
-#~ msgid "Ви впевнені, що хочете видалити цей тег?"
-#~ msgstr ""
+#~ msgid "Всі локації"
+#~ msgstr "All locations"
 
-#~ msgid "Ще не створено жодних тегів."
-#~ msgstr "No tags have been created yet."
+#~ msgid "Помилка сервера"
+#~ msgstr "Server error"
 
-#~ msgid "Журнал \"Troglodytes\""
-#~ msgstr ""
+#~ msgid "Разом"
+#~ msgstr "Total"
 
-#~ msgid "Журнал \"Troglodytes\": Архів випусків"
-#~ msgstr ""
+#~ msgid "Багаторічні тренди видів за даними акустичного моніторингу"
+#~ msgstr "Multiyear species trends according to PAM data"
 
-#~ msgid "Наразі немає опублікованих випусків."
-#~ msgstr ""
+#~ msgid "Побудувати графік"
+#~ msgstr "Generate chart"
 
-#~ msgid "До архіву випусків"
-#~ msgstr ""
+#~ msgid ""
+#~ "Будь ласка, виберіть вид та натисніть"
+#~ " \"Побудувати графік\" для аналізу."
+#~ msgstr "Please select a species and click \"Generate Chart\" to analyze."
 
-#~ msgid "Зміст"
-#~ msgstr ""
+#~ msgid "Не вдалося завантажити дані для аналізу. Спробуйте пізніше."
+#~ msgstr "Failed to load data for analysis. Try later."
 
-#~ msgid "Фільтрувати статті за тегом:"
-#~ msgstr ""
+#~ msgid "Для вибраного виду та періоду немає розрахованих даних."
+#~ msgstr "No data is available for the selected species and period."
 
-#~ msgid "У цьому випуску ще немає статей."
-#~ msgstr ""
+#~ msgid "Індекс відносної чисельності (RAI)"
+#~ msgstr "Relativ activity index (DR)"
 
-#~ msgid "Статті за тегом"
-#~ msgstr ""
+#~ msgid "RAI (детекцій на годину)"
+#~ msgstr "DR (detections per hour)"
 
-#~ msgid "Статті за тегом:"
-#~ msgstr "Articles for tag:"
-
-#~ msgid "Не знайдено статей з таким тегом."
-#~ msgstr ""
-
-#~ msgid "Ласкаво просимо!"
-#~ msgstr "Welcome!"
-
-#~ msgid "Якийсь текст."
-#~ msgstr "Some text."
+#~ msgid "Рік"
+#~ msgstr "Year"
 
