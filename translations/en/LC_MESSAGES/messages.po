@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-17 15:25+0200\n"
+"POT-Creation-Date: 2026-02-17 18:12+0200\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -21,6 +21,71 @@ msgstr ""
 #: app/camera_traps/decorators.py:27 app/camera_traps/decorators.py:34
 msgid "У вас недостатньо прав для доступу до цієї сторінки."
 msgstr "You do not have sufficient permissions to access this page."
+
+#: app/camera_traps/forms.py:11
+msgid "Виберіть існуюче місце"
+msgstr ""
+
+#: app/camera_traps/forms.py:14
+msgid "Назва місця"
+msgstr ""
+
+#: app/camera_traps/forms.py:18
+msgid "Опис місця"
+msgstr ""
+
+#: app/camera_traps/forms.py:22
+#: app/camera_traps/templates/manage_locations.html:111
+#: app/pam/templates/manage_pam_locations.html:111
+msgid "Широта (Lat)"
+msgstr "Latitude (Lat)"
+
+#: app/camera_traps/forms.py:24
+msgid "Широта має бути між -90 та 90."
+msgstr ""
+
+#: app/camera_traps/forms.py:27
+#: app/camera_traps/templates/manage_locations.html:115
+#: app/pam/templates/manage_pam_locations.html:115
+msgid "Довгота (Lng)"
+msgstr "Longitude (Lng)"
+
+#: app/camera_traps/forms.py:29
+msgid "Довгота має бути між -180 та 180."
+msgstr ""
+
+#: app/camera_traps/forms.py:32
+#, fuzzy
+msgid "Створити місце"
+msgstr "Create and select location"
+
+#: app/camera_traps/forms.py:33
+#, fuzzy
+msgid "Завантажити фотографії"
+msgstr "Upload Photos"
+
+#: app/camera_traps/forms.py:37
+msgid "Observation ID"
+msgstr ""
+
+#: app/camera_traps/forms.py:41
+#, fuzzy
+msgid "Вид тварини"
+msgstr "Animal species:"
+
+#: app/camera_traps/forms.py:43
+#, fuzzy
+msgid "Кількість особин"
+msgstr "Number of observations"
+
+#: app/camera_traps/forms.py:46
+msgid "Додаткові теги"
+msgstr ""
+
+#: app/camera_traps/forms.py:53
+#, fuzzy
+msgid "Зберегти у вибране"
+msgstr "Save changes"
 
 #: app/camera_traps/routes.py:168 app/pam/templates/pam_overview.html:563
 msgid "Помилка завантаження статистики."
@@ -999,7 +1064,7 @@ msgstr "Random"
 
 #: app/camera_traps/templates/identification.html:602
 msgid "Дата (спочатку нові)"
-msgstr "By date (newer first)
+msgstr "By date (newer first"
 
 #: app/camera_traps/templates/identification.html:603
 msgid "Дата (спочатку старі)"
@@ -1021,7 +1086,7 @@ msgstr "Photo for Identification"
 msgid "Відкрити у повному розмірі"
 msgstr "Open in full size"
 
-#: app/camera_traps/templates/identification.html:666
+#: app/camera_traps/templates/identification.html:666 app/utils/forms.py:20
 msgid "Надіслати"
 msgstr "Send"
 
@@ -1099,16 +1164,6 @@ msgstr "Location name"
 #: app/camera_traps/templates/manage_locations.html:105
 msgid "Опис локації"
 msgstr "Description"
-
-#: app/camera_traps/templates/manage_locations.html:111
-#: app/pam/templates/manage_pam_locations.html:111
-msgid "Широта (Lat)"
-msgstr "Latitude (Lat)"
-
-#: app/camera_traps/templates/manage_locations.html:115
-#: app/pam/templates/manage_pam_locations.html:115
-msgid "Довгота (Lng)"
-msgstr "Longitude (Lng)"
 
 #: app/camera_traps/templates/manage_locations.html:120
 #: app/pam/templates/manage_pam_locations.html:120
@@ -3067,6 +3122,14 @@ msgstr "DR (detections per hour)"
 msgid "Рік"
 msgstr "Year"
 
+#: app/routes/main.py:72
+msgid "Неправильний логін або пароль. Спробуйте ще раз."
+msgstr ""
+
+#: app/routes/main.py:74 app/templates/login.html:2
+msgid "Увійти"
+msgstr "Enter"
+
 #: app/templates/about.html:7
 msgid "Про проєкт"
 msgstr ""
@@ -3093,11 +3156,7 @@ msgstr ""
 msgid "Форма"
 msgstr "Form"
 
-#: app/templates/login.html:2
-msgid "Увійти"
-msgstr "Enter"
-
-#: app/templates/login.html:6
+#: app/templates/login.html:6 app/utils/forms.py:12
 msgid "Увійти в систему"
 msgstr "Sign in"
 
@@ -3120,6 +3179,32 @@ msgstr ""
 
 #: app/templates/admin/admin_home.html:7
 msgid "Тут можуть бути якісь інструменти для панелі адміністратора."
+msgstr ""
+
+#: app/utils/forms.py:10
+#, fuzzy
+msgid "Ім'я користувача"
+msgstr "User:"
+
+#: app/utils/forms.py:11
+msgid "Пароль"
+msgstr ""
+
+#: app/utils/forms.py:15
+msgid "Ваше ім'я"
+msgstr ""
+
+#: app/utils/forms.py:16
+msgid "Ваш Email"
+msgstr ""
+
+#: app/utils/forms.py:17
+#, fuzzy
+msgid "Тема"
+msgstr "T max"
+
+#: app/utils/forms.py:18
+msgid "Повідомлення"
 msgstr ""
 
 #~ msgid "ГОЛОВНА"
