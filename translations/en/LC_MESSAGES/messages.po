@@ -55,12 +55,10 @@ msgid "Довгота має бути між -180 та 180."
 msgstr ""
 
 #: app/camera_traps/forms.py:32
-#, fuzzy
 msgid "Створити місце"
-msgstr "Create and select location"
+msgstr "Create a location"
 
 #: app/camera_traps/forms.py:33
-#, fuzzy
 msgid "Завантажити фотографії"
 msgstr "Upload Photos"
 
@@ -69,23 +67,20 @@ msgid "Observation ID"
 msgstr ""
 
 #: app/camera_traps/forms.py:41
-#, fuzzy
 msgid "Вид тварини"
-msgstr "Animal species:"
+msgstr "Animal species"
 
 #: app/camera_traps/forms.py:43
-#, fuzzy
 msgid "Кількість особин"
-msgstr "Number of observations"
+msgstr "Number of individuals"
 
 #: app/camera_traps/forms.py:46
 msgid "Додаткові теги"
 msgstr ""
 
 #: app/camera_traps/forms.py:53
-#, fuzzy
 msgid "Зберегти у вибране"
-msgstr "Save changes"
+msgstr "Save in selected"
 
 #: app/camera_traps/routes.py:168 app/pam/templates/pam_overview.html:563
 msgid "Помилка завантаження статистики."
@@ -3140,16 +3135,15 @@ msgstr ""
 
 #: app/templates/base.html:8
 msgid "DBU - біомоніторинг"
-msgstr ""
+msgstr "DBU - biomonitoring"
 
 #: app/templates/base.html:17
 msgid "DBU"
 msgstr ""
 
 #: app/templates/base.html:17
-#, fuzzy
 msgid "біомоніторинг"
-msgstr "Monitoring of Roztochya"
+msgstr "biomonitoring"
 
 #: app/templates/base.html:22
 msgid "ГОЛОВНА"
@@ -3227,13 +3221,12 @@ msgid "Тут можуть бути якісь інструменти для п�
 msgstr ""
 
 #: app/utils/forms.py:10
-#, fuzzy
 msgid "Ім'я користувача"
-msgstr "User:"
+msgstr "User name"
 
 #: app/utils/forms.py:11
 msgid "Пароль"
-msgstr ""
+msgstr "Password"
 
 #: app/utils/forms.py:15
 msgid "Ваше ім'я"
@@ -3244,9 +3237,8 @@ msgid "Ваш Email"
 msgstr ""
 
 #: app/utils/forms.py:17
-#, fuzzy
 msgid "Тема"
-msgstr "T max"
+msgstr "Theme"
 
 #: app/utils/forms.py:18
 msgid "Повідомлення"
