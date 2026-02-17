@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-17 11:31+0200\n"
+"POT-Creation-Date: 2026-02-17 15:25+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3011,17 +3011,16 @@ msgstr ""
 msgid "Рік"
 msgstr ""
 
-#: app/templates/about.html:3 app/templates/contacts.html:3
-#: app/templates/index.html:3
+#: app/templates/about.html:7
+msgid "Про проєкт"
+msgstr ""
+
+#: app/templates/about.html:26
+msgid "Контент для цієї сторінки ще не завантажено в базу даних."
+msgstr ""
+
+#: app/templates/contacts.html:3
 msgid "Заголовок сторінки"
-msgstr ""
-
-#: app/templates/about.html:7 app/templates/index.html:7
-msgid "Ласкаво просимо!"
-msgstr ""
-
-#: app/templates/about.html:9 app/templates/index.html:9
-msgid "Якийсь текст."
 msgstr ""
 
 #: app/templates/contacts.html:7
