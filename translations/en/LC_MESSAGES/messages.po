@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-17 18:12+0200\n"
+"POT-Creation-Date: 2026-02-17 18:18+0200\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -3126,7 +3126,7 @@ msgstr "Year"
 msgid "Неправильний логін або пароль. Спробуйте ще раз."
 msgstr ""
 
-#: app/routes/main.py:74 app/templates/login.html:2
+#: app/routes/main.py:74 app/templates/base.html:40 app/templates/login.html:2
 msgid "Увійти"
 msgstr "Enter"
 
@@ -3138,19 +3138,64 @@ msgstr ""
 msgid "Контент для цієї сторінки ще не завантажено в базу даних."
 msgstr ""
 
+#: app/templates/base.html:8
+msgid "DBU - біомоніторинг"
+msgstr ""
+
+#: app/templates/base.html:17
+msgid "DBU"
+msgstr ""
+
+#: app/templates/base.html:17
+#, fuzzy
+msgid "біомоніторинг"
+msgstr "Monitoring of Roztochya"
+
+#: app/templates/base.html:22
+msgid "ГОЛОВНА"
+msgstr "HOME"
+
+#: app/templates/base.html:23
+msgid "ПАМ"
+msgstr "PAM"
+
+#: app/templates/base.html:24
+msgid "ФОТОПАСТКИ"
+msgstr "PHOTOTRAPS"
+
+#: app/templates/base.html:25
+msgid "ПРО ПРОЕКТ"
+msgstr "ABOUT PROJECT"
+
+#: app/templates/base.html:26
+msgid "КОНТАКТИ"
+msgstr "CONTACTS"
+
+#: app/templates/base.html:28
+msgid "АДМІН"
+msgstr "ADMIN"
+
+#: app/templates/base.html:37
+msgid "Вийти"
+msgstr "Exit"
+
+#: app/templates/base.html:85
+msgid "Юрій Струс, ©"
+msgstr "Iurii Strus, ©"
+
 #: app/templates/contacts.html:3
 msgid "Заголовок сторінки"
 msgstr "Page title"
 
 #: app/templates/contacts.html:7
 msgid "Зв’язок з автором"
-msgstr ""
+msgstr "Get in touch with the author"
 
 #: app/templates/contacts.html:11
 msgid ""
 "Якщо у вас є запитання, або пропозиції щодо проекту, ви можете задати їх "
 "через форму на персональному сайті автора "
-msgstr ""
+msgstr "If you have any questions or suggestions about the project, you can submit them through the form on the author’s personal website."
 
 #: app/templates/contacts.html:14
 msgid "Форма"
@@ -3175,7 +3220,7 @@ msgstr "contact the author"
 
 #: app/templates/admin/admin_home.html:5
 msgid "Панель адміністратора"
-msgstr ""
+msgstr "Administrator panel"
 
 #: app/templates/admin/admin_home.html:7
 msgid "Тут можуть бути якісь інструменти для панелі адміністратора."

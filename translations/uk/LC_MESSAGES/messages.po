@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-17 18:12+0200\n"
+"POT-Creation-Date: 2026-02-17 18:18+0200\n"
 "PO-Revision-Date: 2025-08-05 22:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -3067,7 +3067,7 @@ msgstr ""
 msgid "Неправильний логін або пароль. Спробуйте ще раз."
 msgstr ""
 
-#: app/routes/main.py:74 app/templates/login.html:2
+#: app/routes/main.py:74 app/templates/base.html:40 app/templates/login.html:2
 msgid "Увійти"
 msgstr ""
 
@@ -3077,6 +3077,50 @@ msgstr ""
 
 #: app/templates/about.html:26
 msgid "Контент для цієї сторінки ще не завантажено в базу даних."
+msgstr ""
+
+#: app/templates/base.html:8
+msgid "DBU - біомоніторинг"
+msgstr ""
+
+#: app/templates/base.html:17
+msgid "DBU"
+msgstr ""
+
+#: app/templates/base.html:17
+msgid "біомоніторинг"
+msgstr ""
+
+#: app/templates/base.html:22
+msgid "ГОЛОВНА"
+msgstr ""
+
+#: app/templates/base.html:23
+msgid "ПАМ"
+msgstr ""
+
+#: app/templates/base.html:24
+msgid "ФОТОПАСТКИ"
+msgstr ""
+
+#: app/templates/base.html:25
+msgid "ПРО ПРОЕКТ"
+msgstr ""
+
+#: app/templates/base.html:26
+msgid "КОНТАКТИ"
+msgstr ""
+
+#: app/templates/base.html:28
+msgid "АДМІН"
+msgstr ""
+
+#: app/templates/base.html:37
+msgid "Вийти"
+msgstr ""
+
+#: app/templates/base.html:85
+msgid "Юрій Струс, ©"
 msgstr ""
 
 #: app/templates/contacts.html:3
