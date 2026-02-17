@@ -252,6 +252,20 @@ button.button:hover {
     font-size: 16px;
 }
 
+/* Стиль для клікабельних карток на головній */
+.card-link {
+    text-decoration: none !important; /* Прибираємо підкреслення */
+    color: inherit !important;        /* Зберігаємо колір тексту */
+    display: block;
+    height: 100%;
+}
+
+.card-link:hover .article-item {
+    border-color: #0779e4; /* Змінюємо колір рамки при наведенні */
+    transform: translateY(-5px); /* Легкий підйом */
+    transition: all 0.3s ease;
+}
+
 .article-tags {
     margin-top: 15px;
     margin-bottom: 5px;

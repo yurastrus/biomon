@@ -1,12 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Заголовок сторінки') }}{% endblock %}
+{% block title %}
+    {% if content %}
+        {{ content.title_uk if lang_code == 'uk' else content.title_en }}
+    {% else %}
+        {{ _('Про проєкт') }}
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>{{ _('Ласкаво просимо!') }}</h1>
-    <div>
-        <p>{{ _('Якийсь текст.') }}</p>
-    </div>
+    {% if content %}
+        <h1>{{ content.title_uk if lang_code == 'uk' else content.title_en }}</h1>
+        
+        <!-- Використовуємо існуючий клас full-article для вирівнювання по лівому краю -->
+        <div class="full-article">
+            {% if lang_code == 'uk' %}
+                {{ content.body_uk | safe }}
+            {% else %}
+                {{ content.body_en | safe }}
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            {{ _('Контент для цієї сторінки ще не завантажено в базу даних.') }}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

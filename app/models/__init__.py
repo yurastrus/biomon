@@ -95,7 +95,16 @@ class Role(db.Model):
     name = db.Column(db.String(20), unique=True, nullable=False)
     def __repr__(self):
         return f"Role('{self.name}')"
-    
+
+class SiteTextContent(db.Model):
+    __tablename__ = 'site_text_content'
+    id = db.Column(db.Integer, primary_key=True)
+    page_key = db.Column(db.String(50), unique=True, nullable=False)
+    title_uk = db.Column(db.Text)
+    body_uk = db.Column(db.Text)
+    title_en = db.Column(db.Text)
+    body_en = db.Column(db.Text)
+
 from app.extensions import login_manager
 
 @login_manager.user_loader

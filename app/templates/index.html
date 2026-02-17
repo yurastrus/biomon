@@ -1,12 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Заголовок сторінки') }}{% endblock %}
+{% block title %}
+    {{ content.title_uk if lang_code == 'uk' else content.title_en }}
+{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>{{ _('Ласкаво просимо!') }}</h1>
-    <div>
-        <p>{{ _('Якийсь текст.') }}</p>
-    </div>
+    {% if content %}
+        <h1 class="display-4 fw-bold mt-5 mb-3">
+            {{ content.title_uk if lang_code == 'uk' else content.title_en }}
+        </h1>      
+        <div class="mt-4 w-100"> 
+            {% if lang_code == 'uk' %}
+                {{ content.body_uk | safe }}
+            {% else %}
+                {{ content.body_en | safe }}
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

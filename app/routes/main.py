@@ -7,7 +7,7 @@ from app.utils.forms import LoginForm, ContactForm
 from app.utils.utils import is_safe_url
 from flask_babel import lazy_gettext as _l
 from app.routes import bp
-from app.models import User
+from app.models import User, SiteTextContent
 from app.extensions import bcrypt
 from werkzeug.security import check_password_hash
 
@@ -21,17 +21,31 @@ def root():
 
 @bp.route('/<lang_code>/')
 def index(lang_code):
-    """Головна сторінка"""
+    """Головна сторінка з динамічним контентом"""
     if lang_code not in current_app.config['LANGUAGES']:
         return redirect(url_for('main.root'))
-    return render_template('index.html')
+    
+    # Отримуємо контент для головної сторінки (page_key='home')
+    content = SiteTextContent.query.filter_by(page_key='home').first()
+    
+    return render_template('index.html', 
+                           lang_code=lang_code, 
+                           content=content)
 
 @bp.route('/<lang_code>/about')
 def about(lang_code):
-    """Сторінка про проект"""
+    """Сторінка про проект з даними з БД"""
+    # Перевірка підтримуваних мов
     if lang_code not in current_app.config['LANGUAGES']:
         return redirect(url_for('main.root'))
-    return render_template('about.html')
+    
+    # Отримуємо контент із нашої нової таблиці
+    content = SiteTextContent.query.filter_by(page_key='about').first()
+    
+    # Якщо в базі ще немає тексту, передаємо None або пустий словник
+    return render_template('about.html', 
+                           lang_code=lang_code, 
+                           content=content)
 
 @bp.route('/<lang_code>/contacts')
 def contacts(lang_code):
