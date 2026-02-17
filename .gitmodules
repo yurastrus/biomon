@@ -1,3 +1,6 @@
 [submodule "app/pam"]
 	path = app/pam
 	url = https://github.com/yurastrus/shared-pam.git
+[submodule "app/camera_traps"]
+	path = app/camera_traps
+	url = https://github.com/yurastrus/shared-ct.git
