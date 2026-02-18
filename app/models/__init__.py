@@ -4,12 +4,28 @@ from app.extensions import db
 from sqlalchemy.dialects.postgresql import ARRAY, TEXT
 from sqlalchemy import CheckConstraint
 
+# Таблиця зв'язку Користувач-Роль
 user_roles = db.Table('user_roles',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
     db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
 )
 
-# === КРОК 2: Визначаємо ВСІ моделі в одному місці ===
+# Таблиця зв'язку Користувач-Установа
+user_institutions = db.Table('user_institutions',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('institution_id', db.Integer, db.ForeignKey('institutions.id'), primary_key=True)
+)
+
+# Визначаємо моделі
+class Institution(db.Model):
+    __tablename__ = 'institutions'
+    id = db.Column(db.Integer, primary_key=True)
+    name_uk = db.Column(db.String(255), nullable=False)
+    name_en = db.Column(db.String(255))
+    code = db.Column(db.String(50), unique=True)
+
+    def __repr__(self):
+        return f'<Institution {self.name_uk}>'
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -19,6 +35,8 @@ class User(db.Model, UserMixin):
 
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
+
+    institutions = db.relationship('Institution', secondary=user_institutions, backref=db.backref('users', lazy='dynamic'))
 
     @property
     def full_name(self):
