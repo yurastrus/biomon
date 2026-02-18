@@ -24,6 +24,11 @@ class Config:
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
+
     # === НАЛАШТУВАННЯ ДЛЯ МОДУЛЯ CAMERA TRAPS ===
     CAMERA_TRAP_CONFIG = {
         'MAX_FILE_SIZE': 10 * 1024 * 1024,  # 10MB
