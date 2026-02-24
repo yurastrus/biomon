@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-23 18:55+0200\n"
+"POT-Creation-Date: 2026-02-24 15:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -389,28 +389,28 @@ msgstr ""
 #: app/camera_traps/templates/ct_data_export.html:42
 #: app/pam/templates/pam_data_export.html:44
 #: app/pam/templates/pam_overview.html:288
-#: app/pam/templates/pam_yearly_table.html:51
+#: app/pam/templates/pam_yearly_table.html:105
 msgid "Клас:"
 msgstr ""
 
 #: app/camera_traps/templates/ct_data_export.html:43
 #: app/pam/templates/pam_data_export.html:45
 #: app/pam/templates/pam_overview.html:292
-#: app/pam/templates/pam_yearly_table.html:52
+#: app/pam/templates/pam_yearly_table.html:109
 msgid "Ряд:"
 msgstr ""
 
 #: app/camera_traps/templates/ct_data_export.html:44
 #: app/pam/templates/pam_data_export.html:46
 #: app/pam/templates/pam_overview.html:296
-#: app/pam/templates/pam_yearly_table.html:53
+#: app/pam/templates/pam_yearly_table.html:113
 msgid "Родина:"
 msgstr ""
 
 #: app/camera_traps/templates/ct_data_export.html:45
 #: app/pam/templates/pam_data_export.html:47
 #: app/pam/templates/pam_overview.html:300
-#: app/pam/templates/pam_yearly_table.html:54
+#: app/pam/templates/pam_yearly_table.html:117
 msgid "Рід:"
 msgstr ""
 
@@ -481,25 +481,25 @@ msgstr ""
 
 #: app/camera_traps/templates/ct_data_export.html:121
 #: app/pam/templates/pam_data_export.html:154
-#: app/pam/templates/pam_yearly_table.html:149
+#: app/pam/templates/pam_yearly_table.html:235
 msgid "Всі класи"
 msgstr ""
 
 #: app/camera_traps/templates/ct_data_export.html:122
 #: app/pam/templates/pam_data_export.html:155
-#: app/pam/templates/pam_yearly_table.html:150
+#: app/pam/templates/pam_yearly_table.html:236
 msgid "Всі ряди"
 msgstr ""
 
 #: app/camera_traps/templates/ct_data_export.html:123
 #: app/pam/templates/pam_data_export.html:156
-#: app/pam/templates/pam_yearly_table.html:151
+#: app/pam/templates/pam_yearly_table.html:237
 msgid "Всі родини"
 msgstr ""
 
 #: app/camera_traps/templates/ct_data_export.html:124
 #: app/pam/templates/pam_data_export.html:157
-#: app/pam/templates/pam_yearly_table.html:152
+#: app/pam/templates/pam_yearly_table.html:238
 msgid "Всі роди"
 msgstr ""
 
@@ -894,7 +894,7 @@ msgstr ""
 
 #: app/camera_traps/templates/gallery.html:309
 #: app/camera_traps/templates/species_dashboard.html:217
-#: app/pam/templates/pam_species_dashboard.html:57
+#: app/pam/templates/pam_species_dashboard.html:76
 #: app/pam/templates/pam_species_detailed.html:227
 #: app/pam/templates/pam_yearly_trends.html:129
 msgid "Виберіть вид:"
@@ -933,14 +933,14 @@ msgstr ""
 
 #: app/camera_traps/templates/gallery.html:430
 #: app/camera_traps/templates/species_dashboard.html:276
-#: app/pam/templates/pam_species_dashboard.html:115
+#: app/pam/templates/pam_species_dashboard.html:142
 #: app/pam/templates/pam_yearly_trends.html:187
 msgid "-- Пошук та вибір виду --"
 msgstr ""
 
 #: app/camera_traps/templates/gallery.html:444
 #: app/camera_traps/templates/species_dashboard.html:315
-#: app/pam/templates/pam_species_dashboard.html:141
+#: app/pam/templates/pam_species_dashboard.html:195
 #: app/pam/templates/pam_species_detailed.html:597
 #: app/pam/templates/pam_yearly_trends.html:212
 msgid "Будь ласка, виберіть вид."
@@ -1416,19 +1416,19 @@ msgid "Аналіз трендів по видах"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:227
-#: app/pam/templates/pam_species_dashboard.html:66
+#: app/pam/templates/pam_species_dashboard.html:85
 #: app/pam/templates/pam_yearly_trends.html:139
 msgid "Початковий рік:"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:236
-#: app/pam/templates/pam_species_dashboard.html:74
+#: app/pam/templates/pam_species_dashboard.html:93
 #: app/pam/templates/pam_yearly_trends.html:148
 msgid "Кінцевий рік:"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:245
-#: app/pam/templates/pam_species_dashboard.html:82
+#: app/pam/templates/pam_species_dashboard.html:107
 msgid "Побудувати графіки"
 msgstr ""
 
@@ -1437,28 +1437,26 @@ msgid "До загального аналізу"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:254
-#: app/pam/templates/pam_species_dashboard.html:91
+#: app/pam/templates/pam_species_dashboard.html:116
 msgid "Будь ласка, виберіть вид та натисніть \"Побудувати графіки\" для аналізу."
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:336
-#: app/pam/templates/pam_species_dashboard.html:157
 msgid "Не вдалося завантажити дані для аналізу."
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:341
-#: app/pam/templates/pam_species_dashboard.html:162
+#: app/pam/templates/pam_species_dashboard.html:221
 #: app/pam/templates/pam_yearly_trends.html:235
 msgid "Завантаження даних..."
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:350
-#: app/pam/templates/pam_species_dashboard.html:174
 msgid "Для вибраного виду та періоду немає даних."
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:357
-#: app/pam/templates/pam_species_dashboard.html:181
+#: app/pam/templates/pam_species_dashboard.html:240
 msgid "Сезонна активність (кількість детекцій)"
 msgstr ""
 
@@ -1467,69 +1465,69 @@ msgid "Багаторічна динаміка (індекс відносної 
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Січ"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Лют"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Бер"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Кві"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Тра"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Чер"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Лип"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Сер"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Вер"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Жов"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Лис"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:377
-#: app/pam/templates/pam_species_dashboard.html:206
+#: app/pam/templates/pam_species_dashboard.html:265
 msgid "Гру"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:380
 #: app/camera_traps/templates/species_detailed.html:206
 #: app/camera_traps/templates/species_detailed.html:381
-#: app/pam/templates/pam_species_dashboard.html:209
+#: app/pam/templates/pam_species_dashboard.html:268
 #: app/pam/templates/pam_species_detailed.html:866
 msgid "Кількість детекцій"
 msgstr ""
@@ -1539,7 +1537,7 @@ msgid "Середній тренд"
 msgstr ""
 
 #: app/camera_traps/templates/species_dashboard.html:402
-#: app/pam/templates/pam_species_dashboard.html:221
+#: app/pam/templates/pam_species_dashboard.html:281
 #: app/pam/templates/pam_yearly_trends.html:274
 #, python-format
 msgid "95%% Довірчий інтервал"
@@ -1895,7 +1893,7 @@ msgstr ""
 #: app/pam/templates/pam_evaluation_results.html:439
 #: app/pam/templates/pam_overview.html:672
 #: app/pam/templates/pam_verification_segments.html:574
-#: app/pam/templates/pam_yearly_table.html:172
+#: app/pam/templates/pam_yearly_table.html:258
 msgid "Вид"
 msgstr ""
 
@@ -2155,7 +2153,7 @@ msgstr ""
 
 #: app/pam/templates/pam_home.html:67 app/pam/templates/pam_overview.html:335
 #: app/pam/templates/pam_species_dashboard.html:3
-#: app/pam/templates/pam_species_dashboard.html:49
+#: app/pam/templates/pam_species_dashboard.html:68
 msgid "Аналіз багаторічних трендів"
 msgstr ""
 
@@ -2250,35 +2248,37 @@ msgid "Діапазон дат:"
 msgstr ""
 
 #: app/pam/templates/pam_overview.html:305
+#: app/pam/templates/pam_species_dashboard.html:101
 #: app/pam/templates/pam_species_detailed.html:245
 msgid "Установа/проект:"
 msgstr ""
 
 #: app/pam/templates/pam_overview.html:309
 #: app/pam/templates/pam_species_detailed.html:249
-#: app/pam/templates/pam_yearly_table.html:57
+#: app/pam/templates/pam_yearly_table.html:127
 msgid "Біотопи:"
 msgstr ""
 
 #: app/pam/templates/pam_overview.html:313
 #: app/pam/templates/pam_species_detailed.html:253
-#: app/pam/templates/pam_yearly_table.html:58
+#: app/pam/templates/pam_yearly_table.html:131
 msgid "Локації:"
 msgstr ""
 
 #: app/pam/templates/pam_overview.html:320
 #: app/pam/templates/pam_species_detailed.html:259
-#: app/pam/templates/pam_yearly_table.html:61
+#: app/pam/templates/pam_yearly_table.html:95
 msgid "Впевненість:"
 msgstr ""
 
 #: app/pam/templates/pam_overview.html:324
 #: app/pam/templates/pam_species_detailed.html:264
+#: app/pam/templates/pam_yearly_table.html:99
 msgid "Мін. детекцій:"
 msgstr ""
 
 #: app/pam/templates/pam_overview.html:330
-#: app/pam/templates/pam_yearly_table.html:65
+#: app/pam/templates/pam_yearly_table.html:137
 msgid "Згенерувати таблицю"
 msgstr ""
 
@@ -2426,33 +2426,50 @@ msgstr ""
 msgid "SD-карта:"
 msgstr ""
 
-#: app/pam/templates/pam_species_dashboard.html:50
+#: app/pam/templates/pam_species_dashboard.html:69
 msgid ""
 "УВАГА! Це експериментальна сторінка. Не варто тренди на основі ПАМ "
 "сприймати за справжню популяційну динаміку."
 msgstr ""
 
-#: app/pam/templates/pam_species_dashboard.html:83
+#: app/pam/templates/pam_species_dashboard.html:103
+#: app/pam/templates/pam_species_dashboard.html:148
+#: app/pam/templates/pam_yearly_table.html:168
+#: app/pam/templates/pam_yearly_table.html:225
+msgid "Всі доступні"
+msgstr ""
+
+#: app/pam/templates/pam_species_dashboard.html:108
 msgid "До головної сторінки ПАМ"
 msgstr ""
 
-#: app/pam/templates/pam_species_dashboard.html:185
+#: app/pam/templates/pam_species_dashboard.html:216
+msgid ""
+"Не вдалося завантажити дані для аналізу. Можливо, для вибраних параметрів"
+" немає розрахованих даних."
+msgstr ""
+
+#: app/pam/templates/pam_species_dashboard.html:233
+msgid "Для вибраного виду, установи та періоду немає даних."
+msgstr ""
+
+#: app/pam/templates/pam_species_dashboard.html:244
 msgid "Багаторічна динаміка (індекс RAI)"
 msgstr ""
 
-#: app/pam/templates/pam_species_dashboard.html:190
+#: app/pam/templates/pam_species_dashboard.html:248
 msgid "ЕКСПЕРИМЕНТ! Відносна активність у біотопах (детекцій / годину)"
 msgstr ""
 
-#: app/pam/templates/pam_species_dashboard.html:220
+#: app/pam/templates/pam_species_dashboard.html:280
 msgid "Середній тренд (RAI)"
 msgstr ""
 
-#: app/pam/templates/pam_species_dashboard.html:227
+#: app/pam/templates/pam_species_dashboard.html:287
 msgid "Індекс RAI (детекцій/год)"
 msgstr ""
 
-#: app/pam/templates/pam_species_dashboard.html:295
+#: app/pam/templates/pam_species_dashboard.html:346
 msgid "Відносна активність (детекцій / годину)"
 msgstr ""
 
@@ -2570,7 +2587,7 @@ msgid "Помилка статистики."
 msgstr ""
 
 #: app/pam/templates/pam_species_detailed.html:732
-#: app/pam/templates/pam_yearly_table.html:163
+#: app/pam/templates/pam_yearly_table.html:249
 msgid "Дані не знайдено."
 msgstr ""
 
@@ -2996,46 +3013,49 @@ msgid "Перевірте логи сервера для детальної ін
 msgstr ""
 
 #: app/pam/templates/pam_yearly_table.html:4
-#: app/pam/templates/pam_yearly_trends.html:3
-msgid "Багаторічні тренди"
+msgid "Порівняльна таблиця"
 msgstr ""
 
-#: app/pam/templates/pam_yearly_table.html:44
+#: app/pam/templates/pam_yearly_table.html:83
 msgid "Порівняльна таблиця річної активності видів"
 msgstr ""
 
-#: app/pam/templates/pam_yearly_table.html:47
+#: app/pam/templates/pam_yearly_table.html:87
 msgid "Рік початку:"
 msgstr ""
 
-#: app/pam/templates/pam_yearly_table.html:48
+#: app/pam/templates/pam_yearly_table.html:91
 msgid "Рік кінця:"
 msgstr ""
 
-#: app/pam/templates/pam_yearly_table.html:62
-msgid "Мін. детекцій на рік:"
+#: app/pam/templates/pam_yearly_table.html:123
+msgid "Установи/проекти:"
 msgstr ""
 
-#: app/pam/templates/pam_yearly_table.html:68
+#: app/pam/templates/pam_yearly_table.html:140
 msgid "Налаштуйте фільтри та натисніть \"Згенерувати таблицю\"."
 msgstr ""
 
-#: app/pam/templates/pam_yearly_table.html:93
-#: app/pam/templates/pam_yearly_table.html:147
+#: app/pam/templates/pam_yearly_table.html:171
+#: app/pam/templates/pam_yearly_table.html:233
 msgid "Всі біотопи"
 msgstr ""
 
-#: app/pam/templates/pam_yearly_table.html:94
-#: app/pam/templates/pam_yearly_table.html:148
+#: app/pam/templates/pam_yearly_table.html:172
+#: app/pam/templates/pam_yearly_table.html:234
 msgid "Всі локації"
 msgstr ""
 
-#: app/pam/templates/pam_yearly_table.html:160
+#: app/pam/templates/pam_yearly_table.html:246
 msgid "Помилка сервера"
 msgstr ""
 
-#: app/pam/templates/pam_yearly_table.html:174
+#: app/pam/templates/pam_yearly_table.html:260
 msgid "Разом"
+msgstr ""
+
+#: app/pam/templates/pam_yearly_trends.html:3
+msgid "Багаторічні тренди"
 msgstr ""
 
 #: app/pam/templates/pam_yearly_trends.html:122
