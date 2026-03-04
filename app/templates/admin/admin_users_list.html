@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="margin-top: 20px; margin-bottom: 50px;">
+    
+    <!-- Навігація -->
+    <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
+        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a> 
+        &raquo; <strong>{{ _('Користувачі') }}</strong>
+    </div>
+
+    <!-- Заголовок -->
+    <h2 style="text-align: left; margin-bottom: 15px;">{{ _('Керування користувачами') }}</h2>
+    
+    <!-- Кнопка додавання -->
+    <div style="text-align: left; margin-bottom: 20px;">
+        <a href="{{ url_for('admin.add_user', lang_code=g.lang_code) }}" class="button" style="min-width: 200px; margin-top: 0;">
+            + {{ _('Додати користувача') }}
+        </a>
+    </div>
+
+    <!-- Рідна таблиця з твого CSS -->
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>{{ _('Логін') }}</th>
+                <th>{{ _('Прізвище та ім’я') }}</th>
+                <th>{{ _('Установи') }}</th>
+                <th>{{ _('Ролі') }}</th>
+                <th style="text-align: right;">{{ _('Дії') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>
+                    <strong>{{ user.username }}</strong><br>
+                    <span style="font-size: 0.85em; color: gray;">{{ user.email or '' }}</span>
+                </td>
+                <td>{{ user.full_name }}</td>
+                <td>
+                    {% for inst in user.institutions %}
+                        <span class="badge badge-success" style="margin-bottom: 2px;">{{ inst.name_uk }}</span>
+                    {% else %}
+                        <span style="color: gray;">---</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for role in user.roles %}
+                        <span class="badge badge-secondary" style="margin-bottom: 2px;">{{ role.name }}</span>
+                    {% endfor %}
+                </td>
+                <td style="text-align: right; white-space: nowrap;">
+                    
+                    <!-- Редагувати -->
+                    <a href="{{ url_for('admin.edit_user', lang_code=g.lang_code, user_id=user.id) }}" class="button-small">
+                        {{ _('Редагувати') }}
+                    </a>
+
+                    <!-- Видалити -->
+                    {% if user.id != current_user.id %}
+                        <form action="{{ url_for('admin.delete_user', lang_code=g.lang_code, user_id=user.id) }}" 
+                              method="POST" 
+                              style="display: inline-block; margin: 0; padding: 0;"
+                              onsubmit="return confirm('{{ _('Ви впевнені, що хочете видалити користувача:') }} {{ user.username }}?\n\n{{ _('Ця дія є незворотною.') }}');">
+                            
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="button-danger" style="border: none; cursor: pointer; font-family: inherit;">
+                                {{ _('Видалити') }}
+                            </button>
+                        </form>
+                    {% else %}
+                        <button class="button-danger" style="background-color: #6c757d; border: none; cursor: not-allowed; opacity: 0.7;" disabled title="{{ _('Ви не можете видалити себе') }}">
+                            {{ _('Видалити') }}
+                        </button>
+                    {% endif %}
+
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 30px; color: gray;">
+                    {{ _('Користувачів не знайдено.') }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

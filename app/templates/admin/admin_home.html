@@ -1,10 +1,88 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h1>{{ _('Панель адміністратора') }}</h1>
-    <div>
-        <p>{{ _('Тут можуть бути якісь інструменти для панелі адміністратора.') }}</p>
+<div class="container" style="margin-top: 20px; margin-bottom: 50px;">
+    
+    <!-- Навігація -->
+    <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
+        <strong>{{ _('Адмін-панель') }}</strong>
+    </div>
+
+    <!-- Заголовок -->
+    <h2 style="text-align: left; margin-bottom: 25px;">{{ _('Панель керування') }}</h2>
+    
+    <!-- Сітка для карток (Адаптивна) -->
+    <div class="admin-dashboard-grid">
+        
+        <!-- Картка Користувачів (Доступно всім адмінам/менеджерам) -->
+        <div class="stat-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; border-top: 4px solid #0779e4;">
+            <div>
+                <i class="fas fa-users" style="font-size: 3em; color: #0779e4; margin-bottom: 20px;"></i>
+                <h5 style="font-size: 20px; color: #333; margin-bottom: 10px;">{{ _('Користувачі') }}</h5>
+                <p style="color: #666; font-size: 14px; margin-bottom: 25px; line-height: 1.4;">
+                    {{ _('Керування обліковими записами, зміна паролів та налаштування прав доступу.') }}
+                </p>
+            </div>
+            <a href="{{ url_for('admin.user_list', lang_code=g.lang_code) }}" class="button" style="margin: 0; min-width: auto; width: 100%;">
+                {{ _('Переглянути') }}
+            </a>
+        </div>
+
+        {% if current_user.has_role('admin') %}
+        <!-- Картка Установ (Тільки для глобального адміна) -->
+        <div class="stat-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; border-top: 4px solid #ffc107;">
+            <div>
+                <i class="fas fa-university" style="font-size: 3em; color: #ffc107; margin-bottom: 20px;"></i>
+                <h5 style="font-size: 20px; color: #333; margin-bottom: 10px;">{{ _('Установи') }}</h5>
+                <p style="color: #666; font-size: 14px; margin-bottom: 25px; line-height: 1.4;">
+                    {{ _('Додавання нових організацій та редагування їх ідентифікаційних кодів.') }}
+                </p>
+            </div>
+            <!-- Неактивна кнопка -->
+            <a href="{{ url_for('admin.institution_list', lang_code=g.lang_code) }}" class="button" style="margin: 0; min-width: auto; width: 100%;">
+                {{ _('Переглянути') }}
+            </a>
+        </div>
+
+        <!-- Картка Ролей (Тільки для глобального адміна) -->
+        <div class="stat-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; border-top: 4px solid #dc3545;">
+            <div>
+                <i class="fas fa-user-shield" style="font-size: 3em; color: #dc3545; margin-bottom: 20px;"></i>
+                <h5 style="font-size: 20px; color: #333; margin-bottom: 10px;">{{ _('Ролі') }}</h5>
+                <p style="color: #666; font-size: 14px; margin-bottom: 25px; line-height: 1.4;">
+                    {{ _('Глобальне налаштування системних ролей та їх видимості для менеджерів.') }}
+                </p>
+            </div>
+            <!-- Неактивна кнопка -->
+            <a href="{{ url_for('admin.role_list', lang_code=g.lang_code) }}" class="button" style="margin: 0; min-width: auto; width: 100%;">
+                {{ _('Переглянути') }}
+            </a>
+        </div>
+        {% endif %}
+
     </div>
 </div>
+
+<style>
+    /* 
+      Ця сітка автоматично розміщує картки. 
+      На ПК буде 3 в ряд, на планшеті 2, на телефоні 1 стовпчик. 
+    */
+    .admin-dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        align-items: stretch;
+    }
+
+    /* Додатковий ефект наведення для інтерактивності */
+    .admin-dashboard-grid .stat-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .admin-dashboard-grid .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+</style>
 {% endblock %}

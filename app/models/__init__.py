@@ -31,7 +31,13 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     password_hash = db.Column(db.String(60), nullable=False)
+    email = db.Column(db.String(120), index=True)
+    phone = db.Column(db.String(20))
     roles = db.relationship('Role', secondary=user_roles, backref=db.backref('users', lazy='dynamic'))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    creator = db.relationship('User', remote_side=[id], backref='created_users')
 
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
@@ -75,6 +81,10 @@ class User(db.Model, UserMixin):
 
         # 4. Якщо після перевірки всіх ролей збігів не знайдено.
         return False
+    
+    def is_local_admin(self):
+        """Перевіряє, чи є користувач адміном установи (менеджером)."""
+        return self.has_role('manager') # Припустимо, роль для локальних адмінів буде 'manager'
 
     def __repr__(self):
         return f"User('{self.username}')"
@@ -111,6 +121,7 @@ class User(db.Model, UserMixin):
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True, nullable=False)
+    assignable_by = db.Column(db.String(20), nullable=True)
     def __repr__(self):
         return f"Role('{self.name}')"
 

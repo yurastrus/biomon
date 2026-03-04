@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="margin-top: 20px; margin-bottom: 50px;">
+    
+    <!-- Навігація -->
+    <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
+        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a> 
+        &raquo; <a href="{{ url_for('admin.role_list', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Ролі') }}</a>
+        &raquo; <strong>{{ title }}</strong>
+    </div>
+
+    <!-- Головний блок із сірим фоном -->
+    <div class="dashboard-section" style="padding: 30px; max-width: 700px; margin: 0 auto;">
+        
+        <h2 class="section-title" style="text-align: left; border-bottom: none; margin-bottom: 30px;">
+            {{ title }}
+            {% if role %}
+                <span style="font-size: 14px; color: gray; font-weight: normal; margin-left: 10px;">
+                    ({{ _('ID:') }} {{ role.id }})
+                </span>
+            {% endif %}
+        </h2>
+        
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="stat-card" style="text-align: left; padding: 25px;">
+                <h5 style="color: #dc3545; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+                    {{ _('Налаштування ролі') }}
+                </h5>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">
+                        {{ _('Системна назва ролі') }} <span style="color:red;">*</span>
+                    </label>
+                    <input type="text" name="name" class="site-input" 
+                           value="{{ role.name if role else '' }}" required maxlength="20"
+                           style="font-family: monospace; font-size: 16px;"
+                           {% if role and role.name in ['admin', 'manager'] %}readonly{% endif %}>
+                    
+                    {% if role and role.name in ['admin', 'manager'] %}
+                        <small style="color: #dc3545; display: block; margin-top: 5px;">
+                            {{ _('Цю системну назву змінити неможливо.') }}
+                        </small>
+                    {% else %}
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            {{ _('Пишіть латиницею, без пробілів (наприклад: guest, volunteer, u_roztochya).') }}
+                        </small>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">
+                        {{ _('Хто має право призначати цю роль користувачам?') }}
+                    </label>
+                    <select name="assignable_by" class="site-input" style="padding: 10px;">
+                        <option value="" {% if not role or not role.assignable_by or role.assignable_by == 'manager' %}selected{% endif %}>
+                            {{ _('Будь-який Локальний Адмін (Менеджер)') }}
+                        </option>
+                        <option value="admin" {% if role and role.assignable_by == 'admin' %}selected{% endif %}>
+                            {{ _('Тільки Глобальний Адміністратор (Суворо)') }}
+                        </option>
+                    </select>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        {{ _('Якщо вибрати "Глобальний Адміністратор", менеджери установ навіть не побачать цю роль у списку.') }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Нижні кнопки -->
+            <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; display: flex; justify-content: flex-end; gap: 15px;">
+                <a href="{{ url_for('admin.role_list', lang_code=g.lang_code) }}" class="button cancel" style="margin: 0; min-width: 150px;">
+                    {{ _('Скасувати') }}
+                </a>
+                <button type="submit" class="button" style="margin: 0; min-width: 200px;">
+                    {{ _('Зберегти дані') if role else _('Створити роль') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Стиль для інпутів (як у інших формах) */
+    .site-input {
+        width: 100%; 
+        padding: 10px 12px; 
+        border: 1px solid #ccc; 
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 15px;
+        font-family: inherit;
+        transition: border-color 0.2s;
+    }
+    .site-input:focus {
+        border-color: #0779e4;
+        outline: none;
+    }
+    .site-input[readonly] {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
