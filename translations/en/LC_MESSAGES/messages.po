@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-24 15:26+0200\n"
+"POT-Creation-Date: 2026-03-04 16:53+0200\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -17,6 +17,30 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
+
+#: app/admin/routes.py:106 app/templates/admin/admin_users_list.html:18
+msgid "Додати користувача"
+msgstr "Add user"
+
+#: app/admin/routes.py:187
+msgid "Редагувати користувача"
+msgstr "Edit user"
+
+#: app/admin/routes.py:271
+msgid "Редагувати установу"
+msgstr "Edit institution"
+
+#: app/admin/routes.py:274 app/templates/admin/admin_institutions_list.html:18
+msgid "Додати установу"
+msgstr "Add institution"
+
+#: app/admin/routes.py:333
+msgid "Редагувати роль"
+msgstr "Edit role"
+
+#: app/admin/routes.py:336 app/templates/admin/admin_roles_list.html:18
+msgid "Додати роль"
+msgstr "Add role"
 
 #: app/camera_traps/decorators.py:27 app/camera_traps/decorators.py:34
 msgid "У вас недостатньо прав для доступу до цієї сторінки."
@@ -36,7 +60,7 @@ msgstr "Location description"
 
 #: app/camera_traps/forms.py:22
 #: app/camera_traps/templates/manage_locations.html:111
-#: app/pam/templates/manage_pam_locations.html:111
+#: app/pam/templates/manage_pam_locations.html:139
 msgid "Широта (Lat)"
 msgstr "Latitude (Lat)"
 
@@ -46,7 +70,7 @@ msgstr "Latitude should fit between -90 and 90."
 
 #: app/camera_traps/forms.py:27
 #: app/camera_traps/templates/manage_locations.html:115
-#: app/pam/templates/manage_pam_locations.html:115
+#: app/pam/templates/manage_pam_locations.html:143
 msgid "Довгота (Lng)"
 msgstr "Longitude (Lng)"
 
@@ -80,7 +104,7 @@ msgstr "Additional tags"
 
 #: app/camera_traps/forms.py:53
 msgid "Зберегти у вибране"
-msgstr "Save in selected"
+msgstr "Add to favorites"
 
 #: app/camera_traps/routes.py:168 app/pam/templates/pam_overview.html:615
 msgid "Помилка завантаження статистики."
@@ -113,11 +137,11 @@ msgstr "Error creating batch"
 
 #: app/camera_traps/routes.py:432
 msgid "Відсутні обов'язкові параметри"
-msgstr "Missing required parameters"
+msgstr "Required parameters are missing"
 
 #: app/camera_traps/routes.py:435
 msgid "Файл не передано"
-msgstr "File not transferred"
+msgstr "No file uploaded"
 
 #: app/camera_traps/routes.py:449
 msgid "Файл успішно завантажено"
@@ -510,7 +534,7 @@ msgstr "All families"
 #: app/pam/templates/pam_data_export.html:157
 #: app/pam/templates/pam_yearly_table.html:238
 msgid "Всі роди"
-msgstr "All genuses"
+msgstr "All genera"
 
 #: app/camera_traps/templates/ct_data_export.html:125
 #: app/pam/templates/pam_data_export.html:158
@@ -554,7 +578,6 @@ msgstr "Error"
 
 #: app/camera_traps/templates/ct_data_export.html:248
 #: app/camera_traps/templates/manage_locations.html:280
-#: app/pam/templates/manage_pam_locations.html:275
 #: app/pam/templates/pam_data_export.html:332
 msgid "Помилка завантаження даних:"
 msgstr "Data loading error."
@@ -607,7 +630,7 @@ msgstr "CI for authorized users only"
 
 #: app/camera_traps/templates/daily_activity.html:216
 msgid "Згладжування (KDE):"
-msgstr "Smoothing (KDE)"
+msgstr "Smoothing (KDE):"
 
 #: app/camera_traps/templates/daily_activity.html:222
 msgid "Різко"
@@ -673,11 +696,11 @@ msgstr "Day hours"
 #: app/camera_traps/templates/daily_activity.html:522
 #, python-format
 msgid "Щільність активності (%%)"
-msgstr "Activiy density (%%)"
+msgstr "Activity density (%%)"
 
 #: app/camera_traps/templates/daily_activity.html:648
 msgid "Загальние зусилля за період:"
-msgstr "Overal effort for the period:"
+msgstr "Overall effort for the period:"
 
 #: app/camera_traps/templates/daily_activity.html:648
 msgid "пастко-днів"
@@ -724,7 +747,7 @@ msgstr "Location management"
 msgid ""
 "Це запустить повний перерахунок всієї аналітики для графіків. Процес може"
 " зайняти кілька хвилин, залежно від обсягу даних. Продовжити?"
-msgstr ""
+msgstr "This will trigger a full recalculation of all analytics for the charts. The process may take several minutes depending on the volume of data. Continue?"
 
 #: app/camera_traps/templates/dashboard.html:95
 msgid "Перерахувати аналітику"
@@ -746,7 +769,7 @@ msgstr "Delete Identified Photos"
 msgid ""
 "УВАГА! Будуть видалені ВСІ оригінали фото, крім тих, що позначені як "
 "'вибране'. Мініатюри залишаться. Ця дія НЕЗВОРОТНЯ. Продовжити?"
-msgstr ""
+msgstr "WARNING! ALL original photos will be deleted, except for those marked as 'favorites'. Thumbnails will remain. This action is IRREVERSIBLE. Continue?"
 
 #: app/camera_traps/templates/dashboard.html:113
 msgid "Видалити оригінали"
@@ -756,7 +779,7 @@ msgstr "Delete originals"
 msgid ""
 "Це видалить файли та дані від незавершених завантажень, які старші 24 "
 "годин. Ця дія незворотня. Продовжити?"
-msgstr ""
+msgstr "This will delete files and data from incomplete uploads that are older than 24 hours. This action is irreversible. Continue?"
 
 #: app/camera_traps/templates/dashboard.html:119
 msgid "Очистити невдалі завантаження"
@@ -1129,7 +1152,7 @@ msgstr "Please select a species, or the \"Empty\" option."
 #: app/camera_traps/templates/identification.html:832
 #: app/camera_traps/templates/manage_locations.html:334
 #: app/camera_traps/templates/service_log.html:395
-#: app/pam/templates/manage_pam_locations.html:323
+#: app/pam/templates/manage_pam_locations.html:399
 #: app/pam/templates/pam_service_log.html:307
 msgid "Помилка збереження:"
 msgstr "Save error:"
@@ -1147,7 +1170,7 @@ msgid "Управління локаціями фотопасток"
 msgstr "Management of phototraps locations"
 
 #: app/camera_traps/templates/manage_locations.html:93
-#: app/pam/templates/manage_pam_locations.html:93
+#: app/pam/templates/manage_pam_locations.html:119
 msgid "Виберіть локацію зі списку або на карті, щоб почати редагування."
 msgstr "Select a location from the list or on the map to start editing."
 
@@ -1160,34 +1183,36 @@ msgid "Опис локації"
 msgstr "Description"
 
 #: app/camera_traps/templates/manage_locations.html:120
-#: app/pam/templates/manage_pam_locations.html:120
+#: app/pam/templates/manage_pam_locations.html:162
 msgid "Біотопи"
 msgstr "Habitats"
 
 #: app/camera_traps/templates/manage_locations.html:128
-#: app/pam/templates/manage_pam_locations.html:130
 msgid "Зберегти зміни"
 msgstr "Save changes"
 
 #: app/camera_traps/templates/manage_locations.html:129
-#: app/pam/templates/manage_pam_locations.html:131
+#: app/pam/templates/manage_pam_locations.html:174
+#: app/templates/admin/admin_institution_form.html:66
+#: app/templates/admin/admin_role_form.html:74
+#: app/templates/admin/admin_user_form.html:124
 msgid "Скасувати"
 msgstr "Cancel"
 
 #: app/camera_traps/templates/manage_locations.html:225
 #: app/camera_traps/templates/upload.html:287
-#: app/pam/templates/manage_pam_locations.html:220
+#: app/pam/templates/manage_pam_locations.html:257
 msgid "Квартальна сітка ПЗ Розточчя"
 msgstr "Quarters grid of the Roztochya SNR"
 
 #: app/camera_traps/templates/manage_locations.html:226
 #: app/camera_traps/templates/upload.html:288
-#: app/pam/templates/manage_pam_locations.html:221
+#: app/pam/templates/manage_pam_locations.html:258
 msgid "Видільна сітка ПЗ Розточчя"
 msgstr "Sections grid of the Roztochya SNR"
 
 #: app/camera_traps/templates/manage_locations.html:287
-#: app/pam/templates/manage_pam_locations.html:282
+#: app/pam/templates/manage_pam_locations.html:351
 msgid "Редагування:"
 msgstr "Editing:"
 
@@ -1205,6 +1230,9 @@ msgid "Фото #"
 msgstr "Photo #"
 
 #: app/camera_traps/templates/photo_viewer.html:332
+#: app/templates/admin/admin_institution_form.html:20
+#: app/templates/admin/admin_role_form.html:20
+#: app/templates/admin/admin_user_form.html:20
 msgid "ID:"
 msgstr ""
 
@@ -1772,17 +1800,49 @@ msgstr "Name and coordinates are required to create a new location."
 msgid "Управління локаціями ПАМ"
 msgstr "PAM locations management"
 
-#: app/pam/templates/manage_pam_locations.html:72
+#: app/pam/templates/manage_pam_locations.html:85
 msgid "Управління локаціями пасивного моніторингу (ПАМ)"
 msgstr "Management of PAM locations"
 
-#: app/pam/templates/manage_pam_locations.html:100
+#: app/pam/templates/manage_pam_locations.html:91
+msgid "Показати локації установи:"
+msgstr "Show locations of the institution:"
+
+#: app/pam/templates/manage_pam_locations.html:94
+msgid "Всі доступні мені"
+msgstr "All available for me"
+
+#: app/pam/templates/manage_pam_locations.html:128
 msgid "Назва локації (українською)"
 msgstr "Location name (Ukrainian)"
 
-#: app/pam/templates/manage_pam_locations.html:105
+#: app/pam/templates/manage_pam_locations.html:133
 msgid "Назва локації (англійською)"
 msgstr "Location name (English)"
+
+#: app/pam/templates/manage_pam_locations.html:151
+msgid "Належність до установ"
+msgstr ""
+
+#: app/pam/templates/manage_pam_locations.html:158
+msgid "Можна вибрати кілька."
+msgstr ""
+
+#: app/pam/templates/manage_pam_locations.html:173
+msgid "Зберегти"
+msgstr "Save"
+
+#: app/pam/templates/manage_pam_locations.html:190
+msgid "Виберіть біотопи..."
+msgstr "Select habitats"
+
+#: app/pam/templates/manage_pam_locations.html:191
+msgid "Виберіть установи..."
+msgstr "Select institutions..."
+
+#: app/pam/templates/manage_pam_locations.html:344
+msgid "Помилка завантаження:"
+msgstr "Loading error:"
 
 #: app/pam/templates/pam_data_export.html:5 app/pam/templates/pam_home.html:3
 #: app/pam/templates/pam_overview.html:3
@@ -2372,7 +2432,7 @@ msgstr "-- All families --"
 #: app/pam/templates/pam_overview.html:426
 #: app/pam/templates/pam_overview.html:554
 msgid "-- Всі роди --"
-msgstr "-- All genuses --"
+msgstr "-- All genera --"
 
 #: app/pam/templates/pam_overview.html:430
 #: app/pam/templates/pam_overview.html:547
@@ -3243,29 +3303,322 @@ msgstr ""
 msgid "зв`яжіться з автором"
 msgstr "contact the author"
 
-#: app/templates/admin/admin_home.html:5
-msgid "Панель адміністратора"
-msgstr "Administrator panel"
+#: app/templates/admin/admin_home.html:8
+#: app/templates/admin/admin_institution_form.html:8
+#: app/templates/admin/admin_institutions_list.html:8
+#: app/templates/admin/admin_role_form.html:8
+#: app/templates/admin/admin_roles_list.html:8
+#: app/templates/admin/admin_user_form.html:8
+#: app/templates/admin/admin_users_list.html:8
+msgid "Адмін-панель"
+msgstr "Admin-panel"
 
-#: app/templates/admin/admin_home.html:7
-msgid "Тут можуть бути якісь інструменти для панелі адміністратора."
+#: app/templates/admin/admin_home.html:12
+msgid "Панель керування"
+msgstr "Administration panel"
+
+#: app/templates/admin/admin_home.html:21
+#: app/templates/admin/admin_user_form.html:9
+#: app/templates/admin/admin_users_list.html:9
+msgid "Користувачі"
+msgstr "Users"
+
+#: app/templates/admin/admin_home.html:23
+msgid "Керування обліковими записами, зміна паролів та налаштування прав доступу."
 msgstr ""
+
+#: app/templates/admin/admin_home.html:27
+#: app/templates/admin/admin_home.html:43
+#: app/templates/admin/admin_home.html:58
+msgid "Переглянути"
+msgstr "View"
+
+#: app/templates/admin/admin_home.html:36
+#: app/templates/admin/admin_institution_form.html:9
+#: app/templates/admin/admin_institutions_list.html:9
+#: app/templates/admin/admin_users_list.html:28
+msgid "Установи"
+msgstr "Institutions"
+
+#: app/templates/admin/admin_home.html:38
+msgid "Додавання нових організацій та редагування їх ідентифікаційних кодів."
+msgstr ""
+
+#: app/templates/admin/admin_home.html:51
+#: app/templates/admin/admin_role_form.html:9
+#: app/templates/admin/admin_roles_list.html:9
+#: app/templates/admin/admin_users_list.html:29
+msgid "Ролі"
+msgstr "Roles"
+
+#: app/templates/admin/admin_home.html:53
+msgid "Глобальне налаштування системних ролей та їх видимості для менеджерів."
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:31
+msgid "Основна інформація"
+msgstr "Key information"
+
+#: app/templates/admin/admin_institution_form.html:36
+msgid "Назва установи (Українською)"
+msgstr "Institution name (Ukrainian)"
+
+#: app/templates/admin/admin_institution_form.html:44
+msgid "Назва установи (Англійською)"
+msgstr "Institution name (English)"
+
+#: app/templates/admin/admin_institution_form.html:52
+msgid "Унікальний код (ID)"
+msgstr "Unique code (ID)"
+
+#: app/templates/admin/admin_institution_form.html:58
+msgid ""
+"Використовується для системного зв'язку (наприклад: roztochya, fzs). Має "
+"бути унікальним, латиницею, без пробілів."
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:69
+#: app/templates/admin/admin_role_form.html:77
+#: app/templates/admin/admin_user_form.html:127
+msgid "Зберегти дані"
+msgstr "Save data"
+
+#: app/templates/admin/admin_institution_form.html:69
+msgid "Створити установу"
+msgstr "Create an institution"
+
+#: app/templates/admin/admin_institutions_list.html:13
+msgid "Керування установами"
+msgstr "Manage institutions"
+
+#: app/templates/admin/admin_institutions_list.html:27
+msgid "Назва (Українською)"
+msgstr "Name (Ukrainian)"
+
+#: app/templates/admin/admin_institutions_list.html:28
+msgid "Назва (Англійською)"
+msgstr "Name (English)"
+
+#: app/templates/admin/admin_institutions_list.html:29
+msgid "Код"
+msgstr "Code"
+
+#: app/templates/admin/admin_institutions_list.html:30
+#: app/templates/admin/admin_roles_list.html:29
+#: app/templates/admin/admin_users_list.html:30
+msgid "Дії"
+msgstr "Actions"
+
+#: app/templates/admin/admin_institutions_list.html:44
+#: app/templates/admin/admin_roles_list.html:55
+#: app/templates/admin/admin_users_list.html:57
+msgid "Редагувати"
+msgstr "Edit"
+
+#: app/templates/admin/admin_institutions_list.html:51
+msgid "Ви впевнені, що хочете видалити установу:"
+msgstr "Are you sure you want to delete an institution:"
+
+#: app/templates/admin/admin_institutions_list.html:51
+msgid ""
+"Увага: Це видалить її з профілів користувачів. Дані в модулі PAM не "
+"постраждають."
+msgstr "Warning: This will remove it from user profiles. Data in the PAM module will not be affected."
+
+#: app/templates/admin/admin_institutions_list.html:55
+#: app/templates/admin/admin_roles_list.html:67
+#: app/templates/admin/admin_roles_list.html:72
+#: app/templates/admin/admin_users_list.html:69
+#: app/templates/admin/admin_users_list.html:74
+msgid "Видалити"
+msgstr "Delete"
+
+#: app/templates/admin/admin_institutions_list.html:63
+msgid "Установ не знайдено."
+msgstr "Institution not found."
+
+#: app/templates/admin/admin_role_form.html:30
+msgid "Налаштування ролі"
+msgstr "Role settings"
+
+#: app/templates/admin/admin_role_form.html:35
+msgid "Системна назва ролі"
+msgstr "System role name"
+
+#: app/templates/admin/admin_role_form.html:44
+msgid "Цю системну назву змінити неможливо."
+msgstr "This system name cannot be changed."
+
+#: app/templates/admin/admin_role_form.html:48
+msgid "Пишіть латиницею, без пробілів (наприклад: guest, volunteer, u_roztochya)."
+msgstr "Use Latin characters, no spaces (e.g.: guest, volunteer, u_roztochya)."
+
+#: app/templates/admin/admin_role_form.html:55
+msgid "Хто має право призначати цю роль користувачам?"
+msgstr "Who is authorized to assign this role to users?"
+
+#: app/templates/admin/admin_role_form.html:59
+msgid "Будь-який Локальний Адмін (Менеджер)"
+msgstr "Any Local Admin (Manager)"
+
+#: app/templates/admin/admin_role_form.html:62
+msgid "Тільки Глобальний Адміністратор (Суворо)"
+msgstr "Global Administrator only (Strict)"
+
+#: app/templates/admin/admin_role_form.html:66
+msgid ""
+"Якщо вибрати \"Глобальний Адміністратор\", менеджери установ навіть не "
+"побачать цю роль у списку."
+msgstr "If 'Global Administrator' is selected, institution managers will not even see this role in the list."
+
+#: app/templates/admin/admin_role_form.html:77
+msgid "Створити роль"
+msgstr "Create a role"
+
+#: app/templates/admin/admin_roles_list.html:13
+msgid "Керування ролями"
+msgstr "Role management"
+
+#: app/templates/admin/admin_roles_list.html:27
+msgid "Назва Ролі (Системна)"
+msgstr "Role Name (System)"
+
+#: app/templates/admin/admin_roles_list.html:28
+msgid "Хто може призначати цю роль"
+msgstr "Who can assign this role"
+
+#: app/templates/admin/admin_roles_list.html:39
+#: app/templates/admin/admin_roles_list.html:41
+msgid "Недоторкана"
+msgstr "Protected"
+
+#: app/templates/admin/admin_roles_list.html:46
+msgid "Тільки Глобальний Адмін"
+msgstr "Global Admin only"
+
+#: app/templates/admin/admin_roles_list.html:48
+msgid "Адміни та Менеджери"
+msgstr "Admins and Managers"
+
+#: app/templates/admin/admin_roles_list.html:63
+msgid "Ви впевнені, що хочете видалити роль:"
+msgstr "Are you sure you want to delete the role:"
+
+#: app/templates/admin/admin_roles_list.html:63
+msgid "Це видалить її у всіх користувачів, яким вона призначена."
+msgstr "This will remove it from all users to whom it is assigned."
+
+#: app/templates/admin/admin_roles_list.html:71
+msgid "Системні ролі не можна видаляти"
+msgstr "System roles cannot be deleted"
+
+#: app/templates/admin/admin_roles_list.html:80
+msgid "Ролей не знайдено."
+msgstr "Roles not found."
+
+#: app/templates/admin/admin_user_form.html:33
+msgid "Облікові дані"
+msgstr "Account credentials"
+
+#: app/templates/admin/admin_user_form.html:36
+msgid "Логін (Username)"
+msgstr "Login (Username)"
+
+#: app/templates/admin/admin_user_form.html:42 app/utils/forms.py:11
+msgid "Пароль"
+msgstr "Password"
+
+#: app/templates/admin/admin_user_form.html:46
+msgid "Лишіть порожнім, щоб не змінювати"
+msgstr "Leave blank to keep unchanged"
+
+#: app/templates/admin/admin_user_form.html:51
+msgid "Email"
+msgstr "Email"
+
+#: app/templates/admin/admin_user_form.html:56
+msgid "Телефон"
+msgstr "Phone"
+
+#: app/templates/admin/admin_user_form.html:63
+msgid "Персональна інформація"
+msgstr "Personal information"
+
+#: app/templates/admin/admin_user_form.html:66
+msgid "Ім’я"
+msgstr "First name"
+
+#: app/templates/admin/admin_user_form.html:71
+msgid "Прізвище"
+msgstr "Last name"
+
+#: app/templates/admin/admin_user_form.html:76
+msgid "Ці дані будуть відображатися в звітах та журналі верифікації."
+msgstr "This data will be displayed in reports and the verification log."
+
+#: app/templates/admin/admin_user_form.html:82
+msgid "Прив’язка до установ"
+msgstr "Institution assignment"
+
+#: app/templates/admin/admin_user_form.html:83
+msgid "Утримуйте Ctrl для вибору кількох"
+msgstr "Hold Ctrl to select multiple"
+
+#: app/templates/admin/admin_user_form.html:96
+msgid "Призначення ролей"
+msgstr "Role assignment"
+
+#: app/templates/admin/admin_user_form.html:97
+msgid "Визначте рівень доступу"
+msgstr "Set access level"
+
+#: app/templates/admin/admin_user_form.html:114
+msgid "Немає доступних ролей."
+msgstr "No available roles."
+
+#: app/templates/admin/admin_user_form.html:127
+msgid "Створити користувача"
+msgstr "Create a user"
+
+#: app/templates/admin/admin_users_list.html:13
+msgid "Керування користувачами"
+msgstr "Manage users"
+
+#: app/templates/admin/admin_users_list.html:26
+msgid "Логін"
+msgstr "Login"
+
+#: app/templates/admin/admin_users_list.html:27
+msgid "Прізвище та ім’я"
+msgstr "Full name"
+
+#: app/templates/admin/admin_users_list.html:65
+msgid "Ви впевнені, що хочете видалити користувача:"
+msgstr "Are you sure you want to delete the user:"
+
+#: app/templates/admin/admin_users_list.html:65
+msgid "Ця дія є незворотною."
+msgstr "This action is irreversible."
+
+#: app/templates/admin/admin_users_list.html:73
+msgid "Ви не можете видалити себе"
+msgstr "You cannot delete yourself"
+
+#: app/templates/admin/admin_users_list.html:83
+msgid "Користувачів не знайдено."
+msgstr "Users not found."
 
 #: app/utils/forms.py:10
 msgid "Ім'я користувача"
 msgstr "User name"
 
-#: app/utils/forms.py:11
-msgid "Пароль"
-msgstr "Password"
-
 #: app/utils/forms.py:15
 msgid "Ваше ім'я"
-msgstr "Yuor name"
+msgstr "Your name"
 
 #: app/utils/forms.py:16
 msgid "Ваш Email"
-msgstr "YOur Email"
+msgstr "Your Email"
 
 #: app/utils/forms.py:17
 msgid "Тема"
@@ -3460,4 +3813,10 @@ msgstr "Message"
 
 #~ msgid "Мін. детекцій на рік:"
 #~ msgstr "Min. detections per year:"
+
+#~ msgid "Панель адміністратора"
+#~ msgstr "Administrator panel"
+
+#~ msgid "Тут можуть бути якісь інструменти для панелі адміністратора."
+#~ msgstr ""
 
