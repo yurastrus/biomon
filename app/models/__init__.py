@@ -61,31 +61,43 @@ class User(db.Model, UserMixin):
         else:
             return self.username
     
-    def has_role(self, *role_names):
+    def has_role(self, *required_roles):
         """
-        Перевіряє, чи має користувач хоча б ОДНУ з перерахованих ролей.
-        Завжди повертає True, якщо користувач має роль 'admin'.
+        Перевіряє, чи має користувач хоча б ОДНУ з перерахованих ролей,
+        враховуючи ієрархію (вищі ролі автоматично включають нижчі).
         """
-        # 1. Якщо користувач - адмін, він має доступ до всього.
+        # 1. Супер-адмін завжди має доступ до всього (швидка перевірка)
         if any(role.name == 'admin' for role in self.roles):
             return True
 
-        # 2. Створюємо множину (set) ролей, які є у користувача, для швидкого пошуку.
-        user_roles = {role.name for role in self.roles}
+        # 2. СЛОВНИК ІЄРАРХІЇ: Яка роль які права в себе включає
+        # (Налаштуй під свої потреби)
+        ROLE_HIERARCHY = {
+            'manager':['pam_verifier', 'ct_verifier', 'viewer'],
+            'pam_verifier':  ['viewer'],
+            'ct_verifier': ['viewer']
+        }
 
-        # 3. Перевіряємо, чи є хоча б один збіг між ролями користувача
-        #    і ролями, які ми шукаємо.
-        for role_name in role_names:
-            if role_name in user_roles:
-                return True # Знайшли збіг, одразу повертаємо True
+        # 3. Отримуємо базові ролі користувача з БД
+        user_base_roles = {role.name for role in self.roles}
+        
+        # 4. "Розгортаємо" ролі користувача на основі ієрархії
+        expanded_user_roles = set(user_base_roles)
+        for role in user_base_roles:
+            if role in ROLE_HIERARCHY:
+                expanded_user_roles.update(ROLE_HIERARCHY[role])
 
-        # 4. Якщо після перевірки всіх ролей збігів не знайдено.
+        # 5. Перевіряємо, чи є збіг між необхідними ролями та розширеними правами
+        for req_role in required_roles:
+            if req_role in expanded_user_roles:
+                return True
+
         return False
     
     def is_local_admin(self):
         """Перевіряє, чи є користувач адміном установи (менеджером)."""
-        return self.has_role('manager') # Припустимо, роль для локальних адмінів буде 'manager'
-
+        return self.has_role('manager')
+    
     def __repr__(self):
         return f"User('{self.username}')"
     
