@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"_\\(\" /c/Users/IuriiStrus/repositories/biomon/app/pam/templates/*.html)",
+      "Bash(grep -n \"CREATE TABLE\\\\|INSERT\\\\|UPDATE\\\\|DELETE\\\\|ALTER\" /c/Users/IuriiStrus/repositories/biomon/app/pam/*.py)"
+    ]
+  }
+}
