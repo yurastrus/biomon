@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(grep -r \"_\\(\" /c/Users/IuriiStrus/repositories/biomon/app/pam/templates/*.html)",
-      "Bash(grep -n \"CREATE TABLE\\\\|INSERT\\\\|UPDATE\\\\|DELETE\\\\|ALTER\" /c/Users/IuriiStrus/repositories/biomon/app/pam/*.py)"
+      "Bash(grep -n \"CREATE TABLE\\\\|INSERT\\\\|UPDATE\\\\|DELETE\\\\|ALTER\" /c/Users/IuriiStrus/repositories/biomon/app/pam/*.py)",
+      "Bash(ssh:*)",
+      "Bash(venv/Scripts/python -m unittest tests.test_data_export -v)"
     ]
   }
 }
