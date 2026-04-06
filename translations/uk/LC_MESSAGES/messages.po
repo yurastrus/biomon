@@ -693,7 +693,7 @@ msgstr ""
 
 #: app/camera_traps/templates/daily_activity.html:648
 msgid "Загальние зусилля за період:"
-msgstr ""
+msgstr "Загальні зусилля за період:"
 
 #: app/camera_traps/templates/daily_activity.html:648
 msgid "пастко-днів"
@@ -2187,7 +2187,7 @@ msgstr ""
 
 #: app/pam/templates/pam_home.html:31
 msgid "Cирі дані частково вже доступні через"
-msgstr ""
+msgstr "Сирі дані частково вже доступні через"
 
 #: app/pam/templates/pam_home.html:37
 msgid "Дослідження фауни Розточчя методами ПАМ"
@@ -2285,7 +2285,7 @@ msgstr ""
 
 #: app/pam/templates/pam_home.html:165
 msgid "Експорт даних ПАМ моніторнгу у CSV таблиці."
-msgstr ""
+msgstr "Експорт даних ПАМ моніторингу у CSV таблиці."
 
 #: app/pam/templates/pam_home.html:177
 msgid ""

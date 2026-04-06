@@ -362,7 +362,7 @@ msgstr "Error loading service log page."
 
 #: app/camera_traps/routes.py:1892
 msgid "Немає даних про обслуговування"
-msgstr "No data about service"
+msgstr "No maintenance data"
 
 #: app/camera_traps/routes.py:1928
 msgid "Прогноз за кількістю фото"
@@ -413,7 +413,7 @@ msgstr "Export data"
 
 #: app/camera_traps/templates/ct_data_export.html:5
 msgid "Фотопастки"
-msgstr "Phototraps"
+msgstr "Camera traps"
 
 #: app/camera_traps/templates/ct_data_export.html:39
 msgid "Підготовка даних для експорту - фотопастки"
@@ -691,7 +691,7 @@ msgstr "Data loading error."
 
 #: app/camera_traps/templates/daily_activity.html:511
 msgid "Година доби"
-msgstr "Day hours"
+msgstr "Hour of day"
 
 #: app/camera_traps/templates/daily_activity.html:522
 #, python-format
@@ -791,7 +791,7 @@ msgstr ""
 
 #: app/camera_traps/templates/dashboard.html:193
 msgid "Очистити невдалі завантаження"
-msgstr "Clean stale batches"
+msgstr "Clear failed uploads"
 
 #: app/camera_traps/templates/dashboard.html:205
 msgid "Початкова дата:"
@@ -1142,7 +1142,7 @@ msgstr "Mammals"
 
 #: app/camera_traps/templates/identification.html:706
 msgid "Птахи"
-msgstr "Birds."
+msgstr "Birds"
 
 #: app/camera_traps/templates/identification.html:707
 msgid "Інші"
@@ -1183,7 +1183,7 @@ msgstr "Pending for you:"
 
 #: app/camera_traps/templates/manage_locations.html:72
 msgid "Управління локаціями фотопасток"
-msgstr "Management of phototraps locations"
+msgstr "Camera trap location management"
 
 #: app/camera_traps/templates/manage_locations.html:93
 #: app/pam/templates/manage_pam_locations.html:119
@@ -1427,7 +1427,7 @@ msgstr "No"
 
 #: app/camera_traps/templates/service_log.html:312
 msgid "Стан камери:"
-msgstr "Camera conditon:"
+msgstr "Camera condition:"
 
 #: app/camera_traps/templates/service_log.html:313
 #: app/pam/templates/pam_service_log.html:251
@@ -1867,7 +1867,7 @@ msgstr "Export mode:"
 
 #: app/pam/templates/pam_data_export.html:57
 msgid "Розумний фільтр"
-msgstr "Clever filter"
+msgstr "Smart filter"
 
 #: app/pam/templates/pam_data_export.html:58
 msgid "Частково верифіковані"
@@ -2032,7 +2032,7 @@ msgstr ""
 
 #: app/pam/templates/pam_evaluation_results.html:362
 msgid "Замінити сонограми"
-msgstr "Change spectrograms"
+msgstr "Replace spectrograms"
 
 #: app/pam/templates/pam_evaluation_results.html:366
 msgid ""
@@ -2127,7 +2127,7 @@ msgstr "Page"
 
 #: app/pam/templates/pam_evaluation_results.html:622
 msgid "з"
-msgstr "from"
+msgstr "of"
 
 #: app/pam/templates/pam_evaluation_results.html:623
 #: app/pam/templates/pam_verification_segments.html:713
@@ -2537,7 +2537,7 @@ msgstr "SD forecast:"
 
 #: app/pam/templates/pam_service_log.html:250
 msgid "Стан приладу:"
-msgstr "Device conditon:"
+msgstr "Device condition:"
 
 #: app/pam/templates/pam_service_log.html:252
 msgid "SD-карта:"
@@ -2574,7 +2574,7 @@ msgstr "No data is available for the selected species, institution, and period."
 
 #: app/pam/templates/pam_species_dashboard.html:244
 msgid "Багаторічна динаміка (індекс RAI)"
-msgstr "Long-term dynamics (DR)"
+msgstr "Long-term dynamics (RAI)"
 
 #: app/pam/templates/pam_species_dashboard.html:248
 msgid "ЕКСПЕРИМЕНТ! Відносна активність у біотопах (детекцій / годину)"
@@ -2582,11 +2582,11 @@ msgstr "EXPERIMENT! Relative activity in habitats (detections per hour)"
 
 #: app/pam/templates/pam_species_dashboard.html:280
 msgid "Середній тренд (RAI)"
-msgstr "Mean trend (DR)"
+msgstr "Mean trend (RAI)"
 
 #: app/pam/templates/pam_species_dashboard.html:287
 msgid "Індекс RAI (детекцій/год)"
-msgstr "DR (detections per hour)"
+msgstr "RAI (detections per hour)"
 
 #: app/pam/templates/pam_species_dashboard.html:346
 msgid "Відносна активність (детекцій / годину)"
@@ -2787,7 +2787,7 @@ msgstr "Time of day"
 #: app/pam/templates/pam_species_detailed.html:937
 #: app/pam/templates/pam_species_detailed.html:985
 msgid "Дані для цього графіка не знайдено."
-msgstr "No data found for the scatter plot."
+msgstr "No data found for this chart."
 
 #: app/pam/templates/pam_species_detailed.html:974
 msgid "Усі детекції та їх точність (confidence)"
@@ -3127,7 +3127,7 @@ msgstr "Species folder"
 
 #: app/pam/templates/pam_verification_upload.html:506
 msgid "Файл та причина помилки"
-msgstr "Fail and error cause"
+msgstr "File and error reason"
 
 #: app/pam/templates/pam_verification_upload.html:542
 msgid "Помилка обробки"
@@ -3205,11 +3205,11 @@ msgstr "No data is available for the selected species and period."
 
 #: app/pam/templates/pam_yearly_trends.html:265
 msgid "Індекс відносної чисельності (RAI)"
-msgstr "Relativ activity index (DR)"
+msgstr "Relative activity index (RAI)"
 
 #: app/pam/templates/pam_yearly_trends.html:298
 msgid "RAI (детекцій на годину)"
-msgstr "DR (detections per hour)"
+msgstr "RAI (detections per hour)"
 
 #: app/pam/templates/pam_yearly_trends.html:301
 msgid "Рік"
@@ -3217,11 +3217,11 @@ msgstr "Year"
 
 #: app/routes/main.py:72
 msgid "Неправильний логін або пароль. Спробуйте ще раз."
-msgstr "Incorect login or password. Please, try again."
+msgstr "Incorrect login or password. Please try again."
 
 #: app/routes/main.py:74 app/templates/base.html:40 app/templates/login.html:2
 msgid "Увійти"
-msgstr "Enter"
+msgstr "Log in"
 
 #: app/templates/about.html:7
 msgid "Про проєкт"
@@ -3253,7 +3253,7 @@ msgstr "PAM"
 
 #: app/templates/base.html:24
 msgid "ФОТОПАСТКИ"
-msgstr "PHOTOTRAPS"
+msgstr "CAMERA TRAPS"
 
 #: app/templates/base.html:25
 msgid "ПРО ПРОЕКТ"
@@ -3269,7 +3269,7 @@ msgstr "ADMIN"
 
 #: app/templates/base.html:37
 msgid "Вийти"
-msgstr "Exit"
+msgstr "Log out"
 
 #: app/templates/base.html:85
 msgid "Юрій Струс, ©"
