@@ -23,6 +23,8 @@ class Institution(db.Model):
     name_uk = db.Column(db.String(255), nullable=False)
     name_en = db.Column(db.String(255))
     code = db.Column(db.String(50), unique=True)
+    ecoregion_uk = db.Column(db.String(100))
+    ecoregion_en = db.Column(db.String(100))
 
     def __repr__(self):
         return f'<Institution {self.name_uk}>'
@@ -73,9 +75,10 @@ class User(db.Model, UserMixin):
         # 2. СЛОВНИК ІЄРАРХІЇ: Яка роль які права в себе включає
         # (Налаштуй під свої потреби)
         ROLE_HIERARCHY = {
-            'manager':['pam_verifier', 'ct_verifier', 'viewer'],
+            'manager':['pam_verifier', 'ct_verifier', 'analyst', 'viewer'],
             'pam_verifier':  ['viewer'],
-            'ct_verifier': ['viewer']
+            'ct_verifier': ['viewer'],
+            'analyst': ['ct_verifier', 'viewer'],
         }
 
         # 3. Отримуємо базові ролі користувача з БД
