@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-07 18:35+0300\n"
+"POT-Creation-Date: 2026-04-07 19:06+0300\n"
 "PO-Revision-Date: 2025-08-05 22:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -618,7 +618,7 @@ msgstr ""
 #: app/camera_traps/templates/daily_activity.html:194
 #, python-format
 msgid "Частка (%%)"
-msgstr ""
+msgstr "Частка (%)"
 
 #: app/camera_traps/templates/daily_activity.html:201
 msgid "Довірчі інтервали:"
@@ -659,7 +659,7 @@ msgstr ""
 #: app/camera_traps/templates/daily_activity.html:274
 #, python-format
 msgid "Значення від 0%% (повне уникання) до 100%% (ідентична активність)."
-msgstr ""
+msgstr "Значення від 0% (повне уникання) до 100% (ідентична активність)."
 
 #: app/camera_traps/templates/daily_activity.html:275
 msgid "Високий відсоток вказує на те, що види активні в один і той же час."
@@ -696,7 +696,7 @@ msgstr ""
 #: app/camera_traps/templates/daily_activity.html:522
 #, python-format
 msgid "Щільність активності (%%)"
-msgstr ""
+msgstr "Щільність активності (%)"
 
 #: app/camera_traps/templates/daily_activity.html:648
 msgid "Загальние зусилля за період:"
@@ -1606,7 +1606,7 @@ msgstr ""
 #: app/pam/templates/pam_yearly_trends.html:274
 #, python-format
 msgid "95%% Довірчий інтервал"
-msgstr ""
+msgstr "95% Довірчий інтервал"
 
 #: app/camera_traps/templates/species_detailed.html:3
 #: app/camera_traps/templates/species_detailed.html:108
@@ -2073,19 +2073,19 @@ msgstr ""
 #: app/pam/templates/pam_evaluation_results.html:441
 #, python-format
 msgid "Поріг 90%%"
-msgstr ""
+msgstr "Поріг 90%"
 
 #: app/pam/templates/pam_evaluation_results.html:392
 #: app/pam/templates/pam_evaluation_results.html:442
 #, python-format
 msgid "Поріг 95%%"
-msgstr ""
+msgstr "Поріг 95%"
 
 #: app/pam/templates/pam_evaluation_results.html:393
 #: app/pam/templates/pam_evaluation_results.html:443
 #, python-format
 msgid "Поріг 99%%"
-msgstr ""
+msgstr "Поріг 99%"
 
 #: app/pam/templates/pam_evaluation_results.html:397
 msgid "Порядок:"
@@ -2180,17 +2180,17 @@ msgstr ""
 #: app/pam/templates/pam_evaluation_species_detail.html:90
 #, python-format
 msgid "Precision 90%%"
-msgstr ""
+msgstr "Precision 90%"
 
 #: app/pam/templates/pam_evaluation_species_detail.html:91
 #, python-format
 msgid "Precision 95%%"
-msgstr ""
+msgstr "Precision 95%"
 
 #: app/pam/templates/pam_evaluation_species_detail.html:92
 #, python-format
 msgid "Precision 99%%"
-msgstr ""
+msgstr "Precision 99%"
 
 #: app/pam/templates/pam_evaluation_species_detail.html:97
 msgid "Формула:"
@@ -2700,7 +2700,7 @@ msgstr ""
 #: app/pam/templates/pam_species_detailed.html:818
 #, python-format
 msgid "Вологість (%%)"
-msgstr ""
+msgstr "Вологість (%)"
 
 #: app/pam/templates/pam_species_detailed.html:831
 msgid "Тиск (гПа)"

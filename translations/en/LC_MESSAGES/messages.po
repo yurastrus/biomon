@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-07 18:35+0300\n"
+"POT-Creation-Date: 2026-04-07 19:06+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -280,9 +280,10 @@ msgstr "Cleanup completed. No files found to delete."
 
 #: app/camera_traps/routes.py:1264
 msgid "Під час процесу очищення сталася несподівана помилка. Перевірте логи."
-msgstr "An unexpected error occurred during the cleanup process. Check the logs."
-"An unexpected error occurred during the cleanup process. Please check the"
-" logs."
+msgstr ""
+"An unexpected error occurred during the cleanup process. Check the "
+"logs.An unexpected error occurred during the cleanup process. Please "
+"check the logs."
 
 #: app/camera_traps/routes.py:1304
 msgid "Помилка завантаження статистики батчів."
@@ -290,9 +291,9 @@ msgstr "Error loading batch statistics."
 
 #: app/camera_traps/routes.py:1316
 msgid "Процес очищення батчів успішно запущено та завершено."
-msgstr "Batch cleanup process started and completed successfully."
-"The process of cleaning batches has been successfully started and "
-"completed."
+msgstr ""
+"Batch cleanup process started and completed successfully.The process of "
+"cleaning batches has been successfully started and completed."
 
 #: app/camera_traps/routes.py:1319
 msgid "Під час очищення батчів сталася помилка. Перевірте логи."
@@ -348,8 +349,9 @@ msgstr "Analytics recalculation process was successfully completed."
 
 #: app/camera_traps/routes.py:1687
 msgid "Під час перерахунку аналітики сталася помилка. Перевірте логи."
-msgstr "An error occurred during analytics recalculation. Check the logs."
-"An unexpected error occurred during the analytics recalculation. Please "
+msgstr ""
+"An error occurred during analytics recalculation. Check the logs.An "
+"unexpected error occurred during the analytics recalculation. Please "
 "check the logs."
 
 #: app/camera_traps/routes.py:1971
@@ -625,7 +627,7 @@ msgstr "Percent of total species activity"
 #: app/camera_traps/templates/daily_activity.html:194
 #, python-format
 msgid "Частка (%%)"
-msgstr "Fraction (%%)"
+msgstr "Fraction (%)"
 
 #: app/camera_traps/templates/daily_activity.html:201
 msgid "Довірчі інтервали:"
@@ -666,7 +668,7 @@ msgstr "Activity overlap matrix"
 #: app/camera_traps/templates/daily_activity.html:274
 #, python-format
 msgid "Значення від 0%% (повне уникання) до 100%% (ідентична активність)."
-msgstr "Values range from 0%% (complete avoidance) to 100%% (identical activity)."
+msgstr "Values range from 0% (complete avoidance) to 100% (identical activity)."
 
 #: app/camera_traps/templates/daily_activity.html:275
 msgid "Високий відсоток вказує на те, що види активні в один і той же час."
@@ -703,7 +705,7 @@ msgstr "Hour of day"
 #: app/camera_traps/templates/daily_activity.html:522
 #, python-format
 msgid "Щільність активності (%%)"
-msgstr "Activity density (%%)"
+msgstr "Activity density (%)"
 
 #: app/camera_traps/templates/daily_activity.html:648
 msgid "Загальние зусилля за період:"
@@ -1626,7 +1628,7 @@ msgstr "Mean trend"
 #: app/pam/templates/pam_yearly_trends.html:274
 #, python-format
 msgid "95%% Довірчий інтервал"
-msgstr "95%% Confidence interval"
+msgstr "95% Confidence interval"
 
 #: app/camera_traps/templates/species_detailed.html:3
 #: app/camera_traps/templates/species_detailed.html:108
@@ -2101,19 +2103,19 @@ msgstr "R² (model quality)"
 #: app/pam/templates/pam_evaluation_results.html:441
 #, python-format
 msgid "Поріг 90%%"
-msgstr "Threshold 90%%"
+msgstr "Threshold 90%"
 
 #: app/pam/templates/pam_evaluation_results.html:392
 #: app/pam/templates/pam_evaluation_results.html:442
 #, python-format
 msgid "Поріг 95%%"
-msgstr "Threshold 95%%"
+msgstr "Threshold 95%"
 
 #: app/pam/templates/pam_evaluation_results.html:393
 #: app/pam/templates/pam_evaluation_results.html:443
 #, python-format
 msgid "Поріг 99%%"
-msgstr "Threshold 99%%"
+msgstr "Threshold 99%"
 
 #: app/pam/templates/pam_evaluation_results.html:397
 msgid "Порядок:"
@@ -2208,17 +2210,17 @@ msgstr "Thresholds"
 #: app/pam/templates/pam_evaluation_species_detail.html:90
 #, python-format
 msgid "Precision 90%%"
-msgstr "Precision 90%%"
+msgstr "Precision 90%"
 
 #: app/pam/templates/pam_evaluation_species_detail.html:91
 #, python-format
 msgid "Precision 95%%"
-msgstr "Precision 95%%"
+msgstr "Precision 95%"
 
 #: app/pam/templates/pam_evaluation_species_detail.html:92
 #, python-format
 msgid "Precision 99%%"
-msgstr "Precision 99%%"
+msgstr "Precision 99%"
 
 #: app/pam/templates/pam_evaluation_species_detail.html:97
 msgid "Формула:"
@@ -2755,7 +2757,7 @@ msgstr "Wind speed max (km/h)"
 #: app/pam/templates/pam_species_detailed.html:818
 #, python-format
 msgid "Вологість (%%)"
-msgstr "Humidity (%%)"
+msgstr "Humidity (%)"
 
 #: app/pam/templates/pam_species_detailed.html:831
 msgid "Тиск (гПа)"
