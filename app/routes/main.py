@@ -57,7 +57,7 @@ def contacts(lang_code):
 @bp.route('/<lang_code>/login', methods=['GET', 'POST'])
 def login(lang_code):
     if current_user.is_authenticated: 
-        return redirect(url_for('main.homindex', lang_code=g.lang_code))
+        return redirect(url_for('main.index', lang_code=g.lang_code))
     
     form = LoginForm()
     if form.validate_on_submit():
