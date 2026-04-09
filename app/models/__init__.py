@@ -10,11 +10,14 @@ user_roles = db.Table('user_roles',
     db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
 )
 
-# Таблиця зв'язку Користувач-Установа
-user_institutions = db.Table('user_institutions',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('institution_id', db.Integer, db.ForeignKey('institutions.id'), primary_key=True)
-)
+# Асоціативна модель Користувач-Установа з правами доступу
+class UserInstitution(db.Model):
+    __tablename__ = 'user_institutions'
+    user_id        = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    institution_id = db.Column(db.Integer, db.ForeignKey('institutions.id'), primary_key=True)
+    can_export     = db.Column(db.Boolean, default=False, nullable=False)
+
+    institution = db.relationship('Institution')
 
 # Визначаємо моделі
 class Institution(db.Model):
@@ -44,7 +47,14 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
 
-    institutions = db.relationship('Institution', secondary=user_institutions, backref=db.backref('users', lazy='dynamic'))
+    # viewonly=True: лише для читання (запис — через institution_links)
+    institutions = db.relationship('Institution', secondary=lambda: UserInstitution.__table__, viewonly=True)
+    institution_links = db.relationship('UserInstitution', cascade='all, delete-orphan')
+
+    @property
+    def export_institutions(self):
+        """Установи, з яких користувач має право експортувати дані."""
+        return [link.institution for link in self.institution_links if link.can_export]
 
     @property
     def full_name(self):

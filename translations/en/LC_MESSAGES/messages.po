@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-07 19:06+0300\n"
+"POT-Creation-Date: 2026-04-09 07:18+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -18,93 +18,33 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app/admin/routes.py:106 app/templates/admin/admin_users_list.html:18
+#: app/admin/routes.py:110 app/templates/admin/admin_users_list.html:18
 msgid "Додати користувача"
 msgstr "Add user"
 
-#: app/admin/routes.py:187
+#: app/admin/routes.py:197
 msgid "Редагувати користувача"
 msgstr "Edit user"
 
-#: app/admin/routes.py:271
+#: app/admin/routes.py:281
 msgid "Редагувати установу"
 msgstr "Edit institution"
 
-#: app/admin/routes.py:274 app/templates/admin/admin_institutions_list.html:18
+#: app/admin/routes.py:284 app/templates/admin/admin_institutions_list.html:18
 msgid "Додати установу"
 msgstr "Add institution"
 
-#: app/admin/routes.py:333
+#: app/admin/routes.py:343
 msgid "Редагувати роль"
 msgstr "Edit role"
 
-#: app/admin/routes.py:336 app/templates/admin/admin_roles_list.html:18
+#: app/admin/routes.py:346 app/templates/admin/admin_roles_list.html:18
 msgid "Додати роль"
 msgstr "Add role"
 
 #: app/camera_traps/decorators.py:38
 msgid "У вас недостатньо прав для доступу до цієї сторінки."
 msgstr "You do not have sufficient permissions to access this page."
-
-#: app/camera_traps/forms.py:11
-msgid "Виберіть місце"
-msgstr "Select location"
-
-#: app/camera_traps/forms.py:14
-msgid "Назва місця"
-msgstr "Location name"
-
-#: app/camera_traps/forms.py:18
-msgid "Опис місця"
-msgstr "Location description"
-
-#: app/camera_traps/forms.py:22
-#: app/camera_traps/templates/manage_locations.html:111
-#: app/pam/templates/manage_pam_locations.html:139
-msgid "Широта (Lat)"
-msgstr "Latitude (Lat)"
-
-#: app/camera_traps/forms.py:24
-msgid "Широта має бути між -90 та 90."
-msgstr "Latitude must be between -90 and 90."
-
-#: app/camera_traps/forms.py:27
-#: app/camera_traps/templates/manage_locations.html:115
-#: app/pam/templates/manage_pam_locations.html:143
-msgid "Довгота (Lng)"
-msgstr "Longitude (Lng)"
-
-#: app/camera_traps/forms.py:29
-msgid "Довгота має бути між -180 та 180."
-msgstr "Longitude must be between -180 and 180."
-
-#: app/camera_traps/forms.py:32
-msgid "Створити місце"
-msgstr "Create location"
-
-#: app/camera_traps/forms.py:33
-msgid "Завантажити фотографії"
-msgstr "Upload Photos"
-
-#: app/camera_traps/forms.py:37
-msgid "Observation ID"
-msgstr "Observation ID"
-
-#: app/camera_traps/forms.py:41
-msgid "Вид тварини"
-msgstr "Animal species:"
-
-#: app/camera_traps/forms.py:43
-msgid "Кількість особин"
-msgstr "Number of individuals"
-
-#: app/camera_traps/forms.py:46
-msgid "Додаткові теги"
-msgstr "Additional tags"
-
-#: app/camera_traps/forms.py:53
-msgid "Зберегти у вибране"
-msgstr "Save to favorites"
 
 #: app/camera_traps/routes.py:203 app/pam/templates/pam_overview.html:615
 msgid "Помилка завантаження статистики."
@@ -199,7 +139,7 @@ msgstr "Series identification saved successfully!"
 msgid "Помилка бази даних."
 msgstr "Database error."
 
-#: app/camera_traps/routes.py:997 app/camera_traps/routes.py:1625
+#: app/camera_traps/routes.py:997 app/camera_traps/routes.py:1635
 msgid "Локацію не знайдено."
 msgstr "Location not found."
 
@@ -250,60 +190,60 @@ msgstr "Name and coordinates are required."
 msgid "Місце з такими координатами вже існує: "
 msgstr "A location with these coordinates already exists: "
 
-#: app/camera_traps/routes.py:1214
+#: app/camera_traps/routes.py:1224
 msgid "Нове місце успішно створено!"
 msgstr "New location created successfully!"
 
-#: app/camera_traps/routes.py:1218
+#: app/camera_traps/routes.py:1228
 msgid "Помилка створення місця."
 msgstr "Error creating location."
 
-#: app/camera_traps/routes.py:1230
+#: app/camera_traps/routes.py:1240
 msgid "Неправильно вказане місце."
 msgstr "Incorrect location specified."
 
-#: app/camera_traps/routes.py:1232
+#: app/camera_traps/routes.py:1242
 msgid "Файли не були передані."
 msgstr "No files were uploaded."
 
-#: app/camera_traps/routes.py:1235
+#: app/camera_traps/routes.py:1245
 msgid "Файли успішно оброблені!"
 msgstr "Files processed successfully!"
 
-#: app/camera_traps/routes.py:1240
+#: app/camera_traps/routes.py:1250
 msgid "Сталася невідома помилка під час обробки файлів."
 msgstr "An unknown error occurred while processing the files."
 
-#: app/camera_traps/routes.py:1258
+#: app/camera_traps/routes.py:1268
 msgid "Очищення завершено. Файлів для видалення не знайдено."
 msgstr "Cleanup completed. No files found to delete."
 
-#: app/camera_traps/routes.py:1264
+#: app/camera_traps/routes.py:1274
 msgid "Під час процесу очищення сталася несподівана помилка. Перевірте логи."
 msgstr ""
 "An unexpected error occurred during the cleanup process. Check the "
 "logs.An unexpected error occurred during the cleanup process. Please "
 "check the logs."
 
-#: app/camera_traps/routes.py:1304
+#: app/camera_traps/routes.py:1314
 msgid "Помилка завантаження статистики батчів."
 msgstr "Error loading batch statistics."
 
-#: app/camera_traps/routes.py:1316
+#: app/camera_traps/routes.py:1326
 msgid "Процес очищення батчів успішно запущено та завершено."
 msgstr ""
 "Batch cleanup process started and completed successfully.The process of "
 "cleaning batches has been successfully started and completed."
 
-#: app/camera_traps/routes.py:1319
+#: app/camera_traps/routes.py:1329
 msgid "Під час очищення батчів сталася помилка. Перевірте логи."
 msgstr "An error occurred while cleaning batches. Check the logs."
 
-#: app/camera_traps/routes.py:1335
+#: app/camera_traps/routes.py:1345
 msgid "Помилка перерахунку консенсусу. Перевірте логи."
 msgstr "Consensus recalculation error. Please check the logs."
 
-#: app/camera_traps/routes.py:1409
+#: app/camera_traps/routes.py:1419
 #: app/camera_traps/templates/identification.html:595
 #: app/camera_traps/templates/identification.html:883
 #: app/pam/templates/pam_verification_interface.html:368
@@ -311,31 +251,31 @@ msgstr "Consensus recalculation error. Please check the logs."
 msgid "-- Всі види --"
 msgstr "-- All species --"
 
-#: app/camera_traps/routes.py:1432
+#: app/camera_traps/routes.py:1442
 msgid "Помилка завантаження галереї."
 msgstr "Gallery loading error."
 
-#: app/camera_traps/routes.py:1478 app/camera_traps/templates/gallery.html:478
+#: app/camera_traps/routes.py:1488 app/camera_traps/templates/gallery.html:478
 msgid "Для вибраного виду немає фото у вибраному."
 msgstr "There are no photos available for the selected species."
 
-#: app/camera_traps/routes.py:1566
+#: app/camera_traps/routes.py:1576
 msgid "Фото видалено з вибраного"
 msgstr "Photo removed from favorites"
 
-#: app/camera_traps/routes.py:1610
+#: app/camera_traps/routes.py:1620
 msgid "Помилка завантаження сторінки управління локаціями."
 msgstr "Error loading the location management page."
 
-#: app/camera_traps/routes.py:1640
+#: app/camera_traps/routes.py:1650
 msgid "Дані локації оновлено успішно!"
 msgstr "Location data updated successfully!"
 
-#: app/camera_traps/routes.py:1644
+#: app/camera_traps/routes.py:1654
 msgid "Помилка збереження даних."
 msgstr "Data save error."
 
-#: app/camera_traps/routes.py:1668
+#: app/camera_traps/routes.py:1678
 msgid ""
 "Під час процесу видалення файлів сталася несподівана помилка. Перевірте "
 "логи."
@@ -343,63 +283,63 @@ msgstr ""
 "An unexpected error occurred during the file removing process. Please "
 "check the logs."
 
-#: app/camera_traps/routes.py:1683
+#: app/camera_traps/routes.py:1693
 msgid "Процес перерахунку аналітики успішно завершено."
 msgstr "Analytics recalculation process was successfully completed."
 
-#: app/camera_traps/routes.py:1687
+#: app/camera_traps/routes.py:1697
 msgid "Під час перерахунку аналітики сталася помилка. Перевірте логи."
 msgstr ""
 "An error occurred during analytics recalculation. Check the logs.An "
 "unexpected error occurred during the analytics recalculation. Please "
 "check the logs."
 
-#: app/camera_traps/routes.py:1971
+#: app/camera_traps/routes.py:1981
 msgid "Помилка завантаження сторінки журналу обслуговування."
 msgstr "Error loading service log page."
 
-#: app/camera_traps/routes.py:2006
+#: app/camera_traps/routes.py:2016
 msgid "Немає даних про обслуговування"
 msgstr "No maintenance data"
 
-#: app/camera_traps/routes.py:2042
+#: app/camera_traps/routes.py:2052
 msgid "Прогноз за кількістю фото"
 msgstr "Forecast by number of photos"
 
-#: app/camera_traps/routes.py:2046
+#: app/camera_traps/routes.py:2056
 #: app/camera_traps/templates/service_log.html:385
 msgid "Прогноз за часом"
 msgstr "Forecast by time"
 
-#: app/camera_traps/routes.py:2093
+#: app/camera_traps/routes.py:2103
 msgid "Не замінювались"
 msgstr "Not replaced"
 
-#: app/camera_traps/routes.py:2123
+#: app/camera_traps/routes.py:2133
 msgid "Не всі обов'язкові поля заповнені."
 msgstr "Not all required fields are filled in."
 
-#: app/camera_traps/routes.py:2164
+#: app/camera_traps/routes.py:2174
 msgid "Запис успішно додано до журналу!"
 msgstr "Record successfully added to the log!"
 
-#: app/camera_traps/routes.py:2170
+#: app/camera_traps/routes.py:2180
 msgid "Передано некоректні дані."
 msgstr "Invalid data submitted."
 
-#: app/camera_traps/routes.py:2174
+#: app/camera_traps/routes.py:2184
 msgid "Помилка сервера при збереженні запису."
 msgstr "Server error while saving the record."
 
-#: app/camera_traps/routes.py:2189
+#: app/camera_traps/routes.py:2199
 msgid "Перерахунок статистики успішно завершено! Карта буде оновлена."
 msgstr "Statistics recalculated successfully! The map will be updated."
 
-#: app/camera_traps/routes.py:2193
+#: app/camera_traps/routes.py:2203
 msgid "Під час перерахунку сталася помилка."
 msgstr "An error occurred during recalculation."
 
-#: app/camera_traps/routes.py:2663
+#: app/camera_traps/routes.py:2673
 msgid "Помилка завантаження сторінки."
 msgstr "Error loading page."
 
@@ -1128,7 +1068,7 @@ msgstr "Photo for Identification"
 msgid "Відкрити у повному розмірі"
 msgstr "Open in full size"
 
-#: app/camera_traps/templates/identification.html:666 app/utils/forms.py:20
+#: app/camera_traps/templates/identification.html:666
 msgid "Надіслати"
 msgstr "Send"
 
@@ -1207,6 +1147,16 @@ msgstr "Location name"
 msgid "Опис локації"
 msgstr "Description"
 
+#: app/camera_traps/templates/manage_locations.html:111
+#: app/pam/templates/manage_pam_locations.html:139
+msgid "Широта (Lat)"
+msgstr "Latitude (Lat)"
+
+#: app/camera_traps/templates/manage_locations.html:115
+#: app/pam/templates/manage_pam_locations.html:143
+msgid "Довгота (Lng)"
+msgstr "Longitude (Lng)"
+
 #: app/camera_traps/templates/manage_locations.html:120
 #: app/pam/templates/manage_pam_locations.html:162
 msgid "Біотопи"
@@ -1220,7 +1170,7 @@ msgstr "Save changes"
 #: app/pam/templates/manage_pam_locations.html:174
 #: app/templates/admin/admin_institution_form.html:66
 #: app/templates/admin/admin_role_form.html:74
-#: app/templates/admin/admin_user_form.html:124
+#: app/templates/admin/admin_user_form.html:167
 msgid "Скасувати"
 msgstr "Cancel"
 
@@ -1468,6 +1418,8 @@ msgid ""
 "Це може зайняти деякий час. Ви впевнені, що хочете запустити повний "
 "перерахунок статистики для всіх локацій?"
 msgstr ""
+"This may take some time. Are you sure you want to run a full statistics "
+"recalculation for all locations?"
 
 #: app/camera_traps/templates/service_log.html:415
 msgid "Розрахунок..."
@@ -2595,6 +2547,8 @@ msgid ""
 "Не вдалося завантажити дані для аналізу. Можливо, для вибраних параметрів"
 " немає розрахованих даних."
 msgstr ""
+"Failed to load data for analysis. There may be no calculated data for the "
+"selected parameters."
 
 #: app/pam/templates/pam_species_dashboard.html:233
 msgid "Для вибраного виду, установи та періоду немає даних."
@@ -3239,14 +3193,6 @@ msgstr "RAI (detections per hour)"
 msgid "Рік"
 msgstr "Year"
 
-#: app/routes/main.py:72
-msgid "Неправильний логін або пароль. Спробуйте ще раз."
-msgstr "Incorrect login or password. Please try again."
-
-#: app/routes/main.py:74 app/templates/base.html:40 app/templates/login.html:2
-msgid "Увійти"
-msgstr "Log in"
-
 #: app/templates/about.html:7
 msgid "Про проєкт"
 msgstr "About project"
@@ -3295,6 +3241,10 @@ msgstr "ADMIN"
 msgid "Вийти"
 msgstr "Log out"
 
+#: app/templates/base.html:40 app/templates/login.html:2
+msgid "Увійти"
+msgstr "Log in"
+
 #: app/templates/base.html:85
 msgid "Юрій Струс, ©"
 msgstr "Iurii Strus, ©"
@@ -3319,7 +3269,7 @@ msgstr ""
 msgid "Форма"
 msgstr "Form"
 
-#: app/templates/login.html:6 app/utils/forms.py:12
+#: app/templates/login.html:6
 msgid "Увійти в систему"
 msgstr "Sign in"
 
@@ -3402,10 +3352,12 @@ msgid ""
 "Використовується для системного зв'язку (наприклад: roztochya, fzs). Має "
 "бути унікальним, латиницею, без пробілів."
 msgstr ""
+"Used for system reference (e.g.: roztochya, fzs). Must be unique, Latin "
+"characters only, no spaces."
 
 #: app/templates/admin/admin_institution_form.html:69
 #: app/templates/admin/admin_role_form.html:77
-#: app/templates/admin/admin_user_form.html:127
+#: app/templates/admin/admin_user_form.html:170
 msgid "Зберегти дані"
 msgstr "Save data"
 
@@ -3554,7 +3506,7 @@ msgstr "Account credentials"
 msgid "Логін (Username)"
 msgstr "Login (Username)"
 
-#: app/templates/admin/admin_user_form.html:42 app/utils/forms.py:11
+#: app/templates/admin/admin_user_form.html:42
 msgid "Пароль"
 msgstr "Password"
 
@@ -3590,25 +3542,45 @@ msgstr "This data will be displayed in reports and the verification log."
 msgid "Прив’язка до установ"
 msgstr "Institution assignment"
 
-#: app/templates/admin/admin_user_form.html:83
-msgid "Утримуйте Ctrl для вибору кількох"
-msgstr "Hold Ctrl to select multiple"
+#: app/templates/admin/admin_user_form.html:84
+msgid ""
+"Відмітьте установи та налаштуйте права доступу. «Доступ» — може "
+"переглядати та ідентифікувати; «Експорт» — може завантажувати дані."
+msgstr ""
+"Select institutions and configure access rights. \"Access\" — can view and "
+"identify; \"Export\" — can download data."
 
-#: app/templates/admin/admin_user_form.html:96
+#: app/templates/admin/admin_user_form.html:91
+msgid "Установа"
+msgstr "Institution"
+
+#: app/templates/admin/admin_user_form.html:92
+msgid "Доступ"
+msgstr "Access"
+
+#: app/templates/admin/admin_user_form.html:93
+msgid "Експорт"
+msgstr "Export"
+
+#: app/templates/admin/admin_user_form.html:117
+msgid "Немає доступних установ."
+msgstr "No available institutions."
+
+#: app/templates/admin/admin_user_form.html:139
 msgid "Призначення ролей"
 msgstr "Role assignment"
 
-#: app/templates/admin/admin_user_form.html:97
+#: app/templates/admin/admin_user_form.html:140
 msgid "Визначте рівень доступу"
 msgstr "Set access level"
 
-#: app/templates/admin/admin_user_form.html:114
+#: app/templates/admin/admin_user_form.html:157
 msgid "Немає доступних ролей."
 msgstr "No available roles."
 
-#: app/templates/admin/admin_user_form.html:127
+#: app/templates/admin/admin_user_form.html:170
 msgid "Створити користувача"
-msgstr "Create a user"
+msgstr "Create user"
 
 #: app/templates/admin/admin_users_list.html:13
 msgid "Керування користувачами"
@@ -3637,26 +3609,6 @@ msgstr "You cannot delete yourself"
 #: app/templates/admin/admin_users_list.html:83
 msgid "Користувачів не знайдено."
 msgstr "Users not found."
-
-#: app/utils/forms.py:10
-msgid "Ім'я користувача"
-msgstr "Username"
-
-#: app/utils/forms.py:15
-msgid "Ваше ім'я"
-msgstr "Your name"
-
-#: app/utils/forms.py:16
-msgid "Ваш Email"
-msgstr "Your Email"
-
-#: app/utils/forms.py:17
-msgid "Тема"
-msgstr "Subject"
-
-#: app/utils/forms.py:18
-msgid "Повідомлення"
-msgstr "Message"
 
 #~ msgid "ГОЛОВНА"
 #~ msgstr "HOME"
@@ -3883,22 +3835,22 @@ msgstr "Message"
 #~ msgstr "Location description"
 
 #~ msgid "Широта має бути між -90 та 90."
-#~ msgstr "Latitude should fit between -90 and 90."
+#~ msgstr "Latitude must be between -90 and 90."
 
 #~ msgid "Довгота має бути між -180 та 180."
-#~ msgstr "Longitude should fit between -180 and 180."
+#~ msgstr "Longitude must be between -180 and 180."
 
 #~ msgid "Створити місце"
-#~ msgstr "Create a location"
+#~ msgstr "Create location"
 
 #~ msgid "Завантажити фотографії"
 #~ msgstr "Upload Photos"
 
 #~ msgid "Observation ID"
-#~ msgstr ""
+#~ msgstr "Observation ID"
 
 #~ msgid "Вид тварини"
-#~ msgstr "Animal species"
+#~ msgstr "Animal species:"
 
 #~ msgid "Кількість особин"
 #~ msgstr "Number of individuals"
@@ -3907,7 +3859,7 @@ msgstr "Message"
 #~ msgstr "Additional tags"
 
 #~ msgid "Зберегти у вибране"
-#~ msgstr "Add to favorites"
+#~ msgstr "Save to favorites"
 
 #~ msgid "Cирі дані частково вже доступні через"
 #~ msgstr "Partially, raw data are already available via"
@@ -3919,7 +3871,7 @@ msgstr "Message"
 #~ msgstr "Incorrect login or password. Please try again."
 
 #~ msgid "Ім'я користувача"
-#~ msgstr "User name"
+#~ msgstr "Username"
 
 #~ msgid "Ваше ім'я"
 #~ msgstr "Your name"
@@ -3928,11 +3880,85 @@ msgstr "Message"
 #~ msgstr "Your Email"
 
 #~ msgid "Тема"
-#~ msgstr "Theme"
+#~ msgstr "Subject"
 
 #~ msgid "Повідомлення"
 #~ msgstr "Message"
 
 #~ msgid "Профіль користувача для фотопасток не знайдено."
 #~ msgstr "User profile for camera traps not found."
+
+#~ msgid "Облікові дані"
+#~ msgstr "Account credentials"
+
+#~ msgid "Логін (Username)"
+#~ msgstr "Login (Username)"
+
+#~ msgid "Лишіть порожнім, щоб не змінювати"
+#~ msgstr "Leave blank to keep unchanged"
+
+#~ msgid "Email"
+#~ msgstr "Email"
+
+#~ msgid "Телефон"
+#~ msgstr "Phone"
+
+#~ msgid "Персональна інформація"
+#~ msgstr "Personal information"
+
+#~ msgid "Ім’я"
+#~ msgstr "First name"
+
+#~ msgid "Прізвище"
+#~ msgstr "Last name"
+
+#~ msgid "Ці дані будуть відображатися в звітах та журналі верифікації."
+#~ msgstr "This data will be displayed in reports and the verification log."
+
+#~ msgid "Прив’язка до установ"
+#~ msgstr "Institution assignment"
+
+#~ msgid "Утримуйте Ctrl для вибору кількох"
+#~ msgstr "Hold Ctrl to select multiple"
+
+#~ msgid "Призначення ролей"
+#~ msgstr "Role assignment"
+
+#~ msgid "Визначте рівень доступу"
+#~ msgstr "Set access level"
+
+#~ msgid "Немає доступних ролей."
+#~ msgstr "No available roles."
+
+#~ msgid "Створити користувача"
+#~ msgstr "Create a user"
+
+#~ msgid "Прив'язка до установ"
+#~ msgstr "Institution assignment"
+
+#~ msgid ""
+#~ "Відмітьте установи та налаштуйте права "
+#~ "доступу. «Доступ» — може переглядати та"
+#~ " ідентифікувати; «Експорт» — може "
+#~ "завантажувати дані."
+#~ msgstr ""
+#~ "Select institutions and configure access "
+#~ "rights. \"Access\" — can view and "
+#~ "identify; \"Export\" — can download "
+#~ "data."
+
+#~ msgid "Установа"
+#~ msgstr "Institution"
+
+#~ msgid "Доступ"
+#~ msgstr "Access"
+
+#~ msgid "Експорт"
+#~ msgstr "Export"
+
+#~ msgid "Немає доступних установ."
+#~ msgstr "No available institutions."
+
+#~ msgid "Пароль"
+#~ msgstr "Password"
 

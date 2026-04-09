@@ -77,18 +77,61 @@
                     </div>
                 </div>
 
-                <!-- Блок 3: Установи -->
-                <div class="stat-card" style="text-align: left;">
-                    <h5 style="color: #28a745; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _('Прив’язка до установ') }} <span style="color:red;">*</span></h5>
-                    <small style="color: #666; display: block; margin-bottom: 10px;">{{ _('Утримуйте Ctrl для вибору кількох') }}</small>
-                    
-                    <select name="institutions" class="site-input" multiple size="7" required style="height: auto; padding: 5px;">
-                        {% for inst in institutions %}
-                            <option value="{{ inst.id }}" {% if user and inst in user.institutions %}selected{% endif %} style="padding: 5px; border-bottom: 1px solid #f4f4f4;">
-                                {{ inst.name_uk }}
-                            </option>
-                        {% endfor %}
-                    </select>
+                <!-- Блок 3: Установи (повна ширина) -->
+                <div class="stat-card" style="text-align: left; grid-column: 1 / -1;">
+                    <h5 style="color: #28a745; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _("Прив’язка до установ") }}</h5>
+                    <small style="color: #666; display: block; margin-bottom: 12px;">
+                        {{ _("Відмітьте установи та налаштуйте права доступу. «Доступ» — може переглядати та ідентифікувати; «Експорт» — може завантажувати дані.") }}
+                    </small>
+
+                    <div style="border: 1px solid #dee2e6; border-radius: 4px; overflow: hidden; max-height: 340px; overflow-y: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; position: sticky; top: 0;">
+                                    <th style="text-align: left; padding: 10px 14px; font-weight: 600;">{{ _("Установа") }}</th>
+                                    <th style="text-align: center; padding: 10px 14px; width: 110px; font-weight: 600;">{{ _("Доступ") }}</th>
+                                    <th style="text-align: center; padding: 10px 14px; width: 110px; font-weight: 600;">{{ _("Експорт") }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inst in institutions %}
+                                {% set is_assigned = user and inst in user.institutions %}
+                                {% set can_exp = inst.id in export_institution_ids %}
+                                <tr style="border-bottom: 1px solid #f0f0f0;">
+                                    <td style="padding: 9px 14px;">{{ inst.name_uk }}</td>
+                                    <td style="text-align: center; padding: 9px 14px;">
+                                        <input type="checkbox" name="institutions" value="{{ inst.id }}"
+                                               id="inst_{{ inst.id }}"
+                                               {% if is_assigned %}checked{% endif %}
+                                               onchange="syncExport(this)">
+                                    </td>
+                                    <td style="text-align: center; padding: 9px 14px;">
+                                        <input type="checkbox" name="can_export" value="{{ inst.id }}"
+                                               id="export_{{ inst.id }}"
+                                               {% if can_exp %}checked{% endif %}
+                                               {% if not is_assigned %}disabled{% endif %}>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" style="padding: 14px; color: #999; text-align: center;">{{ _("Немає доступних установ.") }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <script>
+                    function syncExport(checkbox) {
+                        const exportCb = document.getElementById(‘export_’ + checkbox.value);
+                        if (!checkbox.checked) {
+                            exportCb.checked = false;
+                            exportCb.disabled = true;
+                        } else {
+                            exportCb.disabled = false;
+                        }
+                    }
+                    </script>
                 </div>
 
                 <!-- Блок 4: Ролі -->

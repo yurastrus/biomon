@@ -4,7 +4,7 @@ from flask import render_template, g, current_app, request, redirect, url_for, f
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from sqlalchemy import or_
-from app.models import User, Institution, Role
+from app.models import User, Institution, Role, UserInstitution
 from app.utils.decorators import role_required
 from . import admin_bp
 
@@ -58,6 +58,7 @@ def add_user():
         
         # ID вибраних установ та ролей (списки)
         selected_inst_ids = request.form.getlist('institutions')
+        can_export_ids    = set(request.form.getlist('can_export'))
         selected_role_ids = request.form.getlist('roles')
 
         # --- ПЕРЕВІРКА ДЛЯ ЛОКАЛЬНОГО АДМІНА ---
@@ -83,7 +84,9 @@ def add_user():
         for i_id in selected_inst_ids:
             inst = Institution.query.get(int(i_id))
             if inst:
-                new_user.institutions.append(inst)
+                new_user.institution_links.append(
+                    UserInstitution(institution_id=inst.id, can_export=(i_id in can_export_ids))
+                )
 
         # Додаємо зв'язки з ролями
         for r_id in selected_role_ids:
@@ -100,9 +103,10 @@ def add_user():
             db.session.rollback()
             flash(f'Помилка при збереженні: {str(e)}', 'danger')
 
-    return render_template('admin_user_form.html', 
-                           institutions=available_institutions, 
+    return render_template('admin_user_form.html',
+                           institutions=available_institutions,
                            roles=available_roles,
+                           export_institution_ids=set(),
                            title=_('Додати користувача'))
 
 
@@ -157,10 +161,14 @@ def edit_user(user_id):
 
         # Оновлення установ
         selected_inst_ids = request.form.getlist('institutions')
-        user.institutions = [] # Очищуємо старі зв'язки
+        can_export_ids    = set(request.form.getlist('can_export'))
+        user.institution_links = []  # Очищуємо старі зв'язки
         for i_id in selected_inst_ids:
             inst = Institution.query.get(int(i_id))
-            if inst: user.institutions.append(inst)
+            if inst:
+                user.institution_links.append(
+                    UserInstitution(institution_id=inst.id, can_export=(i_id in can_export_ids))
+                )
 
         # Оновлення ролей
         selected_role_ids = request.form.getlist('roles')
@@ -180,10 +188,12 @@ def edit_user(user_id):
         flash(f'Дані користувача {user.username} успішно оновлено!', 'success')
         return redirect(url_for('admin.user_list', lang_code=g.lang_code))
 
-    return render_template('admin_user_form.html', 
+    export_institution_ids = {link.institution_id for link in user.institution_links if link.can_export}
+    return render_template('admin_user_form.html',
                            user=user,
-                           institutions=available_institutions, 
+                           institutions=available_institutions,
                            roles=available_roles,
+                           export_institution_ids=export_institution_ids,
                            title=_('Редагувати користувача'))
 
 @admin_bp.route('/users/delete/<int:user_id>', methods=['POST'])
