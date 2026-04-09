@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-09 07:18+0300\n"
+"POT-Creation-Date: 2026-04-09 07:55+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,27 +17,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app/admin/routes.py:110 app/templates/admin/admin_users_list.html:18
+#: app/admin/routes.py:118 app/templates/admin/admin_users_list.html:17
 msgid "Додати користувача"
 msgstr ""
 
-#: app/admin/routes.py:197
+#: app/admin/routes.py:225
 msgid "Редагувати користувача"
 msgstr ""
 
-#: app/admin/routes.py:281
+#: app/admin/routes.py:309
 msgid "Редагувати установу"
 msgstr ""
 
-#: app/admin/routes.py:284 app/templates/admin/admin_institutions_list.html:18
+#: app/admin/routes.py:312 app/templates/admin/admin_institutions_list.html:18
 msgid "Додати установу"
 msgstr ""
 
-#: app/admin/routes.py:343
+#: app/admin/routes.py:371
 msgid "Редагувати роль"
 msgstr ""
 
-#: app/admin/routes.py:346 app/templates/admin/admin_roles_list.html:18
+#: app/admin/routes.py:374 app/templates/admin/admin_roles_list.html:18
 msgid "Додати роль"
 msgstr ""
 
@@ -1146,7 +1146,7 @@ msgstr ""
 #: app/pam/templates/manage_pam_locations.html:174
 #: app/templates/admin/admin_institution_form.html:66
 #: app/templates/admin/admin_role_form.html:74
-#: app/templates/admin/admin_user_form.html:167
+#: app/templates/admin/admin_user_form.html:199
 msgid "Скасувати"
 msgstr ""
 
@@ -1173,6 +1173,7 @@ msgstr ""
 
 #: app/camera_traps/templates/photo_viewer.html:319
 #: app/pam/templates/pam_verification_segments.html:361
+#: app/templates/admin/admin_users_list.html:73
 msgid "Скинути"
 msgstr ""
 
@@ -1420,7 +1421,7 @@ msgstr ""
 #: app/templates/admin/admin_home.html:36
 #: app/templates/admin/admin_institution_form.html:9
 #: app/templates/admin/admin_institutions_list.html:9
-#: app/templates/admin/admin_users_list.html:28
+#: app/templates/admin/admin_users_list.html:90
 msgid "Установи"
 msgstr ""
 
@@ -3250,7 +3251,7 @@ msgstr ""
 #: app/templates/admin/admin_home.html:51
 #: app/templates/admin/admin_role_form.html:9
 #: app/templates/admin/admin_roles_list.html:9
-#: app/templates/admin/admin_users_list.html:29
+#: app/templates/admin/admin_users_list.html:91
 msgid "Ролі"
 msgstr ""
 
@@ -3282,7 +3283,7 @@ msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:69
 #: app/templates/admin/admin_role_form.html:77
-#: app/templates/admin/admin_user_form.html:170
+#: app/templates/admin/admin_user_form.html:202
 msgid "Зберегти дані"
 msgstr ""
 
@@ -3308,13 +3309,13 @@ msgstr ""
 
 #: app/templates/admin/admin_institutions_list.html:30
 #: app/templates/admin/admin_roles_list.html:29
-#: app/templates/admin/admin_users_list.html:30
+#: app/templates/admin/admin_users_list.html:92
 msgid "Дії"
 msgstr ""
 
 #: app/templates/admin/admin_institutions_list.html:44
 #: app/templates/admin/admin_roles_list.html:55
-#: app/templates/admin/admin_users_list.html:57
+#: app/templates/admin/admin_users_list.html:119
 msgid "Редагувати"
 msgstr ""
 
@@ -3331,8 +3332,8 @@ msgstr ""
 #: app/templates/admin/admin_institutions_list.html:55
 #: app/templates/admin/admin_roles_list.html:67
 #: app/templates/admin/admin_roles_list.html:72
-#: app/templates/admin/admin_users_list.html:69
-#: app/templates/admin/admin_users_list.html:74
+#: app/templates/admin/admin_users_list.html:128
+#: app/templates/admin/admin_users_list.html:133
 msgid "Видалити"
 msgstr ""
 
@@ -3470,6 +3471,7 @@ msgid ""
 msgstr ""
 
 #: app/templates/admin/admin_user_form.html:91
+#: app/templates/admin/admin_users_list.html:52
 msgid "Установа"
 msgstr ""
 
@@ -3485,47 +3487,72 @@ msgstr ""
 msgid "Немає доступних установ."
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:139
+#: app/templates/admin/admin_user_form.html:170
 msgid "Призначення ролей"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:140
+#: app/templates/admin/admin_user_form.html:171
 msgid "Визначте рівень доступу"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:157
+#: app/templates/admin/admin_user_form.html:189
 msgid "Немає доступних ролей."
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:170
+#: app/templates/admin/admin_user_form.html:202
 msgid "Створити користувача"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:13
+#: app/templates/admin/admin_users_list.html:12
 msgid "Керування користувачами"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:26
+#: app/templates/admin/admin_users_list.html:46
+msgid "Пошук"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:47
+msgid "Логін або ПІБ..."
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:54
+#: app/templates/admin/admin_users_list.html:64
+msgid "всі"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:62
+msgid "Роль"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:78
+msgid "Показано:"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:88
 msgid "Логін"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:27
-msgid "Прізвище та ім’я"
+#: app/templates/admin/admin_users_list.html:89
+msgid "Прізвище та ім'я"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:65
+#: app/templates/admin/admin_users_list.html:125
 msgid "Ви впевнені, що хочете видалити користувача:"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:65
+#: app/templates/admin/admin_users_list.html:125
 msgid "Ця дія є незворотною."
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:73
+#: app/templates/admin/admin_users_list.html:132
 msgid "Ви не можете видалити себе"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:83
+#: app/templates/admin/admin_users_list.html:141
 msgid "Користувачів не знайдено."
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:148
+msgid "Жодного користувача не відповідає фільтру."
 msgstr ""
 

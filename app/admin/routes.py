@@ -61,6 +61,13 @@ def add_user():
         can_export_ids    = set(request.form.getlist('can_export'))
         selected_role_ids = request.form.getlist('roles')
 
+        # Чи матиме новий користувач доступ до експорту
+        _EXPORT_ROLES = {'analyst', 'manager', 'admin'}
+        _new_role_names = {
+            r.name for r in Role.query.filter(Role.id.in_([int(x) for x in selected_role_ids])).all()
+        } if selected_role_ids else set()
+        will_have_export = bool(_new_role_names & _EXPORT_ROLES)
+
         # --- ПЕРЕВІРКА ДЛЯ ЛОКАЛЬНОГО АДМІНА ---
         if not current_user.has_role('admin'):
             # Якщо творцем цього користувача є не поточний менеджер — блокуємо доступ
@@ -85,7 +92,8 @@ def add_user():
             inst = Institution.query.get(int(i_id))
             if inst:
                 new_user.institution_links.append(
-                    UserInstitution(institution_id=inst.id, can_export=(i_id in can_export_ids))
+                    UserInstitution(institution_id=inst.id,
+                                   can_export=will_have_export and (i_id in can_export_ids))
                 )
 
         # Додаємо зв'язки з ролями
@@ -162,12 +170,32 @@ def edit_user(user_id):
         # Оновлення установ
         selected_inst_ids = request.form.getlist('institutions')
         can_export_ids    = set(request.form.getlist('can_export'))
+
+        # Визначаємо чи матиме користувач роль з доступом до експорту
+        _EXPORT_ROLES = {'analyst', 'manager', 'admin'}
+        _selected_role_names = {
+            r.name for r in Role.query.filter(
+                Role.id.in_([int(x) for x in request.form.getlist('roles')])
+            ).all()
+        } if request.form.getlist('roles') else set()
+        # Враховуємо приховані ролі (які менеджер не може змінювати)
+        _hidden_role_names = {r.name for r in user.roles if r not in available_roles}
+        will_have_export = bool((_selected_role_names | _hidden_role_names) & _EXPORT_ROLES)
+
+        # Зберігаємо поточні can_export значення з бази (на випадок відміни ролі аналітика)
+        existing_export_map = {link.institution_id: link.can_export for link in user.institution_links}
+
         user.institution_links = []  # Очищуємо старі зв'язки
         for i_id in selected_inst_ids:
             inst = Institution.query.get(int(i_id))
             if inst:
+                if will_have_export:
+                    new_can_export = (i_id in can_export_ids)
+                else:
+                    # Зберігаємо DB-значення — не обнуляємо при відміні ролі
+                    new_can_export = existing_export_map.get(inst.id, False)
                 user.institution_links.append(
-                    UserInstitution(institution_id=inst.id, can_export=(i_id in can_export_ids))
+                    UserInstitution(institution_id=inst.id, can_export=new_can_export)
                 )
 
         # Оновлення ролей

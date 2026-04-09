@@ -2,16 +2,15 @@
 
 {% block content %}
 <div class="container" style="margin-top: 20px; margin-bottom: 50px;">
-    
+
     <!-- Навігація -->
     <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
-        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a> 
+        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a>
         &raquo; <strong>{{ _('Користувачі') }}</strong>
     </div>
 
-    <!-- Заголовок -->
     <h2 style="text-align: left; margin-bottom: 15px;">{{ _('Керування користувачами') }}</h2>
-    
+
     <!-- Кнопка додавання -->
     <div style="text-align: left; margin-bottom: 20px;">
         <a href="{{ url_for('admin.add_user', lang_code=g.lang_code) }}" class="button" style="min-width: 200px; margin-top: 0;">
@@ -19,20 +18,85 @@
         </a>
     </div>
 
-    <!-- Рідна таблиця з твого CSS -->
+    {# Збираємо унікальні установи та ролі для фільтрів #}
+    {% set seen_inst_ids = namespace(v=[]) %}
+    {% set filter_institutions = namespace(v=[]) %}
+    {% set seen_role_names = namespace(v=[]) %}
+    {% set filter_roles = namespace(v=[]) %}
+    {% for u in users %}
+        {% for inst in u.institutions %}
+            {% if inst.id not in seen_inst_ids.v %}
+                {% set seen_inst_ids.v = seen_inst_ids.v + [inst.id] %}
+                {% set filter_institutions.v = filter_institutions.v + [inst] %}
+            {% endif %}
+        {% endfor %}
+        {% for role in u.roles %}
+            {% if role.name not in seen_role_names.v %}
+                {% set seen_role_names.v = seen_role_names.v + [role.name] %}
+                {% set filter_roles.v = filter_roles.v + [role] %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Панель фільтрів -->
+    <div class="dashboard-section" style="padding: 16px 20px; margin-bottom: 20px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+
+            <div style="flex: 1; min-width: 180px;">
+                <label style="display: block; font-size: 13px; color: #666; margin-bottom: 4px;">{{ _('Пошук') }}</label>
+                <input type="text" id="filter-search" placeholder="{{ _('Логін або ПІБ...') }}"
+                       style="width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+            </div>
+
+            <div style="flex: 1; min-width: 180px;">
+                <label style="display: block; font-size: 13px; color: #666; margin-bottom: 4px;">{{ _('Установа') }}</label>
+                <select id="filter-institution" style="width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+                    <option value="">— {{ _('всі') }} —</option>
+                    {% for inst in filter_institutions.v | sort(attribute='name_uk') %}
+                        <option value="{{ inst.id }}">{{ inst.name_uk }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="flex: 0 0 160px;">
+                <label style="display: block; font-size: 13px; color: #666; margin-bottom: 4px;">{{ _('Роль') }}</label>
+                <select id="filter-role" style="width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+                    <option value="">— {{ _('всі') }} —</option>
+                    {% for role in filter_roles.v | sort(attribute='name') %}
+                        <option value="{{ role.name }}">{{ role.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="flex: 0 0 auto; padding-bottom: 1px;">
+                <button onclick="resetFilters()" class="button cancel" style="margin: 0; padding: 7px 16px; font-size: 14px;">
+                    {{ _('Скинути') }}
+                </button>
+            </div>
+
+            <div style="flex: 0 0 auto; align-self: flex-end; font-size: 13px; color: #888; padding-bottom: 9px; white-space: nowrap;">
+                {{ _('Показано:') }} <span id="filter-count">{{ users | length }}</span> / {{ users | length }}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Таблиця -->
     <table class="admin-table">
         <thead>
             <tr>
                 <th>{{ _('Логін') }}</th>
-                <th>{{ _('Прізвище та ім’я') }}</th>
+                <th>{{ _('Прізвище та ім\'я') }}</th>
                 <th>{{ _('Установи') }}</th>
                 <th>{{ _('Ролі') }}</th>
                 <th style="text-align: right;">{{ _('Дії') }}</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="users-tbody">
             {% for user in users %}
-            <tr>
+            <tr data-search="{{ user.username }} {{ user.full_name }}"
+                data-institution="{{ user.institutions | map(attribute='id') | join('|') }}"
+                data-role="{{ user.roles | map(attribute='name') | join('|') }}">
                 <td>
                     <strong>{{ user.username }}</strong><br>
                     <span style="font-size: 0.85em; color: gray;">{{ user.email or '' }}</span>
@@ -51,19 +115,14 @@
                     {% endfor %}
                 </td>
                 <td style="text-align: right; white-space: nowrap;">
-                    
-                    <!-- Редагувати -->
                     <a href="{{ url_for('admin.edit_user', lang_code=g.lang_code, user_id=user.id) }}" class="button-small">
                         {{ _('Редагувати') }}
                     </a>
-
-                    <!-- Видалити -->
                     {% if user.id != current_user.id %}
-                        <form action="{{ url_for('admin.delete_user', lang_code=g.lang_code, user_id=user.id) }}" 
-                              method="POST" 
+                        <form action="{{ url_for('admin.delete_user', lang_code=g.lang_code, user_id=user.id) }}"
+                              method="POST"
                               style="display: inline-block; margin: 0; padding: 0;"
                               onsubmit="return confirm('{{ _('Ви впевнені, що хочете видалити користувача:') }} {{ user.username }}?\n\n{{ _('Ця дія є незворотною.') }}');">
-                            
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="button-danger" style="border: none; cursor: pointer; font-family: inherit;">
                                 {{ _('Видалити') }}
@@ -74,17 +133,65 @@
                             {{ _('Видалити') }}
                         </button>
                     {% endif %}
-
                 </td>
             </tr>
             {% else %}
-            <tr>
+            <tr id="empty-row">
                 <td colspan="5" style="text-align: center; padding: 30px; color: gray;">
                     {{ _('Користувачів не знайдено.') }}
                 </td>
             </tr>
             {% endfor %}
+
+            <tr id="no-results-row" style="display: none;">
+                <td colspan="5" style="text-align: center; padding: 30px; color: gray;">
+                    {{ _('Жодного користувача не відповідає фільтру.') }}
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
+
+<script>
+function applyFilters() {
+    var searchVal = document.getElementById("filter-search").value.toLowerCase();
+    var instVal   = document.getElementById("filter-institution").value;
+    var roleVal   = document.getElementById("filter-role").value;
+
+    var rows = document.querySelectorAll("#users-tbody tr[data-search]");
+    var visible = 0;
+
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var search = row.getAttribute("data-search").toLowerCase();
+        var insts  = row.getAttribute("data-institution").split("|");
+        var roles  = row.getAttribute("data-role").split("|");
+
+        var ok = (!searchVal || search.indexOf(searchVal) !== -1)
+              && (!instVal   || insts.indexOf(instVal) !== -1)
+              && (!roleVal   || roles.indexOf(roleVal) !== -1);
+
+        row.style.display = ok ? "" : "none";
+        if (ok) visible++;
+    }
+
+    document.getElementById("filter-count").textContent = visible;
+
+    var noResults = document.getElementById("no-results-row");
+    if (noResults) {
+        noResults.style.display = (rows.length > 0 && visible === 0) ? "" : "none";
+    }
+}
+
+function resetFilters() {
+    document.getElementById("filter-search").value = "";
+    document.getElementById("filter-institution").value = "";
+    document.getElementById("filter-role").value = "";
+    applyFilters();
+}
+
+document.getElementById("filter-search").addEventListener("input", applyFilters);
+document.getElementById("filter-institution").addEventListener("change", applyFilters);
+document.getElementById("filter-role").addEventListener("change", applyFilters);
+</script>
 {% endblock %}

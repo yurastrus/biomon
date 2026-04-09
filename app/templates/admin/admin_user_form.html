@@ -122,15 +122,46 @@
                     </div>
 
                     <script>
+                    var EXPORT_ROLES = ["analyst", "manager", "admin"];
+
+                    function hasExportRole() {
+                        var roles = document.getElementsByName("roles");
+                        for (var i = 0; i < roles.length; i++) {
+                            var rn = roles[i].getAttribute("data-role-name");
+                            if (roles[i].checked && EXPORT_ROLES.indexOf(rn) !== -1) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    function updateAllExportCheckboxes() {
+                        var canExport = hasExportRole();
+                        var exportCbs = document.getElementsByName("can_export");
+                        for (var i = 0; i < exportCbs.length; i++) {
+                            var cb = exportCbs[i];
+                            var accessCb = document.getElementById("inst_" + cb.value);
+                            cb.disabled = !canExport || !(accessCb && accessCb.checked);
+                        }
+                    }
+
                     function syncExport(checkbox) {
-                        const exportCb = document.getElementById(‘export_’ + checkbox.value);
+                        var exportCb = document.getElementById("export_" + checkbox.value);
                         if (!checkbox.checked) {
                             exportCb.checked = false;
                             exportCb.disabled = true;
-                        } else {
+                        } else if (hasExportRole()) {
                             exportCb.disabled = false;
                         }
                     }
+
+                    document.addEventListener("DOMContentLoaded", function() {
+                        var roles = document.getElementsByName("roles");
+                        for (var i = 0; i < roles.length; i++) {
+                            roles[i].addEventListener("change", updateAllExportCheckboxes);
+                        }
+                        updateAllExportCheckboxes();
+                    });
                     </script>
                 </div>
 
@@ -142,7 +173,8 @@
                     <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; padding: 10px; background: white;">
                         {% for role in roles %}
                             <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; padding: 4px;">
-                                <input type="checkbox" name="roles" value="{{ role.id }}" 
+                                <input type="checkbox" name="roles" value="{{ role.id }}"
+                                       data-role-name="{{ role.name }}"
                                        {% if user and role in user.roles %}checked{% endif %}
                                        style="margin-right: 10px; transform: scale(1.1);">
                                 <span style="flex-grow: 1;">{{ role.name }}</span>
