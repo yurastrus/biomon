@@ -53,7 +53,7 @@ class Config:
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
 
     # Публічна URL-адреса сайту (для посилань у листах)
-    SITE_URL = os.environ.get('SITE_URL', 'https://biomon.org.ua')
+    SITE_URL = os.environ.get('SITE_URL', 'http://91.99.138.240:82')
 
     # Налаштування мов
     LANGUAGES = {'en': 'English', 'uk': 'Українська'}
