@@ -9,7 +9,9 @@
       "Bash(venv/Scripts/pybabel update:*)",
       "Bash(venv/Scripts/pybabel compile:*)",
       "Bash(grep -c \"^msgstr \\\\\"\\\\\"$\" translations/uk/LC_MESSAGES/messages.po)",
-      "Bash(venv/Scripts/python -c \"from app import create_app; app = create_app\\(\\); print\\('App created OK'\\)\")"
+      "Bash(venv/Scripts/python -c \"from app import create_app; app = create_app\\(\\); print\\('App created OK'\\)\")",
+      "Bash(ls /c/Users/IuriiStrus/repositories/biomon/*.env*)",
+      "Bash(ls /c/Users/IuriiStrus/repositories/biomon/.env*)"
     ]
   }
 }

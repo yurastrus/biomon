@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
-#from flask_mail import Mail
+from flask_mail import Mail
 
 babel = Babel()
 db = SQLAlchemy()
@@ -16,7 +16,7 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 csrf = CSRFProtect()
-#mail = Mail()
+mail = Mail()
 
 def init_extensions(app):
     """Ініціалізація всіх розширень Flask"""
@@ -27,6 +27,7 @@ def init_extensions(app):
 
     login_manager.init_app(app) # Ініціалізуйте його для додатка
     csrf.init_app(app)
+    mail.init_app(app)
     # Налаштування для переадресації, якщо користувач не залогінений
     login_manager.login_view = 'main.login' 
     login_manager.login_message = "Будь ласка, увійдіть, щоб отримати доступ."
