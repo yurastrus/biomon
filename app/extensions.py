@@ -18,6 +18,13 @@ login_manager = LoginManager()
 csrf = CSRFProtect()
 mail = Mail()
 
+@login_manager.unauthorized_handler
+def unauthorized():
+    from flask import g, request, redirect, url_for, flash
+    lang_code = getattr(g, 'lang_code', 'uk')
+    flash(login_manager.login_message, login_manager.login_message_category)
+    return redirect(url_for('main.login', lang_code=lang_code, next=request.url))
+
 def init_extensions(app):
     """Ініціалізація всіх розширень Flask"""
 
@@ -28,9 +35,8 @@ def init_extensions(app):
     login_manager.init_app(app) # Ініціалізуйте його для додатка
     csrf.init_app(app)
     mail.init_app(app)
-    # Налаштування для переадресації, якщо користувач не залогінений
-    login_manager.login_view = 'main.login' 
     login_manager.login_message = "Будь ласка, увійдіть, щоб отримати доступ."
+    login_manager.login_message_category = "warning"
 
     
     # ВАЖЛИВО: Ініціалізація Babel з правильними налаштуваннями
