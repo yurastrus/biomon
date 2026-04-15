@@ -34,7 +34,9 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _('Логін (Username)') }} <span style="color:red;">*</span></label>
-                        <input type="text" name="username" class="site-input" value="{{ user.username if user else '' }}" required maxlength="20">
+                        <input type="text" name="username" class="site-input"
+                               value="{{ form.username.data or (user.username if user else "") }}"
+                               required maxlength="20">
                     </div>
 
                     <div style="margin-bottom: 15px;">
@@ -49,12 +51,14 @@
 
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _('Email') }}</label>
-                        <input type="email" name="email" class="site-input" value="{{ user.email or '' if user else '' }}">
+                        <input type="email" name="email" class="site-input"
+                               value="{{ form.email.data or (user.email or "" if user else "") }}">
                     </div>
 
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _('Телефон') }}</label>
-                        <input type="text" name="phone" class="site-input" value="{{ user.phone or '' if user else '' }}">
+                        <input type="text" name="phone" class="site-input"
+                               value="{{ form.phone.data or (user.phone or "" if user else "") }}">
                     </div>
                 </div>
 
@@ -63,13 +67,15 @@
                     <h5 style="color: #0779e4; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _('Персональна інформація') }}</h5>
                     
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _('Ім’я') }}</label>
-                        <input type="text" name="first_name" class="site-input" value="{{ user.first_name or '' if user else '' }}">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _("Ім’я") }}</label>
+                        <input type="text" name="first_name" class="site-input"
+                               value="{{ form.first_name.data or (user.first_name or "" if user else "") }}">
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _('Прізвище') }}</label>
-                        <input type="text" name="last_name" class="site-input" value="{{ user.last_name or '' if user else '' }}">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _("Прізвище") }}</label>
+                        <input type="text" name="last_name" class="site-input"
+                               value="{{ form.last_name.data or (user.last_name or "" if user else "") }}">
                     </div>
 
                     <div class="info-message" style="margin-top: 20px; text-align: left; padding: 15px;">
