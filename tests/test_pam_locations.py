@@ -52,15 +52,31 @@ def _make_biotope_row(id=1, name_ua='Ліс', name_en='Forest'):
 
 def _make_pam_manage_conn(location_rows=(), biotope_rows=()):
     """
-    Mock conn для manage_pam_locations: два послідовні fetchall()
-    (1 — локації, 2 — біотопи).
+    Mock conn для manage_pam_locations: 6 послідовних fetchall():
+    1 — локації з location_institutions,
+    2 — location_biotopes (biotope_links),
+    3 — biotopes (список для форми),
+    4 — battery_types,
+    5 — sd_card_status,
+    6 — visit_purposes.
     """
     mock_conn = MagicMock()
     loc_result = MagicMock()
     loc_result.fetchall.return_value = list(location_rows)
+    bio_links_result = MagicMock()
+    bio_links_result.fetchall.return_value = []
     bio_result = MagicMock()
     bio_result.fetchall.return_value = list(biotope_rows)
-    mock_conn.execute.side_effect = [loc_result, bio_result]
+    empty = MagicMock()
+    empty.fetchall.return_value = []
+    mock_conn.execute.side_effect = [
+        loc_result,       # 1. locations LEFT JOIN location_institutions
+        bio_links_result, # 2. location_biotopes
+        bio_result,       # 3. biotopes
+        empty,            # 4. battery_types
+        empty,            # 5. sd_card_status
+        empty,            # 6. visit_purposes
+    ]
     return mock_conn
 
 
@@ -210,11 +226,12 @@ class TestManagePamLocationsAccess(PamLocationTestBase):
             resp = self.client.get(self.URL)
         self.assertEqual(resp.status_code, 403)
 
-    def test_pam_verifier_gets_403(self):
+    def test_pam_verifier_can_access(self):
+        """pam_verifier тепер має доступ (мінімальна роль для об'єднаної сторінки)."""
         _login(self.client, self.pam_verifier.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=self._EMPTY_CONN()):
             resp = self.client.get(self.URL)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 200)
 
     def test_manager_can_access(self):
         _login(self.client, self.manager.id)

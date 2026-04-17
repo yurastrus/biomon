@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-09 07:55+0300\n"
+"POT-Creation-Date: 2026-04-17 16:44+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -18,27 +18,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app/admin/routes.py:118 app/templates/admin/admin_users_list.html:17
+#: app/admin/routes.py:87 app/templates/admin/admin_users_list.html:17
 msgid "Додати користувача"
 msgstr "Add user"
 
-#: app/admin/routes.py:225
+#: app/admin/routes.py:144
 msgid "Редагувати користувача"
 msgstr "Edit user"
 
-#: app/admin/routes.py:309
+#: app/admin/routes.py:188
 msgid "Редагувати установу"
 msgstr "Edit institution"
 
-#: app/admin/routes.py:312 app/templates/admin/admin_institutions_list.html:18
+#: app/admin/routes.py:188 app/templates/admin/admin_institutions_list.html:18
 msgid "Додати установу"
 msgstr "Add institution"
 
-#: app/admin/routes.py:371
+#: app/admin/routes.py:255
 msgid "Редагувати роль"
 msgstr "Edit role"
 
-#: app/admin/routes.py:374 app/templates/admin/admin_roles_list.html:18
+#: app/admin/routes.py:255 app/templates/admin/admin_roles_list.html:18
 msgid "Додати роль"
 msgstr "Add role"
 
@@ -495,9 +495,10 @@ msgstr "All species"
 #: app/camera_traps/templates/species_detailed.html:240
 #: app/camera_traps/templates/upload.html:230
 #: app/camera_traps/templates/upload.html:462
+#: app/pam/templates/manage_pam_locations.html:784
 #: app/pam/templates/pam_data_export.html:114
 #: app/pam/templates/pam_evaluation_results.html:414
-#: app/pam/templates/pam_service_log.html:226
+#: app/pam/templates/pam_service_log.html:257
 #: app/pam/templates/pam_verification_interface.html:481
 #: app/pam/templates/pam_verification_segments.html:413
 msgid "Завантаження..."
@@ -751,6 +752,7 @@ msgid "Кінцева дата:"
 msgstr "End date:"
 
 #: app/camera_traps/templates/dashboard.html:203
+#: app/pam/templates/manage_pam_locations.html:169
 msgid "Установа:"
 msgstr "Institution:"
 
@@ -1117,8 +1119,8 @@ msgstr "Please select a species, or the \"Empty\" option."
 #: app/camera_traps/templates/identification.html:832
 #: app/camera_traps/templates/manage_locations.html:334
 #: app/camera_traps/templates/service_log.html:395
-#: app/pam/templates/manage_pam_locations.html:399
-#: app/pam/templates/pam_service_log.html:307
+#: app/pam/templates/manage_pam_locations.html:727
+#: app/pam/templates/pam_service_log.html:338
 msgid "Помилка збереження:"
 msgstr "Save error:"
 
@@ -1135,7 +1137,6 @@ msgid "Управління локаціями фотопасток"
 msgstr "Camera trap location management"
 
 #: app/camera_traps/templates/manage_locations.html:93
-#: app/pam/templates/manage_pam_locations.html:119
 msgid "Виберіть локацію зі списку або на карті, щоб почати редагування."
 msgstr "Select a location from the list or on the map to start editing."
 
@@ -1148,46 +1149,44 @@ msgid "Опис локації"
 msgstr "Description"
 
 #: app/camera_traps/templates/manage_locations.html:111
-#: app/pam/templates/manage_pam_locations.html:139
 msgid "Широта (Lat)"
 msgstr "Latitude (Lat)"
 
 #: app/camera_traps/templates/manage_locations.html:115
-#: app/pam/templates/manage_pam_locations.html:143
 msgid "Довгота (Lng)"
 msgstr "Longitude (Lng)"
 
 #: app/camera_traps/templates/manage_locations.html:120
-#: app/pam/templates/manage_pam_locations.html:162
+#: app/pam/templates/manage_pam_locations.html:270
 msgid "Біотопи"
 msgstr "Habitats"
 
 #: app/camera_traps/templates/manage_locations.html:128
+#: app/pam/templates/manage_pam_locations.html:842
 msgid "Зберегти зміни"
 msgstr "Save changes"
 
 #: app/camera_traps/templates/manage_locations.html:129
-#: app/pam/templates/manage_pam_locations.html:174
+#: app/pam/templates/manage_pam_locations.html:281
+#: app/pam/templates/manage_pam_locations.html:362
 #: app/templates/admin/admin_institution_form.html:66
 #: app/templates/admin/admin_role_form.html:74
-#: app/templates/admin/admin_user_form.html:199
+#: app/templates/admin/admin_user_form.html:205
 msgid "Скасувати"
 msgstr "Cancel"
 
 #: app/camera_traps/templates/manage_locations.html:225
 #: app/camera_traps/templates/upload.html:308
-#: app/pam/templates/manage_pam_locations.html:257
 msgid "Квартальна сітка ПЗ Розточчя"
 msgstr "Quarters grid of the Roztochya SNR"
 
 #: app/camera_traps/templates/manage_locations.html:226
 #: app/camera_traps/templates/upload.html:309
-#: app/pam/templates/manage_pam_locations.html:258
 msgid "Видільна сітка ПЗ Розточчя"
 msgstr "Sections grid of the Roztochya SNR"
 
 #: app/camera_traps/templates/manage_locations.html:287
-#: app/pam/templates/manage_pam_locations.html:351
+#: app/pam/templates/manage_pam_locations.html:666
 msgid "Редагування:"
 msgstr "Editing:"
 
@@ -1249,7 +1248,6 @@ msgid "Журнал обслуговування фотопасток"
 msgstr "Camera trap maintenance log"
 
 #: app/camera_traps/templates/service_log.html:63
-#: app/pam/templates/pam_home.html:169
 msgid "Журнал обслуговування"
 msgstr "Maintenance log"
 
@@ -1266,38 +1264,43 @@ msgid "На дашборд"
 msgstr "To Dashboard"
 
 #: app/camera_traps/templates/service_log.html:83
-#: app/pam/templates/pam_service_log.html:38
+#: app/pam/templates/pam_service_log.html:53
 msgid "Додати новий запис"
 msgstr "Add new record"
 
 #: app/camera_traps/templates/service_log.html:84
-#: app/pam/templates/pam_service_log.html:39
+#: app/pam/templates/pam_service_log.html:54
 msgid "Виберіть локацію на карті, щоб почати."
 msgstr "Select a location on the map to start."
 
 #: app/camera_traps/templates/service_log.html:90
-#: app/pam/templates/pam_service_log.html:45
+#: app/pam/templates/pam_service_log.html:60
 msgid "Дата та час візиту"
 msgstr "Date and time of visit"
 
 #: app/camera_traps/templates/service_log.html:94
-#: app/pam/templates/pam_service_log.html:50
+#: app/pam/templates/manage_pam_locations.html:304
+#: app/pam/templates/pam_service_log.html:65
 msgid "Результат візиту"
 msgstr "Visit results"
 
 #: app/camera_traps/templates/service_log.html:96
-#: app/pam/templates/pam_service_log.html:52
-#: app/pam/templates/pam_service_log.html:72
+#: app/pam/templates/manage_pam_locations.html:306
+#: app/pam/templates/manage_pam_locations.html:326
+#: app/pam/templates/manage_pam_locations.html:391
+#: app/pam/templates/pam_service_log.html:67
+#: app/pam/templates/pam_service_log.html:87
 msgid "-- Виберіть --"
 msgstr "-- Select --"
 
 #: app/camera_traps/templates/service_log.html:105
-#: app/pam/templates/pam_service_log.html:61
+#: app/pam/templates/pam_service_log.html:76
 msgid "Заміна елементів живлення"
 msgstr "Battery replacement"
 
 #: app/camera_traps/templates/service_log.html:107
-#: app/pam/templates/pam_service_log.html:63
+#: app/pam/templates/manage_pam_locations.html:317
+#: app/pam/templates/pam_service_log.html:78
 msgid "-- Без заміни --"
 msgstr "-- Without replacement --"
 
@@ -1315,8 +1318,9 @@ msgstr "Not working"
 
 #: app/camera_traps/templates/service_log.html:126
 #: app/camera_traps/templates/service_log.html:303
-#: app/pam/templates/pam_service_log.html:97
-#: app/pam/templates/pam_service_log.html:240
+#: app/pam/templates/manage_pam_locations.html:197
+#: app/pam/templates/pam_service_log.html:112
+#: app/pam/templates/pam_service_log.html:271
 msgid "Невідомо"
 msgstr "Unknown"
 
@@ -1329,28 +1333,31 @@ msgid "К-ть фото на карті (необов'язково)"
 msgstr "Number of photos on the map (optional)"
 
 #: app/camera_traps/templates/service_log.html:146
-#: app/pam/templates/pam_service_log.html:103
+#: app/pam/templates/manage_pam_locations.html:357
+#: app/pam/templates/pam_service_log.html:118
 msgid "Коментарі"
 msgstr "Comments"
 
 #: app/camera_traps/templates/service_log.html:149
-#: app/pam/templates/pam_service_log.html:106
+#: app/pam/templates/manage_pam_locations.html:361
+#: app/pam/templates/manage_pam_locations.html:856
+#: app/pam/templates/pam_service_log.html:121
 msgid "Зберегти запис"
 msgstr "Save record"
 
 #: app/camera_traps/templates/service_log.html:155
-#: app/pam/templates/pam_service_log.html:111
+#: app/pam/templates/pam_service_log.html:126
 msgid "Історія обслуговування"
 msgstr "Service history"
 
 #: app/camera_traps/templates/service_log.html:156
-#: app/pam/templates/pam_service_log.html:112
+#: app/pam/templates/pam_service_log.html:127
 msgid "Немає даних для відображення."
 msgstr "No data to show"
 
 #: app/camera_traps/templates/service_log.html:220
 #: app/camera_traps/templates/service_log.html:385
-#: app/pam/templates/pam_service_log.html:178
+#: app/pam/templates/pam_service_log.html:209
 msgid "Останній візит:"
 msgstr "Last visit:"
 
@@ -1369,19 +1376,23 @@ msgid "Прогноз фото:"
 msgstr "Photo forecast:"
 
 #: app/camera_traps/templates/service_log.html:271
-#: app/pam/templates/pam_service_log.html:215
+#: app/pam/templates/pam_service_log.html:246
 msgid "Новий запис для:"
 msgstr "New record for:"
 
 #: app/camera_traps/templates/service_log.html:300
 #: app/camera_traps/templates/service_log.html:314
-#: app/pam/templates/pam_service_log.html:237
+#: app/pam/templates/manage_pam_locations.html:343
+#: app/pam/templates/manage_pam_locations.html:793
+#: app/pam/templates/pam_service_log.html:268
 msgid "Так"
 msgstr "Yes"
 
 #: app/camera_traps/templates/service_log.html:302
 #: app/camera_traps/templates/service_log.html:314
-#: app/pam/templates/pam_service_log.html:239
+#: app/pam/templates/manage_pam_locations.html:347
+#: app/pam/templates/manage_pam_locations.html:795
+#: app/pam/templates/pam_service_log.html:270
 msgid "Ні"
 msgstr "No"
 
@@ -1390,7 +1401,7 @@ msgid "Стан камери:"
 msgstr "Camera condition:"
 
 #: app/camera_traps/templates/service_log.html:313
-#: app/pam/templates/pam_service_log.html:251
+#: app/pam/templates/pam_service_log.html:282
 msgid "Батарейки:"
 msgstr "Batteries:"
 
@@ -1399,17 +1410,18 @@ msgid "SD-карта замінена:"
 msgstr "SD-card replaced:"
 
 #: app/camera_traps/templates/service_log.html:323
-#: app/pam/templates/pam_service_log.html:261
+#: app/pam/templates/pam_service_log.html:292
 msgid "Помилка завантаження історії."
 msgstr "Error loading history."
 
 #: app/camera_traps/templates/service_log.html:333
-#: app/pam/templates/pam_service_log.html:269
+#: app/pam/templates/pam_service_log.html:300
 msgid "Збереження..."
 msgstr "Saving..."
 
 #: app/camera_traps/templates/service_log.html:391
-#: app/pam/templates/pam_service_log.html:304
+#: app/pam/templates/manage_pam_locations.html:903
+#: app/pam/templates/pam_service_log.html:335
 #: app/pam/templates/pam_verification_upload.html:431
 msgid "Невідома помилка"
 msgstr "Unknown error"
@@ -1444,6 +1456,7 @@ msgid "Всі дані"
 msgstr "All data"
 
 #: app/camera_traps/templates/species_dashboard.html:233
+#: app/pam/templates/manage_pam_locations.html:261
 #: app/templates/admin/admin_home.html:36
 #: app/templates/admin/admin_institution_form.html:9
 #: app/templates/admin/admin_institutions_list.html:9
@@ -1783,53 +1796,224 @@ msgid "Назва та координати є обов`язковими."
 msgstr "Name and coordinates are required."
 
 #: app/pam/templates/manage_pam_locations.html:3
-#: app/pam/templates/pam_home.html:182
+#: app/pam/templates/manage_pam_locations.html:158
+#: app/pam/templates/pam_home.html:170
 msgid "Управління локаціями ПАМ"
 msgstr "PAM locations management"
 
-#: app/pam/templates/manage_pam_locations.html:85
-msgid "Управління локаціями пасивного моніторингу (ПАМ)"
-msgstr "Management of PAM locations"
+#: app/pam/templates/manage_pam_locations.html:161
+#: app/pam/templates/manage_pam_locations.html:682
+msgid "Нова локація"
+msgstr "New location"
 
-#: app/pam/templates/manage_pam_locations.html:91
-msgid "Показати локації установи:"
-msgstr "Show locations of the institution:"
-
-#: app/pam/templates/manage_pam_locations.html:94
+#: app/pam/templates/manage_pam_locations.html:172
+#: app/pam/templates/pam_service_log.html:41
 msgid "Всі доступні мені"
 msgstr "All available for me"
 
-#: app/pam/templates/manage_pam_locations.html:128
-msgid "Назва локації (українською)"
-msgstr "Location name (Ukrainian)"
+#: app/pam/templates/manage_pam_locations.html:180
+msgid "Показати стан заповненості даних"
+msgstr "Show data completeness status"
 
-#: app/pam/templates/manage_pam_locations.html:133
-msgid "Назва локації (англійською)"
-msgstr "Location name (English)"
+#: app/pam/templates/manage_pam_locations.html:181
+#: app/pam/templates/pam_evaluation_species_detail.html:145
+msgid "Дані"
+msgstr "Data"
 
-#: app/pam/templates/manage_pam_locations.html:151
-msgid "Належність до установ"
-msgstr "Institution affiliation"
+#: app/pam/templates/manage_pam_locations.html:183
+msgid "Показати статус обслуговування"
+msgstr "Show service status"
 
-#: app/pam/templates/manage_pam_locations.html:158
-msgid "Можна вибрати кілька."
-msgstr "Multiple selections allowed."
+#: app/pam/templates/manage_pam_locations.html:184
+msgid "Сервіс"
+msgstr "Service"
 
-#: app/pam/templates/manage_pam_locations.html:173
+#: app/pam/templates/manage_pam_locations.html:188
+msgid "Повна"
+msgstr "Complete"
+
+#: app/pam/templates/manage_pam_locations.html:189
+msgid "Без біотопу"
+msgstr "No habitat"
+
+#: app/pam/templates/manage_pam_locations.html:190
+msgid "Без установи"
+msgstr "No institution"
+
+#: app/pam/templates/manage_pam_locations.html:191
+msgid "Без EN назви"
+msgstr "No EN name"
+
+#: app/pam/templates/manage_pam_locations.html:194
+msgid "OK"
+msgstr "OK"
+
+#: app/pam/templates/manage_pam_locations.html:195
+msgid "Увага"
+msgstr "Warning"
+
+#: app/pam/templates/manage_pam_locations.html:196
+msgid "Критично"
+msgstr "Critical"
+
+#: app/pam/templates/manage_pam_locations.html:223
+msgid "Виберіть локацію зі списку або на карті."
+msgstr "Select a location from the list or on the map."
+
+#: app/pam/templates/manage_pam_locations.html:235
+msgid "Назва (укр)"
+msgstr "Name (UA)"
+
+#: app/pam/templates/manage_pam_locations.html:239
+msgid "Назва (англ)"
+msgstr "Name (EN)"
+
+#: app/pam/templates/manage_pam_locations.html:243
+msgid "Область / State-Province"
+msgstr "Oblast / State-Province"
+
+#: app/pam/templates/manage_pam_locations.html:244
+msgid "напр. Lviv Oblast"
+msgstr "e.g. Lviv Oblast"
+
+#: app/pam/templates/manage_pam_locations.html:248
+msgid "Широта"
+msgstr "Latitude"
+
+#: app/pam/templates/manage_pam_locations.html:252
+msgid "Довгота"
+msgstr "Longitude"
+
+#: app/pam/templates/manage_pam_locations.html:257
+msgid "Клацніть на карті або введіть координати вручну."
+msgstr "Click on the map or enter coordinates manually."
+
+#: app/pam/templates/manage_pam_locations.html:280
+#: app/pam/templates/manage_pam_locations.html:667
+#: app/pam/templates/manage_pam_locations.html:929
 msgid "Зберегти"
 msgstr "Save"
 
-#: app/pam/templates/manage_pam_locations.html:190
+#: app/pam/templates/manage_pam_locations.html:290
+#: app/pam/templates/manage_pam_locations.html:855
+msgid "Новий запис"
+msgstr "New entry"
+
+#: app/pam/templates/manage_pam_locations.html:293
+msgid "Виберіть локацію, щоб додати запис."
+msgstr "Select a location to add an entry."
+
+#: app/pam/templates/manage_pam_locations.html:300
+msgid "Дата і час"
+msgstr "Date and time"
+
+#: app/pam/templates/manage_pam_locations.html:315
+msgid "Заміна батарейок"
+msgstr "Battery replacement"
+
+#: app/pam/templates/manage_pam_locations.html:324
+msgid "Статус SD"
+msgstr "SD status"
+
+#: app/pam/templates/manage_pam_locations.html:335
+msgid "Год. запису/добу"
+msgstr "Rec. hours/day"
+
+#: app/pam/templates/manage_pam_locations.html:339
+#: app/pam/templates/pam_service_log.html:100
+msgid "Стан приладу"
+msgstr "Device condition"
+
+#: app/pam/templates/manage_pam_locations.html:351
+#: app/pam/templates/manage_pam_locations.html:796
+msgid "?"
+msgstr "?"
+
+#: app/pam/templates/manage_pam_locations.html:370
+msgid "Історія"
+msgstr "History"
+
+#: app/pam/templates/manage_pam_locations.html:372
+msgid "Немає даних."
+msgstr "No data."
+
+#: app/pam/templates/manage_pam_locations.html:388
 msgid "Виберіть біотопи..."
 msgstr "Select habitats"
 
-#: app/pam/templates/manage_pam_locations.html:191
+#: app/pam/templates/manage_pam_locations.html:389
 msgid "Виберіть установи..."
 msgstr "Select institutions..."
 
-#: app/pam/templates/manage_pam_locations.html:344
-msgid "Помилка завантаження:"
-msgstr "Loading error:"
+#: app/pam/templates/manage_pam_locations.html:465
+msgid "Національні природні парки"
+msgstr "National nature parks"
+
+#: app/pam/templates/manage_pam_locations.html:466
+msgid "Біосферні заповідники"
+msgstr "Biosphere reserves"
+
+#: app/pam/templates/manage_pam_locations.html:467
+msgid "Регіональні ландшафтні парки"
+msgstr "Regional landscape parks"
+
+#: app/pam/templates/manage_pam_locations.html:468
+msgid "Заказники"
+msgstr "Zakazniks"
+
+#: app/pam/templates/manage_pam_locations.html:469
+msgid "Природні заповідники"
+msgstr "Nature reserves"
+
+#: app/pam/templates/manage_pam_locations.html:470
+msgid "Пам'ятки природи"
+msgstr "Natural monuments"
+
+#: app/pam/templates/manage_pam_locations.html:471
+msgid "Заповідні урочища"
+msgstr "Zapovidne Urochyshche"
+
+#: app/pam/templates/manage_pam_locations.html:501
+msgid "Території ПЗФ"
+msgstr "Protected areas"
+
+#: app/pam/templates/manage_pam_locations.html:683
+msgid "Створити"
+msgstr "Create"
+
+#: app/pam/templates/manage_pam_locations.html:733
+msgid "Вкажіть назву локації."
+msgstr "Enter the location name."
+
+#: app/pam/templates/manage_pam_locations.html:734
+msgid "Вкажіть координати: клацніть на карті або введіть вручну."
+msgstr "Enter coordinates: click on the map or type manually."
+
+#: app/pam/templates/manage_pam_locations.html:776
+#: app/pam/templates/manage_pam_locations.html:906
+#: app/pam/templates/pam_species_detailed.html:365
+msgid "Помилка:"
+msgstr "Error:"
+
+#: app/pam/templates/manage_pam_locations.html:814
+msgid "Прилад:"
+msgstr "Device:"
+
+#: app/pam/templates/manage_pam_locations.html:815
+msgid "Бат.:"
+msgstr "Bat.:"
+
+#: app/pam/templates/manage_pam_locations.html:816
+msgid "SD:"
+msgstr "SD:"
+
+#: app/pam/templates/manage_pam_locations.html:824
+msgid "Помилка завантаження."
+msgstr "Loading error."
+
+#: app/pam/templates/manage_pam_locations.html:831
+msgid "Редагування запису"
+msgstr "Edit entry"
 
 #: app/pam/templates/pam_data_export.html:5 app/pam/templates/pam_home.html:3
 #: app/pam/templates/pam_overview.html:3
@@ -2179,10 +2363,6 @@ msgstr "Precision 99%"
 msgid "Формула:"
 msgstr "Formula: "
 
-#: app/pam/templates/pam_evaluation_species_detail.html:145
-msgid "Дані"
-msgstr "Data"
-
 #: app/pam/templates/pam_evaluation_species_detail.html:160
 msgid "Модель"
 msgstr "Model"
@@ -2318,15 +2498,7 @@ msgstr ""
 msgid "Експорт даних ПАМ моніторнгу у CSV таблиці."
 msgstr "Export PAM data as CVS tables."
 
-#: app/pam/templates/pam_home.html:175
-msgid ""
-"Журнал обслуговування акустичних ресиверів, з інтерактивною картою і "
-"прогнозуванням роботи приладів."
-msgstr ""
-"Maintenance log of acoustic receivers with an interactive map and device "
-"performance forecasting."
-
-#: app/pam/templates/pam_home.html:188
+#: app/pam/templates/pam_home.html:176
 msgid "Редагування назв та біотопів для точок акустичного моніторингу."
 msgstr "Editing names and habitats for acoustic monitoring points"
 
@@ -2471,56 +2643,56 @@ msgid "Дані не знайдено. Спробуйте змінити філ�
 msgstr "No data found. Try changing the filters."
 
 #: app/pam/templates/pam_service_log.html:3
-#: app/pam/templates/pam_service_log.html:30
+#: app/pam/templates/pam_service_log.html:31
 msgid "Журнал обслуговування PAM"
 msgstr "ARU Maintenance Log"
 
-#: app/pam/templates/pam_service_log.html:31
+#: app/pam/templates/pam_service_log.html:32
 msgid "На головну PAM"
 msgstr "To the main PAM page"
 
-#: app/pam/templates/pam_service_log.html:70
+#: app/pam/templates/pam_service_log.html:38
+msgid "Показати локації установи:"
+msgstr "Show locations of the institution:"
+
+#: app/pam/templates/pam_service_log.html:85
 msgid "Статус SD-карти"
 msgstr "SD-card status"
 
-#: app/pam/templates/pam_service_log.html:81
+#: app/pam/templates/pam_service_log.html:96
 msgid "Годин запису на добу"
 msgstr "Recording hours per day"
 
-#: app/pam/templates/pam_service_log.html:85
-msgid "Стан приладу"
-msgstr "Device condition"
-
-#: app/pam/templates/pam_service_log.html:89
+#: app/pam/templates/pam_service_log.html:104
 msgid "Працював"
 msgstr "Working"
 
-#: app/pam/templates/pam_service_log.html:93
+#: app/pam/templates/pam_service_log.html:108
 msgid "Не працював"
 msgstr "Not working"
 
-#: app/pam/templates/pam_service_log.html:181
+#: app/pam/templates/pam_service_log.html:212
 msgid "Днів після візиту:"
 msgstr "Days after visit:"
 
-#: app/pam/templates/pam_service_log.html:184
+#: app/pam/templates/pam_service_log.html:215
 msgid "Прогноз АКБ:"
 msgstr "Battery forecast:"
 
-#: app/pam/templates/pam_service_log.html:184
-#: app/pam/templates/pam_service_log.html:187
+#: app/pam/templates/pam_service_log.html:215
+#: app/pam/templates/pam_service_log.html:218
 msgid "дн."
 msgstr "d."
 
-#: app/pam/templates/pam_service_log.html:187
+#: app/pam/templates/pam_service_log.html:218
 msgid "Прогноз SD:"
 msgstr "SD forecast:"
 
-#: app/pam/templates/pam_service_log.html:250
+#: app/pam/templates/pam_service_log.html:281
 msgid "Стан приладу:"
 msgstr "Device condition:"
 
-#: app/pam/templates/pam_service_log.html:252
+#: app/pam/templates/pam_service_log.html:283
 msgid "SD-карта:"
 msgstr "SD-card:"
 
@@ -2655,10 +2827,6 @@ msgstr "Pressure"
 #: app/pam/templates/pam_species_detailed.html:362
 msgid "Будь ласка, виберіть вид, налаштуйте фільтри та натисніть \"Застосувати\"."
 msgstr "Please select a species, adjust the filters, and click \"Apply\"."
-
-#: app/pam/templates/pam_species_detailed.html:365
-msgid "Помилка:"
-msgstr "Error:"
 
 #: app/pam/templates/pam_species_detailed.html:365
 msgid "Не вдалося завантажити список видів."
@@ -3358,7 +3526,7 @@ msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:69
 #: app/templates/admin/admin_role_form.html:77
-#: app/templates/admin/admin_user_form.html:202
+#: app/templates/admin/admin_user_form.html:208
 msgid "Зберегти дані"
 msgstr "Save data"
 
@@ -3507,43 +3675,43 @@ msgstr "Account credentials"
 msgid "Логін (Username)"
 msgstr "Login (Username)"
 
-#: app/templates/admin/admin_user_form.html:42
+#: app/templates/admin/admin_user_form.html:44
 msgid "Пароль"
 msgstr "Password"
 
-#: app/templates/admin/admin_user_form.html:46
+#: app/templates/admin/admin_user_form.html:48
 msgid "Лишіть порожнім, щоб не змінювати"
 msgstr "Leave blank to keep unchanged"
 
-#: app/templates/admin/admin_user_form.html:51
+#: app/templates/admin/admin_user_form.html:53
 msgid "Email"
 msgstr "Email"
 
-#: app/templates/admin/admin_user_form.html:56
+#: app/templates/admin/admin_user_form.html:59
 msgid "Телефон"
 msgstr "Phone"
 
-#: app/templates/admin/admin_user_form.html:63
+#: app/templates/admin/admin_user_form.html:67
 msgid "Персональна інформація"
 msgstr "Personal information"
 
-#: app/templates/admin/admin_user_form.html:66
+#: app/templates/admin/admin_user_form.html:70
 msgid "Ім’я"
 msgstr "First name"
 
-#: app/templates/admin/admin_user_form.html:71
+#: app/templates/admin/admin_user_form.html:76
 msgid "Прізвище"
 msgstr "Last name"
 
-#: app/templates/admin/admin_user_form.html:76
+#: app/templates/admin/admin_user_form.html:82
 msgid "Ці дані будуть відображатися в звітах та журналі верифікації."
 msgstr "This data will be displayed in reports and the verification log."
 
-#: app/templates/admin/admin_user_form.html:82
+#: app/templates/admin/admin_user_form.html:88
 msgid "Прив’язка до установ"
 msgstr "Institution assignment"
 
-#: app/templates/admin/admin_user_form.html:84
+#: app/templates/admin/admin_user_form.html:90
 msgid ""
 "Відмітьте установи та налаштуйте права доступу. «Доступ» — може "
 "переглядати та ідентифікувати; «Експорт» — може завантажувати дані."
@@ -3551,36 +3719,36 @@ msgstr ""
 "Select institutions and configure access rights. \"Access\" — can view "
 "and identify; \"Export\" — can download data."
 
-#: app/templates/admin/admin_user_form.html:91
+#: app/templates/admin/admin_user_form.html:97
 #: app/templates/admin/admin_users_list.html:52
 msgid "Установа"
 msgstr "Institution"
 
-#: app/templates/admin/admin_user_form.html:92
+#: app/templates/admin/admin_user_form.html:98
 msgid "Доступ"
 msgstr "Access"
 
-#: app/templates/admin/admin_user_form.html:93
+#: app/templates/admin/admin_user_form.html:99
 msgid "Експорт"
 msgstr "Export"
 
-#: app/templates/admin/admin_user_form.html:117
+#: app/templates/admin/admin_user_form.html:123
 msgid "Немає доступних установ."
 msgstr "No available institutions."
 
-#: app/templates/admin/admin_user_form.html:170
+#: app/templates/admin/admin_user_form.html:176
 msgid "Призначення ролей"
 msgstr "Role assignment"
 
-#: app/templates/admin/admin_user_form.html:171
+#: app/templates/admin/admin_user_form.html:177
 msgid "Визначте рівень доступу"
 msgstr "Set access level"
 
-#: app/templates/admin/admin_user_form.html:189
+#: app/templates/admin/admin_user_form.html:195
 msgid "Немає доступних ролей."
 msgstr "No available roles."
 
-#: app/templates/admin/admin_user_form.html:202
+#: app/templates/admin/admin_user_form.html:208
 msgid "Створити користувача"
 msgstr "Create user"
 
@@ -3988,4 +4156,28 @@ msgstr "No users match the filter."
 
 #~ msgid "Пароль"
 #~ msgstr "Password"
+
+#~ msgid "Управління локаціями пасивного моніторингу (ПАМ)"
+#~ msgstr "Management of PAM locations"
+
+#~ msgid "Назва локації (українською)"
+#~ msgstr "Location name (Ukrainian)"
+
+#~ msgid "Назва локації (англійською)"
+#~ msgstr "Location name (English)"
+
+#~ msgid "Належність до установ"
+#~ msgstr "Institution affiliation"
+
+#~ msgid "Можна вибрати кілька."
+#~ msgstr "Multiple selections allowed."
+
+#~ msgid ""
+#~ "Журнал обслуговування акустичних ресиверів, з"
+#~ " інтерактивною картою і прогнозуванням "
+#~ "роботи приладів."
+#~ msgstr ""
+#~ "Maintenance log of acoustic receivers "
+#~ "with an interactive map and device "
+#~ "performance forecasting."
 
