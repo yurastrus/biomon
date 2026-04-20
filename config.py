@@ -83,7 +83,7 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    GEOSERVER_URL = os.environ.get('GEOSERVER_URL') or '/geoserver'
+    GEOSERVER_URL = '/geoserver'
     CAMERA_TRAP_CONFIG = Config.CAMERA_TRAP_CONFIG.copy()
     CAMERA_TRAP_CONFIG.update({
         'UPLOAD_PATH': os.environ.get('CAMERA_TRAP_UPLOAD_PATH')
