@@ -20,7 +20,15 @@ class Config:
     
     PAM_DATABASE_URI = os.environ.get('PAM_DATABASE_URL')
     CT_DATABASE_URI = os.environ.get('CT_DATABASE_URL')
-    GEODATA_DATABASE_URI = os.environ.get('GEODATA_DATABASE_URI') 
+    GEODATA_DATABASE_URI = os.environ.get('GEODATA_DATABASE_URI')
+    # SDM (Species Distribution Models) модуль — окрема БД sdm_db,
+    # спільна для camera_traps і PAM. Код у shared-sdm/ пакеті.
+    SDM_DATABASE_URI = os.environ.get('SDM_DATABASE_URL')
+
+    # Google Earth Engine (для SDM-предикторів: DEM, land cover, NDVI, ...).
+    # Service account ключ (JSON) — той самий, що використовує myproject.
+    GEE_SERVICE_ACCOUNT_KEY = os.environ.get('GEE_SERVICE_ACCOUNT_KEY')
+    GEE_PROJECT_ID = os.environ.get('GEE_PROJECT_ID', 'yurastrus')
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
