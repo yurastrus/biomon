@@ -32,17 +32,14 @@ def register_commands(app):
     # SDM CLI-команди (flask sdm check / build-grid / ...)
     # ──────────────────────────────────────────────────────────────
     #
-    # Підтримуємо два варіанти розміщення shared-sdm:
-    #   1. Git submodule: app/sdm/          ← рекомендовано
-    #   2. Сусідній репозиторій: ../shared-sdm  ← тимчасово
+    # shared-sdm підключено як git submodule у app/sdm/ —
+    # точно як app/camera_traps/ (shared-ct) і app/pam/ (shared-pam).
     #
-    # Перший знайдений шлях додається у sys.path.
-    _sdm_candidates = [
-        Path(__file__).resolve().parent / "sdm",          # submodule: app/sdm/
-        Path(__file__).resolve().parents[2] / "shared-sdm",  # sibling repo
-    ]
-    _shared_sdm_root = next((p for p in _sdm_candidates if p.is_dir()), None)
-    if _shared_sdm_root and str(_shared_sdm_root) not in sys.path:
+    # app/sdm/__init__.py вже додає себе у sys.path при імпорті blueprint,
+    # але commands.py може запускатись до нього (у flask CLI) — тому
+    # дублюємо тут для надійності.
+    _shared_sdm_root = Path(__file__).resolve().parent / "sdm"
+    if _shared_sdm_root.is_dir() and str(_shared_sdm_root) not in sys.path:
         sys.path.insert(0, str(_shared_sdm_root))
 
     try:
