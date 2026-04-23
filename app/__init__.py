@@ -35,6 +35,10 @@ def create_app(config_name=None):
     from app.camera_traps import camera_traps_bp
     app.register_blueprint(camera_traps_bp, url_prefix='/<lang_code>/camera-traps')
 
+    # SDM blueprint
+    from app.sdm import sdm_bp
+    app.register_blueprint(sdm_bp)
+
     # Реєстрація CLI-команд
     from app.commands import register_commands
     register_commands(app)

@@ -1,0 +1,49 @@
+# /etc/systemd/system/sdm-worker.service
+#
+# SDM Job Queue Worker — запускає `flask sdm worker` як системний сервіс.
+#
+# Встановлення на сервері:
+#   sudo cp deploy/sdm-worker.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable sdm-worker
+#   sudo systemctl start sdm-worker
+#
+# Перегляд логів:
+#   sudo journalctl -u sdm-worker -f
+#
+# Зупинка (graceful — worker завершить поточну задачу перед виходом):
+#   sudo systemctl stop sdm-worker
+
+[Unit]
+Description=SDM Occupancy Model Worker (Flask job queue)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=yura
+Group=yura
+WorkingDirectory=/var/www/biomon
+
+# Активуємо venv і запускаємо worker через flask CLI
+ExecStart=/var/www/biomon/venv/bin/flask sdm worker
+
+# Перезапуск при збої (але не при SIGTERM — graceful stop)
+Restart=on-failure
+RestartSec=10
+
+# Зупинка: SIGTERM → worker завершує поточну задачу, потім виходить
+# Якщо не вийшов за 5 хв — SIGKILL
+TimeoutStopSec=300
+KillSignal=SIGTERM
+
+# Env файл з DATABASE_URI та іншими секретами
+EnvironmentFile=/var/www/biomon/.env
+
+# Логування через journald (без буферування)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sdm-worker
+
+[Install]
+WantedBy=multi-user.target

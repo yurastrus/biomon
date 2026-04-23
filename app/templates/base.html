@@ -25,8 +25,10 @@
                         <li class="{{ 'current' if request.endpoint == 'main.about' else '' }}"><a href="{{ url_for('main.about', lang_code=g.lang_code) }}">{{ _('ПРО ПРОЕКТ') }}</a></li>
                         <li class="{{ 'current' if request.endpoint == 'main.contacts' else '' }}"><a href="{{ url_for('main.contacts', lang_code=g.lang_code) }}">{{ _('КОНТАКТИ') }}</a></li>
                         {% if current_user.is_authenticated and current_user.has_role('admin', 'manager') %}
+                        <li class="{{ 'current' if request.blueprint == 'sdm' else '' }}"><a href="{{ url_for('sdm.dashboard') }}">{{ _('SDM') }}</a></li>
+                        {% if current_user.is_authenticated and current_user.has_role('admin', 'manager') %}
                         <li class="{{ 'current' if request.blueprint == 'admin' else '' }}"><a href="{{ url_for('admin.home', lang_code=g.lang_code) }}">{{ _('АДМІН') }}</a></li>
-                        {% endif %} 
+                        {% endif %}
                     </ul>
                 </nav>
                 <div id="user-actions">
