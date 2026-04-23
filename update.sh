@@ -25,8 +25,13 @@ find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 # 6. Перезавантажуємо gunicorn (biomon)
 sudo systemctl restart biomon
 
-# 7. Перезавантажуємо SDM worker (graceful: SIGTERM → завершує задачу → рестарт)
-sudo systemctl restart sdm-worker
+# 7. Перезавантажуємо SDM worker (якщо вже встановлений)
+if systemctl list-unit-files sdm-worker.service &>/dev/null; then
+    sudo systemctl restart sdm-worker
+    echo "[v] sdm-worker перезапущено"
+else
+    echo "[i] sdm-worker ще не встановлений — пропускаємо"
+fi
 
 echo "--- Оновлення завершено ---"
 echo ""
