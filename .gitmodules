@@ -4,3 +4,6 @@
 [submodule "app/camera_traps"]
 	path = app/camera_traps
 	url = https://github.com/yurastrus/shared-ct.git
+[submodule "app/sdm"]
+	path = app/sdm
+	url = https://github.com/yurastrus/shared-sdm.git
