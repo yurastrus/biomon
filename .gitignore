@@ -6,4 +6,4 @@ app.py
 instance/
 .env
 CLAUDE.md
-.claude/
+.claude/gee_key/
