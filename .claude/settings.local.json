@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"_\\(\" /c/Users/IuriiStrus/repositories/biomon/app/pam/templates/*.html)",
+      "Bash(grep -n \"CREATE TABLE\\\\|INSERT\\\\|UPDATE\\\\|DELETE\\\\|ALTER\" /c/Users/IuriiStrus/repositories/biomon/app/pam/*.py)",
+      "Bash(ssh:*)",
+      "Bash(venv/Scripts/python -m unittest tests.test_data_export -v)",
+      "Bash(venv/Scripts/pybabel extract:*)",
+      "Bash(venv/Scripts/pybabel update:*)",
+      "Bash(venv/Scripts/pybabel compile:*)",
+      "Bash(grep -c \"^msgstr \\\\\"\\\\\"$\" translations/uk/LC_MESSAGES/messages.po)",
+      "Bash(venv/Scripts/python -c \"from app import create_app; app = create_app\\(\\); print\\('App created OK'\\)\")",
+      "Bash(ls /c/Users/IuriiStrus/repositories/biomon/*.env*)",
+      "Bash(ls /c/Users/IuriiStrus/repositories/biomon/.env*)",
+      "Bash(git config:*)",
+      "Bash(python -m pytest tests/test_roles.py tests/test_access_decorator.py tests/test_auth_redirect.py -v)",
+      "Bash(venv/Scripts/python -m unittest tests.test_roles tests.test_access_decorator tests.test_auth_redirect -v)",
+      "Bash(\"C:/Users/IuriiStrus/repositories/biomon/venv/Scripts/python.exe\" -m unittest tests.test_roles tests.test_access_decorator tests.test_auth_redirect -v)",
+      "Bash(\"C:/Users/IuriiStrus/repositories/biomon/venv/Scripts/python.exe\")",
+      "Bash(\"C:/Users/IuriiStrus/repositories/biomon/venv/Scripts/python.exe\" -m unittest tests.test_roles tests.test_access_decorator tests.test_auth_redirect tests.test_admin)",
+      "Bash(../biomon/venv/Scripts/python -m pytest tests -v)",
+      "Bash(set \"CT_DATABASE_URI=postgresql://u:p@nohost:5432/ct_db\")",
+      "Bash(C:/Users/IuriiStrus/repositories/biomon/venv/Scripts/alembic current *)",
+      "Bash(CT_DATABASE_URI=\"postgresql://u:p@nohost:5432/ct_db\" C:/Users/IuriiStrus/repositories/biomon/venv/Scripts/alembic history)",
+      "Bash(SDM_DATABASE_URI=\"postgresql://u:p@nohost:5432/sdm_db\" C:/Users/IuriiStrus/repositories/biomon/venv/Scripts/alembic upgrade head --sql)",
+      "Bash(C:/Users/IuriiStrus/repositories/biomon/venv/Scripts/python -m pytest tests -v)",
+      "Bash(venv/Scripts/python -c \"import alembic; print\\('alembic:', alembic.__version__\\)\")",
+      "Bash(venv/Scripts/flask sdm *)",
+      "Bash(../biomon/venv/Scripts/python -m pytest tests/)",
+      "Bash(venv/Scripts/python -c ' *)"
+    ]
+  }
+}
