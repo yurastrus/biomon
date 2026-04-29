@@ -27,7 +27,14 @@
       "Bash(venv/Scripts/python -c \"import alembic; print\\('alembic:', alembic.__version__\\)\")",
       "Bash(venv/Scripts/flask sdm *)",
       "Bash(../biomon/venv/Scripts/python -m pytest tests/)",
-      "Bash(venv/Scripts/python -c ' *)"
+      "Bash(venv/Scripts/python -c ' *)",
+      "Bash(git submodule *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(git update-index *)"
     ]
   }
 }
