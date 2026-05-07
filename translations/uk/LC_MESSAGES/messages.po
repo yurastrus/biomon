@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-06 13:28+0300\n"
+"POT-Creation-Date: 2026-05-07 11:41+0300\n"
 "PO-Revision-Date: 2025-08-05 22:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -144,106 +144,106 @@ msgstr ""
 msgid "Помилка бази даних."
 msgstr ""
 
-#: app/camera_traps/routes.py:1299 app/camera_traps/routes.py:2010
+#: app/camera_traps/routes.py:1299 app/camera_traps/routes.py:2015
 msgid "Локацію не знайдено."
 msgstr ""
 
-#: app/camera_traps/routes.py:1315
+#: app/camera_traps/routes.py:1320
 msgid "Помилка отримання даних локації."
 msgstr ""
 
-#: app/camera_traps/routes.py:1332
+#: app/camera_traps/routes.py:1337
 msgid "Недостатньо прав для режиму перегляду"
 msgstr ""
 
-#: app/camera_traps/routes.py:1405
+#: app/camera_traps/routes.py:1410
 #: app/camera_traps/templates/identification.html:835
 msgid "Немає серій для перегляду, які б відповідали критеріям."
 msgstr ""
 
-#: app/camera_traps/routes.py:1407
+#: app/camera_traps/routes.py:1412
 #: app/camera_traps/templates/identification.html:834
 msgid "Вітаємо! Ви ідентифікували всі доступні серії фотографій."
 msgstr ""
 
-#: app/camera_traps/routes.py:1451
+#: app/camera_traps/routes.py:1456
 #: app/camera_traps/templates/photo_viewer.html:394
 msgid "Пусто (немає тварин)"
 msgstr ""
 
-#: app/camera_traps/routes.py:1453
+#: app/camera_traps/routes.py:1458
 msgid "Інший вид"
 msgstr ""
 
-#: app/camera_traps/routes.py:1455
+#: app/camera_traps/routes.py:1460
 msgid "Людина"
 msgstr ""
 
-#: app/camera_traps/routes.py:1457
+#: app/camera_traps/routes.py:1462
 msgid "Автомобіль"
 msgstr ""
 
-#: app/camera_traps/routes.py:1459
+#: app/camera_traps/routes.py:1464
 msgid "Мотоцикл"
 msgstr ""
 
-#: app/camera_traps/routes.py:1498
+#: app/camera_traps/routes.py:1503
 msgid "Назва та координати є обов'язковими."
 msgstr ""
 
-#: app/camera_traps/routes.py:1505
+#: app/camera_traps/routes.py:1510
 msgid "Місце з такими координатами вже існує: "
 msgstr ""
 
-#: app/camera_traps/routes.py:1526
+#: app/camera_traps/routes.py:1531
 msgid "Нове місце успішно створено!"
 msgstr ""
 
-#: app/camera_traps/routes.py:1530
+#: app/camera_traps/routes.py:1535
 msgid "Помилка створення місця."
 msgstr ""
 
-#: app/camera_traps/routes.py:1542
+#: app/camera_traps/routes.py:1547
 msgid "Неправильно вказане місце."
 msgstr ""
 
-#: app/camera_traps/routes.py:1544
+#: app/camera_traps/routes.py:1549
 msgid "Файли не були передані."
 msgstr ""
 
-#: app/camera_traps/routes.py:1547
+#: app/camera_traps/routes.py:1552
 msgid "Файли успішно оброблені!"
 msgstr ""
 
-#: app/camera_traps/routes.py:1552
+#: app/camera_traps/routes.py:1557
 msgid "Сталася невідома помилка під час обробки файлів."
 msgstr ""
 
-#: app/camera_traps/routes.py:1570
+#: app/camera_traps/routes.py:1575
 msgid "Очищення завершено. Файлів для видалення не знайдено."
 msgstr ""
 
-#: app/camera_traps/routes.py:1576
+#: app/camera_traps/routes.py:1581
 msgid "Під час процесу очищення сталася несподівана помилка. Перевірте логи."
 msgstr ""
 
-#: app/camera_traps/routes.py:1616
+#: app/camera_traps/routes.py:1621
 msgid "Помилка завантаження статистики батчів."
 msgstr ""
 
-#: app/camera_traps/routes.py:1628
+#: app/camera_traps/routes.py:1633
 msgid "Процес очищення батчів успішно запущено та завершено."
 msgstr ""
 
-#: app/camera_traps/routes.py:1631
+#: app/camera_traps/routes.py:1636
 msgid "Під час очищення батчів сталася помилка. Перевірте логи."
 msgstr ""
 
-#: app/camera_traps/routes.py:1647
+#: app/camera_traps/routes.py:1652
 msgid "Помилка перерахунку консенсусу. Перевірте логи."
 msgstr ""
 
-#: app/camera_traps/routes.py:1721
+#: app/camera_traps/routes.py:1726
 #: app/camera_traps/templates/identification.html:595
 #: app/camera_traps/templates/identification.html:883
 #: app/pam/templates/pam_verification_interface.html:368
@@ -251,138 +251,140 @@ msgstr ""
 msgid "-- Всі види --"
 msgstr ""
 
-#: app/camera_traps/routes.py:1744
+#: app/camera_traps/routes.py:1749
 msgid "Помилка завантаження галереї."
 msgstr ""
 
-#: app/camera_traps/routes.py:1790 app/camera_traps/templates/gallery.html:478
+#: app/camera_traps/routes.py:1795 app/camera_traps/templates/gallery.html:478
 msgid "Для вибраного виду немає фото у вибраному."
 msgstr ""
 
-#: app/camera_traps/routes.py:1878
+#: app/camera_traps/routes.py:1883
 msgid "Фото видалено з вибраного"
 msgstr ""
 
-#: app/camera_traps/routes.py:1979
+#: app/camera_traps/routes.py:1984
 msgid "Помилка завантаження сторінки управління локаціями."
 msgstr ""
 
-#: app/camera_traps/routes.py:1997 app/camera_traps/routes.py:2525
-#: app/camera_traps/routes.py:2591 app/camera_traps/routes.py:2674
+#: app/camera_traps/routes.py:2002 app/camera_traps/routes.py:2031
+#: app/camera_traps/routes.py:2551 app/camera_traps/routes.py:2617
+#: app/camera_traps/routes.py:2700
 msgid "Немає доступу."
 msgstr ""
 
-#: app/camera_traps/routes.py:2005 app/camera_traps/routes.py:2533
-#: app/camera_traps/routes.py:2599 app/camera_traps/routes.py:2682
+#: app/camera_traps/routes.py:2010 app/camera_traps/routes.py:2559
+#: app/camera_traps/routes.py:2625 app/camera_traps/routes.py:2708
 msgid "Немає доступу до цієї локації."
 msgstr ""
 
-#: app/camera_traps/routes.py:2022
+#: app/camera_traps/routes.py:2051
 msgid "Дані локації оновлено успішно!"
 msgstr ""
 
-#: app/camera_traps/routes.py:2026
+#: app/camera_traps/routes.py:2055
 msgid "Помилка збереження даних."
 msgstr ""
 
-#: app/camera_traps/routes.py:2049
-#: app/camera_traps/templates/manage_locations.html:728
+#: app/camera_traps/routes.py:2078
+#: app/camera_traps/templates/manage_locations.html:727
 #: app/pam/templates/manage_pam_locations.html:739
+#: app/pam/templates/pam_import.html:602
 msgid "Вкажіть назву локації."
 msgstr ""
 
-#: app/camera_traps/routes.py:2051
+#: app/camera_traps/routes.py:2080
 msgid "Вкажіть координати."
 msgstr ""
 
-#: app/camera_traps/routes.py:2056
+#: app/camera_traps/routes.py:2085
 msgid "Немає доступу до цієї установи."
 msgstr ""
 
-#: app/camera_traps/routes.py:2087
+#: app/camera_traps/routes.py:2113
 msgid "Локацію створено успішно!"
 msgstr ""
 
-#: app/camera_traps/routes.py:2092
+#: app/camera_traps/routes.py:2118
 msgid "Помилка сервера при створенні локації."
 msgstr ""
 
-#: app/camera_traps/routes.py:2116
+#: app/camera_traps/routes.py:2142
 msgid ""
 "Під час процесу видалення файлів сталася несподівана помилка. Перевірте "
 "логи."
 msgstr ""
 
-#: app/camera_traps/routes.py:2131
+#: app/camera_traps/routes.py:2157
 msgid "Процес перерахунку аналітики успішно завершено."
 msgstr ""
 
-#: app/camera_traps/routes.py:2135
+#: app/camera_traps/routes.py:2161
 msgid "Під час перерахунку аналітики сталася помилка. Перевірте логи."
 msgstr ""
 
-#: app/camera_traps/routes.py:2450
+#: app/camera_traps/routes.py:2476
 msgid "Немає даних про обслуговування"
 msgstr ""
 
-#: app/camera_traps/routes.py:2486
+#: app/camera_traps/routes.py:2512
 msgid "Прогноз за кількістю фото"
 msgstr ""
 
-#: app/camera_traps/routes.py:2490
+#: app/camera_traps/routes.py:2516
 #: app/camera_traps/templates/service_log.html:385
 msgid "Прогноз за часом"
 msgstr ""
 
-#: app/camera_traps/routes.py:2554
+#: app/camera_traps/routes.py:2580
 msgid "Не замінювались"
 msgstr ""
 
-#: app/camera_traps/routes.py:2585 app/camera_traps/routes.py:2689
+#: app/camera_traps/routes.py:2611 app/camera_traps/routes.py:2715
 msgid "Не всі обов'язкові поля заповнені."
 msgstr ""
 
-#: app/camera_traps/routes.py:2640
+#: app/camera_traps/routes.py:2666
 msgid "Запис успішно додано до журналу!"
 msgstr ""
 
-#: app/camera_traps/routes.py:2646
+#: app/camera_traps/routes.py:2672
 msgid "Передано некоректні дані."
 msgstr ""
 
-#: app/camera_traps/routes.py:2650
+#: app/camera_traps/routes.py:2676
 msgid "Помилка сервера при збереженні запису."
 msgstr ""
 
-#: app/camera_traps/routes.py:2663
+#: app/camera_traps/routes.py:2689
 msgid "Запис не знайдено."
 msgstr ""
 
-#: app/camera_traps/routes.py:2670
+#: app/camera_traps/routes.py:2696
 msgid "Недостатньо прав для редагування цього запису."
 msgstr ""
 
-#: app/camera_traps/routes.py:2714
+#: app/camera_traps/routes.py:2740
 msgid "Запис оновлено успішно!"
 msgstr ""
 
-#: app/camera_traps/routes.py:2718
+#: app/camera_traps/routes.py:2744
 msgid "Некоректні дані."
 msgstr ""
 
-#: app/camera_traps/routes.py:2722
+#: app/camera_traps/routes.py:2748
 msgid "Помилка сервера."
 msgstr ""
 
-#: app/camera_traps/routes.py:2737
+#: app/camera_traps/routes.py:2763
 msgid "Перерахунок статистики успішно завершено! Карта буде оновлена."
 msgstr ""
 
-#: app/camera_traps/routes.py:2741
+#: app/camera_traps/routes.py:2767
 msgid "Під час перерахунку сталася помилка."
 msgstr ""
 
-#: app/camera_traps/routes.py:3211
+#: app/camera_traps/routes.py:3237
 msgid "Помилка завантаження сторінки."
 msgstr ""
 
@@ -429,9 +431,10 @@ msgstr ""
 
 #: app/camera_traps/templates/comparison.html:357
 #: app/camera_traps/templates/comparison.html:383
+#: app/camera_traps/templates/manage_locations.html:266
 #: app/camera_traps/templates/species_dashboard.html:233
 #: app/pam/templates/manage_pam_locations.html:261
-#: app/templates/admin/admin_home.html:36
+#: app/pam/templates/pam_import.html:233 app/templates/admin/admin_home.html:36
 #: app/templates/admin/admin_institution_form.html:9
 #: app/templates/admin/admin_institutions_list.html:9
 #: app/templates/admin/admin_users_list.html:90
@@ -471,7 +474,7 @@ msgstr ""
 
 #: app/camera_traps/templates/comparison.html:472
 #: app/camera_traps/templates/ct_data_export.html:161
-#: app/camera_traps/templates/manage_locations.html:778
+#: app/camera_traps/templates/manage_locations.html:777
 #: app/camera_traps/templates/service_log.html:287
 #: app/camera_traps/templates/species_detailed.html:240
 #: app/camera_traps/templates/upload.html:230
@@ -479,6 +482,7 @@ msgstr ""
 #: app/pam/templates/manage_pam_locations.html:790
 #: app/pam/templates/pam_data_export.html:114
 #: app/pam/templates/pam_evaluation_results.html:414
+#: app/pam/templates/pam_import.html:335
 #: app/pam/templates/pam_service_log.html:257
 #: app/pam/templates/pam_verification_interface.html:481
 #: app/pam/templates/pam_verification_segments.html:413
@@ -986,6 +990,7 @@ msgstr ""
 #: app/camera_traps/templates/dashboard.html:205
 #: app/camera_traps/templates/manage_locations.html:169
 #: app/pam/templates/manage_pam_locations.html:169
+#: app/pam/templates/pam_import.html:176
 msgid "Установа:"
 msgstr ""
 
@@ -1334,6 +1339,7 @@ msgid "Інші категорії"
 msgstr ""
 
 #: app/camera_traps/templates/identification.html:828
+#: app/pam/templates/pam_import.html:193
 #: app/pam/templates/pam_verification_segments.html:576
 msgid "Локація"
 msgstr ""
@@ -1347,7 +1353,7 @@ msgid "Будь ласка, виберіть вид, або опцію \"Пус�
 msgstr ""
 
 #: app/camera_traps/templates/identification.html:832
-#: app/camera_traps/templates/manage_locations.html:722
+#: app/camera_traps/templates/manage_locations.html:721
 #: app/camera_traps/templates/service_log.html:395
 #: app/pam/templates/manage_pam_locations.html:733
 #: app/pam/templates/pam_service_log.html:338
@@ -1368,9 +1374,11 @@ msgid "Управління локаціями фотопасток"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:159
-#: app/camera_traps/templates/manage_locations.html:668
+#: app/camera_traps/templates/manage_locations.html:667
 #: app/pam/templates/manage_pam_locations.html:161
 #: app/pam/templates/manage_pam_locations.html:688
+#: app/pam/templates/pam_import.html:205 app/pam/templates/pam_import.html:491
+#: app/pam/templates/pam_import.html:589
 msgid "Нова локація"
 msgstr ""
 
@@ -1458,11 +1466,13 @@ msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:245
 #: app/pam/templates/manage_pam_locations.html:248
+#: app/pam/templates/pam_import.html:222
 msgid "Широта"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:249
 #: app/pam/templates/manage_pam_locations.html:252
+#: app/pam/templates/pam_import.html:226
 msgid "Довгота"
 msgstr ""
 
@@ -1473,68 +1483,57 @@ msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:257
 #: app/pam/templates/manage_pam_locations.html:270
+#: app/pam/templates/pam_import.html:241
 msgid "Біотопи"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:266
-#: app/templates/admin/admin_user_form.html:97
-#: app/templates/admin/admin_users_list.html:52
-msgid "Установа"
-msgstr ""
-
-#: app/camera_traps/templates/manage_locations.html:268
-msgid "-- Без установи --"
-msgstr ""
-
-#: app/camera_traps/templates/manage_locations.html:274
-msgid "Локацію буде додано до вашої установи."
-msgstr ""
-
-#: app/camera_traps/templates/manage_locations.html:278
-#: app/camera_traps/templates/manage_locations.html:656
-#: app/camera_traps/templates/manage_locations.html:924
+#: app/camera_traps/templates/manage_locations.html:275
+#: app/camera_traps/templates/manage_locations.html:654
+#: app/camera_traps/templates/manage_locations.html:921
 #: app/pam/templates/manage_pam_locations.html:280
 #: app/pam/templates/manage_pam_locations.html:673
 #: app/pam/templates/manage_pam_locations.html:935
+#: app/pam/templates/pam_import.html:254 app/pam/templates/pam_import.html:631
 msgid "Зберегти"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:279
-#: app/camera_traps/templates/manage_locations.html:357
+#: app/camera_traps/templates/manage_locations.html:276
+#: app/camera_traps/templates/manage_locations.html:354
 #: app/pam/templates/manage_pam_locations.html:281
 #: app/pam/templates/manage_pam_locations.html:362
+#: app/pam/templates/pam_import.html:258
 #: app/templates/admin/admin_institution_form.html:66
 #: app/templates/admin/admin_role_form.html:74
 #: app/templates/admin/admin_user_form.html:205
 msgid "Скасувати"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:288
-#: app/camera_traps/templates/manage_locations.html:850
+#: app/camera_traps/templates/manage_locations.html:285
+#: app/camera_traps/templates/manage_locations.html:849
 #: app/pam/templates/manage_pam_locations.html:290
 #: app/pam/templates/manage_pam_locations.html:861
 msgid "Новий запис"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:291
+#: app/camera_traps/templates/manage_locations.html:288
 #: app/pam/templates/manage_pam_locations.html:293
 msgid "Виберіть локацію, щоб додати запис."
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:298
+#: app/camera_traps/templates/manage_locations.html:295
 #: app/pam/templates/manage_pam_locations.html:300
 msgid "Дата і час"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:302
+#: app/camera_traps/templates/manage_locations.html:299
 #: app/camera_traps/templates/service_log.html:94
 #: app/pam/templates/manage_pam_locations.html:304
 #: app/pam/templates/pam_service_log.html:65
 msgid "Результат візиту"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:304
-#: app/camera_traps/templates/manage_locations.html:385
+#: app/camera_traps/templates/manage_locations.html:301
+#: app/camera_traps/templates/manage_locations.html:383
 #: app/camera_traps/templates/service_log.html:96
 #: app/pam/templates/manage_pam_locations.html:306
 #: app/pam/templates/manage_pam_locations.html:326
@@ -1544,26 +1543,26 @@ msgstr ""
 msgid "-- Виберіть --"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:313
+#: app/camera_traps/templates/manage_locations.html:310
 #: app/camera_traps/templates/service_log.html:105
 #: app/pam/templates/pam_service_log.html:76
 msgid "Заміна елементів живлення"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:315
+#: app/camera_traps/templates/manage_locations.html:312
 #: app/camera_traps/templates/service_log.html:107
 #: app/pam/templates/manage_pam_locations.html:317
 #: app/pam/templates/pam_service_log.html:78
 msgid "-- Без заміни --"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:322
+#: app/camera_traps/templates/manage_locations.html:319
 #: app/camera_traps/templates/service_log.html:114
 msgid "Стан камери"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:326
-#: app/camera_traps/templates/manage_locations.html:787
+#: app/camera_traps/templates/manage_locations.html:323
+#: app/camera_traps/templates/manage_locations.html:786
 #: app/camera_traps/templates/service_log.html:300
 #: app/camera_traps/templates/service_log.html:314
 #: app/pam/templates/manage_pam_locations.html:343
@@ -1572,9 +1571,9 @@ msgstr ""
 msgid "Так"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:330
-#: app/camera_traps/templates/manage_locations.html:789
-#: app/camera_traps/templates/manage_locations.html:793
+#: app/camera_traps/templates/manage_locations.html:327
+#: app/camera_traps/templates/manage_locations.html:788
+#: app/camera_traps/templates/manage_locations.html:792
 #: app/camera_traps/templates/service_log.html:302
 #: app/camera_traps/templates/service_log.html:314
 #: app/pam/templates/manage_pam_locations.html:347
@@ -1583,34 +1582,34 @@ msgstr ""
 msgid "Ні"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:334
-#: app/camera_traps/templates/manage_locations.html:790
+#: app/camera_traps/templates/manage_locations.html:331
+#: app/camera_traps/templates/manage_locations.html:789
 #: app/pam/templates/manage_pam_locations.html:351
 #: app/pam/templates/manage_pam_locations.html:802
 msgid "?"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:343
+#: app/camera_traps/templates/manage_locations.html:340
 msgid "SD-карта замінена"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:347
+#: app/camera_traps/templates/manage_locations.html:344
 msgid "К-ть фото на карті"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:348
+#: app/camera_traps/templates/manage_locations.html:345
 msgid "необов'язково"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:352
+#: app/camera_traps/templates/manage_locations.html:349
 #: app/camera_traps/templates/service_log.html:146
 #: app/pam/templates/manage_pam_locations.html:357
 #: app/pam/templates/pam_service_log.html:118
 msgid "Коментарі"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:356
-#: app/camera_traps/templates/manage_locations.html:851
+#: app/camera_traps/templates/manage_locations.html:353
+#: app/camera_traps/templates/manage_locations.html:850
 #: app/camera_traps/templates/service_log.html:149
 #: app/pam/templates/manage_pam_locations.html:361
 #: app/pam/templates/manage_pam_locations.html:862
@@ -1618,124 +1617,140 @@ msgstr ""
 msgid "Зберегти запис"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:365
+#: app/camera_traps/templates/manage_locations.html:362
 #: app/pam/templates/manage_pam_locations.html:370
 msgid "Історія"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:367
+#: app/camera_traps/templates/manage_locations.html:364
 #: app/pam/templates/manage_pam_locations.html:372
 msgid "Немає даних."
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:383
+#: app/camera_traps/templates/manage_locations.html:380
 #: app/pam/templates/manage_pam_locations.html:388
+#: app/pam/templates/pam_import.html:570
 msgid "Виберіть біотопи..."
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:461
+#: app/camera_traps/templates/manage_locations.html:381
+#: app/pam/templates/manage_pam_locations.html:389
+#: app/pam/templates/pam_import.html:569
+msgid "Виберіть установи..."
+msgstr ""
+
+#: app/camera_traps/templates/manage_locations.html:459
 #: app/pam/templates/manage_pam_locations.html:465
+#: app/pam/templates/pam_import.html:440
 msgid "Національні природні парки"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:462
+#: app/camera_traps/templates/manage_locations.html:460
 #: app/pam/templates/manage_pam_locations.html:466
+#: app/pam/templates/pam_import.html:441
 msgid "Біосферні заповідники"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:463
+#: app/camera_traps/templates/manage_locations.html:461
 #: app/pam/templates/manage_pam_locations.html:467
+#: app/pam/templates/pam_import.html:442
 msgid "Регіональні ландшафтні парки"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:464
+#: app/camera_traps/templates/manage_locations.html:462
 #: app/pam/templates/manage_pam_locations.html:468
+#: app/pam/templates/pam_import.html:443
 msgid "Заказники"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:465
+#: app/camera_traps/templates/manage_locations.html:463
 #: app/pam/templates/manage_pam_locations.html:469
+#: app/pam/templates/pam_import.html:444
 msgid "Природні заповідники"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:466
+#: app/camera_traps/templates/manage_locations.html:464
 #: app/pam/templates/manage_pam_locations.html:470
+#: app/pam/templates/pam_import.html:445
 msgid "Пам'ятки природи"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:467
+#: app/camera_traps/templates/manage_locations.html:465
 #: app/pam/templates/manage_pam_locations.html:471
+#: app/pam/templates/pam_import.html:446
 msgid "Заповідні урочища"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:497
+#: app/camera_traps/templates/manage_locations.html:495
 #: app/pam/templates/manage_pam_locations.html:501
+#: app/pam/templates/pam_import.html:460
 msgid "Території ПЗФ"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:655
+#: app/camera_traps/templates/manage_locations.html:653
 #: app/pam/templates/manage_pam_locations.html:672
 msgid "Редагування:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:669
+#: app/camera_traps/templates/manage_locations.html:668
 #: app/pam/templates/manage_pam_locations.html:689
 msgid "Створити"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:729
+#: app/camera_traps/templates/manage_locations.html:728
 #: app/pam/templates/manage_pam_locations.html:740
 msgid "Вкажіть координати: клацніть на карті або введіть вручну."
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:770
-#: app/camera_traps/templates/manage_locations.html:899
+#: app/camera_traps/templates/manage_locations.html:769
+#: app/camera_traps/templates/manage_locations.html:898
 #: app/pam/templates/manage_pam_locations.html:782
 #: app/pam/templates/manage_pam_locations.html:912
 #: app/pam/templates/pam_species_detailed.html:365
 msgid "Помилка:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:792
+#: app/camera_traps/templates/manage_locations.html:791
 msgid "Замінено"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:794
+#: app/camera_traps/templates/manage_locations.html:793
 msgid "Фото:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:810
+#: app/camera_traps/templates/manage_locations.html:809
 msgid "Камера:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:811
+#: app/camera_traps/templates/manage_locations.html:810
 #: app/pam/templates/manage_pam_locations.html:821
 msgid "Бат.:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:812
+#: app/camera_traps/templates/manage_locations.html:811
 #: app/pam/templates/manage_pam_locations.html:822
 msgid "SD:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:820
+#: app/camera_traps/templates/manage_locations.html:819
 #: app/pam/templates/manage_pam_locations.html:830
 msgid "Помилка завантаження."
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:827
+#: app/camera_traps/templates/manage_locations.html:826
 #: app/pam/templates/manage_pam_locations.html:837
 msgid "Редагування запису"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:838
+#: app/camera_traps/templates/manage_locations.html:837
 #: app/pam/templates/manage_pam_locations.html:848
 msgid "Зберегти зміни"
 msgstr ""
 
-#: app/camera_traps/templates/manage_locations.html:896
+#: app/camera_traps/templates/manage_locations.html:895
 #: app/camera_traps/templates/service_log.html:391
 #: app/pam/templates/manage_pam_locations.html:909
+#: app/pam/templates/pam_import.html:742
 #: app/pam/templates/pam_service_log.html:335
 #: app/pam/templates/pam_verification_upload.html:431
 msgid "Невідома помилка"
@@ -1899,6 +1914,7 @@ msgid "Помилка завантаження історії."
 msgstr ""
 
 #: app/camera_traps/templates/service_log.html:333
+#: app/pam/templates/pam_import.html:613
 #: app/pam/templates/pam_service_log.html:300
 msgid "Збереження..."
 msgstr ""
@@ -2255,7 +2271,7 @@ msgstr ""
 
 #: app/pam/templates/manage_pam_locations.html:3
 #: app/pam/templates/manage_pam_locations.html:158
-#: app/pam/templates/pam_home.html:170
+#: app/pam/templates/pam_home.html:182
 msgid "Управління локаціями ПАМ"
 msgstr ""
 
@@ -2268,10 +2284,12 @@ msgid "Без EN назви"
 msgstr ""
 
 #: app/pam/templates/manage_pam_locations.html:235
+#: app/pam/templates/pam_import.html:213
 msgid "Назва (укр)"
 msgstr ""
 
 #: app/pam/templates/manage_pam_locations.html:239
+#: app/pam/templates/pam_import.html:217
 msgid "Назва (англ)"
 msgstr ""
 
@@ -2298,10 +2316,6 @@ msgstr ""
 #: app/pam/templates/manage_pam_locations.html:339
 #: app/pam/templates/pam_service_log.html:100
 msgid "Стан приладу"
-msgstr ""
-
-#: app/pam/templates/manage_pam_locations.html:389
-msgid "Виберіть установи..."
 msgstr ""
 
 #: app/pam/templates/manage_pam_locations.html:820
@@ -2581,6 +2595,7 @@ msgid "Сторінка"
 msgstr ""
 
 #: app/pam/templates/pam_evaluation_results.html:622
+#: app/pam/templates/pam_import.html:732
 msgid "з"
 msgstr ""
 
@@ -2762,8 +2777,152 @@ msgstr ""
 msgid "Експорт даних ПАМ моніторнгу у CSV таблиці."
 msgstr "Експорт даних ПАМ моніторингу у CSV таблиці."
 
+#: app/pam/templates/pam_home.html:170
+msgid "Імпорт даних"
+msgstr ""
+
 #: app/pam/templates/pam_home.html:176
+msgid "Завантаження CSV-файлів від BirdNET та інших класифікаторів."
+msgstr ""
+
+#: app/pam/templates/pam_home.html:188
 msgid "Редагування назв та біотопів для точок акустичного моніторингу."
+msgstr ""
+
+#: app/pam/templates/pam_import.html:3 app/pam/templates/pam_import.html:171
+msgid "Імпорт даних ПАМ"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:178
+msgid "Усі доступні установи"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:196 app/pam/templates/pam_import.html:533
+#: app/pam/templates/pam_import.html:556
+msgid "— Виберіть локацію —"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:210
+msgid "Додати нову локацію"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:230
+msgid "Клацніть на карті для вибору координат"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:267
+msgid "Алгоритм класифікації"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:276 app/pam/templates/pam_import.html:693
+msgid ""
+"BirdNET Analyzer: виберіть CSV-файли, що генеруються BirdNET (один файл ="
+" один запис)."
+msgstr ""
+
+#: app/pam/templates/pam_import.html:284 app/pam/templates/pam_import.html:292
+msgid "Файли"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:299
+msgid "Папка"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:305 app/pam/templates/pam_import.html:668
+#: app/pam/templates/pam_import.html:678
+msgid "файлів"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:306 app/pam/templates/pam_import.html:669
+msgid "порожніх відфільтровано"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:307
+msgid "Очистити"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:315
+msgid "Перевірка файлів..."
+msgstr ""
+
+#: app/pam/templates/pam_import.html:324
+msgid "Імпорт"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:329
+msgid "Розпочати імпорт"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:346
+msgid "Результати імпорту"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:349
+msgid "Файлів оброблено"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:350
+msgid "Порожніх (пропущено)"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:351
+msgid "Файлів з помилками"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:353
+msgid "Нових recordings"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:354
+msgid "Вже існувало"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:356
+msgid "Детекцій імпортовано"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:357
+msgid "Дублікатів (пропущено)"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:359
+msgid "Унікальних видів"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:364
+msgid "Новий імпорт"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:576
+msgid "Скасувати нову локацію"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:603
+msgid "Клацніть на карті або введіть координати."
+msgstr ""
+
+#: app/pam/templates/pam_import.html:649
+msgid "Перевірка"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:678
+msgid "ще"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:732
+msgid "Пакет"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:752
+msgid "Помилка з'єднання: "
+msgstr ""
+
+#: app/pam/templates/pam_import.html:757
+msgid "Готово!"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:765
+msgid "клієнт"
 msgstr ""
 
 #: app/pam/templates/pam_overview.html:3
@@ -3963,6 +4122,11 @@ msgid ""
 "переглядати та ідентифікувати; «Експорт» — може завантажувати дані."
 msgstr ""
 
+#: app/templates/admin/admin_user_form.html:97
+#: app/templates/admin/admin_users_list.html:52
+msgid "Установа"
+msgstr ""
+
 #: app/templates/admin/admin_user_form.html:98
 msgid "Доступ"
 msgstr ""
@@ -4457,5 +4621,11 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Довгота (Lng)"
+#~ msgstr ""
+
+#~ msgid "-- Без установи --"
+#~ msgstr ""
+
+#~ msgid "Локацію буде додано до вашої установи."
 #~ msgstr ""
 

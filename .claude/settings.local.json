@@ -35,7 +35,15 @@
       "Bash(git checkout *)",
       "Bash(git pull *)",
       "Bash(git update-index *)",
-      "Bash(xargs ls *)"
+      "Bash(xargs ls *)",
+      "Bash(pip show *)",
+      "Bash(python -c ' *)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py -v)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py::TestPAMProcessorDatabase::test_connection_closed_after_db_error tests/test_pam_import.py::TestPAMImportPage::test_anonymous_redirected_to_login -v)",
+      "Bash(venv/Scripts/python -m pytest \"tests/test_pam_import.py::TestPAMProcessorDatabase::test_connection_closed_after_db_error\" -v -s)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_locations.py -v --no-header -q)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py -q)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py::TestPAMImportPage::test_manager_gets_200 -v)"
     ]
   }
 }
