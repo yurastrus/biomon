@@ -43,7 +43,8 @@
       "Bash(venv/Scripts/python -m pytest \"tests/test_pam_import.py::TestPAMProcessorDatabase::test_connection_closed_after_db_error\" -v -s)",
       "Bash(venv/Scripts/python -m pytest tests/test_pam_locations.py -v --no-header -q)",
       "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py -q)",
-      "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py::TestPAMImportPage::test_manager_gets_200 -v)"
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py::TestPAMImportPage::test_manager_gets_200 -v)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp"
     ]
   }
 }

@@ -2191,7 +2191,7 @@ msgstr "New filming location"
 
 #: app/camera_traps/templates/upload.html:242
 msgid "напр. Яворівський НПП — точка 1"
-msgstr ""
+msgstr "e.g. Yavoriv NNP — point 1"
 
 #: app/camera_traps/templates/upload.html:247
 msgid "Коротка характеристика"
