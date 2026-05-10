@@ -44,7 +44,12 @@
       "Bash(venv/Scripts/python -m pytest tests/test_pam_locations.py -v --no-header -q)",
       "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py -q)",
       "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py::TestPAMImportPage::test_manager_gets_200 -v)",
-      "mcp__Claude_in_Chrome__tabs_context_mcp"
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(venv/Scripts/python -c \"from app.camera_traps.routes import *; print\\('OK'\\)\")",
+      "Bash(venv/Scripts/python -m unittest tests.test_behavior_analysis -v)",
+      "Bash(venv/Scripts/python -m unittest tests.test_behavior_analysis.TestBehaviorNavLink -v)",
+      "Bash(grep -E \"^\\(test_|ok$|FAIL|ERROR|OK|Ran|FAILED\\)\")",
+      "Bash(venv/Scripts/python -m flask --app \"app:create_app\" translate compile)"
     ]
   }
 }
