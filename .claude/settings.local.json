@@ -58,7 +58,8 @@
       "Bash(venv/Scripts/python -m unittest tests.test_behavior_analysis)",
       "Bash(grep -n \"camera_traps/forms.py\\\\|camera_traps\\\\\\\\\\\\\\\\forms\" messages.pot)",
       "Bash(venv/Scripts/python -m babel.messages.frontend extract -F babel.cfg -o /tmp/cli.pot .)",
-      "Bash(venv/Scripts/python -m pytest tests/test_pam_evaluation.py -v)"
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_evaluation.py -v)",
+      "Bash(grep -c '^msgstr \"\"$' /c/Users/IuriiStrus/repositories/biomon/translations/en/LC_MESSAGES/messages.po)"
     ]
   }
 }
