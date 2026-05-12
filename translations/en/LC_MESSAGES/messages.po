@@ -59,9 +59,8 @@ msgid "Помилка завантаження сторінки порівнян
 msgstr "Error loading comparison page."
 
 #: app/camera_traps/routes.py:391
-#, fuzzy
 msgid "Помилка завантаження сторінки аналізу поведінки."
-msgstr "Error loading the analysis page."
+msgstr "Error loading the behaviour analysis page."
 
 #: app/camera_traps/routes.py:778 app/camera_traps/templates/upload.html:405
 #: app/camera_traps/templates/upload.html:520
@@ -397,9 +396,8 @@ msgstr "Error loading page."
 
 #: app/camera_traps/templates/behavior_analysis.html:3
 #: app/camera_traps/templates/behavior_analysis.html:171
-#, fuzzy
 msgid "Аналіз поведінки тварин"
-msgstr "Analysis of multiyear trends"
+msgstr "Animal Behaviour Analysis"
 
 #: app/camera_traps/templates/behavior_analysis.html:181
 #: app/pam/templates/pam_evaluation_results.html:301
@@ -411,24 +409,21 @@ msgid "Вид"
 msgstr "Species"
 
 #: app/camera_traps/templates/behavior_analysis.html:191
-#, fuzzy
 msgid "Від"
-msgstr "From:"
+msgstr "From"
 
 #: app/camera_traps/templates/behavior_analysis.html:196
-#, fuzzy
 msgid "До"
-msgstr "to:"
+msgstr "To"
 
 #: app/camera_traps/templates/behavior_analysis.html:206
-#, fuzzy
+
 msgid "Установа / Екорегіон"
-msgstr "Institution / Ecoregion:"
+msgstr "Institution / Ecoregion"
 
 #: app/camera_traps/templates/behavior_analysis.html:208
-#, fuzzy
 msgid "Всі доступні дані"
-msgstr "All available for me"
+msgstr "All available data"
 
 #: app/camera_traps/templates/behavior_analysis.html:210
 #: app/camera_traps/templates/comparison.html:357
@@ -453,9 +448,8 @@ msgid "Екорегіони"
 msgstr "Ecoregions"
 
 #: app/camera_traps/templates/behavior_analysis.html:229
-#, fuzzy
 msgid "Біотоп"
-msgstr "Habitats"
+msgstr "Habitat"
 
 #: app/camera_traps/templates/behavior_analysis.html:231
 msgid "Будь-який біотоп"
@@ -1172,9 +1166,8 @@ msgid "Порівняння"
 msgstr "Comparison"
 
 #: app/camera_traps/templates/dashboard.html:232
-#, fuzzy
 msgid "Поведінка"
-msgstr "Complete"
+msgstr "Behaviour"
 
 #: app/camera_traps/templates/dashboard.html:241
 #: app/pam/templates/pam_overview.html:346

@@ -19,6 +19,7 @@ def _make_user(role_names, inst_ids):
     for role, name in zip(user.roles, role_names):
         role.name = name
     user.institutions = [MagicMock(id=i) for i in inst_ids]
+    user.export_institutions = [MagicMock(id=i) for i in inst_ids]
     user.is_authenticated = True
     # Підключаємо реальну логіку has_role замість дефолтного MagicMock
     user.has_role.side_effect = lambda *args: User.has_role(user, *args)

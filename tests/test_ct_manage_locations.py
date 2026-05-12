@@ -836,12 +836,12 @@ class TestCtCreateLocation(CtManageLocationsBase):
 
     def _valid_payload(self, institution_id=None):
         return {
-            'name':           'Нова тестова локація',
-            'description':    'Тестовий ліс',
-            'lat':            49.85,
-            'lon':            23.65,
-            'biotope_ids':    [],
-            'institution_id': institution_id,
+            'name':            'Нова тестова локація',
+            'description':     'Тестовий ліс',
+            'lat':             49.85,
+            'lon':             23.65,
+            'biotope_ids':     [],
+            'institution_ids': [institution_id] if institution_id is not None else [],
         }
 
     def test_anonymous_is_redirected(self):

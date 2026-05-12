@@ -49,7 +49,11 @@
       "Bash(venv/Scripts/python -m unittest tests.test_behavior_analysis -v)",
       "Bash(venv/Scripts/python -m unittest tests.test_behavior_analysis.TestBehaviorNavLink -v)",
       "Bash(grep -E \"^\\(test_|ok$|FAIL|ERROR|OK|Ran|FAILED\\)\")",
-      "Bash(venv/Scripts/python -m flask --app \"app:create_app\" translate compile)"
+      "Bash(venv/Scripts/python -m flask --app \"app:create_app\" translate compile)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\IuriiStrus\\\\repositories\\\\biomon\\\\app\\\\camera_traps\\\\templates\\\\\" -Filter \"*.html\" | Select-Object -ExpandProperty FullName)",
+      "Bash(git -C \"C:\\\\Users\\\\IuriiStrus\\\\repositories\\\\biomon\" diff --stat HEAD)",
+      "Bash(git -C \"C:\\\\Users\\\\IuriiStrus\\\\repositories\\\\biomon\\\\app\\\\camera_traps\" diff HEAD -- templates/dashboard.html)",
+      "Bash(venv/Scripts/python -m unittest tests.test_ct_pages_access -v)"
     ]
   }
 }
