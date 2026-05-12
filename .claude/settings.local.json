@@ -57,7 +57,8 @@
       "Bash(venv/Scripts/python -c \"from app import create_app; app = create_app\\(\\); print\\('OK'\\); print\\('overview:', app.url_map.bind\\('localhost'\\).build\\('camera_traps.overview', {'lang_code':'uk'}\\)\\); print\\('dashboard:', app.url_map.bind\\('localhost'\\).build\\('camera_traps.dashboard', {'lang_code':'uk'}\\)\\); print\\('admin:', app.url_map.bind\\('localhost'\\).build\\('camera_traps.admin_panel', {'lang_code':'uk'}\\)\\)\")",
       "Bash(venv/Scripts/python -m unittest tests.test_behavior_analysis)",
       "Bash(grep -n \"camera_traps/forms.py\\\\|camera_traps\\\\\\\\\\\\\\\\forms\" messages.pot)",
-      "Bash(venv/Scripts/python -m babel.messages.frontend extract -F babel.cfg -o /tmp/cli.pot .)"
+      "Bash(venv/Scripts/python -m babel.messages.frontend extract -F babel.cfg -o /tmp/cli.pot .)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_evaluation.py -v)"
     ]
   }
 }
