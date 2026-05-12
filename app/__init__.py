@@ -37,7 +37,7 @@ def create_app(config_name=None):
 
     # SDM blueprint
     from app.sdm import sdm_bp
-    app.register_blueprint(sdm_bp)
+    app.register_blueprint(sdm_bp, url_prefix='/<lang_code>/sdm')
 
     # Реєстрація CLI-команд
     from app.commands import register_commands
