@@ -1010,15 +1010,12 @@ class TestBehaviorNavLink(BehaviorBase):
         mock_session.execute.return_value.mappings.return_value.fetchall.return_value = []
         return mock_session
 
-    def test_behavior_link_on_dashboard(self):
+    def test_behavior_link_on_overview(self):
+        """Посилання на аналіз поведінки доступне з хабу модуля."""
         _login(self.client, self.admin.id)
-        with patch('app.camera_traps.routes.get_ct_session',
-                   return_value=self._dashboard_session()), \
-             patch('app.camera_traps.routes.close_ct_session'):
-            resp = self.client.get('/uk/camera-traps/dashboard')
-        # Dashboard повертає 200 з посиланням на /analysis/behavior
-        if resp.status_code == 200:
-            self.assertIn(b'/analysis/behavior', resp.data)
+        resp = self.client.get('/uk/camera-traps/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'/analysis/behavior', resp.data)
 
 
 # ════════════════════════════════════════════════════════════════════════════

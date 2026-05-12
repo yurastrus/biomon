@@ -53,7 +53,11 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\IuriiStrus\\\\repositories\\\\biomon\\\\app\\\\camera_traps\\\\templates\\\\\" -Filter \"*.html\" | Select-Object -ExpandProperty FullName)",
       "Bash(git -C \"C:\\\\Users\\\\IuriiStrus\\\\repositories\\\\biomon\" diff --stat HEAD)",
       "Bash(git -C \"C:\\\\Users\\\\IuriiStrus\\\\repositories\\\\biomon\\\\app\\\\camera_traps\" diff HEAD -- templates/dashboard.html)",
-      "Bash(venv/Scripts/python -m unittest tests.test_ct_pages_access -v)"
+      "Bash(venv/Scripts/python -m unittest tests.test_ct_pages_access -v)",
+      "Bash(venv/Scripts/python -c \"from app import create_app; app = create_app\\(\\); print\\('OK'\\); print\\('overview:', app.url_map.bind\\('localhost'\\).build\\('camera_traps.overview', {'lang_code':'uk'}\\)\\); print\\('dashboard:', app.url_map.bind\\('localhost'\\).build\\('camera_traps.dashboard', {'lang_code':'uk'}\\)\\); print\\('admin:', app.url_map.bind\\('localhost'\\).build\\('camera_traps.admin_panel', {'lang_code':'uk'}\\)\\)\")",
+      "Bash(venv/Scripts/python -m unittest tests.test_behavior_analysis)",
+      "Bash(grep -n \"camera_traps/forms.py\\\\|camera_traps\\\\\\\\\\\\\\\\forms\" messages.pot)",
+      "Bash(venv/Scripts/python -m babel.messages.frontend extract -F babel.cfg -o /tmp/cli.pot .)"
     ]
   }
 }

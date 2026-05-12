@@ -21,7 +21,7 @@
                     <ul>
                         <li class="{{ 'current' if request.endpoint == 'index' else '' }}"><a href="{{ url_for('main.index', lang_code=g.lang_code or 'uk') }}">{{ _('ГОЛОВНА') }}</a></li>
                         <li class="{{ 'current' if request.endpoint == 'pam.pam_home' else '' }}"><a href="{{ url_for('pam.pam_home', lang_code=g.lang_code or 'uk') }}">{{ _('ПАМ') }}</a></li>
-                        <li class="{{ 'current' if request.endpoint == 'camera_traps.dashboard' else '' }}"><a href="{{ url_for('camera_traps.dashboard', lang_code=g.lang_code or 'uk') }}">{{ _('ФОТОПАСТКИ') }}</a></li>
+                        <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('camera_traps.') else '' }}"><a href="{{ url_for('camera_traps.overview', lang_code=g.lang_code or 'uk') }}">{{ _('ФОТОПАСТКИ') }}</a></li>
                         <li class="{{ 'current' if request.endpoint == 'main.about' else '' }}"><a href="{{ url_for('main.about', lang_code=g.lang_code) }}">{{ _('ПРО ПРОЕКТ') }}</a></li>
                         {% if current_user.is_authenticated and current_user.has_role('admin') %}
                         <li class="{{ 'current' if request.blueprint == 'sdm' else '' }}"><a href="{{ url_for('sdm.dashboard') }}">{{ _('SDM') }}</a></li>
