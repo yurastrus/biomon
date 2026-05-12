@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-12 16:01+0300\n"
+"POT-Creation-Date: 2026-05-12 17:00+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -667,10 +667,13 @@ msgstr "Animal Behaviour Analysis"
 
 #: app/camera_traps/templates/behavior_analysis.html:23
 #: app/pam/templates/pam_evaluation_results.html:301
-#: app/pam/templates/pam_evaluation_results.html:439
+#: app/pam/templates/pam_evaluation_results.html:445
 #: app/pam/templates/pam_overview.html:672
 #: app/pam/templates/pam_verification_segments.html:574
 #: app/pam/templates/pam_yearly_table.html:258
+#: app/sdm/templates/sdm/dashboard.html:42
+#: app/sdm/templates/sdm/dashboard.html:102
+#: app/sdm/templates/sdm/dashboard.html:133
 msgid "Вид"
 msgstr "Species"
 
@@ -884,7 +887,7 @@ msgstr "Please select both regions."
 #: app/camera_traps/templates/upload.html:603
 #: app/pam/templates/manage_pam_locations.html:790
 #: app/pam/templates/pam_data_export.html:114
-#: app/pam/templates/pam_evaluation_results.html:414
+#: app/pam/templates/pam_evaluation_results.html:420
 #: app/pam/templates/pam_import.html:335
 #: app/pam/templates/pam_service_log.html:257
 #: app/pam/templates/pam_verification_interface.html:481
@@ -1190,6 +1193,7 @@ msgstr "No data found for the selected criteria."
 #: app/camera_traps/templates/species_detailed.html:159
 #: app/camera_traps/templates/upload.html:450
 #: app/pam/templates/pam_data_export.html:331
+#: app/sdm/templates/sdm/dashboard.html:149
 msgid "Помилка"
 msgstr "Error"
 
@@ -1533,6 +1537,7 @@ msgstr "Photo"
 #: app/camera_traps/templates/gallery.html:220
 #: app/camera_traps/templates/identification.html:54
 #: app/pam/templates/pam_verification_segments.html:330
+#: app/sdm/templates/sdm/coefficients.html:28 app/sdm/templates/sdm/map.html:34
 msgid "Вид:"
 msgstr "Species:"
 
@@ -2052,6 +2057,7 @@ msgstr "Enter coordinates: click on the map or type manually."
 #: app/pam/templates/manage_pam_locations.html:782
 #: app/pam/templates/manage_pam_locations.html:912
 #: app/pam/templates/pam_species_detailed.html:365
+#: app/sdm/templates/sdm/dashboard.html:183 app/sdm/templates/sdm/map.html:85
 msgid "Помилка:"
 msgstr "Error:"
 
@@ -2715,7 +2721,7 @@ msgid "Завантажую файл"
 msgstr "Uploading file"
 
 #: app/camera_traps/templates/upload.html:576
-#: app/pam/templates/pam_evaluation_results.html:622
+#: app/pam/templates/pam_evaluation_results.html:628
 #: app/pam/templates/pam_import.html:732
 msgid "з"
 msgstr "of"
@@ -2936,23 +2942,41 @@ msgstr "All species"
 msgid "Окремі види"
 msgstr "Separate species"
 
-#: app/pam/templates/pam_evaluation_results.html:322
+#: app/pam/templates/pam_evaluation_results.html:314
+#, fuzzy
+msgid "Достатньо даних для перерахунку"
+msgstr "Last recalculation:"
+
+#: app/pam/templates/pam_evaluation_results.html:314
+msgid "Недостатньо даних: потрібно ≥5 сегментів з верифікаціями"
+msgstr ""
+
+#: app/pam/templates/pam_evaluation_results.html:317
+msgid "сегм."
+msgstr ""
+
+#: app/pam/templates/pam_evaluation_results.html:317
+#, fuzzy
+msgid "вериф."
+msgstr "Sep"
+
+#: app/pam/templates/pam_evaluation_results.html:328
 msgid "Підтвердіть перерахунок метрик."
 msgstr "Confirm recalculation of metrics."
 
-#: app/pam/templates/pam_evaluation_results.html:323
+#: app/pam/templates/pam_evaluation_results.html:329
 msgid "Запустити перерахунок"
 msgstr "Start recalculation"
 
-#: app/pam/templates/pam_evaluation_results.html:324
+#: app/pam/templates/pam_evaluation_results.html:330
 msgid "Перерахувати"
 msgstr "Recalculate"
 
-#: app/pam/templates/pam_evaluation_results.html:331
+#: app/pam/templates/pam_evaluation_results.html:337
 msgid "Останній перерахунок:"
 msgstr "Last recalculation:"
 
-#: app/pam/templates/pam_evaluation_results.html:338
+#: app/pam/templates/pam_evaluation_results.html:344
 msgid ""
 "Метрики ще не розраховувались. Натисніть \"Перерахувати метрики\" для "
 "початкового розрахунку."
@@ -2960,19 +2984,19 @@ msgstr ""
 "Metrics have not been calculated yet. Click \"Recalculate metrics\" for "
 "the initial calculation."
 
-#: app/pam/templates/pam_evaluation_results.html:347
+#: app/pam/templates/pam_evaluation_results.html:353
 msgid "УВАГА! Це видалить файли завершених верифікацій. Продовжити?"
 msgstr "WARNING! This will delete completed verification files. Continue?"
 
-#: app/pam/templates/pam_evaluation_results.html:348
+#: app/pam/templates/pam_evaluation_results.html:354
 msgid "Видалити завершені файли"
 msgstr "Delete completed files"
 
-#: app/pam/templates/pam_evaluation_results.html:355
+#: app/pam/templates/pam_evaluation_results.html:361
 msgid "Додати сонограми"
 msgstr "Add spectrograms"
 
-#: app/pam/templates/pam_evaluation_results.html:358
+#: app/pam/templates/pam_evaluation_results.html:364
 msgid ""
 "Це перегенерує ВСІ спектрограми і може зайняти дуже багато часу. Ви "
 "впевнені?"
@@ -2980,11 +3004,11 @@ msgstr ""
 "This will regenerate ALL spectrograms and may take a lot of time. Are you"
 " sure?"
 
-#: app/pam/templates/pam_evaluation_results.html:362
+#: app/pam/templates/pam_evaluation_results.html:368
 msgid "Замінити сонограми"
 msgstr "Replace spectrograms"
 
-#: app/pam/templates/pam_evaluation_results.html:366
+#: app/pam/templates/pam_evaluation_results.html:372
 msgid ""
 "УВАГА! Це конвертує всі файли .wav у .flac та видалить оригінали. Ця дія "
 "незворотна. Продовжити?"
@@ -2992,90 +3016,91 @@ msgstr ""
 "WARNING! This will convert all .wav files to .flac and delete the "
 "originals. This action is irreversible. Continue?"
 
-#: app/pam/templates/pam_evaluation_results.html:369
+#: app/pam/templates/pam_evaluation_results.html:375
 msgid "Конвертувати WAV → FLAC"
 msgstr "Convert WAV → FLAC"
 
-#: app/pam/templates/pam_evaluation_results.html:381
+#: app/pam/templates/pam_evaluation_results.html:387
 msgid "Детальні результати по всіх видах"
 msgstr "Detailed results for all species"
 
-#: app/pam/templates/pam_evaluation_results.html:386
+#: app/pam/templates/pam_evaluation_results.html:392
 msgid "Сортувати за:"
 msgstr "Sort by:"
 
-#: app/pam/templates/pam_evaluation_results.html:388
+#: app/pam/templates/pam_evaluation_results.html:394
 msgid "Precision"
 msgstr "Precision"
 
-#: app/pam/templates/pam_evaluation_results.html:389
+#: app/pam/templates/pam_evaluation_results.html:395
 msgid "Кількість зразків"
 msgstr "Number of samples"
 
-#: app/pam/templates/pam_evaluation_results.html:390
+#: app/pam/templates/pam_evaluation_results.html:396
 msgid "R² (якість моделі)"
 msgstr "R² (model quality)"
 
-#: app/pam/templates/pam_evaluation_results.html:391
-#: app/pam/templates/pam_evaluation_results.html:441
+#: app/pam/templates/pam_evaluation_results.html:397
+#: app/pam/templates/pam_evaluation_results.html:447
 #, python-format
 msgid "Поріг 90%%"
 msgstr "Threshold 90%"
 
-#: app/pam/templates/pam_evaluation_results.html:392
-#: app/pam/templates/pam_evaluation_results.html:442
+#: app/pam/templates/pam_evaluation_results.html:398
+#: app/pam/templates/pam_evaluation_results.html:448
 #, python-format
 msgid "Поріг 95%%"
 msgstr "Threshold 95%"
 
-#: app/pam/templates/pam_evaluation_results.html:393
-#: app/pam/templates/pam_evaluation_results.html:443
+#: app/pam/templates/pam_evaluation_results.html:399
+#: app/pam/templates/pam_evaluation_results.html:449
 #, python-format
 msgid "Поріг 99%%"
 msgstr "Threshold 99%"
 
-#: app/pam/templates/pam_evaluation_results.html:397
+#: app/pam/templates/pam_evaluation_results.html:403
 msgid "Порядок:"
 msgstr "Order:"
 
-#: app/pam/templates/pam_evaluation_results.html:399
+#: app/pam/templates/pam_evaluation_results.html:405
 msgid "За спаданням"
 msgstr "Descending"
 
-#: app/pam/templates/pam_evaluation_results.html:400
+#: app/pam/templates/pam_evaluation_results.html:406
 msgid "За зростанням"
 msgstr "Ascending"
 
-#: app/pam/templates/pam_evaluation_results.html:405
+#: app/pam/templates/pam_evaluation_results.html:411
+#: app/sdm/templates/sdm/map.html:54
 msgid "Оновити"
 msgstr "Update"
 
-#: app/pam/templates/pam_evaluation_results.html:440
+#: app/pam/templates/pam_evaluation_results.html:446
 msgid "Зразків"
 msgstr "Samples"
 
-#: app/pam/templates/pam_evaluation_results.html:444
+#: app/pam/templates/pam_evaluation_results.html:450
 msgid "Немає даних для відображення"
 msgstr "No data to show"
 
-#: app/pam/templates/pam_evaluation_results.html:486
+#: app/pam/templates/pam_evaluation_results.html:492
 msgid "Помилка завантаження результатів"
 msgstr "Error loading results"
 
-#: app/pam/templates/pam_evaluation_results.html:576
+#: app/pam/templates/pam_evaluation_results.html:582
 msgid "Відкрити графік регресії"
 msgstr "Open regression chart"
 
-#: app/pam/templates/pam_evaluation_results.html:621
+#: app/pam/templates/pam_evaluation_results.html:627
 #: app/pam/templates/pam_verification_segments.html:689
 msgid "← Попередня"
 msgstr "← Previous"
 
-#: app/pam/templates/pam_evaluation_results.html:622
+#: app/pam/templates/pam_evaluation_results.html:628
 msgid "Сторінка"
 msgstr "Page"
 
-#: app/pam/templates/pam_evaluation_results.html:623
+#: app/pam/templates/pam_evaluation_results.html:629
 #: app/pam/templates/pam_verification_segments.html:713
 msgid "Наступна →"
 msgstr "Next →"
@@ -3943,6 +3968,8 @@ msgstr "Pending verification"
 #: app/pam/templates/pam_verification_segments.html:343
 #: app/pam/templates/pam_verification_segments.html:381
 #: app/pam/templates/pam_verification_segments.html:662
+#: app/sdm/templates/sdm/dashboard.html:103
+#: app/sdm/templates/sdm/dashboard.html:134
 msgid "Завершено"
 msgstr "Completed"
 
@@ -4005,6 +4032,7 @@ msgid "Час запису"
 msgstr "Recording time"
 
 #: app/pam/templates/pam_verification_segments.html:579
+#: app/sdm/templates/sdm/dashboard.html:133
 msgid "Статус"
 msgstr "Status"
 
@@ -4241,6 +4269,238 @@ msgstr "Incorrect login or password. Please try again."
 #: app/routes/main.py:74 app/templates/base.html:43 app/templates/login.html:2
 msgid "Увійти"
 msgstr "Log in"
+
+#: app/sdm/templates/sdm/coefficients.html:3
+#: app/sdm/templates/sdm/coefficients.html:18
+msgid "SDM — Параметри моделей"
+msgstr "SDM — Model Parameters"
+
+#: app/sdm/templates/sdm/coefficients.html:21
+#: app/sdm/templates/sdm/dashboard.html:31 app/sdm/templates/sdm/map.html:29
+#: app/sdm/templates/sdm/map.html:59
+msgid "Панель управління"
+msgstr "Dashboard"
+
+#: app/sdm/templates/sdm/coefficients.html:22
+#: app/sdm/templates/sdm/dashboard.html:32 app/sdm/templates/sdm/map.html:30
+msgid "Карта поширення"
+msgstr "Distribution Map"
+
+#: app/sdm/templates/sdm/coefficients.html:23
+#: app/sdm/templates/sdm/dashboard.html:33 app/sdm/templates/sdm/map.html:31
+msgid "Параметри моделей"
+msgstr "Model Parameters"
+
+#: app/sdm/templates/sdm/coefficients.html:37
+msgid "Переглянути на карті"
+msgstr "View on map"
+
+#: app/sdm/templates/sdm/coefficients.html:44
+msgid "коефіцієнти поточної моделі"
+msgstr "current model coefficients"
+
+#: app/sdm/templates/sdm/coefficients.html:46
+msgid ""
+"Модель: unmarked occu() (MacKenzie 2002). Формула: детекція ~1, "
+"зайнятість ~ предиктори."
+msgstr ""
+"Model: unmarked occu() (MacKenzie 2002). Formula: detection ~1, "
+"occupancy ~ predictors."
+
+#: app/sdm/templates/sdm/coefficients.html:47
+msgid ""
+"term: SEASON/(Intercept) або SEASON/predictor_name. Estimate — "
+"логіт-шкала."
+msgstr ""
+"term: SEASON/(Intercept) or SEASON/predictor_name. Estimate — logit "
+"scale."
+
+#: app/sdm/templates/sdm/coefficients.html:52
+#: app/sdm/templates/sdm/dashboard.html:102
+msgid "Рівень"
+msgstr "Level"
+
+#: app/sdm/templates/sdm/coefficients.html:52
+msgid "Термін"
+msgstr "Term"
+
+#: app/sdm/templates/sdm/coefficients.html:57
+msgid "Знач."
+msgstr "Sig."
+
+#: app/sdm/templates/sdm/coefficients.html:89
+msgid "незначуще"
+msgstr "n.s."
+
+#: app/sdm/templates/sdm/coefficients.html:95
+msgid "Для"
+msgstr "For"
+
+#: app/sdm/templates/sdm/coefficients.html:95
+msgid "ще немає побудованої моделі."
+msgstr "no model has been built yet."
+
+#: app/sdm/templates/sdm/coefficients.html:96
+msgid "Запустіть \"Перебудувати модель\""
+msgstr "Run \"Rebuild model\""
+
+#: app/sdm/templates/sdm/dashboard.html:3
+msgid "SDM — Панель управління"
+msgstr "SDM — Dashboard"
+
+#: app/sdm/templates/sdm/dashboard.html:27
+msgid "SDM — Моделювання поширення видів"
+msgstr "SDM — Species Distribution Modelling"
+
+#: app/sdm/templates/sdm/dashboard.html:38
+msgid "Запустити задачу"
+msgstr "Run task"
+
+#: app/sdm/templates/sdm/dashboard.html:44
+msgid "оберіть вид"
+msgstr "select species"
+
+#: app/sdm/templates/sdm/dashboard.html:51
+msgid "Рівень сітки"
+msgstr "Grid level"
+
+#: app/sdm/templates/sdm/dashboard.html:58
+msgid "Сезони"
+msgstr "Seasons"
+
+#: app/sdm/templates/sdm/dashboard.html:62
+msgid "Радіус проекції:"
+msgstr "Projection radius:"
+
+#: app/sdm/templates/sdm/dashboard.html:62
+msgid "км"
+msgstr "km"
+
+#: app/sdm/templates/sdm/dashboard.html:70
+#: app/sdm/templates/sdm/dashboard.html:77
+msgid "Перебудувати модель"
+msgstr "Rebuild model"
+
+#: app/sdm/templates/sdm/dashboard.html:73
+#: app/sdm/templates/sdm/dashboard.html:78
+msgid "Перепроектувати"
+msgstr "Reproject"
+
+#: app/sdm/templates/sdm/dashboard.html:77
+msgid "повний цикл: свіжі дані → R-модель → проекції."
+msgstr "full cycle: fresh data → R model → projections."
+
+#: app/sdm/templates/sdm/dashboard.html:78
+msgid "існуюча модель, нові проекції на оновлену сітку."
+msgstr "existing model, new projections on updated grid."
+
+#: app/sdm/templates/sdm/dashboard.html:85
+msgid "Поточна задача"
+msgstr "Current task"
+
+#: app/sdm/templates/sdm/dashboard.html:98
+msgid "Поточні моделі"
+msgstr "Current models"
+
+#: app/sdm/templates/sdm/dashboard.html:102
+msgid "Предиктори"
+msgstr "Predictors"
+
+#: app/sdm/templates/sdm/dashboard.html:103
+msgid "Сезонів"
+msgstr "Seasons"
+
+#: app/sdm/templates/sdm/dashboard.html:103
+msgid "Комірок"
+msgstr "Cells"
+
+#: app/sdm/templates/sdm/dashboard.html:115
+msgid "Карта"
+msgstr "Map"
+
+#: app/sdm/templates/sdm/dashboard.html:116
+msgid "Коеф."
+msgstr "Coef."
+
+#: app/sdm/templates/sdm/dashboard.html:123
+msgid "Моделей ще не побудовано. Запустіть \"Перебудувати модель\" вище."
+msgstr "No models built yet. Use \"Rebuild model\" above."
+
+#: app/sdm/templates/sdm/dashboard.html:129
+msgid "Журнал задач"
+msgstr "Job log"
+
+#: app/sdm/templates/sdm/dashboard.html:133
+msgid "Задача"
+msgstr "Task"
+
+#: app/sdm/templates/sdm/dashboard.html:133
+msgid "Прогрес"
+msgstr "Progress"
+
+#: app/sdm/templates/sdm/dashboard.html:134
+msgid "Створено"
+msgstr "Created"
+
+#: app/sdm/templates/sdm/dashboard.html:147
+msgid "Слідкувати"
+msgstr "Follow"
+
+#: app/sdm/templates/sdm/dashboard.html:157
+msgid "Задач ще не було."
+msgstr "No tasks yet."
+
+#: app/sdm/templates/sdm/dashboard.html:168
+msgid "Помилка задачі"
+msgstr "Task error"
+
+#: app/sdm/templates/sdm/dashboard.html:184
+msgid "(без деталей)"
+msgstr "(no details)"
+
+#: app/sdm/templates/sdm/map.html:3
+msgid "SDM — Карта поширення"
+msgstr "SDM — Distribution Map"
+
+#: app/sdm/templates/sdm/map.html:41
+msgid "Сезон:"
+msgstr "Season:"
+
+#: app/sdm/templates/sdm/map.html:48
+msgid "Рівень:"
+msgstr "Level:"
+
+#: app/sdm/templates/sdm/map.html:65 app/sdm/templates/sdm/map.html:84
+msgid "Завантаження…"
+msgstr "Loading…"
+
+#: app/sdm/templates/sdm/map.html:68
+msgid "Ймовірність зайнятості"
+msgstr "Occupancy probability"
+
+#: app/sdm/templates/sdm/map.html:74
+msgid "немає даних"
+msgstr "no data"
+
+#: app/sdm/templates/sdm/map.html:86
+msgid "Мережева помилка:"
+msgstr "Network error:"
+
+#: app/sdm/templates/sdm/map.html:87
+msgid "комірок"
+msgstr "cells"
+
+#: app/sdm/templates/sdm/map.html:88
+msgid "Немає даних для цього виду/сезону"
+msgstr "No data for this species/season"
+
+#: app/sdm/templates/sdm/map.html:89
+msgid "Зайнятість:"
+msgstr "Occupancy:"
+
+#: app/sdm/templates/sdm/map.html:90
+msgid "Детекція:"
+msgstr "Detection:"
 
 #: app/templates/about.html:7
 msgid "Про проєкт"

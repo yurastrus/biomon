@@ -1,19 +1,17 @@
-# Ukrainian translations for PROJECT.
-# Copyright (C) 2025 ORGANIZATION
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-05-12 17:00+0300\n"
-"PO-Revision-Date: 2025-08-05 22:25+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: uk\n"
-"Language-Team: uk <LL@li.org>\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1213,7 +1211,7 @@ msgstr ""
 #: app/camera_traps/templates/daily_activity.html:34
 #, python-format
 msgid "Частка (%%)"
-msgstr "Частка (%)"
+msgstr ""
 
 #: app/camera_traps/templates/daily_activity.html:41
 msgid "Довірчі інтервали:"
@@ -1250,7 +1248,7 @@ msgstr ""
 #: app/camera_traps/templates/daily_activity.html:114
 #, python-format
 msgid "Значення від 0%% (повне уникання) до 100%% (ідентична активність)."
-msgstr "Значення від 0% (повне уникання) до 100% (ідентична активність)."
+msgstr ""
 
 #: app/camera_traps/templates/daily_activity.html:115
 msgid "Високий відсоток вказує на те, що види активні в один і той же час."
@@ -1279,11 +1277,11 @@ msgstr ""
 #: app/camera_traps/templates/daily_activity.html:362
 #, python-format
 msgid "Щільність активності (%%)"
-msgstr "Щільність активності (%)"
+msgstr ""
 
 #: app/camera_traps/templates/daily_activity.html:488
 msgid "Загальние зусилля за період:"
-msgstr "Загальні зусилля за період:"
+msgstr ""
 
 #: app/camera_traps/templates/daily_activity.html:488
 msgid "пастко-днів"
@@ -2499,7 +2497,7 @@ msgstr ""
 #: app/pam/templates/pam_yearly_trends.html:274
 #, python-format
 msgid "95%% Довірчий інтервал"
-msgstr "95% Довірчий інтервал"
+msgstr ""
 
 #: app/camera_traps/templates/species_detailed.html:3
 #: app/camera_traps/templates/species_detailed.html:15
@@ -3002,19 +3000,19 @@ msgstr ""
 #: app/pam/templates/pam_evaluation_results.html:447
 #, python-format
 msgid "Поріг 90%%"
-msgstr "Поріг 90%"
+msgstr ""
 
 #: app/pam/templates/pam_evaluation_results.html:398
 #: app/pam/templates/pam_evaluation_results.html:448
 #, python-format
 msgid "Поріг 95%%"
-msgstr "Поріг 95%"
+msgstr ""
 
 #: app/pam/templates/pam_evaluation_results.html:399
 #: app/pam/templates/pam_evaluation_results.html:449
 #, python-format
 msgid "Поріг 99%%"
-msgstr "Поріг 99%"
+msgstr ""
 
 #: app/pam/templates/pam_evaluation_results.html:403
 msgid "Порядок:"
@@ -3106,17 +3104,17 @@ msgstr ""
 #: app/pam/templates/pam_evaluation_species_detail.html:90
 #, python-format
 msgid "Precision 90%%"
-msgstr "Precision 90%"
+msgstr ""
 
 #: app/pam/templates/pam_evaluation_species_detail.html:91
 #, python-format
 msgid "Precision 95%%"
-msgstr "Precision 95%"
+msgstr ""
 
 #: app/pam/templates/pam_evaluation_species_detail.html:92
 #, python-format
 msgid "Precision 99%%"
-msgstr "Precision 99%"
+msgstr ""
 
 #: app/pam/templates/pam_evaluation_species_detail.html:97
 msgid "Формула:"
@@ -3204,9 +3202,8 @@ msgid ""
 msgstr ""
 
 #: app/pam/templates/pam_home.html:84
-#, fuzzy
 msgid "Експорт даних PAM моніторингу у CSV таблиці."
-msgstr "Експорт даних ПАМ моніторингу у CSV таблиці."
+msgstr ""
 
 #: app/pam/templates/pam_home.html:91
 msgid "Імпорт даних"
@@ -3722,7 +3719,7 @@ msgstr ""
 #: app/pam/templates/pam_species_detailed.html:818
 #, python-format
 msgid "Вологість (%%)"
-msgstr "Вологість (%)"
+msgstr ""
 
 #: app/pam/templates/pam_species_detailed.html:831
 msgid "Тиск (гПа)"
@@ -4834,567 +4831,4 @@ msgstr ""
 #: app/utils/forms.py:18
 msgid "Повідомлення"
 msgstr ""
-
-#~ msgid "ГОЛОВНА"
-#~ msgstr ""
-
-#~ msgid "ПРО ПРОЕКТ"
-#~ msgstr ""
-
-#~ msgid "ЖУРНАЛ"
-#~ msgstr ""
-
-#~ msgid "КОНТАКТИ"
-#~ msgstr ""
-
-#~ msgid "Назва сайту"
-#~ msgstr ""
-
-#~ msgid "Юрій Струс, ©"
-#~ msgstr ""
-
-#~ msgid "Оглядова панель"
-#~ msgstr ""
-
-#~ msgid "Керування випусками"
-#~ msgstr ""
-
-#~ msgid "Випуск успішно створено!"
-#~ msgstr ""
-
-#~ msgid "Створити новий випуск"
-#~ msgstr ""
-
-#~ msgid "Випуск успішно оновлено!"
-#~ msgstr ""
-
-#~ msgid "Редагування випуску"
-#~ msgstr ""
-
-#~ msgid "Випуск \"%(name)s\" та всі його статті було видалено."
-#~ msgstr ""
-
-#~ msgid "Керування статтями"
-#~ msgstr ""
-
-#~ msgid "Статтю успішно створено!"
-#~ msgstr ""
-
-#~ msgid "Створити нову статтю"
-#~ msgstr ""
-
-#~ msgid "Статтю успішно оновлено!"
-#~ msgstr ""
-
-#~ msgid "Редагування статті"
-#~ msgstr ""
-
-#~ msgid "Статтю успішно видалено."
-#~ msgstr ""
-
-#~ msgid "Керування тегами"
-#~ msgstr ""
-
-#~ msgid "Тег з таким URL (slug) вже існує."
-#~ msgstr ""
-
-#~ msgid "Тег успішно створено!"
-#~ msgstr ""
-
-#~ msgid "Створити новий тег"
-#~ msgstr ""
-
-#~ msgid "Тег успішно оновлено!"
-#~ msgstr ""
-
-#~ msgid "Редагування тега: "
-#~ msgstr ""
-
-#~ msgid "Тег \"%(slug)s\" було успішно видалено."
-#~ msgstr ""
-
-#~ msgid "Адмін-панель"
-#~ msgstr ""
-
-#~ msgid "Вітаємо в адмін-панелі! Оберіть розділ у меню ліворуч."
-#~ msgstr ""
-
-#~ msgid "Поточна статистика:"
-#~ msgstr ""
-
-#~ msgid "Всього випусків"
-#~ msgstr ""
-
-#~ msgid "Всього статей"
-#~ msgstr ""
-
-#~ msgid "Всього тегів"
-#~ msgstr ""
-
-#~ msgid "Основна інформація"
-#~ msgstr ""
-
-#~ msgid "Теги"
-#~ msgstr ""
-
-#~ msgid "Оберіть один або кілька тегів (утримуючи Ctrl/Cmd)."
-#~ msgstr ""
-
-#~ msgid "Українська версія"
-#~ msgstr ""
-
-#~ msgid "English Version"
-#~ msgstr ""
-
-#~ msgid "Додати нову статтю"
-#~ msgstr ""
-
-#~ msgid "Заголовок (UK)"
-#~ msgstr ""
-
-#~ msgid "Випуск"
-#~ msgstr ""
-
-#~ msgid "Дії"
-#~ msgstr ""
-
-#~ msgid "немає"
-#~ msgstr ""
-
-#~ msgid "Редагувати"
-#~ msgstr ""
-
-#~ msgid "Ви впевнені?"
-#~ msgstr ""
-
-#~ msgid "Видалити"
-#~ msgstr ""
-
-#~ msgid "Ще не створено жодних статей."
-#~ msgstr ""
-
-#~ msgid "Номер"
-#~ msgstr ""
-
-#~ msgid "Опубліковано"
-#~ msgstr ""
-
-#~ msgid "Чорнетка"
-#~ msgstr ""
-
-#~ msgid "УВАГА! Це видалить випуск і ВСІ статті в ньому. Ви впевнені?"
-#~ msgstr ""
-
-#~ msgid "Ще не створено жодних випусків."
-#~ msgstr ""
-
-#~ msgid "Назва (UK)"
-#~ msgstr ""
-
-#~ msgid "Назва (EN)"
-#~ msgstr ""
-
-#~ msgid "Ви впевнені, що хочете видалити цей тег?"
-#~ msgstr ""
-
-#~ msgid "Ще не створено жодних тегів."
-#~ msgstr ""
-
-#~ msgid "Журнал \"Troglodytes\""
-#~ msgstr ""
-
-#~ msgid "Журнал \"Troglodytes\": Архів випусків"
-#~ msgstr ""
-
-#~ msgid "Наразі немає опублікованих випусків."
-#~ msgstr ""
-
-#~ msgid "До архіву випусків"
-#~ msgstr ""
-
-#~ msgid "Зміст"
-#~ msgstr ""
-
-#~ msgid "Фільтрувати статті за тегом:"
-#~ msgstr ""
-
-#~ msgid "У цьому випуску ще немає статей."
-#~ msgstr ""
-
-#~ msgid "Статті за тегом"
-#~ msgstr ""
-
-#~ msgid "Статті за тегом:"
-#~ msgstr ""
-
-#~ msgid "Не знайдено статей з таким тегом."
-#~ msgstr ""
-
-#~ msgid "Ласкаво просимо!"
-#~ msgstr ""
-
-#~ msgid "Якийсь текст."
-#~ msgstr ""
-
-#~ msgid "Мін. детекцій на рік:"
-#~ msgstr ""
-
-#~ msgid "Панель адміністратора"
-#~ msgstr ""
-
-#~ msgid "Тут можуть бути якісь інструменти для панелі адміністратора."
-#~ msgstr ""
-
-#~ msgid "Виберіть існуюче місце"
-#~ msgstr ""
-
-#~ msgid "Завантажую файл"
-#~ msgstr ""
-
-#~ msgid "завантажується..."
-#~ msgstr ""
-
-#~ msgid "завантажено"
-#~ msgstr ""
-
-#~ msgid "помилка:"
-#~ msgstr ""
-
-#~ msgid "Підготовка до завантаження..."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Не вдалося завантажити деталі локації, "
-#~ "але ви можете продовжити завантаження."
-#~ msgstr ""
-
-#~ msgid "Назва та координати є обов\"язковими для створення нового місця."
-#~ msgstr ""
-
-#~ msgid "Виберіть місце"
-#~ msgstr ""
-
-#~ msgid "Назва місця"
-#~ msgstr ""
-
-#~ msgid "Опис місця"
-#~ msgstr ""
-
-#~ msgid "Широта має бути між -90 та 90."
-#~ msgstr ""
-
-#~ msgid "Довгота має бути між -180 та 180."
-#~ msgstr ""
-
-#~ msgid "Створити місце"
-#~ msgstr ""
-
-#~ msgid "Завантажити фотографії"
-#~ msgstr ""
-
-#~ msgid "Observation ID"
-#~ msgstr ""
-
-#~ msgid "Вид тварини"
-#~ msgstr ""
-
-#~ msgid "Кількість особин"
-#~ msgstr ""
-
-#~ msgid "Додаткові теги"
-#~ msgstr ""
-
-#~ msgid "Зберегти у вибране"
-#~ msgstr ""
-
-#~ msgid "Назва та координати є обов\"язковими."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Цей розділ присвячений аналізу та "
-#~ "візуалізації даних, отриманих за допомогою "
-#~ "пасивного акустичного моніторингу. Тут ви "
-#~ "можете ознайомитися з результатами досліджень"
-#~ " фауни Розточчя з використанням ПАМ, "
-#~ "переглянути динаміку детекцій різних видів "
-#~ "тварин та дослідити їх добову "
-#~ "активність."
-#~ msgstr ""
-
-#~ msgid "Cирі дані частково вже доступні через"
-#~ msgstr "Сирі дані частково вже доступні через"
-
-#~ msgid "Дослідження фауни Розточчя методами ПАМ"
-#~ msgstr ""
-
-#~ msgid "Моніторинг Розточчя"
-#~ msgstr ""
-
-#~ msgid "Аналіз даних акустичного моніторингу фауни Розточчя"
-#~ msgstr ""
-
-#~ msgid "Неправильний логін або пароль. Спробуйте ще раз."
-#~ msgstr ""
-
-#~ msgid "Ім'я користувача"
-#~ msgstr ""
-
-#~ msgid "Ваше ім'я"
-#~ msgstr ""
-
-#~ msgid "Ваш Email"
-#~ msgstr ""
-
-#~ msgid "Тема"
-#~ msgstr ""
-
-#~ msgid "Повідомлення"
-#~ msgstr ""
-
-#~ msgid "Профіль користувача для фотопасток не знайдено."
-#~ msgstr ""
-
-#~ msgid "Облікові дані"
-#~ msgstr ""
-
-#~ msgid "Логін (Username)"
-#~ msgstr ""
-
-#~ msgid "Лишіть порожнім, щоб не змінювати"
-#~ msgstr ""
-
-#~ msgid "Email"
-#~ msgstr ""
-
-#~ msgid "Телефон"
-#~ msgstr ""
-
-#~ msgid "Персональна інформація"
-#~ msgstr ""
-
-#~ msgid "Ім’я"
-#~ msgstr ""
-
-#~ msgid "Прізвище"
-#~ msgstr ""
-
-#~ msgid "Ці дані будуть відображатися в звітах та журналі верифікації."
-#~ msgstr ""
-
-#~ msgid "Прив’язка до установ"
-#~ msgstr ""
-
-#~ msgid "Утримуйте Ctrl для вибору кількох"
-#~ msgstr ""
-
-#~ msgid "Призначення ролей"
-#~ msgstr ""
-
-#~ msgid "Визначте рівень доступу"
-#~ msgstr ""
-
-#~ msgid "Немає доступних ролей."
-#~ msgstr ""
-
-#~ msgid "Створити користувача"
-#~ msgstr ""
-
-#~ msgid "Пароль"
-#~ msgstr ""
-
-#~ msgid "Прізвище та ім’я"
-#~ msgstr ""
-
-#~ msgid "Управління локаціями пасивного моніторингу (ПАМ)"
-#~ msgstr ""
-
-#~ msgid "Назва локації (українською)"
-#~ msgstr ""
-
-#~ msgid "Назва локації (англійською)"
-#~ msgstr ""
-
-#~ msgid "Належність до установ"
-#~ msgstr ""
-
-#~ msgid "Можна вибрати кілька."
-#~ msgstr ""
-
-#~ msgid "Помилка завантаження:"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Журнал обслуговування акустичних ресиверів, з"
-#~ " інтерактивною картою і прогнозуванням "
-#~ "роботи приладів."
-#~ msgstr ""
-
-#~ msgid "Помилка завантаження сторінки журналу обслуговування."
-#~ msgstr ""
-
-#~ msgid "Обслуговування"
-#~ msgstr ""
-
-#~ msgid "Виберіть локацію зі списку або на карті, щоб почати редагування."
-#~ msgstr ""
-
-#~ msgid "Назва локації"
-#~ msgstr ""
-
-#~ msgid "Опис локації"
-#~ msgstr ""
-
-#~ msgid "Широта (Lat)"
-#~ msgstr ""
-
-#~ msgid "Довгота (Lng)"
-#~ msgstr ""
-
-#~ msgid "-- Без установи --"
-#~ msgstr ""
-
-#~ msgid "Локацію буде додано до вашої установи."
-#~ msgstr ""
-
-#~ msgid "Крок 1: Вкажіть місце зйомки"
-#~ msgstr ""
-
-#~ msgid "Установа/проект"
-#~ msgstr ""
-
-#~ msgid "Дані місця зйомки"
-#~ msgstr ""
-
-#~ msgid "Крок 2: Завантажте фотографії"
-#~ msgstr ""
-
-#~ msgid "Вибрати файли"
-#~ msgstr ""
-
-#~ msgid "Вибрати папку"
-#~ msgstr ""
-
-#~ msgid "Файли не вибрані"
-#~ msgstr ""
-
-#~ msgid "Не вдалося завантажити деталі локації."
-#~ msgstr ""
-
-#~ msgid "Назва та координати є обов`язковими."
-#~ msgstr ""
-
-#~ msgid "Квартальна сітка ПЗ Розточчя"
-#~ msgstr ""
-
-#~ msgid "Видільна сітка ПЗ Розточчя"
-#~ msgstr ""
-
-#~ msgid "DBU - біомоніторинг"
-#~ msgstr ""
-
-#~ msgid "DBU"
-#~ msgstr ""
-
-#~ msgid "біомоніторинг"
-#~ msgstr ""
-
-#~ msgid "Помилка завантаження статистики батчів."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Загальний огляд результатів і доступ до"
-#~ " основних функцій. Якщо у вас є "
-#~ "доступ, увійдіть і зможете перейти до"
-#~ " перегляду фото та ідентифікації."
-#~ msgstr ""
-
-#~ msgid "Швидкі дії"
-#~ msgstr ""
-
-#~ msgid "Ідентифікувати"
-#~ msgstr ""
-
-#~ msgid "Завантажити фото"
-#~ msgstr ""
-
-#~ msgid "Пасивний Акустичний Моніторинг (PAM)"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Цей розділ присвячений аналізу та "
-#~ "візуалізації даних, отриманих за допомогою "
-#~ "пасивного акустичного моніторингу. Тут ви "
-#~ "можете переглянути внутрішньо- та між-сезонну"
-#~ " динаміку детекцій різних видів тварин "
-#~ "та дослідити їх добову активність."
-#~ msgstr ""
-
-#~ msgid "Дослідження фауни методами ПАМ"
-#~ msgstr ""
-
-#~ msgid "Загальна динамічна таблиця з списком видів"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Рейтингова таблиця видів за кількістю "
-#~ "автоматичних детекцій за допомогою алгоритму"
-#~ " BirdNET."
-#~ msgstr ""
-
-#~ msgid "Детальний повидовий аналіз"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Інтерактивні графіки та карта для "
-#~ "конкретного виду. Як і у загальній "
-#~ "таблиці, використано дані автоматичної "
-#~ "класифікації видів на основі алгоритму "
-#~ "BirdNET."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Міжрічні тренди детекцій та сезонна "
-#~ "активність видів агрегована до місяців."
-#~ msgstr ""
-
-#~ msgid "Міжрічна порівняльна таблиця"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Міжрічна динамічна порівняльна таблиця, що "
-#~ "показує нормалізовану кількість детекцій (на"
-#~ " 24 год записів) видів."
-#~ msgstr ""
-
-#~ msgid "Верифікація класифікацій BirdNET"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Завантаження ZIP архівів з аудіосегментами "
-#~ "для верифікації точності автоматичних "
-#~ "класифікацій."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Прослуховування та верифікація аудіосегментів "
-#~ "для оцінки точності BirdNET класифікацій."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Перегляд списку завантажених аудіосегментів з"
-#~ " фільтрацією по видах та статусу "
-#~ "верифікації."
-#~ msgstr ""
-
-#~ msgid "Результати оцінки точності"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Перегляд метрик точності (precision, recall,"
-#~ " F1) для різних видів на основі "
-#~ "верифікованих даних."
-#~ msgstr ""
-
-#~ msgid "Редагування назв та біотопів для точок акустичного моніторингу."
-#~ msgstr ""
 
