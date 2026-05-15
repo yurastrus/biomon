@@ -302,7 +302,9 @@ def pick_queue_request(session, stale_running_minutes: int = 30) -> Optional[AIR
     Використовуємо `FOR UPDATE SKIP LOCKED` щоб два паралельні worker'и
     (якщо колись таке буде) не взяли той самий запит.
     """
-    # Auto-fail stale running requests (process was killed, didn't finalize)
+    # Auto-fail stale running requests (process was killed, didn't finalize).
+    # COMMIT відразу — щоб ці зміни були видимі навіть якщо pending черга
+    # потім порожня і викликач закриє сесію без commit'у.
     session.execute(text("""
         UPDATE ai_run_queue
         SET status = 'failed',
@@ -314,6 +316,7 @@ def pick_queue_request(session, stale_running_minutes: int = 30) -> Optional[AIR
         'n': stale_running_minutes,
         'msg': f' [auto] Stale running > {stale_running_minutes}min, likely OOM-killed.',
     })
+    session.commit()
 
     row = session.execute(text("""
         SELECT id FROM ai_run_queue
