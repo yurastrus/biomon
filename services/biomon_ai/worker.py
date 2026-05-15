@@ -37,23 +37,43 @@ def _resolve_photo_paths(
 ) -> tuple[list[str], dict[str, int]]:
     """Будує абсолютні шляхи для списку фото observation'у.
 
+    Шукаємо файли в такому порядку:
+      1. pending_photos/raw/<filename>         — оригінал (якщо завантажений)
+      2. pending_photos/thumbnails/<filename>  — мініатюра (~800x800px)
+
+    Той самий fallback-патерн що в `routes.serve_raw_photo` — у біомоні
+    частина серій завантажуються БЕЗ raw-файлів, тільки мініатюри.
+    Для AI це теж достатньо: DeepFaune yolov8s працює з 960px, класифікатор
+    нарізає 182px crop — на 800px мініатюрі результат лише трохи гірший
+    через дотрімування resize до 960px.
+
     Returns:
         (paths_in_order, path_to_photo_id):
           paths_in_order — хронологічно впорядковані шляхи для adapter'а
           path_to_photo_id — словник для зворотного мапінгу при збереженні
     """
-    raw_dir = os.path.join(upload_path, 'pending_photos', 'raw')
+    raw_dir   = os.path.join(upload_path, 'pending_photos', 'raw')
+    thumb_dir = os.path.join(upload_path, 'pending_photos', 'thumbnails')
     paths = []
     path_to_id = {}
     for photo_id, system_filename in photos:
-        abs_path = os.path.join(raw_dir, system_filename)
-        if not os.path.exists(abs_path):
+        raw_path   = os.path.join(raw_dir, system_filename)
+        thumb_path = os.path.join(thumb_dir, system_filename)
+        if os.path.exists(raw_path):
+            chosen = raw_path
+        elif os.path.exists(thumb_path):
+            chosen = thumb_path
+            logger.debug(
+                f"Photo {photo_id}: using thumbnail (no raw on disk)"
+            )
+        else:
             logger.warning(
-                f"Photo file not on disk, skipping: id={photo_id}, path={abs_path}"
+                f"Photo not on disk (neither raw nor thumbnail), skipping: "
+                f"id={photo_id}, filename={system_filename}"
             )
             continue
-        paths.append(abs_path)
-        path_to_id[abs_path] = photo_id
+        paths.append(chosen)
+        path_to_id[chosen] = photo_id
     return paths, path_to_id
 
 

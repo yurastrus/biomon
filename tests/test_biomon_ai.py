@@ -334,6 +334,38 @@ class TestProcessBatch(unittest.TestCase):
             self.assertEqual(kwargs['model_id'], 42)
             self.assertEqual(len(kwargs['predictions']), 1)
 
+    def test_thumbnail_fallback_when_raw_missing(self):
+        """Якщо raw-файлу нема, але є мініатюра — worker використовує її."""
+        import tempfile
+        from services.biomon_ai.db import PendingObservation
+        from services.biomon_ai.worker import process_batch
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Створюємо ЛИШЕ мініатюру (без raw)
+            thumb_dir = os.path.join(tmpdir, 'pending_photos', 'thumbnails')
+            os.makedirs(thumb_dir)
+            with open(os.path.join(thumb_dir, 'only_thumb.jpg'), 'wb') as f:
+                f.write(b'\xff\xd8\xff\xe0' + b'thumbnail-only')
+            # raw/ навіть НЕ створено
+
+            self.mock_pick.return_value = [
+                PendingObservation(observation_id=99, photos=[(500, 'only_thumb.jpg')]),
+            ]
+            self.mock_save.return_value = 1
+
+            result = process_batch(
+                adapter=StubAdapter(),
+                upload_path=tmpdir,
+                max_observations=10,
+            )
+            self.assertEqual(result, 1)
+            self.mock_save.assert_called_once()
+            # Перевіряємо що в predictions передано саме thumbnail-шлях
+            kwargs = self.mock_save.call_args.kwargs
+            paths = list(kwargs['photo_id_by_path'].keys())
+            self.assertEqual(len(paths), 1)
+            self.assertIn('thumbnails', paths[0])
+
     def test_adapter_exception_does_not_stop_other_observations(self):
         """Одна крашнула — інші продовжуються."""
         import tempfile
