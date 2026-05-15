@@ -16,6 +16,8 @@ import logging
 import os
 from typing import Optional
 
+from sqlalchemy import text
+
 from .adapter import IClassifier
 from .db import (
     finish_queue_request,
@@ -82,6 +84,7 @@ def process_batch(
     upload_path: str,
     max_observations: int,
     database_url: Optional[str] = None,
+    on_progress=None,
 ) -> int:
     """Обробляє до `max_observations` pending observation. Повертає кількість
     фактично оброблених (тих, для яких щось записано в ai_predictions).
@@ -89,6 +92,13 @@ def process_batch(
     Errors per-observation не зривають весь прогін: впала одна — пропускаємо
     і йдемо до наступної, але exception вище НЕ підіймаємо (для cron-сумісності).
     Тільки якщо щось крашить рівень БД-сесії — підіймаємо.
+
+    Args:
+        on_progress: опційний callback `f(processed_count)` що викликається
+            ПІСЛЯ КОЖНОЇ успішно збереженої observation. Призначення —
+            оновлювати `ai_run_queue.processed_count` під час прогону,
+            щоб UI бачив прогрес (і якщо процес помре, не втратили
+            фактичний результат).
     """
     engine = make_engine(database_url)
     session = make_session(engine)
@@ -156,6 +166,14 @@ def process_batch(
                     f"Observation {obs.observation_id}: saved {saved} prediction(s)"
                 )
 
+                # Callback з фактичним count — для оновлення progress у UI
+                if on_progress is not None:
+                    try:
+                        on_progress(processed)
+                    except Exception as e:
+                        # Не зривати batch через помилку звітування про прогрес
+                        logger.warning(f"on_progress callback failed: {e}")
+
             except Exception as e:
                 session.rollback()
                 logger.exception(
@@ -199,6 +217,18 @@ def run_from_queue(
         f"Picked queue request id={queue_id} (n={n_obs}, requested_by={requested_by})"
     )
 
+    # Callback що оновлює processed_count у ai_run_queue через окреме
+    # коротке з'єднання (не конфліктує з основною сесією batch'у).
+    # Виконується після кожної observation — UI бачить прогрес у real-time
+    # і навіть якщо процес помре, в БД лишиться актуальний counter.
+    def _report_progress(count: int):
+        with engine.connect() as conn:
+            conn.execute(
+                text("UPDATE ai_run_queue SET processed_count = :c WHERE id = :i"),
+                {'c': count, 'i': queue_id},
+            )
+            conn.commit()
+
     # 2. Обробляємо. Errors всередині process_batch ловляться per-observation
     try:
         processed = process_batch(
@@ -206,6 +236,7 @@ def run_from_queue(
             upload_path=upload_path,
             max_observations=n_obs,
             database_url=database_url,
+            on_progress=_report_progress,
         )
         # Перезагружаємо request після process_batch (у іншій сесії все commit'нулось)
         request = session.get(type(request), queue_id)
