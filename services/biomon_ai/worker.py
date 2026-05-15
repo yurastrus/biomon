@@ -103,16 +103,20 @@ def process_batch(
         )
         session.commit()  # модель має бути в БД до записів прогнозів
 
-        # 2. Беремо pending observations
+        # 2. Беремо pending observations. SQL обмежений 10× max_observations,
+        # бо у проді багато "сирітських" observations (status='pending',
+        # photos.status='pending', але файлу нема — cleanup залишив запис без файлу).
+        # У Python ітеруємо до max_observations УСПІШНО оброблених.
+        sql_limit = max(max_observations * 10, 50)
         observations = pick_pending_observations(
             session,
             model_id=model_id,
-            limit=max_observations,
+            limit=sql_limit,
         )
         logger.info(
             f"Model {adapter.name} {adapter.version} (id={model_id}): "
-            f"picked {len(observations)} pending observation(s) "
-            f"(limit was {max_observations})"
+            f"SQL returned {len(observations)} candidate observation(s); "
+            f"will process up to {max_observations} successful"
         )
 
         if not observations:
@@ -120,6 +124,11 @@ def process_batch(
 
         processed = 0
         for obs in observations:
+            if processed >= max_observations:
+                logger.info(
+                    f"Reached target ({max_observations} successful). Stopping."
+                )
+                break
             try:
                 paths, path_to_id = _resolve_photo_paths(upload_path, obs.photos)
                 if not paths:
