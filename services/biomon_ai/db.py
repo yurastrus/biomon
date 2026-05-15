@@ -194,6 +194,11 @@ def pick_pending_observations(
         return []
 
     # SQL CTE: спершу беремо N найстаріших observation, потім підтягуємо їх фото
+    #
+    # Важливо: фільтр `EXISTS (... photos.status IN ...)` у CTE — щоб пропустити
+    # observations, у яких ВСІ фото архівовані (cleanup-таск видалив файли).
+    # Без цього worker бере observation, а потім JOIN не повертає жодної photo —
+    # worker тратить SQL-запит марно і не просувається далі.
     sql = text("""
         WITH pending_obs AS (
             SELECT o.id, o.series_start_time
@@ -203,13 +208,18 @@ def pick_pending_observations(
                   SELECT 1 FROM ai_predictions ap
                   WHERE ap.observation_id = o.id AND ap.model_id = :model_id
               )
+              AND EXISTS (
+                  SELECT 1 FROM photos p
+                  WHERE p.observation_id = o.id
+                    AND p.status IN ('grouped', 'pending', 'completed')
+              )
             ORDER BY o.series_start_time ASC
             LIMIT :limit_obs
         )
         SELECT po.id AS observation_id, p.id AS photo_id, p.system_filename
         FROM pending_obs po
         JOIN photos p ON p.observation_id = po.id
-        WHERE p.status IN ('grouped', 'pending', 'completed')  -- не archived
+        WHERE p.status IN ('grouped', 'pending', 'completed')
         ORDER BY po.series_start_time ASC, p.captured_at ASC, p.id ASC
     """)
 
