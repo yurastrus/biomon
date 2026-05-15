@@ -4891,6 +4891,94 @@ msgstr "Users not found."
 msgid "Жодного користувача не відповідає фільтру."
 msgstr "No users match the filter."
 
+#: app/camera_traps/templates/admin.html
+msgid "AI-класифікатор"
+msgstr "AI Classifier"
+
+#: app/camera_traps/templates/admin.html
+msgid "Активна модель:"
+msgstr "Active model:"
+
+#: app/camera_traps/templates/admin.html
+msgid "зареєстрована"
+msgstr "registered"
+
+#: app/camera_traps/templates/admin.html
+msgid "Жодна модель ще не запускалася. Перший прогін зареєструє її автоматично."
+msgstr "No model has been run yet. The first run will register it automatically."
+
+#: app/camera_traps/templates/admin.html
+msgid "Запустити AI на N серій"
+msgstr "Run AI on N series"
+
+#: app/camera_traps/templates/admin.html
+msgid "Додає запит у чергу. Worker (cron) підхопить його за 1-3 хв і обробить вказану кількість найстаріших pending серій. Прогнози зберігаються в окремій таблиці і не йдуть у фінальні ідентифікації."
+msgstr "Adds a request to the queue. The worker (cron) will pick it up in 1-3 min and classify the specified number of oldest pending series. Predictions are saved to a separate table and do not affect final identifications."
+
+#: app/camera_traps/templates/admin.html
+msgid "Останні запити"
+msgstr "Recent requests"
+
+#: app/camera_traps/templates/admin.html
+msgid "Час"
+msgstr "Time"
+
+#: app/camera_traps/templates/admin.html
+msgid "Серій"
+msgstr "Series"
+
+#: app/camera_traps/templates/admin.html
+msgid "Статус"
+msgstr "Status"
+
+#: app/camera_traps/templates/admin.html
+msgid "Оброблено"
+msgstr "Processed"
+
+#: app/camera_traps/routes.py
+msgid "AI-класифікатор не доступний."
+msgstr "AI classifier is not available."
+
+#: app/camera_traps/routes.py
+msgid "Некоректна кількість серій."
+msgstr "Invalid number of series."
+
+#: app/camera_traps/routes.py
+msgid "Кількість серій має бути від 1 до %(max)d."
+msgstr "Number of series must be between 1 and %(max)d."
+
+#: app/camera_traps/routes.py
+msgid "Запит №%(id)d додано в чергу. Worker оброблятиме до %(n)d серій. Перевір статус нижче через 1-3 хвилини."
+msgstr "Request #%(id)d added to the queue. The worker will process up to %(n)d series. Check the status below in 1-3 minutes."
+
+#: app/camera_traps/routes.py
+msgid "Помилка створення запиту. Перевір логи сервера."
+msgstr "Failed to create the request. Check server logs."
+
+#: app/camera_traps/templates/identification.html
+msgid "AI вид:"
+msgstr "AI species:"
+
+#: app/camera_traps/templates/identification.html
+msgid "Будь-який"
+msgstr "Any"
+
+#: app/camera_traps/templates/identification.html
+msgid "AI ще не виконував класифікацію — список порожній."
+msgstr "AI has not been run yet — the list is empty."
+
+#: app/camera_traps/templates/identification.html
+msgid "AI пропонує"
+msgstr "AI suggests"
+
+#: app/camera_traps/templates/identification.html
+msgid "впевненість"
+msgstr "confidence"
+
+#: app/camera_traps/templates/identification.html
+msgid "особин"
+msgstr "individuals"
+
 #: app/utils/forms.py:10
 msgid "Ім'я користувача"
 msgstr "Username"

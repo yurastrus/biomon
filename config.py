@@ -45,7 +45,40 @@ class Config:
         'ALLOWED_EXTENSIONS': {'jpg', 'jpeg'},
         'MIN_IDENTIFICATIONS': 2,  # мінімум ідентифікацій для консенсусу
         'CLEANUP_DAYS': 0,  # дні після яких видаляти фото
-        'STALE_BATCH_HOURS': 0
+        'STALE_BATCH_HOURS': 0,
+
+        # ── AI-runner (DeepFaune або інший класифікатор) ──
+        # Окремий процес з власним venv. Flask лише читає прогнози з
+        # ai_predictions і пише завдання в ai_run_queue (для адмін-кнопки).
+        # Усі ключі тут можна перевизначити через відповідні AI_RUNNER_*
+        # змінні в .env (див. fields нижче).
+        'AI_RUNNER': {
+            # Глобальний feature-flag. Якщо False — фільтр на /identify
+            # сірий, кнопка на /admin не показується. На локальній dev-машині
+            # без worker'а можна виставити False у .env.
+            'ENABLED':       os.environ.get('AI_RUNNER_ENABLED', 'true').lower() in ['true', '1', 'on'],
+
+            # Скільки observation worker оброблятиме за один прогін.
+            # Стосується і нічного cron'у, і ручної кнопки (як default).
+            'MAX_PER_RUN':   int(os.environ.get('AI_RUNNER_MAX_PER_RUN', '100')),
+
+            # Поріг впевненості для prediction_label/prediction_score.
+            # top1_label зберігається завжди — поріг впливає лише на те,
+            # що піде в "сильний" прогноз (тобто чи буде непорожнім
+            # prediction_species_id).
+            'THRESHOLD':     float(os.environ.get('AI_RUNNER_THRESHOLD', '0.8')),
+
+            # Шляхи на сервері, де живе worker (НЕ в /var/www/biomon!).
+            # Тримаємо в /opt щоб venv з torch не мішався з основним.
+            'WORKER_PYTHON': os.environ.get('AI_RUNNER_WORKER_PYTHON', '/opt/biomon-ai/venv/bin/python'),
+            'WORKER_PATH':   os.environ.get('AI_RUNNER_WORKER_PATH',   '/opt/biomon-ai'),
+
+            # Яку модель worker зараз використовує (потрапить у ai_models).
+            # Зміниш у майбутньому — і всі нові прогнози будуть під новим model_id.
+            # Старі прогнози від попередньої моделі лишаються в БД для метрик.
+            'MODEL_NAME':    os.environ.get('AI_RUNNER_MODEL_NAME',    'DeepFaune'),
+            'MODEL_VERSION': os.environ.get('AI_RUNNER_MODEL_VERSION', '1.4.1'),
+        },
     }
 
     PAM_MAX_UPLOAD_SIZE = 1000 * 1024 * 1024  # 500 MB для ZIP архівів
