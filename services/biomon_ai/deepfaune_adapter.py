@@ -84,9 +84,11 @@ class DeepFauneAdapter(IClassifier):
         # Обмежуємо PyTorch CPU-потоки щоб не зловити OOM/перевантаження сервера.
         # Беремо мін(2, CPU_count-1) — лишаємо хоча б 1 ядро для інших процесів.
         # Override через env TORCH_NUM_THREADS якщо треба.
+        # NOTE: `os` уже імпортовано на module-level (рядок 28), тому НЕ робимо
+        # повторний `import os` у try-блоці — Python вважатиме `os` локальним
+        # і впаде на доступі до `os.environ.get('DEEPFAUNE_PATH')` вище.
         try:
             import torch as _torch
-            import os
             n_threads = int(os.environ.get(
                 'TORCH_NUM_THREADS',
                 max(1, min(2, (os.cpu_count() or 4) - 1)),
