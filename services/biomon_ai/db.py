@@ -55,13 +55,18 @@ class AIModel(Base):
 class AIPrediction(Base):
     __tablename__ = 'ai_predictions'
 
+    # Worker НЕ керує таблицями photos/observations/species/ai_models
+    # своїм SQLAlchemy Base — він тільки INSERT-ить значення. FK-constraint
+    # на рівні БД створюється через Flask schema; тут декларуємо лише FK
+    # на ai_models (своя таблиця worker'а), а решту як просто Integer,
+    # щоб SQLAlchemy ORM не намагалась резолвити referenced tables.
     id                    = Column(Integer, primary_key=True)
-    photo_id              = Column(Integer, ForeignKey('photos.id'), nullable=False)
-    observation_id        = Column(Integer, ForeignKey('observations.id'), nullable=False)
+    photo_id              = Column(Integer, nullable=False)        # FK у БД: photos.id
+    observation_id        = Column(Integer, nullable=False)        # FK у БД: observations.id
     model_id              = Column(Integer, ForeignKey('ai_models.id'), nullable=False)
 
     prediction_label      = Column(String(64), nullable=True)
-    prediction_species_id = Column(Integer, ForeignKey('species.id'), nullable=True)
+    prediction_species_id = Column(Integer, nullable=True)         # FK у БД: species.id
     prediction_score      = Column(Float, nullable=True)
 
     base_label            = Column(String(64), nullable=True)
