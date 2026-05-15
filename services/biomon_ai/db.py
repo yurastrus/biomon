@@ -291,15 +291,30 @@ def save_observation_predictions(
 # Helpers: ai_run_queue (для адмін-кнопки)
 # ─────────────────────────────────────────────────────────────────────
 
-def pick_queue_request(session) -> Optional[AIRunQueue]:
+def pick_queue_request(session, stale_running_minutes: int = 30) -> Optional[AIRunQueue]:
     """Атомарно бере один pending запит з ai_run_queue. Маркує його 'running'.
+
+    Перед тим — стирає 'running' записи, що зависли довше ніж
+    `stale_running_minutes` (default 30): автомат помічає як 'failed'.
+    Це захищає від випадків коли python-процес був killed (OOM) і
+    не встиг оновити статус.
 
     Використовуємо `FOR UPDATE SKIP LOCKED` щоб два паралельні worker'и
     (якщо колись таке буде) не взяли той самий запит.
-
-    Повертає AIRunQueue або None. Викликач має зробити commit щоб
-    зафіксувати 'running' status (інакше lock триматиметься).
     """
+    # Auto-fail stale running requests (process was killed, didn't finalize)
+    session.execute(text("""
+        UPDATE ai_run_queue
+        SET status = 'failed',
+            finished_at = NOW(),
+            error_msg = COALESCE(error_msg, '') || :msg
+        WHERE status = 'running'
+          AND started_at < NOW() - (INTERVAL '1 minute' * :n)
+    """), {
+        'n': stale_running_minutes,
+        'msg': f' [auto] Stale running > {stale_running_minutes}min, likely OOM-killed.',
+    })
+
     row = session.execute(text("""
         SELECT id FROM ai_run_queue
         WHERE status = 'pending'

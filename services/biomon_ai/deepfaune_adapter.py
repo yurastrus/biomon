@@ -81,6 +81,21 @@ class DeepFauneAdapter(IClassifier):
             ) from e
         self._PredictorImage = PredictorImage
 
+        # Обмежуємо PyTorch CPU-потоки щоб не зловити OOM/перевантаження сервера.
+        # Беремо мін(2, CPU_count-1) — лишаємо хоча б 1 ядро для інших процесів.
+        # Override через env TORCH_NUM_THREADS якщо треба.
+        try:
+            import torch as _torch
+            import os
+            n_threads = int(os.environ.get(
+                'TORCH_NUM_THREADS',
+                max(1, min(2, (os.cpu_count() or 4) - 1)),
+            ))
+            _torch.set_num_threads(n_threads)
+            logger.info(f"PyTorch num_threads set to {n_threads}")
+        except Exception as e:
+            logger.warning(f"Failed to set torch threads: {e}")
+
         logger.info(
             f"DeepFauneAdapter initialized: path={self._deepfaune_path} "
             f"threshold={threshold} version={version}"
