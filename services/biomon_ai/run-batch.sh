@@ -27,8 +27,13 @@ export OMP_NUM_THREADS="${OMP_NUM_THREADS:-2}"
 export MKL_NUM_THREADS="${MKL_NUM_THREADS:-2}"
 export TORCH_NUM_THREADS="${TORCH_NUM_THREADS:-2}"
 
+# flock -n        — non-blocking lock. Якщо попередній batch ще біжить,
+#                   новий запуск ВІДРАЗУ вийде з exit 1 без помилки.
+#                   Це дозволяє запускати batch часто (напр. кожні 30хв
+#                   уночі) без ризику паралельних прогонів і OOM.
 # nice -n 19      — найнижчий CPU-пріоритет, будь-що випередить
 # ionice -c 3     — idle класс IO, не блокує дисковий I/O
-exec nice -n 19 ionice -c 3 venv/bin/python -m biomon_ai.cli \
+exec flock -n /tmp/biomon-ai-batch.lock \
+    nice -n 19 ionice -c 3 venv/bin/python -m biomon_ai.cli \
     --batch="${AI_RUNNER_MAX_PER_RUN:-100}" \
     --adapter=deepfaune
