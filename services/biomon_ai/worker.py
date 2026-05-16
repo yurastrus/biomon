@@ -16,10 +16,11 @@ import logging
 import os
 from typing import Optional
 
-from sqlalchemy import text
+from sqlalchemy import func, text
 
 from .adapter import IClassifier
 from .db import (
+    AIRunQueue,
     finish_queue_request,
     get_or_create_model,
     make_engine,
@@ -185,6 +186,90 @@ def process_batch(
 
     finally:
         session.close()
+
+
+def process_batch_tracked(
+    adapter: IClassifier,
+    upload_path: str,
+    max_observations: int,
+    requested_by: int = 0,
+    database_url: Optional[str] = None,
+) -> int:
+    """Як process_batch, але автоматично створює запис у ai_run_queue для
+    відстеження прогресу. Використовується для cron-запусків (`cli --batch=N`),
+    щоб усі прогони — і ручні через адмін-кнопку, і нічні автоматичні —
+    були видні в одній таблиці.
+
+    Args:
+        requested_by: id користувача-ініціатора. За замовчуванням 0 — маркер
+                      "system/cron" (у БД немає юзера з id=0).
+    """
+    engine = make_engine(database_url)
+
+    # 1. Створюємо queue-запис із статусом 'running'
+    session = make_session(engine)
+    try:
+        row = AIRunQueue(
+            requested_by=requested_by,
+            n_observations=max_observations,
+            status='running',
+            started_at=func.now(),
+        )
+        session.add(row)
+        session.commit()
+        session.refresh(row)
+        queue_id = row.id
+    finally:
+        session.close()
+
+    logger.info(
+        f"Tracking cron batch in ai_run_queue: id={queue_id}, "
+        f"n={max_observations}, requested_by={requested_by}"
+    )
+
+    # 2. Callback для оновлення processed_count у real-time
+    def _update_progress(count: int):
+        with engine.connect() as conn:
+            conn.execute(
+                text("UPDATE ai_run_queue SET processed_count = :c WHERE id = :i"),
+                {'c': count, 'i': queue_id},
+            )
+            conn.commit()
+
+    # 3. Виконуємо batch і фіналізуємо запис
+    try:
+        processed = process_batch(
+            adapter=adapter,
+            upload_path=upload_path,
+            max_observations=max_observations,
+            database_url=database_url,
+            on_progress=_update_progress,
+        )
+        with engine.connect() as conn:
+            conn.execute(
+                text(
+                    "UPDATE ai_run_queue "
+                    "SET status='done', finished_at=NOW(), processed_count=:c "
+                    "WHERE id=:i"
+                ),
+                {'c': processed, 'i': queue_id},
+            )
+            conn.commit()
+        logger.info(f"Queue entry {queue_id} marked 'done'. Processed: {processed}")
+        return processed
+    except Exception as e:
+        with engine.connect() as conn:
+            conn.execute(
+                text(
+                    "UPDATE ai_run_queue "
+                    "SET status='failed', finished_at=NOW(), error_msg=:msg "
+                    "WHERE id=:i"
+                ),
+                {'msg': f'Cron batch crashed: {e}'[:500], 'i': queue_id},
+            )
+            conn.commit()
+        logger.exception(f"Queue entry {queue_id} marked 'failed'")
+        raise
 
 
 def run_from_queue(

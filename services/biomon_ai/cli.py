@@ -43,7 +43,7 @@ except ImportError:
     pass  # dotenv не встановлено — це нормально на проді з systemd
 
 from .adapter import IClassifier, StubAdapter
-from .worker import process_batch, run_from_queue
+from .worker import process_batch_tracked, run_from_queue
 
 
 logger = logging.getLogger('biomon_ai')
@@ -162,10 +162,13 @@ def main(argv=None) -> int:
             else:
                 logger.info(f'Queue request done. Processed: {result}')
         else:
-            processed = process_batch(
+            # --batch=N: записуємо в ai_run_queue з requested_by=0 (cron/system),
+            # щоб видно було в адмін-сторінці поряд з ручними запитами
+            processed = process_batch_tracked(
                 adapter=adapter,
                 upload_path=upload_path,
                 max_observations=args.batch,
+                requested_by=0,
             )
             logger.info(f'Batch done. Processed: {processed}/{args.batch}')
 
