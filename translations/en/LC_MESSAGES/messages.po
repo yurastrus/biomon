@@ -4935,6 +4935,22 @@ msgstr "Status"
 msgid "Оброблено"
 msgstr "Processed"
 
+#: app/camera_traps/templates/admin.html
+msgid "Класифіковано ШІ"
+msgstr "Classified by AI"
+
+#: app/camera_traps/templates/admin.html
+msgid "Лишилось до класифікації"
+msgstr "Remaining"
+
+#: app/camera_traps/templates/admin.html
+msgid "Джерело"
+msgstr "Source"
+
+#: app/camera_traps/templates/admin.html
+msgid "Тривалість"
+msgstr "Duration"
+
 #: app/camera_traps/routes.py
 msgid "AI-класифікатор не доступний."
 msgstr "AI classifier is not available."
