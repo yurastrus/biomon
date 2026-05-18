@@ -59,7 +59,25 @@
       "Bash(grep -n \"camera_traps/forms.py\\\\|camera_traps\\\\\\\\\\\\\\\\forms\" messages.pot)",
       "Bash(venv/Scripts/python -m babel.messages.frontend extract -F babel.cfg -o /tmp/cli.pot .)",
       "Bash(venv/Scripts/python -m pytest tests/test_pam_evaluation.py -v)",
-      "Bash(grep -c '^msgstr \"\"$' /c/Users/IuriiStrus/repositories/biomon/translations/en/LC_MESSAGES/messages.po)"
+      "Bash(grep -c '^msgstr \"\"$' /c/Users/IuriiStrus/repositories/biomon/translations/en/LC_MESSAGES/messages.po)",
+      "Bash(venv/Scripts/python -m services.biomon_ai.cli)",
+      "Bash(venv/Scripts/python -m services.biomon_ai.cli --batch=5 --from-queue)",
+      "Bash(venv/Scripts/python -m services.biomon_ai.cli --batch=5 --adapter=stub)",
+      "Bash(venv/Scripts/python -m services.biomon_ai.cli --batch=3 --adapter=stub --upload-path=/tmp/fake-not-exist)",
+      "Bash(/c/Users/IuriiStrus/repositories/biomon-ai-venv/Scripts/pip install *)",
+      "Bash(/c/Users/IuriiStrus/repositories/biomon-ai-venv/Scripts/python -c ' *)",
+      "Bash(venv/Scripts/python -m unittest tests.test_biomon_ai -v)",
+      "Bash(/c/Users/IuriiStrus/repositories/biomon-ai-venv/Scripts/python -m unittest services.biomon_ai.test_deepfaune_integration -v)",
+      "Bash(venv/Scripts/python -m unittest tests.test_behavior_analysis tests.test_biomon_ai)",
+      "Bash(git check-ignore *)",
+      "Bash(git -C /c/Users/IuriiStrus/repositories/biomon commit -m ' *)",
+      "Bash(venv/Scripts/python -m unittest tests.test_biomon_ai.TestProcessBatch -v)",
+      "Bash(venv/Scripts/python -m unittest tests.test_biomon_ai)",
+      "Bash(git -C /c/Users/IuriiStrus/repositories/biomon/app/camera_traps add ai_runner.py)",
+      "Bash(git -C /c/Users/IuriiStrus/repositories/biomon/app/camera_traps commit -m ' *)",
+      "Bash(git -C /c/Users/IuriiStrus/repositories/biomon/app/camera_traps push)",
+      "Bash(git -C /c/Users/IuriiStrus/repositories/biomon/app/camera_traps status)",
+      "Bash(cat \"/c/Users/IURIIS~1/AppData/Local/Temp/claude/C--Users-IuriiStrus-repositories-biomon/7261607f-5a99-451a-9ce0-9587fad851d2/tasks/b7d3jil5c.output\" 2>&1 | tail -25)"
     ]
   }
 }

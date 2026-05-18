@@ -60,7 +60,7 @@ class Config:
 
             # Скільки observation worker оброблятиме за один прогін.
             # Стосується і нічного cron'у, і ручної кнопки (як default).
-            'MAX_PER_RUN':   int(os.environ.get('AI_RUNNER_MAX_PER_RUN', '100')),
+            'MAX_PER_RUN':   int(os.environ.get('AI_RUNNER_MAX_PER_RUN', '200')),
 
             # Поріг впевненості для prediction_label/prediction_score.
             # top1_label зберігається завжди — поріг впливає лише на те,
