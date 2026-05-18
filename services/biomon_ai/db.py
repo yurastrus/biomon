@@ -347,3 +347,113 @@ def finish_queue_request(
     request.processed_count = processed_count
     if error:
         request.error_msg = error
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Швидкі lookup-функції для early-exit у CLI (без завантаження моделі)
+# ─────────────────────────────────────────────────────────────────────
+
+def count_pending_observations(database_url: Optional[str] = None) -> int:
+    """Лічильник observations що потребують класифікації від активної моделі.
+    Легкий: 1-2 SQL запити, без завантаження AI-адаптера. Використовується
+    у cli.py як early-exit щоб не вантажити модель якщо нема роботи.
+
+    Активна модель ідентифікується через env AI_RUNNER_MODEL_NAME/VERSION.
+    """
+    engine = make_engine(database_url)
+    session = make_session(engine)
+    try:
+        name    = os.environ.get('AI_RUNNER_MODEL_NAME', 'DeepFaune')
+        version = os.environ.get('AI_RUNNER_MODEL_VERSION', '1.4.1')
+        active  = session.query(AIModel).filter_by(name=name, version=version).first()
+
+        if active is None:
+            # Моделі ще нема в БД — рахуємо ВСІ pending observation
+            # (бо ще не може бути жодного прогнозу)
+            mid_clause = ""
+            params = {}
+        else:
+            mid_clause = """
+                AND NOT EXISTS (
+                    SELECT 1 FROM ai_predictions ap
+                    WHERE ap.observation_id = o.id AND ap.model_id = :mid
+                )
+            """
+            params = {'mid': active.id}
+
+        sql = text(f"""
+            SELECT COUNT(*) FROM observations o
+            WHERE o.status = 'pending'
+              {mid_clause}
+              AND EXISTS (
+                  SELECT 1 FROM photos p
+                  WHERE p.observation_id = o.id
+                    AND p.status IN ('grouped', 'pending', 'completed')
+              )
+        """)
+        return int(session.execute(sql, params).scalar() or 0)
+    finally:
+        session.close()
+
+
+def has_pending_queue_request(database_url: Optional[str] = None,
+                              stale_minutes: int = 30) -> bool:
+    """True якщо в ai_run_queue є хоча б один 'pending' запит.
+
+    Робить заодно stale-cleanup (running > N хв → failed) щоб zombie-записи
+    не блокували нові тіки і таблиця в адмінці залишалась актуальною.
+    """
+    engine = make_engine(database_url)
+    session = make_session(engine)
+    try:
+        # 1. Stale-cleanup
+        session.execute(text("""
+            UPDATE ai_run_queue
+            SET status='failed',
+                finished_at=NOW(),
+                error_msg=COALESCE(error_msg,'') ||
+                          ' [auto] Stale running > ' || :n || 'min (early-exit)'
+            WHERE status='running'
+              AND started_at < NOW() - (INTERVAL '1 minute' * :n)
+        """), {'n': stale_minutes})
+        session.commit()
+
+        # 2. Чи є pending
+        result = session.execute(text(
+            "SELECT EXISTS (SELECT 1 FROM ai_run_queue WHERE status='pending')"
+        )).scalar()
+        return bool(result)
+    finally:
+        session.close()
+
+
+def drain_one_empty_queue_request(database_url: Optional[str] = None) -> int:
+    """Маркує найстарший 'pending' запит як 'done' з processed_count=0.
+
+    Викликається коли queue має запит, але нема pending observations для
+    класифікації. Без цього наступний cron-тік знову знайшов би той самий
+    pending запит у черзі і знову вантажив би модель марно.
+
+    Returns:
+        1 якщо успішно drained, 0 якщо нема pending entry.
+    """
+    engine = make_engine(database_url)
+    session = make_session(engine)
+    try:
+        result = session.execute(text("""
+            UPDATE ai_run_queue
+            SET status='done',
+                finished_at=NOW(),
+                processed_count=0,
+                error_msg='No pending observations at run time (model not loaded)'
+            WHERE id = (
+                SELECT id FROM ai_run_queue
+                WHERE status='pending'
+                ORDER BY requested_at ASC
+                LIMIT 1
+            )
+        """))
+        session.commit()
+        return int(result.rowcount or 0)
+    finally:
+        session.close()

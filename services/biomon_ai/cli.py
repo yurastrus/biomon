@@ -141,7 +141,38 @@ def main(argv=None) -> int:
         else float(os.environ.get('AI_RUNNER_THRESHOLD', '0.8'))
     )
 
-    # ── Адаптер ────────────────────────────────────────────────────────
+    # ── Early-exit: НЕ вантажимо модель якщо нема роботи ──────────────
+    # DeepFaune ViT займає ~30 сек + 2 GB RAM при завантаженні. Перевіримо
+    # ДО build_adapter() чи є взагалі що обробляти. Економимо CPU/RAM при
+    # частих cron-тіках з порожньою чергою (особливо */3 хв для queue).
+    from .db import (
+        count_pending_observations,
+        has_pending_queue_request,
+        drain_one_empty_queue_request,
+    )
+
+    if args.from_queue:
+        if not has_pending_queue_request():
+            logger.info('Queue is empty — nothing to do, skipping model load.')
+            return 0
+        pending = count_pending_observations()
+        if pending == 0:
+            drained = drain_one_empty_queue_request()
+            logger.info(
+                f'Queue has entry but no pending observations. '
+                f'Drained {drained} queue request(s) as done(0). Model not loaded.'
+            )
+            return 0
+        logger.info(f'Queue has entry, {pending} pending observations. Loading model...')
+    else:
+        # --batch=N mode
+        pending = count_pending_observations()
+        if pending == 0:
+            logger.info('No pending observations to classify. Skipping model load.')
+            return 0
+        logger.info(f'{pending} pending observations. Loading model for batch={args.batch}...')
+
+    # ── Адаптер (важка операція — лише коли точно є робота) ───────────
     try:
         adapter = build_adapter(args.adapter, threshold)
     except RuntimeError as e:
