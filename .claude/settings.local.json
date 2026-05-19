@@ -80,7 +80,14 @@
       "Bash(cat \"/c/Users/IURIIS~1/AppData/Local/Temp/claude/C--Users-IuriiStrus-repositories-biomon/7261607f-5a99-451a-9ce0-9587fad851d2/tasks/b7d3jil5c.output\" 2>&1 | tail -25)",
       "Bash(grep -E \"\\\\.\\(sql|py\\)$\")",
       "Bash(venv/Scripts/python -m pytest tests/test_pam_data_export.py -v)",
-      "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py tests/test_pam_evaluation.py tests/test_pam_data_export.py -q)"
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py tests/test_pam_evaluation.py tests/test_pam_data_export.py -q)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py -v)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_import.py tests/test_pam_evaluation.py tests/test_pam_data_export.py tests/test_pam_pages_smoke.py -q)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py tests/test_pam_import.py -q)",
+      "Bash(venv/Scripts/python -m pytest tests/ -q)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py -q)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py tests/test_pam_evaluation.py -q)",
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py tests/test_pam_evaluation.py tests/test_pam_import.py tests/test_pam_data_export.py -q)"
     ]
   }
 }

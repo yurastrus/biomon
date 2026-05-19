@@ -1,0 +1,382 @@
+"""
+Smoke-тест для всіх PAM-сторінок.
+
+Призначення:
+  • Регресійна мережа на період рефакторингу стилів (Кроки 0–10).
+  • Кожна публічна PAM-сторінка має повертати 200 OK для admin-користувача.
+  • Тести ловлять TemplateNotFound, TemplateSyntaxError, BuildError тощо.
+
+ВАЖЛИВО: тести використовують замоковану PAM-БД. Сторінки, що
+вимагають реальних SELECT-результатів, мокаються мінімально —
+аби виявити САМЕ помилки рендерингу шаблону, а не БД-логіки.
+
+Запуск:
+    venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py -v
+"""
+
+import os
+import unittest
+from unittest.mock import MagicMock, patch
+
+os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Перелік сторінок PAM-модуля для smoke-тесту
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Кожен запис: (url_path, expected_template_name, route_function_name).
+# expected_template_name — підстрока, яку шукаємо в response.data, щоб
+# переконатись, що рендерився саме той шаблон (а не редірект чи помилка).
+
+PAM_PAGES = [
+    # url,                                       template_marker,                  route
+    ('/uk/pam',                                  'module-hub',                      'pam.pam_home'),
+    ('/uk/pam/import',                           'import-layout',                   'pam.pam_import'),
+    ('/uk/pam/data-export',                      'data-filters-form',               'pam.pam_data_export'),
+    ('/uk/pam/evaluation/results',               'species_choice',                  'pam.evaluation_results'),
+    ('/uk/pam/manage-locations',                 'locations-list',                  'pam.manage_pam_locations'),
+    ('/uk/pam/verification/upload',              'upload',                          'pam.verification_upload'),
+    ('/uk/pam/verification/segments',            'segments',                        'pam.verification_segments'),
+    ('/uk/pam/verification/verify',              'verification',                    'pam.verification_interface'),
+    ('/uk/pam/pam_overview',                     'overview',                        'pam.pam_overview'),
+    ('/uk/pam/pam_detailed',                     'species',                         'pam.pam_detailed'),
+    ('/uk/pam/trends',                           'trends',                          'pam.pam_species_dashboard'),
+    ('/uk/pam/species-dashboard',                'species',                         'pam.pam_yearly_trends'),
+    ('/uk/pam/yearly-table',                     'yearly',                          'pam.pam_yearly_table'),
+]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Базовий клас для smoke-тестів
+# ══════════════════════════════════════════════════════════════════════════════
+
+class _PamSmokeBase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
+        cls._ct_patcher = patch(
+            'app.camera_traps.database.create_engine',
+            return_value=MagicMock()
+        )
+        cls._ct_patcher.start()
+        from app import create_app
+        cls.app = create_app('testing')
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._ct_patcher.stop()
+        os.environ.pop('DATABASE_URL', None)
+
+    def setUp(self):
+        self.ctx = self.app.app_context()
+        self.ctx.push()
+        from app.extensions import db
+        db.create_all()
+        self._seed()
+        self.client = self.app.test_client()
+
+    def tearDown(self):
+        from app.extensions import db
+        db.session.remove()
+        db.drop_all()
+        self.ctx.pop()
+
+    def _seed(self):
+        """Створюємо тестового адміна з усіма PAM-ролями."""
+        from app.extensions import db, bcrypt
+        from app.models import User, Role
+
+        # Усі ролі, які можуть знадобитись для PAM-сторінок
+        role_names = ['admin', 'manager', 'pam_verifier',
+                      'roztochya_user', 'fzs_user', 'volunteer_user', 'analyst']
+        roles = {n: Role(name=n) for n in role_names}
+        db.session.add_all(roles.values())
+        db.session.flush()
+
+        pw = bcrypt.generate_password_hash('pass').decode()
+        self.admin = User(username='smoke_admin', password_hash=pw)
+        # Admin отримує всі ролі — щоб уникнути 403 на будь-якій сторінці
+        for r in roles.values():
+            self.admin.roles.append(r)
+        db.session.add(self.admin)
+        db.session.commit()
+
+    def _login(self, user_id):
+        with self.client.session_transaction() as sess:
+            sess['_user_id'] = str(user_id)
+            sess['_fresh'] = True
+
+    def _mock_pam_db_connection(self):
+        """
+        Створює фейкове PAM-з'єднання, яке для будь-якого запиту
+        повертає порожні результати. Цього достатньо щоб шаблон
+        рендерився без БД-помилок.
+        """
+        conn = MagicMock()
+
+        # fetchall → [], fetchone → None, scalar → 0
+        result = MagicMock()
+        result.fetchall.return_value = []
+        result.fetchone.return_value = None
+        result.scalar.return_value = 0
+        result.__iter__ = lambda self: iter([])
+        conn.execute.return_value = result
+        return conn
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Тести: кожна сторінка → 200 (або відомі редіректи)
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestPamPagesSmoke(_PamSmokeBase):
+    """
+    Для кожної сторінки PAM перевіряємо, що admin отримує 200 OK.
+    Якщо сторінка падає 500 (TemplateSyntaxError тощо) — тест падає
+    з зрозумілим повідомленням.
+
+    302 від login_required не повинно бути — admin залогінений.
+    302 від role_required теж не має бути — admin має всі ролі.
+    """
+
+    def _get_with_mocked_db(self, url):
+        """GET сторінку з замоковим PAM-з'єднанням."""
+        conn = self._mock_pam_db_connection()
+        # Patch усі можливі точки входу PAM-БД
+        patches = [
+            patch('app.pam.utils.get_pam_db_connection', return_value=conn),
+            patch('app.pam.routes.get_pam_db_connection', return_value=conn,
+                  create=True),
+        ]
+        for p in patches:
+            try:
+                p.start()
+            except (AttributeError, ModuleNotFoundError):
+                pass
+        try:
+            return self.client.get(url, follow_redirects=False)
+        finally:
+            for p in patches:
+                try:
+                    p.stop()
+                except RuntimeError:
+                    pass
+
+    def test_all_pages_dont_500(self):
+        """Жодна PAM-сторінка не повинна повертати 5xx."""
+        self._login(self.admin.id)
+        failures = []
+        for url, marker, route in PAM_PAGES:
+            with self.subTest(url=url):
+                try:
+                    resp = self._get_with_mocked_db(url)
+                except Exception as e:
+                    failures.append(f"{url}: EXCEPTION {type(e).__name__}: {e}")
+                    continue
+                if resp.status_code >= 500:
+                    body = resp.get_data(as_text=True)[:200]
+                    failures.append(
+                        f"{url} → {resp.status_code}\n    body: {body}"
+                    )
+        if failures:
+            self.fail("PAM-сторінки впали:\n  " + "\n  ".join(failures))
+
+    def test_all_pages_return_200_or_known_redirect(self):
+        """
+        Кожна сторінка має повертати 200. Допустимі винятки:
+        302 (редірект, напр. на pam_home при помилці БД).
+        """
+        self._login(self.admin.id)
+        results = []
+        for url, marker, route in PAM_PAGES:
+            with self.subTest(url=url):
+                resp = self._get_with_mocked_db(url)
+                results.append((url, resp.status_code))
+                # 200 — норм
+                # 302 — допустимо (редірект на хаб при помилці БД)
+                self.assertIn(
+                    resp.status_code, (200, 302),
+                    f"{url} → {resp.status_code} (expected 200 or 302)"
+                )
+        # Звіт у логи для зручності
+        ok_count = sum(1 for _, s in results if s == 200)
+        print(f"\nSmoke summary: {ok_count}/{len(results)} pages returned 200 OK")
+        for url, status in results:
+            tag = '✓' if status == 200 else '↪'
+            print(f"  {tag} {status}  {url}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Тести специфічних шаблонів — перевіряємо, що рендериться правильний
+# (захист від ситуації, коли шаблон тихо мовчить через flash+redirect)
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestPamHomePage(_PamSmokeBase):
+    """pam_home — найважливіша сторінка, окрема перевірка."""
+
+    def test_renders_module_hub(self):
+        self._login(self.admin.id)
+        resp = self.client.get('/uk/pam')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.get_data(as_text=True)
+        self.assertIn('module-hub', html)
+        self.assertIn('hub-card', html)
+
+    def test_renders_all_three_sections(self):
+        """Аналітика / Верифікація / Управління — всі мають бути."""
+        self._login(self.admin.id)
+        resp = self.client.get('/uk/pam')
+        html = resp.get_data(as_text=True)
+        # Перевіряємо за маркерами — український або англійський текст
+        self.assertTrue(
+            'Аналітика' in html or 'Analytics' in html,
+            'Аналітика section missing'
+        )
+        self.assertTrue(
+            'Верифікація' in html or 'Verification' in html,
+            'Верифікація section missing'
+        )
+        self.assertTrue(
+            'Управління' in html or 'Management' in html,
+            'Управління section missing'
+        )
+
+    def test_uses_pam_base_template(self):
+        """pam_home має наслідувати pam_base.html — перевіряємо за
+        підключеним pam_style.css."""
+        self._login(self.admin.id)
+        resp = self.client.get('/uk/pam')
+        html = resp.get_data(as_text=True)
+        self.assertIn('pam_style.css', html,
+                      'pam_home.html має підключати pam_style.css через pam_base.html')
+
+    def test_back_link_absent_on_hub(self):
+        """На самому хабі не має бути back-link (це сам хаб)."""
+        self._login(self.admin.id)
+        resp = self.client.get('/uk/pam')
+        html = resp.get_data(as_text=True)
+        self.assertNotIn('pam-back-link', html)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Тести структури pam_base.html
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestPamBaseTemplate(unittest.TestCase):
+    """Перевіряємо, що pam_base.html має правильну структуру."""
+
+    def test_extends_base_html(self):
+        from pathlib import Path
+        content = Path('app/pam/templates/pam_base.html').read_text(encoding='utf-8')
+        self.assertIn('extends "base.html"', content)
+
+    def test_loads_pam_style_css(self):
+        from pathlib import Path
+        content = Path('app/pam/templates/pam_base.html').read_text(encoding='utf-8')
+        self.assertIn('pam_style.css', content)
+        self.assertIn("serve_pam_static", content)
+
+    def test_provides_pam_content_block(self):
+        from pathlib import Path
+        content = Path('app/pam/templates/pam_base.html').read_text(encoding='utf-8')
+        self.assertIn('{% block pam_content %}', content)
+
+    def test_provides_pam_head_extra_block(self):
+        from pathlib import Path
+        content = Path('app/pam/templates/pam_base.html').read_text(encoding='utf-8')
+        self.assertIn('{% block pam_head_extra %}', content)
+
+    def test_back_link_conditional_on_endpoint(self):
+        """Back-link не має з'являтися на самому pam_home."""
+        from pathlib import Path
+        content = Path('app/pam/templates/pam_base.html').read_text(encoding='utf-8')
+        self.assertIn("request.endpoint != 'pam.pam_home'", content)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Тести pam_style.css — обов'язкові елементи
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestNoInlineStyles(unittest.TestCase):
+    """Регресія: після рефакторингу жоден PAM-шаблон не повинен мати <style>."""
+
+    def test_no_pam_template_has_inline_style(self):
+        from pathlib import Path
+        offenders = []
+        for path in Path('app/pam/templates').glob('*.html'):
+            content = path.read_text(encoding='utf-8')
+            if '<style>' in content:
+                offenders.append(path.name)
+        self.assertEqual(
+            offenders, [],
+            f"PAM templates with inline <style> blocks: {offenders}. "
+            f"All styles must live in app/pam/static/css/pam_style.css"
+        )
+
+    def test_all_pam_templates_extend_pam_base(self):
+        """Усі PAM-шаблони (крім pam_base.html самого) extends 'pam_base.html'."""
+        from pathlib import Path
+        import re
+        offenders = []
+        for path in Path('app/pam/templates').glob('*.html'):
+            if path.name == 'pam_base.html':
+                continue
+            content = path.read_text(encoding='utf-8')
+            m = re.search(r'\{%\s*extends\s+"([^"]+)"', content)
+            if not m or m.group(1) != 'pam_base.html':
+                offenders.append((path.name, m.group(1) if m else None))
+        self.assertEqual(
+            offenders, [],
+            f"PAM templates not extending pam_base.html: {offenders}"
+        )
+
+
+class TestPamStyleCss(unittest.TestCase):
+    """Базові інваріанти CSS-файлу — мають триматися упродовж усього рефакторингу."""
+
+    @classmethod
+    def setUpClass(cls):
+        from pathlib import Path
+        cls.css = Path('app/pam/static/css/pam_style.css').read_text(encoding='utf-8')
+
+    def test_has_root_variables(self):
+        self.assertIn(':root', self.css)
+        # Перевіряємо ключові токени
+        for var in ('--color-primary', '--text-primary', '--bg-primary',
+                    '--card-bg', '--border-color', '--radius-md', '--shadow-sm'):
+            self.assertIn(var, self.css, f'CSS variable {var} missing')
+
+    def test_has_dark_theme(self):
+        self.assertIn('body.dark-theme', self.css)
+
+    def test_has_container_reset(self):
+        """style.css має бути перевизначений, інакше grid не працює."""
+        self.assertIn('main .container:not(.maplistcontainer)', self.css)
+        # Має бути display: block (не flex)
+        idx = self.css.find('main .container:not(.maplistcontainer)')
+        block_section = self.css[idx:idx + 300]
+        self.assertIn('display: block', block_section)
+
+    def test_has_back_link(self):
+        self.assertIn('.pam-back-link', self.css)
+
+    def test_has_hub_classes(self):
+        for cls in ('.module-hub', '.hub-card', '.hub-grid', '.hub-section-title'):
+            self.assertIn(cls, self.css, f'Hub class {cls} missing')
+
+    def test_has_numbered_sections(self):
+        """18 номерованих секцій — структурна основа файлу."""
+        import re
+        # Шукаємо коментарі вигляду "   1. " ... "   18. "
+        sections = re.findall(r'\n\s*(\d+)\.\s+\w', self.css)
+        section_nums = set(int(n) for n in sections)
+        # Хоча б 10 з 18 секцій мають бути присутні (інші додаються поступово)
+        self.assertGreaterEqual(
+            len(section_nums), 10,
+            f'Очікувано принаймні 10 секцій, знайдено {len(section_nums)}: {sorted(section_nums)}'
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()
