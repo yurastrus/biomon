@@ -99,3 +99,5 @@ wheel==0.46.3
 WTForms==3.2.1
 WTForms-SQLAlchemy==0.4.2
 xlsxwriter==3.2.9
+pytest>=7.0
+pytest-cov>=4.0
