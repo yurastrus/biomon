@@ -8,7 +8,9 @@ instance/
 CLAUDE.md
 gee_key/
 .claude/settings.local.json
+.claude/
 пам'ятка
 ideas.md
 Запланові промпти для агентів.xlsx
 ~$Запланові промпти для агентів.xlsx
+security_audit_*.md
