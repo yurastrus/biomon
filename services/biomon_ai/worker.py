@@ -246,16 +246,24 @@ def process_batch_tracked(
             on_progress=_update_progress,
         )
         with engine.connect() as conn:
-            conn.execute(
-                text(
-                    "UPDATE ai_run_queue "
-                    "SET status='done', finished_at=NOW(), processed_count=:c "
-                    "WHERE id=:i"
-                ),
-                {'c': processed, 'i': queue_id},
-            )
+            if processed == 0:
+                # Нічого не оброблено — порожній крон-запис видаляємо з БД
+                conn.execute(
+                    text("DELETE FROM ai_run_queue WHERE id=:i"),
+                    {'i': queue_id},
+                )
+                logger.info(f"Queue entry {queue_id} deleted (idle cron, nothing to process)")
+            else:
+                conn.execute(
+                    text(
+                        "UPDATE ai_run_queue "
+                        "SET status='done', finished_at=NOW(), processed_count=:c "
+                        "WHERE id=:i"
+                    ),
+                    {'c': processed, 'i': queue_id},
+                )
+                logger.info(f"Queue entry {queue_id} marked 'done'. Processed: {processed}")
             conn.commit()
-        logger.info(f"Queue entry {queue_id} marked 'done'. Processed: {processed}")
         return processed
     except Exception as e:
         with engine.connect() as conn:

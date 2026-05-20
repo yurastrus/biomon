@@ -87,7 +87,9 @@
       "Bash(venv/Scripts/python -m pytest tests/ -q)",
       "Bash(venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py -q)",
       "Bash(venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py tests/test_pam_evaluation.py -q)",
-      "Bash(venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py tests/test_pam_evaluation.py tests/test_pam_import.py tests/test_pam_data_export.py -q)"
+      "Bash(venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py tests/test_pam_evaluation.py tests/test_pam_import.py tests/test_pam_data_export.py -q)",
+      "Skill(anthropic-skills:xlsx)",
+      "Skill(anthropic-skills:xlsx:*)"
     ]
   }
 }

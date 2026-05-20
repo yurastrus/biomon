@@ -407,7 +407,56 @@ class TestProcessBatch(unittest.TestCase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 4. CLI parsing
+# 4. PROCESS_BATCH_TRACKED (idle cron → delete record)
+# ════════════════════════════════════════════════════════════════════════════
+
+class TestProcessBatchTracked(unittest.TestCase):
+    """process_batch_tracked: порожній крон-запуск видаляє запис з БД."""
+
+    def _run_tracked(self, process_batch_result: int) -> tuple:
+        """Запускає process_batch_tracked із заданим результатом process_batch.
+        Повертає (result, sql_stmts) де sql_stmts — список рядків виконаних SQL."""
+        import services.biomon_ai.worker as mod
+
+        mock_engine = MagicMock()
+        mock_session = MagicMock()
+        mock_conn = MagicMock()
+        mock_engine.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
+        mock_engine.connect.return_value.__exit__ = MagicMock(return_value=False)
+
+        created_row = MagicMock()
+        created_row.id = 42
+
+        with patch.object(mod, 'make_engine', return_value=mock_engine), \
+             patch.object(mod, 'make_session', return_value=mock_session), \
+             patch.object(mod, 'AIRunQueue', return_value=created_row), \
+             patch.object(mod, 'process_batch', return_value=process_batch_result):
+            result = mod.process_batch_tracked(
+                adapter=StubAdapter(),
+                upload_path='/fake',
+                max_observations=200,
+            )
+
+        sql_stmts = [str(c.args[0]) for c in mock_conn.execute.call_args_list if c.args]
+        return result, sql_stmts
+
+    def test_idle_cron_deletes_queue_record(self):
+        """Коли processed=0 — запис видаляється, не оновлюється."""
+        result, sqls = self._run_tracked(process_batch_result=0)
+        self.assertEqual(result, 0)
+        self.assertTrue(any('DELETE' in s for s in sqls), f"Expected DELETE, got: {sqls}")
+        self.assertFalse(any('UPDATE' in s for s in sqls), f"Expected no UPDATE, got: {sqls}")
+
+    def test_active_cron_updates_record_done(self):
+        """Коли processed>0 — запис оновлюється до status='done'."""
+        result, sqls = self._run_tracked(process_batch_result=5)
+        self.assertEqual(result, 5)
+        self.assertTrue(any('UPDATE' in s for s in sqls), f"Expected UPDATE, got: {sqls}")
+        self.assertFalse(any('DELETE' in s for s in sqls), f"Expected no DELETE, got: {sqls}")
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 5. CLI parsing
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestCLIParsing(unittest.TestCase):
