@@ -5,21 +5,65 @@ from flask import Flask
 from config import config
 import os
 
+
+def _init_talisman(app):
+    """SEC-010: Flask-Talisman security headers + CSP (report-only Phase 2).
+
+    Виділено у функцію щоб тести могли застосовувати Talisman до тестового
+    app окремо (у `create_app` пропускаємо коли TESTING=True).
+    """
+    from app.extensions import talisman, csrf
+    talisman.init_app(
+        app,
+        content_security_policy={
+            'default-src': "'self'",
+            'img-src': ["'self'", 'data:', 'https:', 'blob:'],
+            'script-src': [
+                "'self'",
+                "'unsafe-inline'",  # потрібно для inline JS у шаблонах
+                'https://cdn.jsdelivr.net',
+                'https://code.jquery.com',
+                'https://cdn.plot.ly',
+                'https://unpkg.com',
+                'https://cdnjs.cloudflare.com',
+            ],
+            'style-src': [
+                "'self'",
+                "'unsafe-inline'",
+                'https://cdn.jsdelivr.net',
+                'https://unpkg.com',
+            ],
+            'font-src': ["'self'", 'https://cdn.jsdelivr.net', 'data:'],
+            'connect-src': "'self'",
+            'media-src': ["'self'", 'data:', 'blob:'],
+        },
+        content_security_policy_report_only=True,
+        content_security_policy_report_uri='/csp-report',
+        strict_transport_security=True,
+        strict_transport_security_max_age=31536000,
+        session_cookie_secure=False,
+        force_https=False,
+    )
+
+
 def create_app(config_name=None):
     """Application factory для створення додатку"""
     if config_name is None:
         config_name = os.environ.get('FLASK_CONFIG', 'default')
-    
+
     app = Flask(__name__)
-    
+
     app.config.from_object(config[config_name])
-    
+
     app.jinja_env.add_extension('jinja2.ext.do')
-    
+
     # Ініціалізація розширень
     from app.extensions import init_extensions, db, limiter
     init_extensions(app)
     limiter.init_app(app)
+
+    if not app.config.get('TESTING'):
+        _init_talisman(app)
     
     # Реєстрація blueprints
     from app.routes import bp as main_bp

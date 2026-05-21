@@ -1,6 +1,8 @@
 # ==============================================
 # app/routes/main.py - Спрощені маршрути
 # ==============================================
+import json
+
 from flask import render_template, session, redirect, url_for, current_app, request, g, jsonify, flash
 from flask_login import login_required, current_user, login_user, logout_user
 from app.utils.forms import LoginForm, ContactForm
@@ -8,7 +10,7 @@ from app.utils.utils import is_safe_url
 from flask_babel import lazy_gettext as _l
 from app.routes import bp
 from app.models import User, SiteTextContent
-from app.extensions import bcrypt, limiter
+from app.extensions import bcrypt, limiter, csrf
 from werkzeug.security import check_password_hash
 
 
@@ -84,3 +86,26 @@ def login(lang_code):
 def logout(lang_code):
     logout_user()
     return redirect(url_for('main.index', lang_code=lang_code))
+
+
+@bp.route('/csp-report', methods=['POST'])
+@csrf.exempt
+@limiter.limit("100/hour")
+def csp_report():
+    """SEC-010: отримує CSP violation reports від браузерів і логує їх.
+
+    Без auth — браузери не прикріплюють cookies до violation reports (RFC).
+    Rate-limit захищає від спаму бот-нетами. CSRF exempt — браузер не додає
+    CSRF-токен до auto-generated reports.
+    """
+    # Браузери надсилають з Content-Type: application/csp-report (legacy)
+    # або application/reports+json (modern, через report-to header).
+    # force=True ігнорує Content-Type check; silent=True ловить malformed.
+    report = request.get_json(force=True, silent=True) or {}
+
+    # Truncate щоб уникнути ушкодження логу від великих payload-ів
+    payload = json.dumps(report, ensure_ascii=False)[:2000]
+    current_app.logger.warning(f"CSP violation: {payload}")
+
+    # 204 No Content — стандарт для CSP report endpoints, не споживає bandwidth
+    return '', 204
