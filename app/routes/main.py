@@ -8,7 +8,7 @@ from app.utils.utils import is_safe_url
 from flask_babel import lazy_gettext as _l
 from app.routes import bp
 from app.models import User, SiteTextContent
-from app.extensions import bcrypt
+from app.extensions import bcrypt, limiter
 from werkzeug.security import check_password_hash
 
 
@@ -55,22 +55,28 @@ def contacts(lang_code):
     return render_template('contacts.html')
 
 @bp.route('/<lang_code>/login', methods=['GET', 'POST'])
+@limiter.limit("5/minute", methods=["POST"])
 def login(lang_code):
-    if current_user.is_authenticated: 
+    if current_user.is_authenticated:
         return redirect(url_for('main.index', lang_code=g.lang_code))
-    
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and bcrypt.check_password_hash(user.password_hash, form.password.data):
+            session.clear()
             login_user(user)
             next_page = request.args.get('next')
             if not is_safe_url(next_page):
                 return redirect(url_for('main.index', lang_code=g.lang_code))
             return redirect(next_page)
         else:
+            current_app.logger.warning(
+                f"Failed login: username={form.username.data!r} "
+                f"from {request.remote_addr} UA={request.user_agent.string[:100]!r}"
+            )
             flash(_l('Неправильний логін або пароль. Спробуйте ще раз.'), 'danger')
-    
+
     return render_template('login.html', title=_l('Увійти'), form=form)
 
 @bp.route('/<lang_code>/logout')

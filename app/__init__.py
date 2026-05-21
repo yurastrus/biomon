@@ -17,8 +17,9 @@ def create_app(config_name=None):
     app.jinja_env.add_extension('jinja2.ext.do')
     
     # Ініціалізація розширень
-    from app.extensions import init_extensions, db
+    from app.extensions import init_extensions, db, limiter
     init_extensions(app)
+    limiter.init_app(app)
     
     # Реєстрація blueprints
     from app.routes import bp as main_bp
