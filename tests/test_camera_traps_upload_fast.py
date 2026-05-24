@@ -466,6 +466,127 @@ class TestGroupSqlIntegration:
         assert n == 4
         assert self._series_count(bid) == first_count
 
+    def test_processed_files_atomic_under_parallel(self):
+        """
+        Чотири паралельні UPDATE...RETURNING повинні дати чотири
+        РІЗНІ значення processed_files (1,2,3,4) — інакше атомарність
+        зламана. Перевіряє pure-SQL шлях, який тепер живе в
+        process_single_photo (utils.py).
+        """
+        import threading
+        from sqlalchemy import text
+
+        batch_id = str(uuid.uuid4())
+        with self.engine.begin() as conn:
+            conn.execute(text(f"SET search_path TO {self.schema}, public"))
+            loc = conn.execute(text(
+                f"INSERT INTO {self.schema}.locations(name,latitude,longitude) "
+                f"VALUES('L',49.5,24.5) RETURNING id")).scalar()
+            conn.execute(text(
+                f"INSERT INTO {self.schema}.upload_batches"
+                f"(id, location_id, uploaded_by_id, total_files, status) "
+                f"VALUES(:b, :l, 1, 0, 'uploading')"),
+                {"b": batch_id, "l": loc})
+
+        results = []
+        lock = threading.Lock()
+
+        def worker():
+            with self.engine.begin() as c:
+                c.execute(text(f"SET search_path TO {self.schema}, public"))
+                row = c.execute(text(
+                    f"UPDATE {self.schema}.upload_batches "
+                    f"SET processed_files = COALESCE(processed_files,0) + 1 "
+                    f"WHERE id = :b RETURNING processed_files"),
+                    {"b": batch_id}).first()
+            with lock:
+                results.append(row[0])
+
+        threads = [threading.Thread(target=worker) for _ in range(4)]
+        for t in threads: t.start()
+        for t in threads: t.join()
+
+        # Усі значення мають бути унікальні (1,2,3,4 у якомусь порядку)
+        assert sorted(results) == [1, 2, 3, 4], \
+            f"Atomicity broken, got duplicates: {results}"
+
+    def test_advisory_lock_serializes_duplicate_inserts(self):
+        """
+        Чотири паралельні INSERT того самого фото (один (batch, filename,
+        captured_at)) під advisory-lock повинні дати рівно 1 успіх,
+        3 IntegrityError. Це і є те, що ламалось у production-логах:
+        4 «не вдалося» з 918 при 4-паралельному JS.
+        """
+        import threading
+        import hashlib
+        from sqlalchemy import text
+        from sqlalchemy.exc import IntegrityError
+
+        batch_id = str(uuid.uuid4())
+        captured_at = datetime(2026, 1, 1, 12, 0, 0)
+        filename = 'COLLISION.jpg'
+
+        with self.engine.begin() as conn:
+            conn.execute(text(f"SET search_path TO {self.schema}, public"))
+            loc = conn.execute(text(
+                f"INSERT INTO {self.schema}.locations(name,latitude,longitude) "
+                f"VALUES('L',49.5,24.5) RETURNING id")).scalar()
+            conn.execute(text(
+                f"INSERT INTO {self.schema}.upload_batches"
+                f"(id, location_id, uploaded_by_id, total_files, status) "
+                f"VALUES(:b, :l, 1, 4, 'uploading')"),
+                {"b": batch_id, "l": loc})
+
+        _h = hashlib.md5(f"{loc}|{filename}|{captured_at.isoformat()}".encode()).digest()
+        k1 = int.from_bytes(_h[0:4], 'big', signed=True)
+        k2 = int.from_bytes(_h[4:8], 'big', signed=True)
+
+        outcomes = {'inserted': 0, 'duplicate': 0}
+        lock = threading.Lock()
+
+        def worker(idx):
+            try:
+                with self.engine.begin() as c:
+                    c.execute(text(f"SET search_path TO {self.schema}, public"))
+                    # Advisory lock
+                    c.execute(text("SELECT pg_advisory_xact_lock(:k1, :k2)"),
+                              {"k1": k1, "k2": k2})
+                    # Preflight check INSIDE lock — race-safe
+                    existing = c.execute(text(f"""
+                        SELECT 1 FROM {self.schema}.photos p
+                          JOIN {self.schema}.upload_batches b
+                            ON b.id = p.upload_batch_id
+                         WHERE b.location_id = :loc
+                           AND p.captured_at = :t
+                           AND p.original_filename = :n
+                         LIMIT 1
+                    """), {"loc": loc, "t": captured_at, "n": filename}).first()
+                    if existing:
+                        with lock:
+                            outcomes['duplicate'] += 1
+                        return
+                    c.execute(text(f"""
+                        INSERT INTO {self.schema}.photos
+                            (upload_batch_id, original_filename, system_filename,
+                             captured_at, status)
+                        VALUES (:b, :n, :sf, :t, 'uploaded')
+                    """), {"b": batch_id, "n": filename,
+                           "sf": f"sys_{idx}_collision.jpg", "t": captured_at})
+                with lock:
+                    outcomes['inserted'] += 1
+            except IntegrityError:
+                with lock:
+                    outcomes['duplicate'] += 1
+
+        threads = [threading.Thread(target=worker, args=(i,)) for i in range(4)]
+        for t in threads: t.start()
+        for t in threads: t.join()
+
+        assert outcomes['inserted'] == 1, \
+            f"Expected exactly 1 INSERT, got {outcomes}"
+        assert outcomes['duplicate'] == 3, \
+            f"Expected 3 duplicates, got {outcomes}"
+
     @pytest.mark.slow
     def test_10000_photos_grouping_perf(self):
         """10 000 фото — SQL-групувач має впоратись за десяток секунд.
