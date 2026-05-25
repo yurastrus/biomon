@@ -1,0 +1,466 @@
+"""Тести каскадного фільтра scope → AI на сторінці /identify.
+
+Покриває:
+  1. `get_species_with_ai_predictions` (ai_runner.py) — нові scope-параметри
+     додають правильний WHERE-клоз і повертають порожньо для заборонених
+     scopes у non-admin юзера.
+  2. `/api/identify/ai-species` (routes.py) — рольовий доступ, парсинг
+     параметрів, проксування у helper-функцію, обмеження для non-admin.
+
+Запуск:
+    venv/Scripts/python -m pytest tests/test_ai_species_cascade.py -v
+"""
+
+import contextlib
+import os
+import unittest
+from unittest.mock import patch, MagicMock
+
+
+# ── helpers ──────────────────────────────────────────────────────────────
+
+
+def _login(client, user_id):
+    with client.session_transaction() as sess:
+        sess['_user_id'] = str(user_id)
+        sess['_fresh'] = True
+
+
+# ════════════════════════════════════════════════════════════════════════
+# 1. UNIT: get_species_with_ai_predictions — scope-параметри
+# ════════════════════════════════════════════════════════════════════════
+
+
+class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
+    """Перевіряємо, що нові аргументи правильно впливають на SQL і params.
+
+    Підхід: мокаємо `get_ct_session()` так, щоб session.execute(...)
+    повертав заданий список рядків, а query(AIModel).filter_by().first()
+    повертав фейкову активну модель. Потім дивимось, який саме SQL
+    і параметри пішли в session.execute.
+    """
+
+    def _row(self, sp_id, ua, en, sci, count):
+        """Будує об'єкт-рядок з атрибутами, як у SQLAlchemy Row."""
+        r = MagicMock()
+        r.id = sp_id
+        r.common_name_ua = ua
+        r.common_name_en = en
+        r.scientific_name = sci
+        r.pending_count = count
+        return r
+
+    def _make_mock_session(self, rows=(), eco_inst_ids=None):
+        """Будує session.
+
+        eco_inst_ids=None → одинарний execute (немає eco-resolution).
+        eco_inst_ids=[…]  → два execute: спершу eco-запит, потім головний.
+        """
+        sess = MagicMock()
+
+        # active model: будь-який запит .query(...).filter_by(...).first()
+        active = MagicMock(id=42)
+        sess.query.return_value.filter_by.return_value.first.return_value = active
+
+        main_result = MagicMock()
+        # Якщо в rows кортежі — конвертуємо у row-mock.
+        row_objs = []
+        for row in rows:
+            if isinstance(row, tuple):
+                row_objs.append(self._row(*row))
+            else:
+                row_objs.append(row)
+        main_result.fetchall.return_value = row_objs
+
+        if eco_inst_ids is not None:
+            eco_result = MagicMock()
+            eco_result.fetchall.return_value = [(i,) for i in eco_inst_ids]
+            sess.execute.side_effect = [eco_result, main_result]
+        else:
+            sess.execute.return_value = main_result
+
+        return sess
+
+    def _patch_session(self, sess):
+        return patch('app.camera_traps.ai_runner.get_ct_session',
+                     return_value=sess)
+
+    def test_no_scope_calls_sql_once_without_scope_clause(self):
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        sess = self._make_mock_session(rows=[])
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                user_id=1, user_inst_ids=[10], is_admin=False,
+            )
+        self.assertEqual(result, [])
+
+        # Перший і єдиний execute — головний SQL без scope.
+        # (side_effect повертає eco_result першим, але без scope_eco
+        # ми його не використовуємо; sess.execute викликався 1 раз.)
+        self.assertEqual(sess.execute.call_count, 1)
+        sql_arg = str(sess.execute.call_args.args[0])
+        self.assertNotIn('li_sc.institution_id', sql_arg)
+
+    def test_scope_institution_admin_passes_param(self):
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        rows = [(4, 'Козуля', 'Roe Deer', 'Capreolus capreolus', 7)]
+        sess = self._make_mock_session(rows=rows)
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                user_id=1, user_inst_ids=[], is_admin=True,
+                scope_institution_id=99,
+            )
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['id'], 4)
+        self.assertIn('(7)', result[0]['text'])  # лічильник у дужках
+
+        self.assertEqual(sess.execute.call_count, 1)
+        sql_arg = str(sess.execute.call_args.args[0])
+        params_arg = sess.execute.call_args.args[1]
+        self.assertIn('li_sc.institution_id = :scope_inst_id', sql_arg)
+        self.assertEqual(params_arg.get('scope_inst_id'), 99)
+
+    def test_scope_institution_unauthorized_returns_empty(self):
+        """Non-admin без доступу до institution → [] без походу в SQL."""
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        sess = self._make_mock_session(rows=[])
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                user_id=1, user_inst_ids=[10, 20], is_admin=False,
+                scope_institution_id=999,
+            )
+
+        self.assertEqual(result, [])
+        # Жодних execute не повинно бути — short-circuit до SQL.
+        sess.execute.assert_not_called()
+
+    def test_scope_institution_authorized_member_passes(self):
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        rows = [(5, 'Олень', 'Red Deer', 'Cervus elaphus', 3)]
+        sess = self._make_mock_session(rows=rows)
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                user_id=1, user_inst_ids=[10, 20], is_admin=False,
+                scope_institution_id=20,
+            )
+
+        self.assertEqual(len(result), 1)
+        params_arg = sess.execute.call_args.args[1]
+        self.assertEqual(params_arg.get('scope_inst_id'), 20)
+
+    def test_scope_ecoregion_filters_to_user_institutions(self):
+        """Non-admin: eco_inst_ids ∩ user_inst_ids — лише такі залишаються."""
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        # БД повертає для eco-екорегіону інституції [10, 20, 30]
+        # юзер має тільки [10, 99] → перетин = [10].
+        rows = [(4, 'Козуля', 'Roe Deer', 'Capreolus capreolus', 2)]
+        sess = self._make_mock_session(rows=rows, eco_inst_ids=[10, 20, 30])
+
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                user_id=1, user_inst_ids=[10, 99], is_admin=False,
+                scope_ecoregion='Карпати',
+            )
+
+        self.assertEqual(len(result), 1)
+        # Два execute: спершу eco-resolution, потім головний.
+        self.assertEqual(sess.execute.call_count, 2)
+        main_call = sess.execute.call_args_list[1]
+        params_arg = main_call.args[1]
+        self.assertEqual(params_arg.get('scope_inst_ids'), (10,))
+
+    def test_scope_ecoregion_no_overlap_returns_empty(self):
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        sess = self._make_mock_session(rows=[], eco_inst_ids=[100, 200])
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                user_id=1, user_inst_ids=[10], is_admin=False,
+                scope_ecoregion='Полісся',
+            )
+        self.assertEqual(result, [])
+        # Eco-resolution стався, але головного SQL — ні.
+        self.assertEqual(sess.execute.call_count, 1)
+
+    def test_scope_ecoregion_admin_uses_all_institutions(self):
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        rows = [(4, 'Козуля', 'Roe Deer', 'Capreolus capreolus', 1)]
+        sess = self._make_mock_session(rows=rows, eco_inst_ids=[10, 20, 30])
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                user_id=1, user_inst_ids=[], is_admin=True,
+                scope_ecoregion='Карпати',
+            )
+        self.assertEqual(len(result), 1)
+        main_call = sess.execute.call_args_list[1]
+        params_arg = main_call.args[1]
+        self.assertEqual(set(params_arg.get('scope_inst_ids')), {10, 20, 30})
+
+    def test_no_active_model_returns_empty(self):
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        sess = MagicMock()
+        sess.query.return_value.filter_by.return_value.first.return_value = None
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                user_id=1, user_inst_ids=[10], is_admin=False,
+                scope_institution_id=10,
+            )
+        self.assertEqual(result, [])
+        sess.execute.assert_not_called()
+
+    def test_lang_uk_includes_scientific_name(self):
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        rows = [(4, 'Козуля', 'Roe Deer', 'Capreolus capreolus', 12)]
+        sess = self._make_mock_session(rows=rows)
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                lang_code='uk', user_id=1, user_inst_ids=[], is_admin=True,
+            )
+        self.assertEqual(result[0]['text'],
+                         'Козуля (Capreolus capreolus) (12)')
+
+    def test_lang_en_uses_english_name(self):
+        from app.camera_traps.ai_runner import get_species_with_ai_predictions
+
+        rows = [(4, 'Козуля', 'Roe Deer', 'Capreolus capreolus', 12)]
+        sess = self._make_mock_session(rows=rows)
+        with self._patch_session(sess):
+            result = get_species_with_ai_predictions(
+                lang_code='en', user_id=1, user_inst_ids=[], is_admin=True,
+            )
+        self.assertEqual(result[0]['text'],
+                         'Roe Deer (Capreolus capreolus) (12)')
+
+
+# ════════════════════════════════════════════════════════════════════════
+# 2. ROUTE: /api/identify/ai-species
+# ════════════════════════════════════════════════════════════════════════
+
+
+class TestIdentifyAiSpeciesEndpoint(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
+        cls._ct_patcher = patch(
+            'app.camera_traps.database.create_engine',
+            return_value=MagicMock(),
+        )
+        cls._ct_patcher.start()
+        from app import create_app
+        cls.app = create_app('testing')
+        cls.app.config['GEOSERVER_URL'] = 'http://test-geoserver'
+        cls.app.config['WTF_CSRF_ENABLED'] = False
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._ct_patcher.stop()
+        os.environ.pop('DATABASE_URL', None)
+
+    def setUp(self):
+        self.ctx = self.app.app_context()
+        self.ctx.push()
+        from app.extensions import db
+        db.create_all()
+        self._seed(db)
+        self.client = self.app.test_client()
+
+    def tearDown(self):
+        from app.extensions import db
+        db.session.remove()
+        db.drop_all()
+        self.ctx.pop()
+
+    def _seed(self, db):
+        from app.extensions import bcrypt
+        from app.models import User, Role, Institution, UserInstitution
+
+        r_admin    = Role(name='admin')
+        r_verifier = Role(name='ct_verifier')
+        r_viewer   = Role(name='viewer')
+        db.session.add_all([r_admin, r_verifier, r_viewer])
+        db.session.flush()
+
+        self.inst_a = Institution(
+            name_uk='Заповідник А', name_en='Reserve A', code='res_a',
+        )
+        self.inst_b = Institution(
+            name_uk='Заповідник Б', name_en='Reserve B', code='res_b',
+        )
+        db.session.add_all([self.inst_a, self.inst_b])
+        db.session.flush()
+
+        pw = bcrypt.generate_password_hash('test').decode('utf-8')
+
+        self.admin = User(username='ais_admin', password_hash=pw)
+        self.admin.roles.append(r_admin)
+        db.session.add(self.admin)
+
+        self.verifier = User(username='ais_ver', password_hash=pw)
+        self.verifier.roles.append(r_verifier)
+        self.verifier.institution_links.append(
+            UserInstitution(institution_id=self.inst_a.id, can_export=False)
+        )
+        db.session.add(self.verifier)
+
+        self.viewer = User(username='ais_viewer', password_hash=pw)
+        self.viewer.roles.append(r_viewer)
+        db.session.add(self.viewer)
+
+        db.session.commit()
+
+    URL = '/uk/camera-traps/api/identify/ai-species'
+
+    @contextlib.contextmanager
+    def _patched(self, ai_available=True, items_return=None, raise_exc=None):
+        """Патчимо ai_runner-функції у точці виклику (всередині routes).
+
+        Помічаємо: у роуті стоїть `from .ai_runner import ...` — отже
+        патчимо безпосередньо `app.camera_traps.ai_runner.<name>`,
+        бо локальний імпорт читає атрибут модуля під час кожного виклику.
+        """
+        sess = MagicMock()
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(
+                patch('app.camera_traps.routes.get_ct_session',
+                      return_value=sess)
+            )
+            stack.enter_context(patch('app.camera_traps.routes.close_ct_session'))
+            stack.enter_context(
+                patch('app.camera_traps.ai_runner.is_ai_available',
+                      return_value=ai_available)
+            )
+            mock_get = MagicMock()
+            if raise_exc is not None:
+                mock_get.side_effect = raise_exc
+            else:
+                mock_get.return_value = items_return or []
+            stack.enter_context(
+                patch('app.camera_traps.ai_runner.get_species_with_ai_predictions',
+                      mock_get)
+            )
+            yield mock_get
+
+    # ── access control ────────────────────────────────────────────
+
+    def test_anonymous_redirected(self):
+        with self._patched():
+            r = self.client.get(self.URL)
+        # role_required робить redirect (302/303) на login для анонімних
+        self.assertIn(r.status_code, (302, 303))
+
+    def test_viewer_forbidden(self):
+        _login(self.client, self.viewer.id)
+        with self._patched():
+            r = self.client.get(self.URL)
+        # ct_verifier-only → недостатньо прав. Decorator може робити
+        # redirect (302) або 403 — приймаємо обидва варіанти.
+        self.assertIn(r.status_code, (302, 303, 403))
+
+    def test_verifier_ok(self):
+        _login(self.client, self.verifier.id)
+        with self._patched(items_return=[{'id': 4, 'text': 'Козуля (3)'}]):
+            r = self.client.get(self.URL)
+        self.assertEqual(r.status_code, 200)
+        data = r.get_json()
+        self.assertTrue(data['ai_available'])
+        self.assertEqual(data['items'], [{'id': 4, 'text': 'Козуля (3)'}])
+
+    # ── ai_available=False ────────────────────────────────────────
+
+    def test_ai_unavailable_returns_empty(self):
+        _login(self.client, self.admin.id)
+        with self._patched(ai_available=False) as mock_get:
+            r = self.client.get(self.URL)
+        self.assertEqual(r.status_code, 200)
+        data = r.get_json()
+        self.assertFalse(data['ai_available'])
+        self.assertEqual(data['items'], [])
+        mock_get.assert_not_called()
+
+    # ── parsing scope params ──────────────────────────────────────
+
+    def test_admin_with_scope_institution_passes_param(self):
+        _login(self.client, self.admin.id)
+        with self._patched(items_return=[]) as mock_get:
+            r = self.client.get(
+                self.URL + f'?scope_institution_id={self.inst_b.id}'
+            )
+        self.assertEqual(r.status_code, 200)
+        kwargs = mock_get.call_args.kwargs
+        self.assertEqual(kwargs.get('scope_institution_id'), self.inst_b.id)
+        self.assertTrue(kwargs.get('is_admin'))
+
+    def test_admin_with_scope_ecoregion_passes_param(self):
+        _login(self.client, self.admin.id)
+        with self._patched(items_return=[]) as mock_get:
+            r = self.client.get(
+                self.URL + '?scope_ecoregion=' + 'Карпати'
+            )
+        self.assertEqual(r.status_code, 200)
+        kwargs = mock_get.call_args.kwargs
+        self.assertEqual(kwargs.get('scope_ecoregion'), 'Карпати')
+
+    def test_no_scope_params_pass_none(self):
+        _login(self.client, self.verifier.id)
+        with self._patched(items_return=[]) as mock_get:
+            r = self.client.get(self.URL)
+        self.assertEqual(r.status_code, 200)
+        kwargs = mock_get.call_args.kwargs
+        self.assertIsNone(kwargs.get('scope_institution_id'))
+        self.assertIsNone(kwargs.get('scope_ecoregion'))
+
+    # ── non-admin не може заглядати в чужу установу ────────────────
+
+    def test_verifier_scope_other_institution_returns_empty(self):
+        _login(self.client, self.verifier.id)
+        # verifier має доступ тільки до inst_a; запитує inst_b → []
+        with self._patched(items_return=[
+            {'id': 4, 'text': 'should not be returned'}
+        ]) as mock_get:
+            r = self.client.get(
+                self.URL + f'?scope_institution_id={self.inst_b.id}'
+            )
+        self.assertEqual(r.status_code, 200)
+        data = r.get_json()
+        self.assertEqual(data['items'], [])
+        # helper не повинен викликатись — short-circuit у роуті
+        mock_get.assert_not_called()
+
+    def test_verifier_scope_own_institution_ok(self):
+        _login(self.client, self.verifier.id)
+        with self._patched(items_return=[
+            {'id': 4, 'text': 'Козуля (1)'}
+        ]) as mock_get:
+            r = self.client.get(
+                self.URL + f'?scope_institution_id={self.inst_a.id}'
+            )
+        self.assertEqual(r.status_code, 200)
+        data = r.get_json()
+        self.assertEqual(data['items'], [{'id': 4, 'text': 'Козуля (1)'}])
+        kwargs = mock_get.call_args.kwargs
+        self.assertEqual(kwargs.get('scope_institution_id'), self.inst_a.id)
+
+    # ── exception in helper is swallowed ──────────────────────────
+
+    def test_helper_exception_returns_empty(self):
+        _login(self.client, self.admin.id)
+        with self._patched(raise_exc=RuntimeError('boom')):
+            r = self.client.get(self.URL)
+        self.assertEqual(r.status_code, 200)
+        data = r.get_json()
+        self.assertTrue(data['ai_available'])
+        self.assertEqual(data['items'], [])
+
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
