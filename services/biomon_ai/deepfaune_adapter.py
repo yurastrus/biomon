@@ -116,7 +116,7 @@ class DeepFauneAdapter(IClassifier):
         return {
             'threshold': self._threshold,
             'device': self._device or 'auto',
-            'birdclassification': False,    # домовились не класифікувати птахів
+            'birdclassification': True,     # птахи теж класифікуємо (8 під-класів)
             'maxlag_seconds': 999999,       # вся observation = одна послідовність
             'detector': 'deepfaune-yolov8s_960 + md_v1000.0.0-sorrel',
             'classifier': 'vit_large_patch14_dinov2.lvd142m.v4',
@@ -141,7 +141,7 @@ class DeepFauneAdapter(IClassifier):
             self._threshold,
             999999,           # maxlag → форсуємо single-sequence для observation
             'en',             # мова labels
-            False,            # birdclassification вимкнено
+            True,             # birdclassification увімкнено (bird-head ваги)
         )
         predictor.allBatch()
 

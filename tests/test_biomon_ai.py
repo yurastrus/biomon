@@ -77,8 +77,8 @@ class TestSpeciesMap(unittest.TestCase):
         for label in [
             'ibex', 'beaver', 'wolverine', 'genet', 'mustelid', 'otter',
             'hedgehog', 'porcupine', 'nutria', 'raccoon', 'reindeer',
-            'fallow deer', 'chamois', 'marmot', 'mouflon', 'sheep',
-            'golden jackal', 'cow', 'goat', 'equid', 'muskrat',
+            'fallow deer', 'chamois', 'marmot', 'mouflon',
+            'golden jackal', 'goat', 'equid', 'muskrat',
         ]:
             with self.subTest(label=label):
                 self.assertIsNone(
@@ -86,15 +86,32 @@ class TestSpeciesMap(unittest.TestCase):
                     f'{label!r} should be None (not in biomon Species)'
                 )
 
-    # ── Птахи (за домовленістю не мапаємо) ──────────────────────────
-    def test_all_bird_subclasses_unmapped(self):
-        for label in [
-            'bird', 'bird-anseriform', 'bird-corvid', 'bird-raptor',
-            'bird-piciform', 'bird-passerine', 'bird-galliform',
-            'bird-columbiform', 'bird-otherbird',
-        ]:
+    # ── Свійські які тепер мапляться на спец-Species ───────────────
+    def test_cow_and_sheep_map_to_special_species(self):
+        self.assertEqual(map_deepfaune_label('cow'), -10)
+        self.assertEqual(map_deepfaune_label('sheep'), -11)
+
+    # ── Птахи: 8 під-класів DeepFaune + fallback ───────────────────
+    def test_all_bird_subclasses_mapped(self):
+        """birdclassification=True → labels формату 'bird <subclass>' (пробіл)."""
+        cases = [
+            ('bird anseriform',  -12),
+            ('bird columbiform', -13),
+            ('bird corvid',      -14),
+            ('bird galliform',   -15),
+            ('bird piciform',    -16),
+            ('bird raptor',      -17),
+            ('bird otherbird',   -18),
+            ('bird passerine',   -9),
+            ('bird undefined',   -18),  # sub-classifier < threshold
+            ('bird',             -18),  # legacy / birdclassification=False
+        ]
+        for label, expected_id in cases:
             with self.subTest(label=label):
-                self.assertIsNone(map_deepfaune_label(label))
+                self.assertEqual(
+                    map_deepfaune_label(label), expected_id,
+                    f'{label!r} should map to species_id={expected_id}'
+                )
 
     # ── Спеціальне значення 'undefined' від DeepFaune (score<threshold) ─
     def test_undefined_returns_none(self):

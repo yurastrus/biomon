@@ -3,8 +3,11 @@
 ДОВІДКА:
     DeepFaune класифікатор повертає одне з ~38 ім'ям виду англійською
     (`'roe deer'`, `'fox'`, `'wild boar'`, ...) або одне з 8 під-класів
-    птахів (`'bird-corvid'`, `'bird-raptor'`, ...) або одне зі спецкласів
+    птахів (`'bird corvid'`, `'bird raptor'`, ... — ПРОБІЛ, не дефіс;
+    див. predictTools.py:72) або одне зі спецкласів
     `'empty'` / `'human'` / `'vehicle'` / `'undefined'`.
+    Коли DeepFaune визначив що це птах, але sub-classifier нижче
+    threshold, повертається `'bird undefined'` (predictTools.py:73).
 
 ПРАВИЛА:
     - Якщо вид є у вашому Species (id > 0) — мапаємо на нього.
@@ -12,7 +15,7 @@
       Сирий label все одно зберігається в `ai_predictions.prediction_label`,
       тому при додаванні виду в Species потім можна back-fill через UPDATE.
     - `empty` / `human` / `vehicle` — мапаємо на спецкласи -1 / -5 / -3.
-    - Підкласи птахів — None (як домовились: птахи не пріоритет).
+    - Підкласи птахів — мапаємо на спец-Species (-9, -12..-18).
     - `undefined` (DeepFaune видає коли score < threshold) — None.
 
 ОНОВЛЕННЯ:
@@ -81,18 +84,23 @@ DEEPFAUNE_TO_SPECIES_ID: dict[str, Optional[int]] = {
     'muskrat':           None,
     'raccoon':           None,
     'reindeer':          None,
-    'cow':               None,
 
-    # ── Птахи: усі підкласи DeepFaune ігноруємо (за домовленістю) ──
-    'bird':              None,
-    'bird-anseriform':   None,
-    'bird-otherbird':    None,
-    'bird-columbiform':  None,
-    'bird-corvid':       None,
-    'bird-galliform':    None,
-    'bird-passerine':    None,
-    'bird-piciform':     None,
-    'bird-raptor':       None,
+    # ── Свійські, є в Species як спец-id ──────────────────────────
+    'cow':              -10,    # Корова
+    'sheep':            -11,    # Вівця
+
+    # ── Птахи: 8 під-класів DeepFaune + fallback ──────────────────
+    # Формат labels — "bird <subclass>" через ПРОБІЛ (див. predictTools.py:72).
+    'bird':              -18,   # legacy, на випадок birdclassification=False
+    'bird anseriform':   -12,   # Гусеподібні
+    'bird columbiform':  -13,   # Голубоподібні
+    'bird corvid':       -14,   # Воронові
+    'bird galliform':    -15,   # Куроподібні
+    'bird piciform':     -16,   # Дятлоподібні
+    'bird raptor':       -17,   # Хижі птахи
+    'bird otherbird':    -18,   # Інший птах
+    'bird passerine':    -9,    # Дрібні горобині (small passerine)
+    'bird undefined':    -18,   # Птах, sub-classifier < threshold → "Інший птах"
 
     # ── DeepFaune видає коли score < threshold ─────────────────────
     'undefined':         None,
