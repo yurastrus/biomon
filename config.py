@@ -45,7 +45,9 @@ class Config:
         'ALLOWED_EXTENSIONS': {'jpg', 'jpeg'},
         'MIN_IDENTIFICATIONS': 2,  # мінімум ідентифікацій для консенсусу
         'CLEANUP_DAYS': 0,  # дні після яких видаляти фото
-        'STALE_BATCH_HOURS': 0,
+        'STALE_BATCH_HOURS': 0,  # поріг віку для cleanup невдалих batchʼів (0=одразу; активні захищені probe)
+        'ACTIVE_PROBE_SECONDS': 10,  # вікно спостереження за processed_files для виявлення активних batchʼів
+        'CLEANUP_LOG_RETENTION_DAYS': 90,  # скільки тримати записи cleanup_log; видаляються при analyze
 
         # ── AI-runner (DeepFaune або інший класифікатор) ──
         # Окремий процес з власним venv. Flask лише читає прогнози з
