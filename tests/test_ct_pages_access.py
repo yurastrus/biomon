@@ -387,5 +387,87 @@ class TestManageDeploymentsAccess(PageAccessBase):
         self.assertEqual(self._get(self.URL, self.admin.id).status_code, 200)
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# 10. DEPLOYMENT CREATE / DELETE API — тільки manager+
+# ═══════════════════════════════════════════════════════════════════════════
+
+class TestDeploymentApiAccess(PageAccessBase):
+
+    def _post(self, url, user_id=None):
+        if user_id:
+            _login(self.client, user_id)
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(
+                patch('app.camera_traps.routes.get_ct_session',
+                      return_value=_generic_session()))
+            stack.enter_context(patch('app.camera_traps.routes.close_ct_session'))
+            return self.client.post(url, json={})
+
+    def test_create_anonymous_redirects(self):
+        self.assertEqual(self._post('/uk/camera-traps/api/deployment/create').status_code, 302)
+
+    def test_create_viewer_redirects(self):
+        self.assertEqual(
+            self._post('/uk/camera-traps/api/deployment/create', self.viewer.id).status_code, 302)
+
+    def test_create_manager_missing_location_400(self):
+        # manager має доступ за роллю; без location_id -> 400
+        self.assertEqual(
+            self._post('/uk/camera-traps/api/deployment/create', self.manager.id).status_code, 400)
+
+    def test_delete_anonymous_redirects(self):
+        self.assertEqual(self._post('/uk/camera-traps/api/deployment/1/delete').status_code, 302)
+
+    def test_delete_viewer_redirects(self):
+        self.assertEqual(
+            self._post('/uk/camera-traps/api/deployment/1/delete', self.viewer.id).status_code, 302)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 11. DEPLOYMENT EXPORT — тільки manager+
+# ═══════════════════════════════════════════════════════════════════════════
+
+class TestDeploymentExportAccess(PageAccessBase):
+
+    URL = '/uk/camera-traps/export-deployments'
+
+    def test_anonymous_redirects(self):
+        self.assertEqual(self._get(self.URL).status_code, 302)
+
+    def test_viewer_redirects(self):
+        self.assertEqual(self._get(self.URL, self.viewer.id).status_code, 302)
+
+    def test_admin_gets_xlsx(self):
+        resp = self._get(self.URL, self.admin.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('spreadsheetml', resp.headers.get('Content-Type', ''))
+
+    def test_manager_gets_xlsx(self):
+        resp = self._get(self.URL, self.manager.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('attachment', resp.headers.get('Content-Disposition', ''))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 12. DATA QUALITY — тільки manager+
+# ═══════════════════════════════════════════════════════════════════════════
+
+class TestDataQualityAccess(PageAccessBase):
+
+    URL = '/uk/camera-traps/data-quality'
+
+    def test_anonymous_redirects(self):
+        self.assertEqual(self._get(self.URL).status_code, 302)
+
+    def test_viewer_redirects(self):
+        self.assertEqual(self._get(self.URL, self.viewer.id).status_code, 302)
+
+    def test_manager_gets_200(self):
+        self.assertEqual(self._get(self.URL, self.manager.id).status_code, 200)
+
+    def test_admin_gets_200(self):
+        self.assertEqual(self._get(self.URL, self.admin.id).status_code, 200)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

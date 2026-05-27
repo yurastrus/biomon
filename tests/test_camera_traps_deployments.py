@@ -106,6 +106,42 @@ def test_count_photos_open_interval(ct_session, make_ct_location, make_ct_deploy
     assert dep.count_photos(ct_session) == 2
 
 
+def test_apply_deployment_fields_coercion():
+    """Хелпер застосування полів коректно приводить типи (без БД)."""
+    from datetime import date, time
+    from app.camera_traps.routes import _apply_deployment_fields
+    dep = Deployment(location_id=1, name='orig')
+    _apply_deployment_fields(dep, {
+        'name': '  D1  ', 'study_year': '2025', 'n_photos': 42,
+        'camera_id': '0405', 'start_date': '2025-07-01', 'start_time': '10:14',
+        'qc_data_not_usable': True, 'qc_comment': '  note  ',
+        'study_design': '',  # порожнє -> None
+    })
+    assert dep.name == 'D1'
+    assert dep.study_year == 2025
+    assert dep.n_photos == 42
+    assert dep.camera_id == '0405'
+    assert dep.start_date == date(2025, 7, 1)
+    assert dep.start_time == time(10, 14)
+    assert dep.qc_data_not_usable is True
+    assert dep.qc_comment == 'note'
+    assert dep.study_design is None
+
+
+def test_apply_deployment_fields_keeps_name_when_blank():
+    from app.camera_traps.routes import _apply_deployment_fields
+    dep = Deployment(location_id=1, name='keepme')
+    _apply_deployment_fields(dep, {'name': '   '})
+    assert dep.name == 'keepme'
+
+
+def test_apply_deployment_fields_bad_date_raises():
+    from app.camera_traps.routes import _apply_deployment_fields
+    dep = Deployment(location_id=1, name='x')
+    with pytest.raises(ValueError):
+        _apply_deployment_fields(dep, {'start_date': 'not-a-date'})
+
+
 def test_worst_case_on_overlap(ct_session, make_ct_location, make_ct_deployment):
     """Кадр, що потрапляє у два деплойменти, де один непридатний → виключити."""
     loc = make_ct_location()

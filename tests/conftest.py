@@ -140,6 +140,7 @@ def ct_session():
         m.Species.__table__,
         m.Location.__table__,
         m.Biotope.__table__,
+        m.location_institutions,
         m.Deployment.__table__,
         m.Observation.__table__,
         m.UploadBatch.__table__,

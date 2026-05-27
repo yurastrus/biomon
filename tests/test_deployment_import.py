@@ -97,6 +97,36 @@ def test_import_skips_row_without_name(tmp_path, ct_session, make_ct_location):
     assert report['inserted'] == 0
 
 
+def test_import_rejects_nan_coords(tmp_path, ct_session):
+    """Порожній GPS (NaN) -> биті координати, локація НЕ створюється."""
+    xlsx = _write_xlsx(tmp_path, [
+        {'deployment_id': 'D1', 'latitude': None, 'longitude': None, 'study_year': 2025},
+    ])
+    report = import_deployments(ct_session, xlsx, sheets=['SMM_2025'],
+                                create_missing_locations=True)
+    assert report['skipped_bad_coords'] == 1
+    assert report['locations_created'] == 0
+    assert report['inserted'] == 0
+
+
+def test_import_creates_location_with_institution(tmp_path, ct_session):
+    """create_missing_locations: нова локація + зв'язок установи за назвою парку."""
+    from app.camera_traps.models import Location, location_institutions
+    xlsx = _write_xlsx(tmp_path, [
+        {'deployment_id': 'D9', 'latitude': 48.9, 'longitude': 24.9,
+         'study_area_name_EN': 'Karpatskyi NNP', 'study_year': 2025},
+    ])
+    report = import_deployments(ct_session, xlsx, sheets=['SMM_2025'],
+                                create_missing_locations=True,
+                                park_institution_map={'karpatskyi nnp': 777})
+    assert report['locations_created'] == 1
+    loc = ct_session.query(Location).filter_by(name='D9').one()
+    link = ct_session.execute(
+        location_institutions.select().where(location_institutions.c.location_id == loc.id)
+    ).fetchone()
+    assert link is not None and link.institution_id == 777
+
+
 def test_import_idempotent(tmp_path, ct_session, make_ct_location):
     make_ct_location(latitude=48.5, longitude=24.5)
     xlsx = _write_xlsx(tmp_path, [
