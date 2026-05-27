@@ -140,6 +140,7 @@ def ct_session():
         m.Species.__table__,
         m.Location.__table__,
         m.Biotope.__table__,
+        m.Deployment.__table__,
         m.Observation.__table__,
         m.UploadBatch.__table__,
         m.Photo.__table__,
@@ -188,6 +189,27 @@ def make_ct_location(ct_session):
         ct_session.add(loc)
         ct_session.commit()
         return loc
+    return _make
+
+
+@pytest.fixture
+def make_ct_deployment(ct_session, make_ct_location):
+    from app.camera_traps.models import Deployment
+    from datetime import date
+
+    def _make(location=None, name='2025_Summer_Test_1001',
+              start_date=date(2025, 7, 1), end_date=date(2025, 9, 30), **kwargs):
+        location = location or make_ct_location()
+        dep = Deployment(
+            location_id=location.id,
+            name=name,
+            start_date=start_date,
+            end_date=end_date,
+            **kwargs,
+        )
+        ct_session.add(dep)
+        ct_session.commit()
+        return dep
     return _make
 
 

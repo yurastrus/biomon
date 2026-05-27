@@ -16,3 +16,5 @@ ideas.md
 security_audit_*.md
 app.db
 *.db
+# Локальний ARD-Ексель для імпорту деплойментів (заміняється вручну, не версіонуємо)
+CT_LocationARD_Dataset.xlsx

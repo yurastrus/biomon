@@ -363,5 +363,29 @@ class TestIdentifyAccess(PageAccessBase):
         self.assertEqual(resp.status_code, 200)
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# 9. MANAGE DEPLOYMENTS — тільки manager+
+# ═══════════════════════════════════════════════════════════════════════════
+
+class TestManageDeploymentsAccess(PageAccessBase):
+
+    URL = '/uk/camera-traps/manage-deployments'
+
+    def test_anonymous_redirects(self):
+        self.assertEqual(self._get(self.URL).status_code, 302)
+
+    def test_viewer_redirects(self):
+        self.assertEqual(self._get(self.URL, self.viewer.id).status_code, 302)
+
+    def test_ct_verifier_redirects(self):
+        self.assertEqual(self._get(self.URL, self.ct_verifier.id).status_code, 302)
+
+    def test_manager_gets_200(self):
+        self.assertEqual(self._get(self.URL, self.manager.id).status_code, 200)
+
+    def test_admin_gets_200(self):
+        self.assertEqual(self._get(self.URL, self.admin.id).status_code, 200)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
