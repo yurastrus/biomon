@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-28 12:45+0300\n"
+"POT-Creation-Date: 2026-05-28 13:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1761,7 +1761,8 @@ msgid "Проблема обладнання"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:14
-msgid "Незавантажено дані"
+#: app/camera_traps/templates/manage_deployments.html:87
+msgid "Не завантажено дані"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:15
@@ -1817,6 +1818,7 @@ msgid "Не досягнуто мін. днів"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:24
+#: app/camera_traps/templates/manage_deployments.html:96
 #: app/camera_traps/templates/upload_fast.html:20
 msgid "Немає фото встановлення"
 msgstr ""
@@ -2278,14 +2280,6 @@ msgstr ""
 #: app/camera_traps/templates/manage_deployments.html:3
 #: app/camera_traps/templates/manage_deployments.html:106
 msgid "Управління деплойментами"
-msgstr ""
-
-#: app/camera_traps/templates/manage_deployments.html:87
-msgid "Не завантажила дані"
-msgstr ""
-
-#: app/camera_traps/templates/manage_deployments.html:96
-msgid "Немає фото встанолення"
 msgstr ""
 
 #: app/camera_traps/templates/manage_deployments.html:102

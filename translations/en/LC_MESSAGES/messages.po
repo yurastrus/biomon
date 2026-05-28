@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-28 12:45+0300\n"
+"POT-Creation-Date: 2026-05-28 13:44+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -815,7 +815,10 @@ msgid ""
 "Двофазно: спочатку аналіз (звіт), потім підтверджене видалення. Захист "
 "від активних завантажень — probe 10с. Ніколи не чіпає фото в серіях, у "
 "вибраних, в обробці, або файли молодші 5хв."
-msgstr "Two-phase: first analysis (report), then confirmed deletion. Protection against active uploads — 10s probe. Never touches photos in series, in favorites, in processing, or files younger than 5 min."
+msgstr ""
+"Two-phase: first analysis (report), then confirmed deletion. Protection "
+"against active uploads — 10s probe. Never touches photos in series, in "
+"favorites, in processing, or files younger than 5 min."
 
 #: app/camera_traps/templates/admin.html:182
 msgid "Запустити аналіз"
@@ -1787,7 +1790,8 @@ msgid "Проблема обладнання"
 msgstr "Hardware issue"
 
 #: app/camera_traps/templates/data_quality.html:14
-msgid "Незавантажено дані"
+#: app/camera_traps/templates/manage_deployments.html:87
+msgid "Не завантажено дані"
 msgstr "Data not uploaded"
 
 #: app/camera_traps/templates/data_quality.html:15
@@ -1843,6 +1847,7 @@ msgid "Не досягнуто мін. днів"
 msgstr "Min. days not reached"
 
 #: app/camera_traps/templates/data_quality.html:24
+#: app/camera_traps/templates/manage_deployments.html:96
 #: app/camera_traps/templates/upload_fast.html:20
 msgid "Немає фото встановлення"
 msgstr "Installation photos missing"
@@ -2308,14 +2313,6 @@ msgstr "individuals"
 #: app/camera_traps/templates/manage_deployments.html:106
 msgid "Управління деплойментами"
 msgstr "Deployment management"
-
-#: app/camera_traps/templates/manage_deployments.html:87
-msgid "Не завантажено дані"
-msgstr "Data not uploaded"
-
-#: app/camera_traps/templates/manage_deployments.html:96
-msgid "Немає фото встановлення"
-msgstr "Installation photos missing"
 
 #: app/camera_traps/templates/manage_deployments.html:102
 #: app/camera_traps/templates/upload_fast.html:26
@@ -3623,7 +3620,9 @@ msgstr "Batch"
 msgid ""
 "файлів. Натисніть «Продовжити», виберіть ту саму папку, файли вже залиті "
 "будуть пропущені."
-msgstr "files. Click \"Continue\", select the same folder; already-uploaded files will be skipped."
+msgstr ""
+"files. Click \"Continue\", select the same folder; already-uploaded files"
+" will be skipped."
 
 #: app/camera_traps/templates/upload_fast.html:589
 msgid "Виберіть ту саму папку чи файли, що й попереднього разу."
@@ -5879,4 +5878,7 @@ msgstr "Message"
 
 #~ msgid "Камера біля годівниці"
 #~ msgstr "Camera at feeding location"
+
+#~ msgid "Незавантажено дані"
+#~ msgstr "Data not uploaded"
 
