@@ -40,7 +40,7 @@ class Config:
     # === НАЛАШТУВАННЯ ДЛЯ МОДУЛЯ CAMERA TRAPS ===
     CAMERA_TRAP_CONFIG = {
         'MAX_FILE_SIZE': 10 * 1024 * 1024,  # 10MB
-        'THUMBNAIL_SIZE': (800, 800),
+        'THUMBNAIL_SIZE': (960, 960),
         'SERIES_TIME_WINDOW': 60,  # секунди для групування в серію
         'ALLOWED_EXTENSIONS': {'jpg', 'jpeg'},
         'MIN_IDENTIFICATIONS': 2,  # мінімум ідентифікацій для консенсусу
