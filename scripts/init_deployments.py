@@ -25,7 +25,7 @@ DDL_STATEMENTS = [
     """
     CREATE TABLE IF NOT EXISTS deployments (
         id                                  SERIAL PRIMARY KEY,
-        location_id                         INTEGER NOT NULL REFERENCES locations(id),
+        location_id                         INTEGER REFERENCES locations(id),
         name                                VARCHAR(200) NOT NULL,
         start_date                          DATE,
         end_date                            DATE,
@@ -72,6 +72,8 @@ DDL_STATEMENTS = [
     """,
     # Розширення camera_id для таблиць, створених раніше з VARCHAR(4) (безпечно повторювати).
     "ALTER TABLE deployments ALTER COLUMN camera_id TYPE VARCHAR(10)",
+    # location_id NULL для деплойментів без GPS — щоб включити їх у QC-аналіз як qc_no_gps_coordinates.
+    "ALTER TABLE deployments ALTER COLUMN location_id DROP NOT NULL",
     "CREATE INDEX IF NOT EXISTS idx_deployments_location ON deployments (location_id)",
     "CREATE INDEX IF NOT EXISTS idx_deployments_loc_dates ON deployments (location_id, start_date, end_date)",
 ]

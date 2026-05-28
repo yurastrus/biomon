@@ -97,16 +97,19 @@ def test_import_skips_row_without_name(tmp_path, ct_session, make_ct_location):
     assert report['inserted'] == 0
 
 
-def test_import_rejects_nan_coords(tmp_path, ct_session):
-    """Порожній GPS (NaN) -> биті координати, локація НЕ створюється."""
+def test_import_no_gps_deployment_without_location(tmp_path, ct_session):
+    """Порожній GPS -> деплоймент імпортується з location_id=NULL (для QC-аналізу)."""
     xlsx = _write_xlsx(tmp_path, [
         {'deployment_id': 'D1', 'latitude': None, 'longitude': None, 'study_year': 2025},
     ])
     report = import_deployments(ct_session, xlsx, sheets=['SMM_2025'],
                                 create_missing_locations=True)
-    assert report['skipped_bad_coords'] == 1
+    assert report['skipped_bad_coords'] == 0
     assert report['locations_created'] == 0
-    assert report['inserted'] == 0
+    assert report['inserted'] == 1
+    assert report['no_coords_deployments'] == 1
+    dep = ct_session.query(Deployment).filter_by(name='D1').one()
+    assert dep.location_id is None
 
 
 def test_import_creates_location_with_institution(tmp_path, ct_session):
