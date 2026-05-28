@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-27 20:04+0300\n"
+"POT-Creation-Date: 2026-05-28 10:28+0300\n"
 "PO-Revision-Date: 2025-08-05 22:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -308,8 +308,8 @@ msgstr ""
 msgid "Помилка бази даних."
 msgstr ""
 
-#: app/camera_traps/routes.py:1925 app/camera_traps/routes.py:2971
-#: app/camera_traps/routes.py:3353
+#: app/camera_traps/routes.py:1925 app/camera_traps/routes.py:2977
+#: app/camera_traps/routes.py:3392
 msgid "Локацію не знайдено."
 msgstr ""
 
@@ -445,175 +445,175 @@ msgstr ""
 msgid "Помилка завантаження сторінки управління локаціями."
 msgstr ""
 
-#: app/camera_traps/routes.py:2902
+#: app/camera_traps/routes.py:2908
 msgid "Помилка завантаження сторінки управління деплойментами."
 msgstr ""
 
-#: app/camera_traps/routes.py:2916 app/camera_traps/routes.py:2933
-#: app/camera_traps/routes.py:3003
+#: app/camera_traps/routes.py:2922 app/camera_traps/routes.py:2939
+#: app/camera_traps/routes.py:3009
 msgid "Деплоймент не знайдено."
 msgstr ""
 
-#: app/camera_traps/routes.py:2918 app/camera_traps/routes.py:3340
-#: app/camera_traps/routes.py:3369 app/camera_traps/routes.py:3889
-#: app/camera_traps/routes.py:3955 app/camera_traps/routes.py:4038
+#: app/camera_traps/routes.py:2924 app/camera_traps/routes.py:3379
+#: app/camera_traps/routes.py:3408 app/camera_traps/routes.py:3928
+#: app/camera_traps/routes.py:3994 app/camera_traps/routes.py:4077
 msgid "Немає доступу."
 msgstr ""
 
-#: app/camera_traps/routes.py:2935 app/camera_traps/routes.py:3005
+#: app/camera_traps/routes.py:2941 app/camera_traps/routes.py:3011
 msgid "Немає доступу до цього деплойменту."
 msgstr ""
 
-#: app/camera_traps/routes.py:2939 app/camera_traps/routes.py:2975
+#: app/camera_traps/routes.py:2945 app/camera_traps/routes.py:2981
 msgid "Назва деплойменту обов'язкова."
 msgstr ""
 
-#: app/camera_traps/routes.py:2943
+#: app/camera_traps/routes.py:2949
 msgid "Деплоймент оновлено успішно!"
 msgstr ""
 
-#: app/camera_traps/routes.py:2947 app/camera_traps/routes.py:2985
+#: app/camera_traps/routes.py:2953 app/camera_traps/routes.py:2991
 msgid "Невірний формат дати/числа."
 msgstr ""
 
-#: app/camera_traps/routes.py:2951 app/camera_traps/routes.py:2989
-#: app/camera_traps/routes.py:3393
+#: app/camera_traps/routes.py:2957 app/camera_traps/routes.py:2995
+#: app/camera_traps/routes.py:3432
 msgid "Помилка збереження даних."
 msgstr ""
 
-#: app/camera_traps/routes.py:2966
+#: app/camera_traps/routes.py:2972
 msgid "Не вказано локацію."
 msgstr ""
 
-#: app/camera_traps/routes.py:2969 app/camera_traps/routes.py:3348
-#: app/camera_traps/routes.py:3897 app/camera_traps/routes.py:3963
-#: app/camera_traps/routes.py:4046
+#: app/camera_traps/routes.py:2975 app/camera_traps/routes.py:3387
+#: app/camera_traps/routes.py:3936 app/camera_traps/routes.py:4002
+#: app/camera_traps/routes.py:4085
 msgid "Немає доступу до цієї локації."
 msgstr ""
 
-#: app/camera_traps/routes.py:2981
+#: app/camera_traps/routes.py:2987
 msgid "Деплоймент створено успішно!"
 msgstr ""
 
-#: app/camera_traps/routes.py:3009
+#: app/camera_traps/routes.py:3015
 msgid "Деплоймент видалено."
 msgstr ""
 
-#: app/camera_traps/routes.py:3014
+#: app/camera_traps/routes.py:3020
 msgid "Помилка видалення."
 msgstr ""
 
-#: app/camera_traps/routes.py:3087 app/camera_traps/routes.py:3423
+#: app/camera_traps/routes.py:3093 app/camera_traps/routes.py:3462
 msgid "Немає доступу до цієї установи."
 msgstr ""
 
-#: app/camera_traps/routes.py:3178
+#: app/camera_traps/routes.py:3184
 msgid "Помилка експорту."
 msgstr ""
 
-#: app/camera_traps/routes.py:3321
+#: app/camera_traps/routes.py:3360
 msgid "Помилка завантаження сторінки якості даних."
 msgstr ""
 
-#: app/camera_traps/routes.py:3389
+#: app/camera_traps/routes.py:3428
 msgid "Дані локації оновлено успішно!"
 msgstr ""
 
-#: app/camera_traps/routes.py:3416
+#: app/camera_traps/routes.py:3455
 #: app/camera_traps/templates/manage_locations.html:594
 #: app/pam/templates/manage_pam_locations.html:605
 #: app/pam/templates/pam_import.html:459
 msgid "Вкажіть назву локації."
 msgstr ""
 
-#: app/camera_traps/routes.py:3418
+#: app/camera_traps/routes.py:3457
 msgid "Вкажіть координати."
 msgstr ""
 
-#: app/camera_traps/routes.py:3451
+#: app/camera_traps/routes.py:3490
 msgid "Локацію створено успішно!"
 msgstr ""
 
-#: app/camera_traps/routes.py:3456
+#: app/camera_traps/routes.py:3495
 msgid "Помилка сервера при створенні локації."
 msgstr ""
 
-#: app/camera_traps/routes.py:3480
+#: app/camera_traps/routes.py:3519
 msgid ""
 "Під час процесу видалення файлів сталася несподівана помилка. Перевірте "
 "логи."
 msgstr ""
 
-#: app/camera_traps/routes.py:3495
+#: app/camera_traps/routes.py:3534
 msgid "Процес перерахунку аналітики успішно завершено."
 msgstr ""
 
-#: app/camera_traps/routes.py:3499
+#: app/camera_traps/routes.py:3538
 msgid "Під час перерахунку аналітики сталася помилка. Перевірте логи."
 msgstr ""
 
-#: app/camera_traps/routes.py:3814
+#: app/camera_traps/routes.py:3853
 msgid "Немає даних про обслуговування"
 msgstr ""
 
-#: app/camera_traps/routes.py:3850
+#: app/camera_traps/routes.py:3889
 msgid "Прогноз за кількістю фото"
 msgstr ""
 
-#: app/camera_traps/routes.py:3854
+#: app/camera_traps/routes.py:3893
 #: app/camera_traps/templates/service_log.html:335
 msgid "Прогноз за часом"
 msgstr ""
 
-#: app/camera_traps/routes.py:3918
+#: app/camera_traps/routes.py:3957
 msgid "Не замінювались"
 msgstr ""
 
-#: app/camera_traps/routes.py:3949 app/camera_traps/routes.py:4053
+#: app/camera_traps/routes.py:3988 app/camera_traps/routes.py:4092
 msgid "Не всі обов'язкові поля заповнені."
 msgstr ""
 
-#: app/camera_traps/routes.py:4004
+#: app/camera_traps/routes.py:4043
 msgid "Запис успішно додано до журналу!"
 msgstr ""
 
-#: app/camera_traps/routes.py:4010
+#: app/camera_traps/routes.py:4049
 msgid "Передано некоректні дані."
 msgstr ""
 
-#: app/camera_traps/routes.py:4014
+#: app/camera_traps/routes.py:4053
 msgid "Помилка сервера при збереженні запису."
 msgstr ""
 
-#: app/camera_traps/routes.py:4027
+#: app/camera_traps/routes.py:4066
 msgid "Запис не знайдено."
 msgstr ""
 
-#: app/camera_traps/routes.py:4034
+#: app/camera_traps/routes.py:4073
 msgid "Недостатньо прав для редагування цього запису."
 msgstr ""
 
-#: app/camera_traps/routes.py:4078
+#: app/camera_traps/routes.py:4117
 msgid "Запис оновлено успішно!"
 msgstr ""
 
-#: app/camera_traps/routes.py:4082
+#: app/camera_traps/routes.py:4121
 msgid "Некоректні дані."
 msgstr ""
 
-#: app/camera_traps/routes.py:4086
+#: app/camera_traps/routes.py:4125
 msgid "Помилка сервера."
 msgstr ""
 
-#: app/camera_traps/routes.py:4101
+#: app/camera_traps/routes.py:4140
 msgid "Перерахунок статистики успішно завершено! Карта буде оновлена."
 msgstr ""
 
-#: app/camera_traps/routes.py:4105
+#: app/camera_traps/routes.py:4144
 msgid "Під час перерахунку сталася помилка."
 msgstr ""
 
-#: app/camera_traps/routes.py:4678
+#: app/camera_traps/routes.py:4717
 msgid "Помилка завантаження сторінки."
 msgstr ""
 
@@ -763,7 +763,7 @@ msgstr ""
 
 #: app/camera_traps/templates/admin.html:156
 #: app/camera_traps/templates/admin.html:169
-#: app/camera_traps/templates/manage_deployments.html:282
+#: app/camera_traps/templates/manage_deployments.html:306
 #: app/templates/admin/admin_institutions_list.html:55
 #: app/templates/admin/admin_roles_list.html:67
 #: app/templates/admin/admin_roles_list.html:72
@@ -1396,7 +1396,7 @@ msgid "Підготувати дані"
 msgstr ""
 
 #: app/camera_traps/templates/ct_data_export.html:42
-#: app/camera_traps/templates/data_quality.html:106
+#: app/camera_traps/templates/data_quality.html:109
 #: app/pam/templates/pam_data_export.html:62
 msgid "Скинути фільтри"
 msgstr ""
@@ -1486,7 +1486,7 @@ msgid "Всі дані"
 msgstr ""
 
 #: app/camera_traps/templates/daily_activity.html:34
-#: app/camera_traps/templates/manage_deployments.html:102
+#: app/camera_traps/templates/manage_deployments.html:116
 #: app/camera_traps/templates/manage_locations.html:30
 #: app/pam/templates/manage_pam_locations.html:27
 #: app/pam/templates/pam_service_log.html:23
@@ -1611,7 +1611,7 @@ msgid "Кінцева дата:"
 msgstr ""
 
 #: app/camera_traps/templates/dashboard.html:30
-#: app/camera_traps/templates/manage_deployments.html:99
+#: app/camera_traps/templates/manage_deployments.html:113
 #: app/camera_traps/templates/manage_locations.html:27
 #: app/camera_traps/templates/upload.html:36
 #: app/camera_traps/templates/upload_fast.html:40
@@ -1636,7 +1636,7 @@ msgid "Загальна статистика"
 msgstr ""
 
 #: app/camera_traps/templates/dashboard.html:62
-#: app/camera_traps/templates/data_quality.html:85
+#: app/camera_traps/templates/data_quality.html:89
 msgid "Всього фото"
 msgstr ""
 
@@ -1719,7 +1719,7 @@ msgid "Інвертувати"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:3
-#: app/camera_traps/templates/data_quality.html:73
+#: app/camera_traps/templates/data_quality.html:77
 msgid "Оцінка якості даних"
 msgstr ""
 
@@ -1728,78 +1728,76 @@ msgid "Зведена проблема"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:8
-#: app/camera_traps/templates/manage_deployments.html:87
+#: app/camera_traps/templates/manage_deployments.html:101
 msgid "Дані непридатні"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:9
-#: app/camera_traps/templates/manage_deployments.html:75
+#: app/camera_traps/templates/manage_deployments.html:89
 msgid "Немає GPS-координат"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:10
-#: app/camera_traps/templates/manage_deployments.html:79
+#: app/camera_traps/templates/manage_deployments.html:93
 msgid "Біля годівниці"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:11
-#: app/camera_traps/templates/manage_deployments.html:80
+#: app/camera_traps/templates/manage_deployments.html:94
 #: app/camera_traps/templates/upload_fast.html:183
 msgid "Неправильна установка"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:12
-#: app/camera_traps/templates/manage_deployments.html:77
+#: app/camera_traps/templates/manage_deployments.html:91
 msgid "Неправильне розміщення"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:13
-#: app/camera_traps/templates/manage_deployments.html:68
+#: app/camera_traps/templates/manage_deployments.html:82
 msgid "Проблема обладнання"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:14
-#: app/camera_traps/templates/manage_deployments.html:73
-msgid "ПЗ не завантажила дані"
+msgid "Установа не завантажила дані"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:15
-#: app/camera_traps/templates/manage_deployments.html:74
+#: app/camera_traps/templates/manage_deployments.html:88
 msgid "Дані не сирі"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:16
-#: app/camera_traps/templates/manage_deployments.html:81
+#: app/camera_traps/templates/manage_deployments.html:95
 msgid "Немає lapse-фото"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:17
-#: app/camera_traps/templates/manage_deployments.html:86
+#: app/camera_traps/templates/manage_deployments.html:100
 msgid "Локальний час не виставлено"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:18
-#: app/camera_traps/templates/manage_deployments.html:72
+#: app/camera_traps/templates/manage_deployments.html:86
 msgid "Проблема SD-карти"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:19
-#: app/camera_traps/templates/manage_deployments.html:71
-msgid "Сіла батарея"
+msgid "Проблема з батарейками"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:20
-#: app/camera_traps/templates/manage_deployments.html:66
+#: app/camera_traps/templates/manage_deployments.html:80
 msgid "Не функціонує"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:21
-#: app/camera_traps/templates/manage_deployments.html:78
+#: app/camera_traps/templates/manage_deployments.html:92
 msgid "Погане розміщення"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:22
-#: app/camera_traps/templates/manage_deployments.html:76
+#: app/camera_traps/templates/manage_deployments.html:90
 msgid "Не зафіксовано видів"
 msgstr ""
 
@@ -1808,166 +1806,165 @@ msgid "Не досягнуто мін. днів"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:24
-#: app/camera_traps/templates/manage_deployments.html:82
-msgid "Немає фото установки"
+msgid "Немає фото встановлення"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:25
-#: app/camera_traps/templates/manage_deployments.html:83
+#: app/camera_traps/templates/manage_deployments.html:97
 msgid "Немає фото демонтажу"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:26
-#: app/camera_traps/templates/manage_deployments.html:84
+#: app/camera_traps/templates/manage_deployments.html:98
 msgid "Немає реф. фото відстані"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:27
-#: app/camera_traps/templates/manage_deployments.html:85
+#: app/camera_traps/templates/manage_deployments.html:99
 msgid "Немає фото дати/часу"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:28
-#: app/camera_traps/templates/manage_deployments.html:70
+#: app/camera_traps/templates/manage_deployments.html:84
 msgid "Проблема налаштувань"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:29
-#: app/camera_traps/templates/manage_deployments.html:69
+#: app/camera_traps/templates/manage_deployments.html:83
 msgid "Проблема прошивки"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:30
-#: app/camera_traps/templates/manage_deployments.html:67
+#: app/camera_traps/templates/manage_deployments.html:81
 msgid "Викрадена"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:75
+#: app/camera_traps/templates/data_quality.html:79
 msgid "До деплойментів"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:81
-#: app/camera_traps/templates/data_quality.html:292
+#: app/camera_traps/templates/data_quality.html:85
+#: app/camera_traps/templates/data_quality.html:296
 msgid "Деплойментів"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:82
+#: app/camera_traps/templates/data_quality.html:86
 msgid "Придатні"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:83
+#: app/camera_traps/templates/data_quality.html:87
 msgid "Зі зведеною проблемою"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:84
+#: app/camera_traps/templates/data_quality.html:88
 msgid "Не досягли мін. днів"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:86
+#: app/camera_traps/templates/data_quality.html:90
 msgid "Сер. днів роботи"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:92
+#: app/camera_traps/templates/data_quality.html:96
 msgid "Регіон"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:92
+#: app/camera_traps/templates/data_quality.html:96
 #: app/templates/admin/admin_user_form.html:97
 #: app/templates/admin/admin_users_list.html:52
 msgid "Установа"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:92
-#: app/camera_traps/templates/manage_deployments.html:168
-#: app/camera_traps/templates/manage_deployments.html:194
+#: app/camera_traps/templates/data_quality.html:96
+#: app/camera_traps/templates/manage_deployments.html:182
+#: app/camera_traps/templates/manage_deployments.html:208
 #: app/pam/templates/pam_yearly_trends.html:191
 msgid "Рік"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:92
-#: app/camera_traps/templates/manage_deployments.html:169
-#: app/camera_traps/templates/manage_deployments.html:198
+#: app/camera_traps/templates/data_quality.html:96
+#: app/camera_traps/templates/manage_deployments.html:183
+#: app/camera_traps/templates/manage_deployments.html:212
 msgid "Сезон"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:92
+#: app/camera_traps/templates/data_quality.html:96
 msgid "Дизайн"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:92
-#: app/camera_traps/templates/manage_deployments.html:216
+#: app/camera_traps/templates/data_quality.html:96
+#: app/camera_traps/templates/manage_deployments.html:230
 msgid "Модель камери"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:96
-#: app/camera_traps/templates/manage_deployments.html:114
+#: app/camera_traps/templates/data_quality.html:100
+#: app/camera_traps/templates/manage_deployments.html:128
 msgid "Усі"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:117
-#: app/camera_traps/templates/data_quality.html:264
-#: app/camera_traps/templates/data_quality.html:279
+#: app/camera_traps/templates/data_quality.html:121
+#: app/camera_traps/templates/data_quality.html:268
+#: app/camera_traps/templates/data_quality.html:283
 msgid "Проблема"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:118
-#: app/camera_traps/templates/data_quality.html:279
+#: app/camera_traps/templates/data_quality.html:122
+#: app/camera_traps/templates/data_quality.html:283
 msgid "Норма (літо)"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:119
-#: app/camera_traps/templates/data_quality.html:279
+#: app/camera_traps/templates/data_quality.html:123
+#: app/camera_traps/templates/data_quality.html:283
 msgid "Норма (зима)"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:125
+#: app/camera_traps/templates/data_quality.html:129
 msgid "Параметри якості (кількість деплойментів)"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:132
+#: app/camera_traps/templates/data_quality.html:136
 msgid "Показати на карті точки з проблемою:"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:133
+#: app/camera_traps/templates/data_quality.html:137
 msgid "(відмічені — показуються точки, де є хоча б одна з обраних проблем)"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:148
+#: app/camera_traps/templates/data_quality.html:152
 msgid "Розподіл за статусом"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:152
+#: app/camera_traps/templates/data_quality.html:156
 msgid "Деплойменти за роками"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:186
+#: app/camera_traps/templates/data_quality.html:190
 msgid "днів"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:186
+#: app/camera_traps/templates/data_quality.html:190
 msgid "фото"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:188
+#: app/camera_traps/templates/data_quality.html:192
 msgid "Редагувати деплоймент"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:236
+#: app/camera_traps/templates/data_quality.html:240
 msgid "Показано"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:236
+#: app/camera_traps/templates/data_quality.html:240
 #: app/camera_traps/templates/upload.html:589
 #: app/pam/templates/pam_evaluation_results.html:380
 #: app/pam/templates/pam_import.html:589
 msgid "з"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:265
+#: app/camera_traps/templates/data_quality.html:269
 msgid "Норма"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:266
+#: app/camera_traps/templates/data_quality.html:270
 #: app/camera_traps/templates/species_detailed.html:296
 msgid "Немає даних"
 msgstr ""
@@ -2048,7 +2045,7 @@ msgstr ""
 
 #: app/camera_traps/templates/gallery.html:212
 #: app/camera_traps/templates/gallery.html:224
-#: app/camera_traps/templates/manage_deployments.html:122
+#: app/camera_traps/templates/manage_deployments.html:136
 #: app/camera_traps/templates/photo_viewer.html:36
 #: app/pam/templates/pam_verification_interface.html:72
 msgid "Локація:"
@@ -2232,7 +2229,7 @@ msgid "Будь ласка, виберіть вид, або опцію \"Пус�
 msgstr ""
 
 #: app/camera_traps/templates/identification.html:316
-#: app/camera_traps/templates/manage_deployments.html:592
+#: app/camera_traps/templates/manage_deployments.html:623
 #: app/camera_traps/templates/manage_locations.html:588
 #: app/camera_traps/templates/service_log.html:345
 #: app/pam/templates/manage_pam_locations.html:599
@@ -2261,144 +2258,176 @@ msgid "особин"
 msgstr ""
 
 #: app/camera_traps/templates/manage_deployments.html:3
-#: app/camera_traps/templates/manage_deployments.html:92
+#: app/camera_traps/templates/manage_deployments.html:106
 msgid "Управління деплойментами"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:88
+#: app/camera_traps/templates/manage_deployments.html:85
+msgid "Сіла батарея"
+msgstr ""
+
+#: app/camera_traps/templates/manage_deployments.html:87
+msgid "ПЗ не завантажила дані"
+msgstr ""
+
+#: app/camera_traps/templates/manage_deployments.html:96
+msgid "Немає фото установки"
+msgstr ""
+
+#: app/camera_traps/templates/manage_deployments.html:102
 msgid "Використано BRF"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:111
+#: app/camera_traps/templates/manage_deployments.html:125
 msgid "Рік:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:125
+#: app/camera_traps/templates/manage_deployments.html:139
 msgid "Усі локації"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:132
+#: app/camera_traps/templates/manage_deployments.html:146
 msgid "Пошук за назвою деплойменту, камерою..."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:134
+#: app/camera_traps/templates/manage_deployments.html:148
 msgid "Експорт у Ексель з урахуванням фільтрів установи та року"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:135
+#: app/camera_traps/templates/manage_deployments.html:149
 msgid "Експорт у Ексель"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:143
+#: app/camera_traps/templates/manage_deployments.html:157
 msgid "Клацніть локацію, щоб відфільтрувати деплойменти."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:151
+#: app/camera_traps/templates/manage_deployments.html:165
 #: app/camera_traps/templates/overview.html:44
 msgid "Деплойменти"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:155
+#: app/camera_traps/templates/manage_deployments.html:169
 msgid "Спершу виберіть локацію на карті або у фільтрі"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:156
+#: app/camera_traps/templates/manage_deployments.html:170
 msgid "Новий"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:167
+#: app/camera_traps/templates/manage_deployments.html:181
 #: app/camera_traps/templates/manage_locations.html:92
 #: app/camera_traps/templates/upload.html:64
 #: app/camera_traps/templates/upload_fast.html:62
 msgid "Назва"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:170
-#: app/camera_traps/templates/manage_deployments.html:222
+#: app/camera_traps/templates/manage_deployments.html:184
+#: app/camera_traps/templates/manage_deployments.html:236
 #: app/camera_traps/templates/upload_fast.html:150
 msgid "Початок"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:171
-#: app/camera_traps/templates/manage_deployments.html:230
+#: app/camera_traps/templates/manage_deployments.html:185
+#: app/camera_traps/templates/manage_deployments.html:244
 #: app/camera_traps/templates/upload_fast.html:154
 msgid "Кінець"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:172
-#: app/camera_traps/templates/manage_deployments.html:206
+#: app/camera_traps/templates/manage_deployments.html:186
+#: app/camera_traps/templates/manage_deployments.html:220
 msgid "Камера"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:177
+#: app/camera_traps/templates/manage_deployments.html:191
 msgid "Немає деплойментів."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:188
+#: app/camera_traps/templates/manage_deployments.html:202
 #: app/camera_traps/templates/overview.html:23
 msgid "Ідентифікація"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:190
+#: app/camera_traps/templates/manage_deployments.html:204
 msgid "Назва (deployment_id)"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:202
+#: app/camera_traps/templates/manage_deployments.html:216
 msgid "Дизайн дослідження"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:208
+#: app/camera_traps/templates/manage_deployments.html:222
 msgid "ID камери"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:212
+#: app/camera_traps/templates/manage_deployments.html:226
 msgid "Серійний №"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:220
+#: app/camera_traps/templates/manage_deployments.html:234
 msgid "Період"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:226
+#: app/camera_traps/templates/manage_deployments.html:240
 #: app/camera_traps/templates/upload_fast.html:160
 msgid "Час початку"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:234
+#: app/camera_traps/templates/manage_deployments.html:248
 #: app/camera_traps/templates/upload_fast.html:164
 msgid "Час кінця"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:238
+#: app/camera_traps/templates/manage_deployments.html:252
 msgid "Обсяг"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:240
+#: app/camera_traps/templates/manage_deployments.html:254
 msgid "Робочих днів (введ.)"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:244
+#: app/camera_traps/templates/manage_deployments.html:258
 msgid "Днів (розрах.)"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:248
+#: app/camera_traps/templates/manage_deployments.html:262
 msgid "К-ть фото"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:254
+#: app/camera_traps/templates/manage_deployments.html:269
 msgid "Контроль якості"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:267
+#: app/camera_traps/templates/manage_deployments.html:271
+msgid "клік перемикає:"
+msgstr ""
+
+#: app/camera_traps/templates/manage_deployments.html:272
+msgid "невідомо"
+msgstr ""
+
+#: app/camera_traps/templates/manage_deployments.html:273
+msgid "немає проблеми"
+msgstr ""
+
+#: app/camera_traps/templates/manage_deployments.html:274
+msgid "є проблема"
+msgstr ""
+
+#: app/camera_traps/templates/manage_deployments.html:282
+msgid "клік перемикає невідомо / немає / є проблема"
+msgstr ""
+
+#: app/camera_traps/templates/manage_deployments.html:291
 msgid "Проблема з датою/часом"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:271
+#: app/camera_traps/templates/manage_deployments.html:295
 #: app/camera_traps/templates/upload_fast.html:187
 msgid "Коментар"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:278
+#: app/camera_traps/templates/manage_deployments.html:302
 #: app/camera_traps/templates/manage_locations.html:132
 #: app/camera_traps/templates/manage_locations.html:521
 #: app/camera_traps/templates/manage_locations.html:787
@@ -2409,7 +2438,7 @@ msgstr ""
 msgid "Зберегти"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:280
+#: app/camera_traps/templates/manage_deployments.html:304
 #: app/camera_traps/templates/manage_locations.html:133
 #: app/camera_traps/templates/manage_locations.html:210
 #: app/camera_traps/templates/upload.html:95
@@ -2423,36 +2452,36 @@ msgstr ""
 msgid "Скасувати"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:498
+#: app/camera_traps/templates/manage_deployments.html:522
 #: app/camera_traps/templates/manage_locations.html:685
 #: app/pam/templates/manage_pam_locations.html:696
 msgid "Помилка завантаження."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:502
+#: app/camera_traps/templates/manage_deployments.html:526
 msgid "Спершу виберіть локацію."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:508
+#: app/camera_traps/templates/manage_deployments.html:532
 msgid "Новий деплоймент:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:516
-#: app/camera_traps/templates/manage_deployments.html:580
+#: app/camera_traps/templates/manage_deployments.html:540
+#: app/camera_traps/templates/manage_deployments.html:611
 #: app/camera_traps/templates/manage_locations.html:520
 #: app/pam/templates/manage_pam_locations.html:538
 msgid "Редагування:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:555
+#: app/camera_traps/templates/manage_deployments.html:586
 msgid "Назва обов'язкова."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:598
+#: app/camera_traps/templates/manage_deployments.html:629
 msgid "Видалити цей деплоймент? Дію не можна скасувати."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:612
+#: app/camera_traps/templates/manage_deployments.html:643
 msgid "Помилка видалення:"
 msgstr ""
 
