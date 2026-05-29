@@ -47,6 +47,19 @@ def test_parse_missing_columns():
     assert errors and 'Бракує колонок' in errors[0]
 
 
+def test_parse_without_count_column():
+    # Інший експорт DeepFaune — без колонки `count` (лише humancount).
+    header = 'filename,date,seqnum,predictionbase,scorebase,prediction,score,top1,humancount'
+    line = r'D:\x\0114\IMG_0433.JPG,2025:08:12 20:09:45,1,moose,0.99,moose,0.99,moose,0'
+    rows, errors = parse_deepfaune_csv(header + '\n' + line + '\n')
+    assert errors == []
+    assert len(rows) == 1
+    assert rows[0]['animal_count'] is None        # колонки нема → None
+    assert rows[0]['base_label'] == 'moose'
+
+
+
+
 def test_parse_bad_date_is_reported_not_fatal():
     csv_text = _csv(
         r'C:\a\IMG_1.JPG,NOT A DATE,1,empty,1.0,empty,1.0,empty,0,0',
