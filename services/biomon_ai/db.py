@@ -146,7 +146,13 @@ def get_or_create_model(
     Якщо створюється нова модель — вона стає `is_active=True`, попередні
     деактивуються (умова: тільки одна активна модель з тим же `name`).
     """
-    row = session.query(AIModel).filter_by(name=name, version=version).one_or_none()
+    # ВАЖЛИВО: фільтруємо по is_active=True. Після появи імпортованих моделей
+    # (та сама name+version, але інший level_id, is_active=False) звичайний
+    # filter_by(name, version) повертає кілька рядків → MultipleResultsFound.
+    # Worker завжди працює зі СВОЄЮ активною серверною моделлю.
+    row = (session.query(AIModel)
+           .filter_by(name=name, version=version, is_active=True)
+           .one_or_none())
     if row is not None:
         return row.id
 
