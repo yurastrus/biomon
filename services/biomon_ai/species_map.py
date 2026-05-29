@@ -107,6 +107,29 @@ DEEPFAUNE_TO_SPECIES_ID: dict[str, Optional[int]] = {
 }
 
 
+def refresh_label_map(session) -> int:
+    """Підтягує мапінг із таблиці ai_label_map (ЄДИНЕ джерело правди) і
+    мерджить його ПОВЕРХ вшитих дефолтів `DEEPFAUNE_TO_SPECIES_ID`.
+
+    Вшитий словник лишається fallback-сідом: якщо таблиці нема / вона
+    порожня / БД недоступна — нічого не змінюємо і worker працює як раніше.
+    Викликати один раз на старті прогону (потрібна жива SQLAlchemy-сесія).
+
+    Повертає к-сть підтягнутих рядків (0 = використано лише вшитий fallback).
+    """
+    try:
+        from sqlalchemy import text
+        rows = session.execute(text("SELECT label, species_id FROM ai_label_map")).fetchall()
+    except Exception:
+        return 0
+    n = 0
+    for label, species_id in rows:
+        if label:
+            DEEPFAUNE_TO_SPECIES_ID[label.strip().lower()] = species_id
+            n += 1
+    return n
+
+
 def map_deepfaune_label(label: Optional[str]) -> Optional[int]:
     """Повертає Species.id або None.
 

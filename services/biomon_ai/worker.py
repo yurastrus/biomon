@@ -29,7 +29,7 @@ from .db import (
     pick_queue_request,
     save_observation_predictions,
 )
-from .species_map import map_deepfaune_label
+from .species_map import map_deepfaune_label, refresh_label_map
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +113,12 @@ def process_batch(
             config=adapter.config,
         )
         session.commit()  # модель має бути в БД до записів прогнозів
+
+        # 1b. Підтягуємо мапінг labels із БД (ai_label_map — єдине джерело
+        #     правди). Якщо таблиці нема/порожня — лишається вшитий fallback.
+        n_map = refresh_label_map(session)
+        if n_map:
+            logger.info(f"Label map: завантажено {n_map} рядків з ai_label_map")
 
         # 2. Беремо pending observations. SQL обмежений 10× max_observations,
         # бо у проді багато "сирітських" observations (status='pending',

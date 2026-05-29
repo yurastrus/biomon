@@ -203,11 +203,14 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
         params_arg = main_call.args[1]
         self.assertEqual(set(params_arg.get('scope_inst_ids')), {10, 20, 30})
 
-    def test_no_active_model_returns_empty(self):
+    def test_no_model_returns_empty(self):
+        # Тепер запит не залежить від АКТИВНОЇ моделі (бере найвищий
+        # accuracy_rank на серію), тож короткий вихід — коли в БД нема
+        # ЖОДНОЇ моделі: sess.query(AIModel.id).first() → None.
         from app.camera_traps.ai_runner import get_species_with_ai_predictions
 
         sess = MagicMock()
-        sess.query.return_value.filter_by.return_value.first.return_value = None
+        sess.query.return_value.first.return_value = None
         with self._patch_session(sess):
             result = get_species_with_ai_predictions(
                 user_id=1, user_inst_ids=[10], is_admin=False,

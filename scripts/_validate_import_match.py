@@ -1,0 +1,59 @@
+"""READ-ONLY: для split-CSV рахує, з якою локацією найбільше збігів
+(filename + captured_at до секунди). Нічого не пише. Перевіряє коректність
+ключа матчингу й часових зон на реальних даних + знаходить папка->локація.
+
+Запуск:
+    venv/Scripts/python scripts/_validate_import_match.py <шлях_до_csv>
+"""
+import sys, csv, os, re
+from datetime import datetime
+from collections import Counter
+from pathlib import Path
+import psycopg2
+
+CSV_PATH = sys.argv[1] if len(sys.argv) > 1 else r'C:\Users\IuriiStrus\Desktop\split\0805.csv'
+
+env = {}
+for line in Path('.env').read_text(encoding='utf-8').splitlines():
+    m = re.match(r"^([A-Z_]+)=['\"]?(.*?)['\"]?$", line.strip())
+    if m:
+        env[m.group(1)] = m.group(2)
+
+# parse CSV keys
+keys = set()
+with open(CSV_PATH, encoding='utf-8-sig', newline='') as f:
+    r = csv.DictReader(f)
+    for row in r:
+        fn = (row['filename'] or '').strip().replace('\\', '/')
+        try:
+            dt = datetime.strptime(row['date'].strip(), '%Y:%m:%d %H:%M:%S').replace(microsecond=0)
+        except ValueError:
+            continue
+        keys.add((os.path.basename(fn).lower(), dt))
+
+print(f'CSV: {CSV_PATH}')
+print(f'  unique (filename, sec) keys: {len(keys)}')
+
+c = psycopg2.connect(env['CT_DATABASE_URL']); c.set_session(readonly=True, autocommit=True)
+cur = c.cursor()
+cur.execute("""
+    SELECT lower(p.original_filename), date_trunc('second', p.captured_at), o.location_id, l.name
+    FROM photos p
+    JOIN observations o ON o.id = p.observation_id
+    JOIN locations l ON l.id = o.location_id
+""")
+per_loc = Counter()
+loc_name = {}
+for fn, sec, loc_id, lname in cur.fetchall():
+    sec = sec.replace(tzinfo=None)
+    if (fn, sec) in keys:
+        per_loc[loc_id] += 1
+        loc_name[loc_id] = lname
+
+print('  matches per location (top 5):')
+if not per_loc:
+    print('    !!! 0 matches — перевір припущення про час/назви')
+for loc_id, n in per_loc.most_common(5):
+    pct = 100.0 * n / len(keys) if keys else 0
+    print(f'    location_id={loc_id:5}  matches={n:6} ({pct:5.1f}%)  {loc_name[loc_id]}')
+cur.close(); c.close()
