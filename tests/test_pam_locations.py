@@ -17,7 +17,7 @@ import os
 import json
 import unittest
 from unittest.mock import patch, MagicMock
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # ── helpers ────────────────────────────────────────────────────────────────
@@ -914,6 +914,118 @@ class TestPamUpdateLocation(PamLocationTestBase):
                 json=self._valid_payload(institution_ids=[self.inst_a.id])
             )
         mock_conn.close.assert_called_once()
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 3b. API LOCATIONS-WITH-STATUS — МАТЕМАТИКА ПРОГНОЗУ (battery/SD days_left)
+#     Захищає дані, які споживає попап маркера service-режиму на manage-locations.
+# ════════════════════════════════════════════════════════════════════════════
+
+class TestPamLocationStatusForecast(PamLocationTestBase):
+    """Перевіряє обчислення battery_days_left / sd_card_days_left та статусу."""
+
+    URL = '/uk/api/pam/locations-with-status'
+
+    def _make_visit_row(self, days_ago, recording_hours, estimated_hours,
+                        capacity_gb, purpose_id=1):
+        """Mock-рядок останнього сервісного візиту (з JOIN battery_types/sd_card_status)."""
+        row = MagicMock()
+        # Наївний datetime (tzinfo=None) — маршрут робить datetime.now(tzinfo)
+        row.visit_datetime = datetime.now() - timedelta(days=days_ago)
+        row.recording_hours_per_day = recording_hours
+        row.visit_purpose_id = purpose_id
+        row.estimated_recording_hours = estimated_hours
+        row.capacity_gb = capacity_gb
+        return row
+
+    def _fetch(self, visit_row, location_id=101):
+        recs  = MagicMock(); recs.fetchall.return_value = []          # recordings — порожньо
+        loc   = _make_location_row(location_id, 'PAM Локація')
+        locs  = MagicMock(); locs.fetchall.return_value = [loc]
+        visit = MagicMock(); visit.fetchone.return_value = visit_row
+        mock_conn = MagicMock()
+        mock_conn.execute.side_effect = [recs, locs, visit]
+        _login(self.client, self.manager.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            resp = self.client.get(self.URL)
+        self.assertEqual(resp.status_code, 200)
+        return resp.get_json()[0]
+
+    def test_battery_and_sd_forecast_computed(self):
+        """
+        10 днів від візиту, 6 год/добу, батарея на 600 год, картка 128 ГБ.
+        battery_days_left = round(600/6 - 10) = 90
+        daily_gb = 6*290/1024 = 1.6992; sd = 128/1.6992 - 10 ≈ 65
+        """
+        row = self._make_visit_row(days_ago=10, recording_hours=6,
+                                   estimated_hours=600, capacity_gb=128)
+        item = self._fetch(row)
+        self.assertEqual(item['battery_days_left'], 90)
+        self.assertEqual(item['sd_card_days_left'], 65)
+        self.assertEqual(item['status'], 'ok')
+        self.assertEqual(item['days_since_visit'], 10)
+
+    def test_battery_critical_when_few_days_left(self):
+        """Батарея майже сіла → critical (<=3 днів лишилось)."""
+        # 98 днів від візиту, батарея на 600 год / 6 = 100 днів → лишилось 2
+        row = self._make_visit_row(days_ago=98, recording_hours=6,
+                                   estimated_hours=600, capacity_gb=512)
+        item = self._fetch(row)
+        self.assertEqual(item['battery_days_left'], 2)
+        self.assertEqual(item['status'], 'critical')
+
+    def test_device_removed_marks_inactive(self):
+        """visit_purpose_id == 3 (демонтовано) → status inactive, без прогнозу."""
+        row = self._make_visit_row(days_ago=5, recording_hours=6,
+                                   estimated_hours=600, capacity_gb=128, purpose_id=3)
+        item = self._fetch(row)
+        self.assertEqual(item['status'], 'inactive')
+        self.assertIsNone(item['battery_days_left'])
+        self.assertIsNone(item['sd_card_days_left'])
+
+    def test_no_battery_data_leaves_battery_forecast_none(self):
+        """Без estimated_recording_hours прогноз батареї = None, SD рахується."""
+        row = self._make_visit_row(days_ago=10, recording_hours=6,
+                                   estimated_hours=None, capacity_gb=128)
+        item = self._fetch(row)
+        self.assertIsNone(item['battery_days_left'])
+        self.assertEqual(item['sd_card_days_left'], 65)
+
+    def _fetch_with_recordings(self, visit_row, last_recording_days_ago, location_id=101):
+        """Як _fetch, але з непорожньою таблицею recordings (стара дата активності)."""
+        rec_row = MagicMock()
+        rec_row.location_id = location_id
+        rec_row.last_data_date = datetime.now() - timedelta(days=last_recording_days_ago)
+        recs  = MagicMock(); recs.fetchall.return_value = [rec_row]
+        loc   = _make_location_row(location_id, 'PAM Локація')
+        locs  = MagicMock(); locs.fetchall.return_value = [loc]
+        visit = MagicMock(); visit.fetchone.return_value = visit_row
+        mock_conn = MagicMock()
+        mock_conn.execute.side_effect = [recs, locs, visit]
+        _login(self.client, self.manager.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            resp = self.client.get(self.URL)
+        self.assertEqual(resp.status_code, 200)
+        return resp.get_json()[0]
+
+    def test_old_recordings_do_not_override_fresh_install(self):
+        """
+        РЕГРЕСІЯ (reinstall): осінні записи 240 днів тому НЕ мають робити локацію
+        inactive, якщо навесні зафіксовано свіже встановлення (16 днів, purpose != removal).
+        """
+        visit = self._make_visit_row(days_ago=16, recording_hours=6,
+                                     estimated_hours=600, capacity_gb=64, purpose_id=2)
+        item = self._fetch_with_recordings(visit, last_recording_days_ago=240)
+        self.assertNotEqual(item['status'], 'inactive')      # головне: НЕ сірий
+        self.assertIsNotNone(item['battery_days_left'])      # прогноз порахувався
+        self.assertEqual(item['days_since_visit'], 16)
+
+    def test_old_recordings_and_old_visit_still_inactive(self):
+        """Якщо І дані, І останній візит старі (>200 днів) — лишається inactive."""
+        visit = self._make_visit_row(days_ago=250, recording_hours=6,
+                                     estimated_hours=600, capacity_gb=64, purpose_id=1)
+        item = self._fetch_with_recordings(visit, last_recording_days_ago=240)
+        self.assertEqual(item['status'], 'inactive')
 
 
 if __name__ == '__main__':
