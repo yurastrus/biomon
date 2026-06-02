@@ -8,7 +8,7 @@
 """
 import io
 import pytest
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 from app.camera_traps.utils import (
@@ -30,6 +30,43 @@ def test_extract_datetime_from_exif_with_mocked_tags(monkeypatch):
                         lambda *a, **kw: fake_tags)
     result = extract_datetime_from_exif(io.BytesIO(b'fake'))
     assert result == datetime(2025, 3, 15, 14, 23, 45)
+
+
+# ── Idea 1: sanity-guard на неправдоподібні EXIF-дати ─────────────────────
+
+def _mock_exif_date(monkeypatch, date_str):
+    monkeypatch.setattr('app.camera_traps.utils.exifread.process_file',
+                        lambda *a, **kw: {'EXIF DateTimeOriginal': date_str})
+
+
+def test_extract_datetime_pre_2010_treated_as_missing(app, monkeypatch):
+    """Скинутий годинник камери (2000 рік) → None → placeholder-шлях."""
+    _mock_exif_date(monkeypatch, '2000:01:01 12:00:00')
+    with app.app_context():
+        assert extract_datetime_from_exif(io.BytesIO(b'fake')) is None
+
+
+def test_extract_datetime_far_future_treated_as_missing(app, monkeypatch):
+    """Дата в майбутньому (> +24 год) → None."""
+    future = datetime.now() + timedelta(days=3)
+    _mock_exif_date(monkeypatch, future.strftime('%Y:%m:%d %H:%M:%S'))
+    with app.app_context():
+        assert extract_datetime_from_exif(io.BytesIO(b'fake')) is None
+
+
+def test_extract_datetime_near_future_within_drift_is_valid(monkeypatch):
+    """Невеликий дрейф годинника вперед (+1 год) — допустимий."""
+    near = datetime.now() + timedelta(hours=1)
+    _mock_exif_date(monkeypatch, near.strftime('%Y:%m:%d %H:%M:%S'))
+    result = extract_datetime_from_exif(io.BytesIO(b'fake'))
+    assert result is not None
+    assert abs((result - near).total_seconds()) < 1
+
+
+def test_extract_datetime_min_boundary_is_valid(monkeypatch):
+    """Рівно 2010-01-01 00:00:00 — ще валідна (межа не строга)."""
+    _mock_exif_date(monkeypatch, '2010:01:01 00:00:00')
+    assert extract_datetime_from_exif(io.BytesIO(b'fake')) == datetime(2010, 1, 1)
 
 
 def test_mark_observation_complete_changes_status(app, ct_session,
