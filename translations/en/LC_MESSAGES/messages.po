@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-03 17:29+0300\n"
+"POT-Creation-Date: 2026-06-03 18:42+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -159,20 +159,43 @@ msgstr "Additional tags"
 msgid "Зберегти у вибране"
 msgstr "Save to favorites"
 
-#: app/camera_traps/routes.py:128
+#: app/camera_traps/routes.py:142 app/camera_traps/routes.py:166
+#: app/camera_traps/routes.py:2283
+msgid "Серію не знайдено."
+msgstr "Series not found."
+
+#: app/camera_traps/routes.py:147
+msgid "Серію позначено на повторний розгляд."
+msgstr "Series flagged for review."
+
+#: app/camera_traps/routes.py:151
+#: app/camera_traps/templates/identification.html:697
+#: app/camera_traps/templates/identification.html:698
+msgid "Помилка позначення серії."
+msgstr "Failed to flag the series."
+
+#: app/camera_traps/routes.py:171
+msgid "Позначку знято."
+msgstr "Flag removed."
+
+#: app/camera_traps/routes.py:175
+msgid "Помилка зняття позначки."
+msgstr "Failed to remove the flag."
+
+#: app/camera_traps/routes.py:222
 msgid "AI-класифікатор не доступний."
 msgstr "AI classifier is not available."
 
-#: app/camera_traps/routes.py:135
+#: app/camera_traps/routes.py:229
 msgid "Некоректна кількість серій."
 msgstr "Invalid number of series."
 
-#: app/camera_traps/routes.py:146
+#: app/camera_traps/routes.py:240
 #, python-format
 msgid "Кількість серій має бути від 1 до %(max)d."
 msgstr "Number of series must be between 1 and %(max)d."
 
-#: app/camera_traps/routes.py:154
+#: app/camera_traps/routes.py:248
 #, python-format
 msgid ""
 "Запит №%(id)d додано в чергу. Worker оброблятиме до %(n)d серій. Перевір "
@@ -181,31 +204,31 @@ msgstr ""
 "Request #%(id)d added to the queue. The worker will process up to %(n)d "
 "series. Check the status below in 1-3 minutes."
 
-#: app/camera_traps/routes.py:160
+#: app/camera_traps/routes.py:254
 msgid "Помилка створення запиту. Перевір логи сервера."
 msgstr "Failed to create the request. Check server logs."
 
-#: app/camera_traps/routes.py:341 app/pam/templates/pam_overview.html:353
+#: app/camera_traps/routes.py:435 app/pam/templates/pam_overview.html:353
 msgid "Помилка завантаження статистики."
 msgstr "Error loading statistics."
 
-#: app/camera_traps/routes.py:514
+#: app/camera_traps/routes.py:608
 msgid "Помилка завантаження списку учасників."
 msgstr "Error loading contributors list."
 
-#: app/camera_traps/routes.py:600
+#: app/camera_traps/routes.py:694
 msgid "Помилка завантаження сторінки аналізу."
 msgstr "Error loading the analysis page."
 
-#: app/camera_traps/routes.py:639
+#: app/camera_traps/routes.py:733
 msgid "Помилка завантаження сторінки порівняння."
 msgstr "Error loading comparison page."
 
-#: app/camera_traps/routes.py:707
+#: app/camera_traps/routes.py:801
 msgid "Помилка завантаження сторінки аналізу поведінки."
 msgstr "Error loading the behaviour analysis page."
 
-#: app/camera_traps/routes.py:1168 app/camera_traps/routes.py:1345
+#: app/camera_traps/routes.py:1262 app/camera_traps/routes.py:1439
 #: app/camera_traps/templates/upload.html:233
 #: app/camera_traps/templates/upload.html:348
 #: app/camera_traps/templates/upload_fast.html:366
@@ -214,362 +237,358 @@ msgstr "Error loading the behaviour analysis page."
 msgid "-- Будь ласка, виберіть --"
 msgstr "-- Please select --"
 
-#: app/camera_traps/routes.py:1168 app/camera_traps/routes.py:1347
+#: app/camera_traps/routes.py:1262 app/camera_traps/routes.py:1441
 #: app/camera_traps/templates/upload.html:364
 #: app/camera_traps/templates/upload_fast.html:440
 msgid "*** СТВОРИТИ НОВЕ МІСЦЕ ***"
 msgstr "*** CREATE NEW LOCATION ***"
 
-#: app/camera_traps/routes.py:1215
+#: app/camera_traps/routes.py:1309
 msgid "Location ID is required"
 msgstr "Необхідне ID локації"
 
-#: app/camera_traps/routes.py:1223
+#: app/camera_traps/routes.py:1317
 msgid "Batch створено успішно"
 msgstr "Batch successfully created"
 
-#: app/camera_traps/routes.py:1228 app/camera_traps/templates/upload.html:629
+#: app/camera_traps/routes.py:1322 app/camera_traps/templates/upload.html:629
 msgid "Помилка створення batch"
 msgstr "Error creating batch"
 
-#: app/camera_traps/routes.py:1242
+#: app/camera_traps/routes.py:1336
 msgid "Відсутні обов'язкові параметри"
 msgstr "Required parameters are missing"
 
-#: app/camera_traps/routes.py:1245 app/camera_traps/routes.py:1516
+#: app/camera_traps/routes.py:1339 app/camera_traps/routes.py:1610
 msgid "Файл не передано"
 msgstr "No file uploaded"
 
-#: app/camera_traps/routes.py:1259
+#: app/camera_traps/routes.py:1353
 msgid "Файл успішно завантажено"
 msgstr "File uploaded successfully"
 
-#: app/camera_traps/routes.py:1266
+#: app/camera_traps/routes.py:1360
 msgid "Помилка обробки файлу"
 msgstr "File processing error"
 
-#: app/camera_traps/routes.py:1278 app/camera_traps/routes.py:1389
+#: app/camera_traps/routes.py:1372 app/camera_traps/routes.py:1483
 msgid "Необхідний ID для batch"
 msgstr "Batch ID is required"
 
-#: app/camera_traps/routes.py:1286
+#: app/camera_traps/routes.py:1380
 msgid "Batch успішно завершено та згруповано в серії"
 msgstr "Batch successfully completed and grouped into series"
 
-#: app/camera_traps/routes.py:1293
+#: app/camera_traps/routes.py:1387
 msgid "Помилка завершення batch"
 msgstr "Batch completion error"
 
-#: app/camera_traps/routes.py:1305 app/camera_traps/routes.py:1396
+#: app/camera_traps/routes.py:1399 app/camera_traps/routes.py:1490
 msgid "Batch не знайдено"
 msgstr "Batch not found"
 
-#: app/camera_traps/routes.py:1311
+#: app/camera_traps/routes.py:1405
 msgid "Помилка отримання статусу batch"
 msgstr "Batch status retrieval error"
 
-#: app/camera_traps/routes.py:1400
+#: app/camera_traps/routes.py:1494
 #, python-format
 msgid "Batch у стані '%(s)s', фіналізація неможлива"
 msgstr "Batch is in state '%(s)s', finalization not possible"
 
-#: app/camera_traps/routes.py:1415
+#: app/camera_traps/routes.py:1509
 msgid "Групування запущено у фоні. Очікуйте..."
 msgstr "Grouping started in the background. Please wait..."
 
-#: app/camera_traps/routes.py:1420
+#: app/camera_traps/routes.py:1514
 msgid "Помилка фіналізації batch"
 msgstr "Batch finalization error"
 
-#: app/camera_traps/routes.py:1445
+#: app/camera_traps/routes.py:1539
 msgid "Помилка отримання списку файлів"
 msgstr "Error retrieving file list"
 
-#: app/camera_traps/routes.py:1493
+#: app/camera_traps/routes.py:1587
 msgid "-- Будь ласка, виберіть локацію --"
 msgstr "-- Please select a location --"
 
-#: app/camera_traps/routes.py:1527 app/camera_traps/routes.py:1552
+#: app/camera_traps/routes.py:1621 app/camera_traps/routes.py:1646
 #: app/camera_traps/templates/import_classification.html:129
 msgid "Оберіть локацію"
 msgstr "Select a location"
 
-#: app/camera_traps/routes.py:1539
+#: app/camera_traps/routes.py:1633
 msgid "Помилка прев’ю імпорту"
 msgstr "Import preview error"
 
-#: app/camera_traps/routes.py:1554
+#: app/camera_traps/routes.py:1648
 #: app/camera_traps/templates/import_classification.html:135
 msgid "Оберіть рівень моделі"
 msgstr "Select a model level"
 
-#: app/camera_traps/routes.py:1563
+#: app/camera_traps/routes.py:1657
 msgid "Недопустимий рівень моделі"
 msgstr "Invalid model level"
 
-#: app/camera_traps/routes.py:1572
+#: app/camera_traps/routes.py:1666
 msgid "Помилка імпорту класифікації"
 msgstr "Classification import error"
 
-#: app/camera_traps/routes.py:1594
+#: app/camera_traps/routes.py:1688
 msgid "Спостереження або фотографію не знайдено."
 msgstr "Observation or photo not found."
 
-#: app/camera_traps/routes.py:1601
+#: app/camera_traps/routes.py:1695
 msgid "У цьому спостереженні немає фотографій."
 msgstr "There are no photos in this observation."
 
-#: app/camera_traps/routes.py:1650
+#: app/camera_traps/routes.py:1744
 msgid "Помилка завантаження фотографії."
 msgstr "Error loading photo."
 
-#: app/camera_traps/routes.py:2185
+#: app/camera_traps/routes.py:2279
 msgid "Неправильний формат даних."
 msgstr "Incorrect data format."
 
-#: app/camera_traps/routes.py:2189
-msgid "Серію не знайдено."
-msgstr "Series not found."
-
-#: app/camera_traps/routes.py:2231
+#: app/camera_traps/routes.py:2325
 msgid "Ідентифікацію для серії успішно збережено!"
 msgstr "Series identification saved successfully!"
 
-#: app/camera_traps/routes.py:2235
+#: app/camera_traps/routes.py:2329
 msgid "Помилка бази даних."
 msgstr "Database error."
 
-#: app/camera_traps/routes.py:2247 app/camera_traps/routes.py:3310
-#: app/camera_traps/routes.py:3729
+#: app/camera_traps/routes.py:2341 app/camera_traps/routes.py:3404
+#: app/camera_traps/routes.py:3823
 msgid "Локацію не знайдено."
 msgstr "Location not found."
 
-#: app/camera_traps/routes.py:2268
+#: app/camera_traps/routes.py:2362
 msgid "Помилка отримання даних локації."
 msgstr "Error retrieving location data."
 
-#: app/camera_traps/routes.py:2288
+#: app/camera_traps/routes.py:2382
 msgid "Недостатньо прав для режиму перегляду"
 msgstr "Insufficient permissions for review mode"
 
-#: app/camera_traps/routes.py:2420
-#: app/camera_traps/templates/identification.html:319
+#: app/camera_traps/routes.py:2514
+#: app/camera_traps/templates/identification.html:320
 msgid "Немає серій для перегляду, які б відповідали критеріям."
 msgstr "No series available for review that match the criteria."
 
-#: app/camera_traps/routes.py:2422
-#: app/camera_traps/templates/identification.html:318
+#: app/camera_traps/routes.py:2516
+#: app/camera_traps/templates/identification.html:319
 msgid "Вітаємо! Ви ідентифікували всі доступні серії фотографій."
 msgstr "Congratulations! You have identified all available photo series."
 
-#: app/camera_traps/routes.py:2466
+#: app/camera_traps/routes.py:2560
 #: app/camera_traps/templates/photo_viewer.html:100
 msgid "Пусто (немає тварин)"
 msgstr "Empty (no animals)"
 
-#: app/camera_traps/routes.py:2468
+#: app/camera_traps/routes.py:2562
 msgid "Інший вид"
 msgstr "Other species"
 
-#: app/camera_traps/routes.py:2470
+#: app/camera_traps/routes.py:2564
 msgid "Людина"
 msgstr "Human"
 
-#: app/camera_traps/routes.py:2472
+#: app/camera_traps/routes.py:2566
 msgid "Автомобіль"
 msgstr "Car"
 
-#: app/camera_traps/routes.py:2474
+#: app/camera_traps/routes.py:2568
 msgid "Мотоцикл"
 msgstr "Motorcycle"
 
-#: app/camera_traps/routes.py:2524 app/camera_traps/templates/upload.html:439
+#: app/camera_traps/routes.py:2618 app/camera_traps/templates/upload.html:439
 #: app/camera_traps/templates/upload_fast.html:485
 msgid "Назва та координати є обов'язковими."
 msgstr "Name and coordinates are required."
 
-#: app/camera_traps/routes.py:2531
+#: app/camera_traps/routes.py:2625
 msgid "Місце з такими координатами вже існує: "
 msgstr "A location with these coordinates already exists: "
 
-#: app/camera_traps/routes.py:2552
+#: app/camera_traps/routes.py:2646
 msgid "Нове місце успішно створено!"
 msgstr "New location created successfully!"
 
-#: app/camera_traps/routes.py:2556
+#: app/camera_traps/routes.py:2650
 msgid "Помилка створення місця."
 msgstr "Error creating location."
 
-#: app/camera_traps/routes.py:2568
+#: app/camera_traps/routes.py:2662
 msgid "Неправильно вказане місце."
 msgstr "Incorrect location specified."
 
-#: app/camera_traps/routes.py:2570
+#: app/camera_traps/routes.py:2664
 msgid "Файли не були передані."
 msgstr "No files were uploaded."
 
-#: app/camera_traps/routes.py:2573
+#: app/camera_traps/routes.py:2667
 msgid "Файли успішно оброблені!"
 msgstr "Files processed successfully!"
 
-#: app/camera_traps/routes.py:2578
+#: app/camera_traps/routes.py:2672
 msgid "Сталася невідома помилка під час обробки файлів."
 msgstr "An unknown error occurred while processing the files."
 
-#: app/camera_traps/routes.py:2596
+#: app/camera_traps/routes.py:2690
 msgid "Очищення завершено. Файлів для видалення не знайдено."
 msgstr "Cleanup completed. No files found to delete."
 
-#: app/camera_traps/routes.py:2602
+#: app/camera_traps/routes.py:2696
 msgid "Під час процесу очищення сталася несподівана помилка. Перевірте логи."
 msgstr "An unexpected error occurred during the cleanup process. Check the logs."
 
-#: app/camera_traps/routes.py:2655
+#: app/camera_traps/routes.py:2749
 msgid "Аналіз запущено. Очікуйте..."
 msgstr "Analysis started. Please wait..."
 
-#: app/camera_traps/routes.py:2659
+#: app/camera_traps/routes.py:2753
 msgid "Помилка запуску аналізу"
 msgstr "Error starting analysis"
 
-#: app/camera_traps/routes.py:2675
+#: app/camera_traps/routes.py:2769
 msgid "Виконання запущено у фоні."
 msgstr "Execution started in the background."
 
-#: app/camera_traps/routes.py:2687
+#: app/camera_traps/routes.py:2781
 msgid "Помилка запуску виконання"
 msgstr "Error starting execution"
 
-#: app/camera_traps/routes.py:2699
+#: app/camera_traps/routes.py:2793
 msgid "Запис не знайдено"
 msgstr "Record not found"
 
-#: app/camera_traps/routes.py:2703
+#: app/camera_traps/routes.py:2797
 msgid "Помилка отримання статусу"
 msgstr "Error retrieving status"
 
-#: app/camera_traps/routes.py:2717
+#: app/camera_traps/routes.py:2811
 msgid "Помилка перерахунку консенсусу. Перевірте логи."
 msgstr "Consensus recalculation error. Please check the logs."
 
-#: app/camera_traps/routes.py:2791
+#: app/camera_traps/routes.py:2885
 #: app/camera_traps/templates/identification.html:72
-#: app/camera_traps/templates/identification.html:381
+#: app/camera_traps/templates/identification.html:382
 #: app/pam/templates/pam_verification_interface.html:23
 #: app/pam/templates/pam_verification_interface.html:178
 msgid "-- Всі види --"
 msgstr "-- All species --"
 
-#: app/camera_traps/routes.py:2814
+#: app/camera_traps/routes.py:2908
 msgid "Помилка завантаження галереї."
 msgstr "Gallery loading error."
 
-#: app/camera_traps/routes.py:2860 app/camera_traps/templates/gallery.html:191
+#: app/camera_traps/routes.py:2954 app/camera_traps/templates/gallery.html:191
 msgid "Для вибраного виду немає фото у вибраному."
 msgstr "There are no photos available for the selected species."
 
-#: app/camera_traps/routes.py:2948
+#: app/camera_traps/routes.py:3042
 msgid "Фото видалено з вибраного"
 msgstr "Photo removed from favorites"
 
-#: app/camera_traps/routes.py:3047
+#: app/camera_traps/routes.py:3141
 msgid "Помилка завантаження сторінки управління локаціями."
 msgstr "Error loading the location management page."
 
-#: app/camera_traps/routes.py:3241
+#: app/camera_traps/routes.py:3335
 msgid "Помилка завантаження сторінки управління деплойментами."
 msgstr "Error loading the deployment management page."
 
-#: app/camera_traps/routes.py:3255 app/camera_traps/routes.py:3272
-#: app/camera_traps/routes.py:3342
+#: app/camera_traps/routes.py:3349 app/camera_traps/routes.py:3366
+#: app/camera_traps/routes.py:3436
 msgid "Деплоймент не знайдено."
 msgstr "Deployment not found."
 
-#: app/camera_traps/routes.py:3257 app/camera_traps/routes.py:3716
-#: app/camera_traps/routes.py:3745 app/camera_traps/routes.py:4300
-#: app/camera_traps/routes.py:4366 app/camera_traps/routes.py:4449
+#: app/camera_traps/routes.py:3351 app/camera_traps/routes.py:3810
+#: app/camera_traps/routes.py:3839 app/camera_traps/routes.py:4394
+#: app/camera_traps/routes.py:4460 app/camera_traps/routes.py:4543
 msgid "Немає доступу."
 msgstr "Access denied."
 
-#: app/camera_traps/routes.py:3274 app/camera_traps/routes.py:3344
+#: app/camera_traps/routes.py:3368 app/camera_traps/routes.py:3438
 msgid "Немає доступу до цього деплойменту."
 msgstr "No access to this deployment."
 
-#: app/camera_traps/routes.py:3278 app/camera_traps/routes.py:3314
+#: app/camera_traps/routes.py:3372 app/camera_traps/routes.py:3408
 msgid "Назва деплойменту обов'язкова."
 msgstr "Deployment name is required."
 
-#: app/camera_traps/routes.py:3282
+#: app/camera_traps/routes.py:3376
 msgid "Деплоймент оновлено успішно!"
 msgstr "Deployment updated successfully!"
 
-#: app/camera_traps/routes.py:3286 app/camera_traps/routes.py:3324
+#: app/camera_traps/routes.py:3380 app/camera_traps/routes.py:3418
 msgid "Невірний формат дати/числа."
 msgstr "Invalid date/number format."
 
-#: app/camera_traps/routes.py:3290 app/camera_traps/routes.py:3328
-#: app/camera_traps/routes.py:3769
+#: app/camera_traps/routes.py:3384 app/camera_traps/routes.py:3422
+#: app/camera_traps/routes.py:3863
 msgid "Помилка збереження даних."
 msgstr "Data save error."
 
-#: app/camera_traps/routes.py:3305
+#: app/camera_traps/routes.py:3399
 msgid "Не вказано локацію."
 msgstr "No location specified."
 
-#: app/camera_traps/routes.py:3308 app/camera_traps/routes.py:3724
-#: app/camera_traps/routes.py:4308 app/camera_traps/routes.py:4374
-#: app/camera_traps/routes.py:4457
+#: app/camera_traps/routes.py:3402 app/camera_traps/routes.py:3818
+#: app/camera_traps/routes.py:4402 app/camera_traps/routes.py:4468
+#: app/camera_traps/routes.py:4551
 msgid "Немає доступу до цієї локації."
 msgstr "Access to this location denied."
 
-#: app/camera_traps/routes.py:3320
+#: app/camera_traps/routes.py:3414
 msgid "Деплоймент створено успішно!"
 msgstr "Deployment created successfully!"
 
-#: app/camera_traps/routes.py:3348
+#: app/camera_traps/routes.py:3442
 msgid "Деплоймент видалено."
 msgstr "Deployment deleted."
 
-#: app/camera_traps/routes.py:3353
+#: app/camera_traps/routes.py:3447
 msgid "Помилка видалення."
 msgstr "Deletion error."
 
-#: app/camera_traps/routes.py:3427 app/camera_traps/routes.py:3799
+#: app/camera_traps/routes.py:3521 app/camera_traps/routes.py:3893
 msgid "Немає доступу до цієї установи."
 msgstr "Access to this institution denied."
 
-#: app/camera_traps/routes.py:3518
+#: app/camera_traps/routes.py:3612
 msgid "Помилка експорту."
 msgstr "Export error."
 
-#: app/camera_traps/routes.py:3697
+#: app/camera_traps/routes.py:3791
 msgid "Помилка завантаження сторінки якості даних."
 msgstr "Error loading the data quality page."
 
-#: app/camera_traps/routes.py:3765
+#: app/camera_traps/routes.py:3859
 msgid "Дані локації оновлено успішно!"
 msgstr "Location data updated successfully!"
 
-#: app/camera_traps/routes.py:3792
+#: app/camera_traps/routes.py:3886
 #: app/camera_traps/templates/manage_locations.html:594
 #: app/pam/templates/manage_pam_locations.html:649
 #: app/pam/templates/pam_import.html:459
 msgid "Вкажіть назву локації."
 msgstr "Enter the location name."
 
-#: app/camera_traps/routes.py:3794
+#: app/camera_traps/routes.py:3888
 msgid "Вкажіть координати."
 msgstr "Please specify coordinates."
 
-#: app/camera_traps/routes.py:3827
+#: app/camera_traps/routes.py:3921
 msgid "Локацію створено успішно!"
 msgstr "Location created successfully!"
 
-#: app/camera_traps/routes.py:3832
+#: app/camera_traps/routes.py:3926
 msgid "Помилка сервера при створенні локації."
 msgstr "Server error while creating the location."
 
-#: app/camera_traps/routes.py:3856
+#: app/camera_traps/routes.py:3950
 msgid ""
 "Під час процесу видалення файлів сталася несподівана помилка. Перевірте "
 "логи."
@@ -577,77 +596,77 @@ msgstr ""
 "An unexpected error occurred during the file removing process. Please "
 "check the logs."
 
-#: app/camera_traps/routes.py:3871
+#: app/camera_traps/routes.py:3965
 msgid "Процес перерахунку аналітики успішно завершено."
 msgstr "Analytics recalculation process was successfully completed."
 
-#: app/camera_traps/routes.py:3875
+#: app/camera_traps/routes.py:3969
 msgid "Під час перерахунку аналітики сталася помилка. Перевірте логи."
 msgstr "An error occurred during analytics recalculation. Check the logs."
 
-#: app/camera_traps/routes.py:4225
+#: app/camera_traps/routes.py:4319
 #: app/pam/templates/manage_pam_locations.html:328
 msgid "Немає даних про обслуговування"
 msgstr "No maintenance data"
 
-#: app/camera_traps/routes.py:4261
+#: app/camera_traps/routes.py:4355
 msgid "Прогноз за кількістю фото"
 msgstr "Forecast by number of photos"
 
-#: app/camera_traps/routes.py:4265
+#: app/camera_traps/routes.py:4359
 #: app/camera_traps/templates/service_log.html:335
 msgid "Прогноз за часом"
 msgstr "Forecast by time"
 
-#: app/camera_traps/routes.py:4329
+#: app/camera_traps/routes.py:4423
 msgid "Не замінювались"
 msgstr "Not replaced"
 
-#: app/camera_traps/routes.py:4360 app/camera_traps/routes.py:4464
+#: app/camera_traps/routes.py:4454 app/camera_traps/routes.py:4558
 msgid "Не всі обов'язкові поля заповнені."
 msgstr "Not all required fields are filled in."
 
-#: app/camera_traps/routes.py:4415
+#: app/camera_traps/routes.py:4509
 msgid "Запис успішно додано до журналу!"
 msgstr "Record successfully added to the log!"
 
-#: app/camera_traps/routes.py:4421
+#: app/camera_traps/routes.py:4515
 msgid "Передано некоректні дані."
 msgstr "Invalid data submitted."
 
-#: app/camera_traps/routes.py:4425
+#: app/camera_traps/routes.py:4519
 msgid "Помилка сервера при збереженні запису."
 msgstr "Server error while saving the record."
 
-#: app/camera_traps/routes.py:4438
+#: app/camera_traps/routes.py:4532
 msgid "Запис не знайдено."
 msgstr "Record not found."
 
-#: app/camera_traps/routes.py:4445
+#: app/camera_traps/routes.py:4539
 msgid "Недостатньо прав для редагування цього запису."
 msgstr "Insufficient permissions to edit this record."
 
-#: app/camera_traps/routes.py:4489
+#: app/camera_traps/routes.py:4583
 msgid "Запис оновлено успішно!"
 msgstr "Record updated successfully!"
 
-#: app/camera_traps/routes.py:4493
+#: app/camera_traps/routes.py:4587
 msgid "Некоректні дані."
 msgstr "Invalid data."
 
-#: app/camera_traps/routes.py:4497
+#: app/camera_traps/routes.py:4591
 msgid "Помилка сервера."
 msgstr "Server error."
 
-#: app/camera_traps/routes.py:4512
+#: app/camera_traps/routes.py:4606
 msgid "Перерахунок статистики успішно завершено! Карта буде оновлена."
 msgstr "Statistics recalculated successfully! The map will be updated."
 
-#: app/camera_traps/routes.py:4516
+#: app/camera_traps/routes.py:4610
 msgid "Під час перерахунку сталася помилка."
 msgstr "An error occurred during recalculation."
 
-#: app/camera_traps/routes.py:5089
+#: app/camera_traps/routes.py:5183
 msgid "Помилка завантаження сторінки."
 msgstr "Error loading page."
 
@@ -671,35 +690,39 @@ msgstr "Admin panel"
 msgid "Технічні дії над базою даних фотопасток. Доступно лише адміністраторам."
 msgstr "Maintenance actions on the camera trap database. Admins only."
 
-#: app/camera_traps/templates/admin.html:17
+#: app/camera_traps/templates/admin.html:15
+msgid "На повторний розгляд"
+msgstr "For review"
+
+#: app/camera_traps/templates/admin.html:23
 msgid "AI-класифікатор"
 msgstr "AI Classifier"
 
-#: app/camera_traps/templates/admin.html:21
+#: app/camera_traps/templates/admin.html:27
 msgid "Активна модель:"
 msgstr "Active model:"
 
-#: app/camera_traps/templates/admin.html:23
+#: app/camera_traps/templates/admin.html:29
 msgid "зареєстрована"
 msgstr "registered"
 
-#: app/camera_traps/templates/admin.html:27
+#: app/camera_traps/templates/admin.html:33
 msgid "Жодна модель ще не запускалася. Перший прогін зареєструє її автоматично."
 msgstr "No model has been run yet. The first run will register it automatically."
 
-#: app/camera_traps/templates/admin.html:35
+#: app/camera_traps/templates/admin.html:41
 msgid "Класифіковано ШІ"
 msgstr "Classified by AI"
 
-#: app/camera_traps/templates/admin.html:39
+#: app/camera_traps/templates/admin.html:45
 msgid "Лишилось до класифікації"
 msgstr "Remaining"
 
-#: app/camera_traps/templates/admin.html:46
+#: app/camera_traps/templates/admin.html:52
 msgid "Запустити AI на N серій"
 msgstr "Run AI on N series"
 
-#: app/camera_traps/templates/admin.html:48
+#: app/camera_traps/templates/admin.html:54
 msgid ""
 "Додає запит у чергу. Worker (cron) підхопить його за 1-3 хв і обробить "
 "вказану кількість найстаріших pending серій. Прогнози зберігаються в "
@@ -709,52 +732,52 @@ msgstr ""
 " and classify the specified number of oldest pending series. Predictions "
 "are saved to a separate table and do not affect final identifications."
 
-#: app/camera_traps/templates/admin.html:57
-#: app/camera_traps/templates/admin.html:122
-#: app/camera_traps/templates/admin.html:135
+#: app/camera_traps/templates/admin.html:63
+#: app/camera_traps/templates/admin.html:128
+#: app/camera_traps/templates/admin.html:141
 msgid "Запустити"
 msgstr "Run"
 
-#: app/camera_traps/templates/admin.html:63
+#: app/camera_traps/templates/admin.html:69
 msgid "Останні запити"
 msgstr "Recent requests"
 
-#: app/camera_traps/templates/admin.html:68
-#: app/camera_traps/templates/identification.html:313
+#: app/camera_traps/templates/admin.html:74
+#: app/camera_traps/templates/identification.html:314
 msgid "Час"
 msgstr "Time"
 
-#: app/camera_traps/templates/admin.html:69
+#: app/camera_traps/templates/admin.html:75
 msgid "Джерело"
 msgstr "Source"
 
-#: app/camera_traps/templates/admin.html:70
+#: app/camera_traps/templates/admin.html:76
 msgid "Серій"
 msgstr "Series"
 
-#: app/camera_traps/templates/admin.html:71
+#: app/camera_traps/templates/admin.html:77
 #: app/pam/templates/pam_verification_segments.html:270
 #: app/sdm/templates/sdm/dashboard.html:133
 msgid "Статус"
 msgstr "Status"
 
-#: app/camera_traps/templates/admin.html:72
+#: app/camera_traps/templates/admin.html:78
 msgid "Оброблено"
 msgstr "Processed"
 
-#: app/camera_traps/templates/admin.html:73
+#: app/camera_traps/templates/admin.html:79
 msgid "Тривалість"
 msgstr "Duration"
 
-#: app/camera_traps/templates/admin.html:111
+#: app/camera_traps/templates/admin.html:117
 msgid "Перерахунки"
 msgstr "Recalculations"
 
-#: app/camera_traps/templates/admin.html:116
+#: app/camera_traps/templates/admin.html:122
 msgid "Перерахувати аналітику"
 msgstr "Recalculate analytics"
 
-#: app/camera_traps/templates/admin.html:117
+#: app/camera_traps/templates/admin.html:123
 msgid ""
 "Перерахунок усіх агрегатних таблиць для графіків і мапи. Може зайняти "
 "кілька хвилин."
@@ -762,7 +785,7 @@ msgstr ""
 "Recalculate all aggregate tables for charts and the map. May take a few "
 "minutes."
 
-#: app/camera_traps/templates/admin.html:121
+#: app/camera_traps/templates/admin.html:127
 msgid ""
 "Це запустить повний перерахунок всієї аналітики для графіків. Процес може"
 " зайняти кілька хвилин, залежно від обсягу даних. Продовжити?"
@@ -771,11 +794,11 @@ msgstr ""
 "The process may take several minutes depending on the volume of data. "
 "Continue?"
 
-#: app/camera_traps/templates/admin.html:129
+#: app/camera_traps/templates/admin.html:135
 msgid "Перерахувати консенсус"
 msgstr "Recalculate Consensus"
 
-#: app/camera_traps/templates/admin.html:130
+#: app/camera_traps/templates/admin.html:136
 msgid ""
 "Перерахунок консенсусних видів для всіх спостережень за результатами "
 "ідентифікацій користувачів."
@@ -783,71 +806,71 @@ msgstr ""
 "Recalculate consensus species for all observations from user "
 "identifications."
 
-#: app/camera_traps/templates/admin.html:134
+#: app/camera_traps/templates/admin.html:140
 msgid "Перерахувати консенсус для всіх спостережень?"
 msgstr "Recalculate consensus for all observations?"
 
-#: app/camera_traps/templates/admin.html:145
+#: app/camera_traps/templates/admin.html:151
 msgid "Сховище та батчі"
 msgstr "Storage & batches"
 
-#: app/camera_traps/templates/admin.html:147
+#: app/camera_traps/templates/admin.html:153
 msgid ""
 "Поточний стан перед очищенням нижче. Оновлюється при кожному відкритті "
 "сторінки."
 msgstr "Current state before the cleanup below. Refreshed on every page load."
 
-#: app/camera_traps/templates/admin.html:153
+#: app/camera_traps/templates/admin.html:159
 msgid "Серій готових до архівації"
 msgstr "Series ready for archival"
 
-#: app/camera_traps/templates/admin.html:156
+#: app/camera_traps/templates/admin.html:162
 msgid "МБ"
 msgstr "MB"
 
-#: app/camera_traps/templates/admin.html:157
+#: app/camera_traps/templates/admin.html:163
 msgid "Орієнтовно звільниться"
 msgstr "Estimated to be freed"
 
-#: app/camera_traps/templates/admin.html:161
+#: app/camera_traps/templates/admin.html:167
 msgid "Фото без серій (сироти)"
 msgstr "Photos without series (orphans)"
 
-#: app/camera_traps/templates/admin.html:165
+#: app/camera_traps/templates/admin.html:171
 #: app/pam/templates/pam_location_coverage.html:24
 #: app/pam/templates/pam_location_coverage.html:41
 #: app/pam/templates/pam_location_coverage.html:66
 msgid "год"
 msgstr "h"
 
-#: app/camera_traps/templates/admin.html:166
+#: app/camera_traps/templates/admin.html:172
 msgid "Вік найстарішого незавершеного батчу"
 msgstr "Oldest unfinished batch age"
 
-#: app/camera_traps/templates/admin.html:172
+#: app/camera_traps/templates/admin.html:178
 msgid "Батчі за статусом:"
 msgstr "Batches by status:"
 
-#: app/camera_traps/templates/admin.html:182
+#: app/camera_traps/templates/admin.html:188
 msgid "Очищення даних"
 msgstr "Data cleanup"
 
-#: app/camera_traps/templates/admin.html:187
+#: app/camera_traps/templates/admin.html:193
 msgid "Видалити визначені фото"
 msgstr "Delete Identified Photos"
 
-#: app/camera_traps/templates/admin.html:188
+#: app/camera_traps/templates/admin.html:194
 msgid ""
 "Видаляє файли фото, для яких уже завершено ідентифікацію. Мініатюри "
 "залишаються."
 msgstr "Deletes photo files for fully identified observations. Thumbnails remain."
 
-#: app/camera_traps/templates/admin.html:192
+#: app/camera_traps/templates/admin.html:198
 msgid "Ви впевнені, що хочете видалити файли старих фотографій?"
 msgstr "Are you sure you want to delete old photo files?"
 
-#: app/camera_traps/templates/admin.html:193
-#: app/camera_traps/templates/admin.html:206
+#: app/camera_traps/templates/admin.html:199
+#: app/camera_traps/templates/admin.html:212
 #: app/camera_traps/templates/manage_deployments.html:306
 #: app/templates/admin/admin_institutions_list.html:55
 #: app/templates/admin/admin_roles_list.html:67
@@ -857,11 +880,11 @@ msgstr "Are you sure you want to delete old photo files?"
 msgid "Видалити"
 msgstr "Delete"
 
-#: app/camera_traps/templates/admin.html:200
+#: app/camera_traps/templates/admin.html:206
 msgid "Видалити оригінали"
 msgstr "Delete originals"
 
-#: app/camera_traps/templates/admin.html:201
+#: app/camera_traps/templates/admin.html:207
 msgid ""
 "УВАГА: видаляє ВСІ оригінали фото окрім позначених як «вибране». Дія "
 "НЕЗВОРОТНЯ."
@@ -869,7 +892,7 @@ msgstr ""
 "WARNING: deletes ALL original photos except those marked as 'favorite'. "
 "IRREVERSIBLE."
 
-#: app/camera_traps/templates/admin.html:205
+#: app/camera_traps/templates/admin.html:211
 msgid ""
 "УВАГА! Будуть видалені ВСІ оригінали фото, крім тих, що позначені як "
 "'вибране'. Мініатюри залишаться. Ця дія НЕЗВОРОТНЯ. Продовжити?"
@@ -878,11 +901,11 @@ msgstr ""
 "'favorites'. Thumbnails will remain. This action is IRREVERSIBLE. "
 "Continue?"
 
-#: app/camera_traps/templates/admin.html:213
+#: app/camera_traps/templates/admin.html:219
 msgid "Очистити невдалі завантаження та сироти"
 msgstr "Clean up failed uploads and orphans"
 
-#: app/camera_traps/templates/admin.html:215
+#: app/camera_traps/templates/admin.html:221
 msgid ""
 "Двофазно: спочатку аналіз (звіт), потім підтверджене видалення. Захист "
 "від активних завантажень — probe 10с. Ніколи не чіпає фото в серіях, у "
@@ -892,97 +915,97 @@ msgstr ""
 "against active uploads — 10s probe. Never touches photos in series, in "
 "favorites, in processing, or files younger than 5 min."
 
-#: app/camera_traps/templates/admin.html:219
+#: app/camera_traps/templates/admin.html:225
 msgid "Запустити аналіз"
 msgstr "Run analysis"
 
-#: app/camera_traps/templates/admin.html:229
-#: app/camera_traps/templates/admin.html:402
+#: app/camera_traps/templates/admin.html:235
+#: app/camera_traps/templates/admin.html:408
 msgid "Аналіз очищення"
 msgstr "Cleanup analysis"
 
-#: app/camera_traps/templates/admin.html:234
+#: app/camera_traps/templates/admin.html:240
 msgid "Очікування..."
 msgstr "Waiting..."
 
-#: app/camera_traps/templates/admin.html:239
+#: app/camera_traps/templates/admin.html:245
 msgid "Захищено активних завантажень"
 msgstr "Active uploads protected"
 
-#: app/camera_traps/templates/admin.html:240
+#: app/camera_traps/templates/admin.html:246
 msgid "Невдалих/застряглих batchʼів"
 msgstr "Failed/stuck batches"
 
-#: app/camera_traps/templates/admin.html:241
+#: app/camera_traps/templates/admin.html:247
 msgid "Сирітських фото у БД"
 msgstr "Orphan photos in DB"
 
-#: app/camera_traps/templates/admin.html:242
+#: app/camera_traps/templates/admin.html:248
 msgid "Файлів-сиріт на диску"
 msgstr "Orphan files on disk"
 
-#: app/camera_traps/templates/admin.html:243
+#: app/camera_traps/templates/admin.html:249
 msgid "Буде звільнено приблизно"
 msgstr "Will free approximately"
 
-#: app/camera_traps/templates/admin.html:247
+#: app/camera_traps/templates/admin.html:253
 msgid "Перші 20 імен файлів для контролю"
 msgstr "First 20 filenames for review"
 
-#: app/camera_traps/templates/admin.html:252
+#: app/camera_traps/templates/admin.html:258
 msgid "Результати виконання"
 msgstr "Execution results"
 
-#: app/camera_traps/templates/admin.html:254
+#: app/camera_traps/templates/admin.html:260
 msgid "Batchʼів марковано failed"
 msgstr "Batches marked failed"
 
-#: app/camera_traps/templates/admin.html:255
+#: app/camera_traps/templates/admin.html:261
 msgid "Фото видалено"
 msgstr "Photos deleted"
 
-#: app/camera_traps/templates/admin.html:256
+#: app/camera_traps/templates/admin.html:262
 msgid "Файлів видалено"
 msgstr "Files deleted"
 
-#: app/camera_traps/templates/admin.html:257
+#: app/camera_traps/templates/admin.html:263
 msgid "Звільнено байтів"
 msgstr "Bytes freed"
 
-#: app/camera_traps/templates/admin.html:264
+#: app/camera_traps/templates/admin.html:270
 msgid "Виконати очищення"
 msgstr "Run cleanup"
 
-#: app/camera_traps/templates/admin.html:267
+#: app/camera_traps/templates/admin.html:273
 #: app/pam/templates/pam_evaluation_species_detail.html:24
 msgid "Закрити"
 msgstr "Close"
 
-#: app/camera_traps/templates/admin.html:310
+#: app/camera_traps/templates/admin.html:316
 msgid "Запуск..."
 msgstr "Starting..."
 
-#: app/camera_traps/templates/admin.html:353
+#: app/camera_traps/templates/admin.html:359
 msgid "(порожньо)"
 msgstr "(empty)"
 
-#: app/camera_traps/templates/admin.html:357
+#: app/camera_traps/templates/admin.html:363
 msgid "Готово до виконання"
 msgstr "Ready to execute"
 
-#: app/camera_traps/templates/admin.html:368
+#: app/camera_traps/templates/admin.html:374
 msgid "Виконано"
 msgstr "Completed"
 
-#: app/camera_traps/templates/admin.html:380
+#: app/camera_traps/templates/admin.html:386
 msgid "Аналіз триває (probe 10с)..."
 msgstr "Analysis in progress (10s probe)..."
 
-#: app/camera_traps/templates/admin.html:381
+#: app/camera_traps/templates/admin.html:387
 msgid "Видалення триває..."
 msgstr "Deletion in progress..."
 
-#: app/camera_traps/templates/admin.html:387
+#: app/camera_traps/templates/admin.html:393
 #: app/camera_traps/templates/ct_data_export.html:268
 #: app/camera_traps/templates/species_detailed.html:159
 #: app/camera_traps/templates/upload.html:463
@@ -992,31 +1015,31 @@ msgstr "Deletion in progress..."
 msgid "Помилка"
 msgstr "Error"
 
-#: app/camera_traps/templates/admin.html:395
+#: app/camera_traps/templates/admin.html:401
 msgid "Запис звіту не знайдено"
 msgstr "Report record not found"
 
-#: app/camera_traps/templates/admin.html:407
+#: app/camera_traps/templates/admin.html:413
 msgid "Аналіз запущено, probe 10с..."
 msgstr "Analysis started, 10s probe..."
 
-#: app/camera_traps/templates/admin.html:410
+#: app/camera_traps/templates/admin.html:416
 msgid "Помилка запуску"
 msgstr "Startup error"
 
-#: app/camera_traps/templates/admin.html:416
+#: app/camera_traps/templates/admin.html:422
 msgid "Виконати очищення? Дія незворотня."
 msgstr "Run cleanup? This action is irreversible."
 
-#: app/camera_traps/templates/admin.html:418
+#: app/camera_traps/templates/admin.html:424
 msgid "Виконання очищення"
 msgstr "Running cleanup"
 
-#: app/camera_traps/templates/admin.html:420
+#: app/camera_traps/templates/admin.html:426
 msgid "Повторний probe + видалення..."
 msgstr "Re-probe + deletion..."
 
-#: app/camera_traps/templates/admin.html:426
+#: app/camera_traps/templates/admin.html:432
 msgid "Помилка виконання"
 msgstr "Execution error"
 
@@ -2131,6 +2154,31 @@ msgstr "Normal"
 msgid "Немає даних"
 msgstr "No data"
 
+#: app/camera_traps/templates/flagged_list.html:3
+#: app/camera_traps/templates/flagged_list.html:10
+msgid "Серії на повторний розгляд"
+msgstr "Series for review"
+
+#: app/camera_traps/templates/flagged_list.html:11
+msgid "Серії, які верифікатори позначили для перегляду. Усього:"
+msgstr "Series flagged by verifiers for review. Total:"
+
+#: app/camera_traps/templates/flagged_list.html:16
+msgid "Наразі немає позначених серій."
+msgstr "No flagged series yet."
+
+#: app/camera_traps/templates/flagged_list.html:24
+msgid "Прев’ю серії"
+msgstr "Series preview"
+
+#: app/camera_traps/templates/flagged_list.html:36
+msgid "(без коментаря)"
+msgstr "(no comment)"
+
+#: app/camera_traps/templates/flagged_list.html:41
+msgid "Зняти позначку"
+msgstr "Remove flag"
+
 #: app/camera_traps/templates/gallery.html:3
 #: app/camera_traps/templates/gallery.html:12
 msgid "Галерея вибраних фото"
@@ -2222,7 +2270,7 @@ msgid "Час:"
 msgstr "Time:"
 
 #: app/camera_traps/templates/gallery.html:214
-#: app/camera_traps/templates/identification.html:314
+#: app/camera_traps/templates/identification.html:315
 #: app/camera_traps/templates/photo_viewer.html:58
 msgid "Фото"
 msgstr "Photo"
@@ -2294,12 +2342,12 @@ msgid "AI вид:"
 msgstr "AI species:"
 
 #: app/camera_traps/templates/identification.html:43
-#: app/camera_traps/templates/identification.html:443
+#: app/camera_traps/templates/identification.html:444
 msgid "AI ще не виконував класифікацію — список порожній."
 msgstr "AI has not been run yet — the list is empty."
 
 #: app/camera_traps/templates/identification.html:44
-#: app/camera_traps/templates/identification.html:441
+#: app/camera_traps/templates/identification.html:442
 msgid "Будь-який"
 msgstr "Any"
 
@@ -2312,7 +2360,7 @@ msgid "Користувач:"
 msgstr "User:"
 
 #: app/camera_traps/templates/identification.html:66
-#: app/camera_traps/templates/identification.html:375
+#: app/camera_traps/templates/identification.html:376
 msgid "-- Всі користувачі --"
 msgstr "-- All users --"
 
@@ -2357,31 +2405,39 @@ msgstr "Send"
 msgid "Пропустити"
 msgstr "Skip"
 
-#: app/camera_traps/templates/identification.html:160
+#: app/camera_traps/templates/identification.html:145
+msgid "Позначити серію на повторний розгляд"
+msgstr "Flag this series for review"
+
+#: app/camera_traps/templates/identification.html:145
+msgid "Прапорець"
+msgstr "Flag"
+
+#: app/camera_traps/templates/identification.html:161
 msgid "Режим перегляду визначених серій"
 msgstr "Review mode for identified series"
 
-#: app/camera_traps/templates/identification.html:177
+#: app/camera_traps/templates/identification.html:178
 msgid "Загальні опції"
 msgstr "General Options"
 
-#: app/camera_traps/templates/identification.html:189
+#: app/camera_traps/templates/identification.html:190
 msgid "Ссавці"
 msgstr "Mammals"
 
-#: app/camera_traps/templates/identification.html:190
+#: app/camera_traps/templates/identification.html:191
 msgid "Птахи"
 msgstr "Birds"
 
-#: app/camera_traps/templates/identification.html:191
+#: app/camera_traps/templates/identification.html:192
 msgid "Інші"
 msgstr "Other"
 
-#: app/camera_traps/templates/identification.html:209
+#: app/camera_traps/templates/identification.html:210
 msgid "Інші категорії"
 msgstr "Other categories"
 
-#: app/camera_traps/templates/identification.html:312
+#: app/camera_traps/templates/identification.html:313
 #: app/camera_traps/templates/upload.html:30
 #: app/camera_traps/templates/upload_fast.html:92
 #: app/pam/templates/pam_import.html:40
@@ -2389,11 +2445,11 @@ msgstr "Other categories"
 msgid "Локація"
 msgstr "Location"
 
-#: app/camera_traps/templates/identification.html:315
+#: app/camera_traps/templates/identification.html:316
 msgid "Будь ласка, виберіть вид, або опцію \"Пусто\"."
 msgstr "Please select a species, or the \"Empty\" option."
 
-#: app/camera_traps/templates/identification.html:316
+#: app/camera_traps/templates/identification.html:317
 #: app/camera_traps/templates/manage_deployments.html:623
 #: app/camera_traps/templates/manage_locations.html:588
 #: app/camera_traps/templates/service_log.html:345
@@ -2402,25 +2458,29 @@ msgstr "Please select a species, or the \"Empty\" option."
 msgid "Помилка збереження:"
 msgstr "Save error:"
 
-#: app/camera_traps/templates/identification.html:317
+#: app/camera_traps/templates/identification.html:318
 msgid "Не вдалося завантажити дані."
 msgstr "Failed to load data."
 
-#: app/camera_traps/templates/identification.html:320
+#: app/camera_traps/templates/identification.html:321
 msgid "Залишилось вам:"
 msgstr "Pending for you:"
 
-#: app/camera_traps/templates/identification.html:536
+#: app/camera_traps/templates/identification.html:537
 msgid "AI пропонує"
 msgstr "AI suggests"
 
-#: app/camera_traps/templates/identification.html:537
+#: app/camera_traps/templates/identification.html:538
 msgid "впевненість"
 msgstr "confidence"
 
-#: app/camera_traps/templates/identification.html:538
+#: app/camera_traps/templates/identification.html:539
 msgid "особин"
 msgstr "individuals"
+
+#: app/camera_traps/templates/identification.html:684
+msgid "Коментар до позначки (за бажанням):"
+msgstr "Comment for the flag (optional):"
 
 #: app/camera_traps/templates/import_classification.html:3
 msgid "Імпорт класифікації DeepFaune"
