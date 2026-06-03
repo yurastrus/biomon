@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-03 15:11+0300\n"
+"POT-Creation-Date: 2026-06-03 15:31+0300\n"
 "PO-Revision-Date: 2025-08-05 22:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -455,7 +455,7 @@ msgstr ""
 #: app/camera_traps/templates/identification.html:72
 #: app/camera_traps/templates/identification.html:381
 #: app/pam/templates/pam_verification_interface.html:23
-#: app/pam/templates/pam_verification_interface.html:170
+#: app/pam/templates/pam_verification_interface.html:178
 msgid "-- Всі види --"
 msgstr ""
 
@@ -1232,7 +1232,7 @@ msgstr ""
 #: app/pam/templates/pam_evaluation_results.html:172
 #: app/pam/templates/pam_import.html:181
 #: app/pam/templates/pam_service_log.html:239
-#: app/pam/templates/pam_verification_interface.html:136
+#: app/pam/templates/pam_verification_interface.html:137
 #: app/pam/templates/pam_verification_segments.html:104
 msgid "Завантаження..."
 msgstr ""
@@ -2320,7 +2320,7 @@ msgid "Надіслати"
 msgstr ""
 
 #: app/camera_traps/templates/identification.html:144
-#: app/pam/templates/pam_verification_interface.html:117
+#: app/pam/templates/pam_verification_interface.html:118
 msgid "Пропустити"
 msgstr ""
 
@@ -5041,53 +5041,57 @@ msgstr ""
 msgid "Сонограма аудіосегменту"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:104
+#: app/pam/templates/pam_verification_interface.html:94
+msgid "Позиція відтворення"
+msgstr ""
+
+#: app/pam/templates/pam_verification_interface.html:105
 msgid "Ваш браузер не підтримує аудіо плеєр."
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:111
+#: app/pam/templates/pam_verification_interface.html:112
 msgid "ТАК - правильно"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:114
+#: app/pam/templates/pam_verification_interface.html:115
 msgid "НІ - неправильно"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:129
+#: app/pam/templates/pam_verification_interface.html:130
 msgid "Сегменти для верифікації відсутні"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:130
+#: app/pam/templates/pam_verification_interface.html:131
 msgid ""
 "Немає сегментів для верифікації за вибраними критеріями, або ви вже "
 "верифікували всі доступні сегменти."
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:299
+#: app/pam/templates/pam_verification_interface.html:400
 msgid "Помилка завантаження сегменту"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:334
+#: app/pam/templates/pam_verification_interface.html:435
 msgid "Немає активного сегменту для верифікації"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:353
+#: app/pam/templates/pam_verification_interface.html:454
 msgid "Верифікацію збережено! (Підтверджено)"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:354
+#: app/pam/templates/pam_verification_interface.html:455
 msgid "Верифікацію збережено! (Відхилено)"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:355
+#: app/pam/templates/pam_verification_interface.html:456
 msgid "Сегмент пропущено"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:362
+#: app/pam/templates/pam_verification_interface.html:463
 msgid "Помилка збереження"
 msgstr ""
 
-#: app/pam/templates/pam_verification_interface.html:363
+#: app/pam/templates/pam_verification_interface.html:464
 msgid "Помилка: "
 msgstr ""
 
