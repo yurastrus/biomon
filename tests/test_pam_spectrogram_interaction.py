@@ -68,6 +68,17 @@ def test_region_line_logic_preserved(auth_client):
     assert 'duration > 4' in html  # умова центральних 3с
 
 
+def test_verification_grid_right_column_is_flexible():
+    """#33: права колонка (сонограма) має бути minmax(0, 760px), а не
+    жорстко 760px — інакше на вузьких екранах правий край обрізається."""
+    css = CSS.read_text(encoding='utf-8')
+    start = css.index('.verification-layout {')
+    block = css[start:css.index('}', start) + 1]
+    assert 'minmax(0, 760px)' in block, (
+        'права колонка має бути гнучкою (minmax), щоб сонограма вписувалась')
+    assert '480px 760px' not in block, 'жорсткий grid повертати не можна'
+
+
 def test_css_playback_line_is_draggable():
     """CSS: лінія тепер інтерактивна (pointer-events:auto, ew-resize),
     із розширеною hit-area через ::before."""
