@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-03 15:31+0300\n"
+"POT-Creation-Date: 2026-06-03 17:29+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -549,7 +549,7 @@ msgstr ""
 
 #: app/camera_traps/routes.py:3792
 #: app/camera_traps/templates/manage_locations.html:594
-#: app/pam/templates/manage_pam_locations.html:645
+#: app/pam/templates/manage_pam_locations.html:649
 #: app/pam/templates/pam_import.html:459
 msgid "Вкажіть назву локації."
 msgstr ""
@@ -581,7 +581,7 @@ msgid "Під час перерахунку аналітики сталася п
 msgstr ""
 
 #: app/camera_traps/routes.py:4225
-#: app/pam/templates/manage_pam_locations.html:324
+#: app/pam/templates/manage_pam_locations.html:328
 msgid "Немає даних про обслуговування"
 msgstr ""
 
@@ -799,6 +799,9 @@ msgid "Фото без серій (сироти)"
 msgstr ""
 
 #: app/camera_traps/templates/admin.html:165
+#: app/pam/templates/pam_location_coverage.html:24
+#: app/pam/templates/pam_location_coverage.html:41
+#: app/pam/templates/pam_location_coverage.html:66
 msgid "год"
 msgstr ""
 
@@ -1036,7 +1039,7 @@ msgstr ""
 #: app/camera_traps/templates/identification.html:21
 #: app/camera_traps/templates/manage_locations.html:123
 #: app/camera_traps/templates/species_dashboard.html:35
-#: app/pam/templates/manage_pam_locations.html:116
+#: app/pam/templates/manage_pam_locations.html:120
 #: app/pam/templates/pam_import.html:80 app/templates/admin/admin_home.html:36
 #: app/templates/admin/admin_institution_form.html:9
 #: app/templates/admin/admin_institutions_list.html:9
@@ -1225,7 +1228,7 @@ msgstr ""
 #: app/camera_traps/templates/upload.html:616
 #: app/camera_traps/templates/upload_fast.html:274
 #: app/camera_traps/templates/upload_fast.html:765
-#: app/pam/templates/manage_pam_locations.html:696
+#: app/pam/templates/manage_pam_locations.html:700
 #: app/pam/templates/pam_data_export.html:94
 #: app/pam/templates/pam_evaluation_results.html:172
 #: app/pam/templates/pam_import.html:181
@@ -2362,7 +2365,7 @@ msgstr ""
 #: app/camera_traps/templates/manage_deployments.html:623
 #: app/camera_traps/templates/manage_locations.html:588
 #: app/camera_traps/templates/service_log.html:345
-#: app/pam/templates/manage_pam_locations.html:639
+#: app/pam/templates/manage_pam_locations.html:643
 #: app/pam/templates/pam_service_log.html:320
 msgid "Помилка збереження:"
 msgstr ""
@@ -2700,9 +2703,9 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:132
 #: app/camera_traps/templates/manage_locations.html:521
 #: app/camera_traps/templates/manage_locations.html:787
-#: app/pam/templates/manage_pam_locations.html:135
-#: app/pam/templates/manage_pam_locations.html:579
-#: app/pam/templates/manage_pam_locations.html:841
+#: app/pam/templates/manage_pam_locations.html:139
+#: app/pam/templates/manage_pam_locations.html:583
+#: app/pam/templates/manage_pam_locations.html:845
 #: app/pam/templates/pam_import.html:101 app/pam/templates/pam_import.html:488
 msgid "Зберегти"
 msgstr ""
@@ -2712,8 +2715,8 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:210
 #: app/camera_traps/templates/upload.html:95
 #: app/camera_traps/templates/upload_fast.html:138
-#: app/pam/templates/manage_pam_locations.html:136
-#: app/pam/templates/manage_pam_locations.html:217
+#: app/pam/templates/manage_pam_locations.html:140
+#: app/pam/templates/manage_pam_locations.html:221
 #: app/pam/templates/pam_import.html:105
 #: app/templates/admin/admin_institution_form.html:66
 #: app/templates/admin/admin_role_form.html:74
@@ -2723,7 +2726,7 @@ msgstr ""
 
 #: app/camera_traps/templates/manage_deployments.html:522
 #: app/camera_traps/templates/manage_locations.html:685
-#: app/pam/templates/manage_pam_locations.html:736
+#: app/pam/templates/manage_pam_locations.html:740
 msgid "Помилка завантаження."
 msgstr ""
 
@@ -2738,7 +2741,7 @@ msgstr ""
 #: app/camera_traps/templates/manage_deployments.html:540
 #: app/camera_traps/templates/manage_deployments.html:611
 #: app/camera_traps/templates/manage_locations.html:520
-#: app/pam/templates/manage_pam_locations.html:578
+#: app/pam/templates/manage_pam_locations.html:582
 msgid "Редагування:"
 msgstr ""
 
@@ -2762,7 +2765,7 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:17
 #: app/camera_traps/templates/manage_locations.html:534
 #: app/pam/templates/manage_pam_locations.html:16
-#: app/pam/templates/manage_pam_locations.html:594
+#: app/pam/templates/manage_pam_locations.html:598
 #: app/pam/templates/pam_import.html:52 app/pam/templates/pam_import.html:348
 #: app/pam/templates/pam_import.html:446
 msgid "Нова локація"
@@ -2828,7 +2831,7 @@ msgid "Невідомо"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:81
-#: app/pam/templates/manage_pam_locations.html:78
+#: app/pam/templates/manage_pam_locations.html:82
 msgid "Виберіть локацію зі списку або на карті."
 msgstr ""
 
@@ -2845,7 +2848,7 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:102
 #: app/camera_traps/templates/upload.html:75
 #: app/camera_traps/templates/upload_fast.html:127
-#: app/pam/templates/manage_pam_locations.html:103
+#: app/pam/templates/manage_pam_locations.html:107
 #: app/pam/templates/pam_import.html:69
 msgid "Широта"
 msgstr ""
@@ -2853,42 +2856,42 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:106
 #: app/camera_traps/templates/upload.html:81
 #: app/camera_traps/templates/upload_fast.html:131
-#: app/pam/templates/manage_pam_locations.html:107
+#: app/pam/templates/manage_pam_locations.html:111
 #: app/pam/templates/pam_import.html:73
 msgid "Довгота"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:111
-#: app/pam/templates/manage_pam_locations.html:112
+#: app/pam/templates/manage_pam_locations.html:116
 msgid "Клацніть на карті або введіть координати вручну."
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:114
-#: app/pam/templates/manage_pam_locations.html:125
+#: app/pam/templates/manage_pam_locations.html:129
 #: app/pam/templates/pam_import.html:88
 msgid "Біотопи"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:141
 #: app/camera_traps/templates/manage_locations.html:715
-#: app/pam/templates/manage_pam_locations.html:145
-#: app/pam/templates/manage_pam_locations.html:767
+#: app/pam/templates/manage_pam_locations.html:149
+#: app/pam/templates/manage_pam_locations.html:771
 msgid "Новий запис"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:144
-#: app/pam/templates/manage_pam_locations.html:148
+#: app/pam/templates/manage_pam_locations.html:152
 msgid "Виберіть локацію, щоб додати запис."
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:151
-#: app/pam/templates/manage_pam_locations.html:155
+#: app/pam/templates/manage_pam_locations.html:159
 msgid "Дата і час"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:155
 #: app/camera_traps/templates/service_log.html:44
-#: app/pam/templates/manage_pam_locations.html:159
+#: app/pam/templates/manage_pam_locations.html:163
 #: app/pam/templates/pam_service_log.html:47
 msgid "Результат візиту"
 msgstr ""
@@ -2896,9 +2899,9 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:157
 #: app/camera_traps/templates/manage_locations.html:250
 #: app/camera_traps/templates/service_log.html:46
-#: app/pam/templates/manage_pam_locations.html:161
-#: app/pam/templates/manage_pam_locations.html:181
-#: app/pam/templates/manage_pam_locations.html:257
+#: app/pam/templates/manage_pam_locations.html:165
+#: app/pam/templates/manage_pam_locations.html:185
+#: app/pam/templates/manage_pam_locations.html:261
 #: app/pam/templates/pam_service_log.html:49
 #: app/pam/templates/pam_service_log.html:69
 msgid "-- Виберіть --"
@@ -2912,7 +2915,7 @@ msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:168
 #: app/camera_traps/templates/service_log.html:57
-#: app/pam/templates/manage_pam_locations.html:172
+#: app/pam/templates/manage_pam_locations.html:176
 #: app/pam/templates/pam_service_log.html:60
 msgid "-- Без заміни --"
 msgstr ""
@@ -2926,8 +2929,8 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:653
 #: app/camera_traps/templates/service_log.html:250
 #: app/camera_traps/templates/service_log.html:264
-#: app/pam/templates/manage_pam_locations.html:198
-#: app/pam/templates/manage_pam_locations.html:705
+#: app/pam/templates/manage_pam_locations.html:202
+#: app/pam/templates/manage_pam_locations.html:709
 #: app/pam/templates/pam_service_log.html:250
 msgid "Так"
 msgstr ""
@@ -2937,16 +2940,16 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:659
 #: app/camera_traps/templates/service_log.html:252
 #: app/camera_traps/templates/service_log.html:264
-#: app/pam/templates/manage_pam_locations.html:202
-#: app/pam/templates/manage_pam_locations.html:707
+#: app/pam/templates/manage_pam_locations.html:206
+#: app/pam/templates/manage_pam_locations.html:711
 #: app/pam/templates/pam_service_log.html:252
 msgid "Ні"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:187
 #: app/camera_traps/templates/manage_locations.html:656
-#: app/pam/templates/manage_pam_locations.html:206
-#: app/pam/templates/manage_pam_locations.html:708
+#: app/pam/templates/manage_pam_locations.html:210
+#: app/pam/templates/manage_pam_locations.html:712
 msgid "?"
 msgstr ""
 
@@ -2965,7 +2968,7 @@ msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:205
 #: app/camera_traps/templates/service_log.html:96
-#: app/pam/templates/manage_pam_locations.html:212
+#: app/pam/templates/manage_pam_locations.html:216
 #: app/pam/templates/pam_service_log.html:100
 msgid "Коментарі"
 msgstr ""
@@ -2973,105 +2976,105 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:209
 #: app/camera_traps/templates/manage_locations.html:716
 #: app/camera_traps/templates/service_log.html:99
-#: app/pam/templates/manage_pam_locations.html:216
-#: app/pam/templates/manage_pam_locations.html:768
+#: app/pam/templates/manage_pam_locations.html:220
+#: app/pam/templates/manage_pam_locations.html:772
 #: app/pam/templates/pam_service_log.html:103
 msgid "Зберегти запис"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:218
-#: app/pam/templates/manage_pam_locations.html:225
+#: app/pam/templates/manage_pam_locations.html:229
 msgid "Історія"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:220
-#: app/pam/templates/manage_pam_locations.html:227
+#: app/pam/templates/manage_pam_locations.html:231
 msgid "Немає даних."
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:247
-#: app/pam/templates/manage_pam_locations.html:254
+#: app/pam/templates/manage_pam_locations.html:258
 #: app/pam/templates/pam_import.html:427
 msgid "Виберіть біотопи..."
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:248
-#: app/pam/templates/manage_pam_locations.html:255
+#: app/pam/templates/manage_pam_locations.html:259
 #: app/pam/templates/pam_import.html:426
 msgid "Виберіть установи..."
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:326
 #: app/camera_traps/templates/upload.html:268
-#: app/pam/templates/manage_pam_locations.html:371
+#: app/pam/templates/manage_pam_locations.html:375
 #: app/pam/templates/pam_import.html:297
 msgid "Національні природні парки"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:327
 #: app/camera_traps/templates/upload.html:269
-#: app/pam/templates/manage_pam_locations.html:372
+#: app/pam/templates/manage_pam_locations.html:376
 #: app/pam/templates/pam_import.html:298
 msgid "Біосферні заповідники"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:328
 #: app/camera_traps/templates/upload.html:270
-#: app/pam/templates/manage_pam_locations.html:373
+#: app/pam/templates/manage_pam_locations.html:377
 #: app/pam/templates/pam_import.html:299
 msgid "Регіональні ландшафтні парки"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:329
 #: app/camera_traps/templates/upload.html:271
-#: app/pam/templates/manage_pam_locations.html:374
+#: app/pam/templates/manage_pam_locations.html:378
 #: app/pam/templates/pam_import.html:300
 msgid "Заказники"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:330
 #: app/camera_traps/templates/upload.html:272
-#: app/pam/templates/manage_pam_locations.html:375
+#: app/pam/templates/manage_pam_locations.html:379
 #: app/pam/templates/pam_import.html:301
 msgid "Природні заповідники"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:331
 #: app/camera_traps/templates/upload.html:273
-#: app/pam/templates/manage_pam_locations.html:376
+#: app/pam/templates/manage_pam_locations.html:380
 #: app/pam/templates/pam_import.html:302
 msgid "Пам'ятки природи"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:332
 #: app/camera_traps/templates/upload.html:274
-#: app/pam/templates/manage_pam_locations.html:377
+#: app/pam/templates/manage_pam_locations.html:381
 #: app/pam/templates/pam_import.html:303
 msgid "Заповідні урочища"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:362
 #: app/camera_traps/templates/upload.html:288
-#: app/pam/templates/manage_pam_locations.html:407
+#: app/pam/templates/manage_pam_locations.html:411
 #: app/pam/templates/pam_import.html:317
 msgid "Території ПЗФ"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:535
-#: app/pam/templates/manage_pam_locations.html:595
+#: app/pam/templates/manage_pam_locations.html:599
 msgid "Створити"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:595
-#: app/pam/templates/manage_pam_locations.html:646
+#: app/pam/templates/manage_pam_locations.html:650
 msgid "Вкажіть координати: клацніть на карті або введіть вручну."
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:636
 #: app/camera_traps/templates/manage_locations.html:764
 #: app/camera_traps/templates/upload_fast.html:828
-#: app/pam/templates/manage_pam_locations.html:688
-#: app/pam/templates/manage_pam_locations.html:818
+#: app/pam/templates/manage_pam_locations.html:692
+#: app/pam/templates/manage_pam_locations.html:822
 #: app/pam/templates/pam_species_detailed.html:157
 #: app/sdm/templates/sdm/dashboard.html:183 app/sdm/templates/sdm/map.html:85
 msgid "Помилка:"
@@ -3090,28 +3093,28 @@ msgid "Камера:"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:676
-#: app/pam/templates/manage_pam_locations.html:727
+#: app/pam/templates/manage_pam_locations.html:731
 msgid "Бат.:"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:677
-#: app/pam/templates/manage_pam_locations.html:728
+#: app/pam/templates/manage_pam_locations.html:732
 msgid "SD:"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:692
-#: app/pam/templates/manage_pam_locations.html:743
+#: app/pam/templates/manage_pam_locations.html:747
 msgid "Редагування запису"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:703
-#: app/pam/templates/manage_pam_locations.html:754
+#: app/pam/templates/manage_pam_locations.html:758
 msgid "Зберегти зміни"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:761
 #: app/camera_traps/templates/service_log.html:341
-#: app/pam/templates/manage_pam_locations.html:815
+#: app/pam/templates/manage_pam_locations.html:819
 #: app/pam/templates/pam_import.html:599
 #: app/pam/templates/pam_service_log.html:317
 #: app/pam/templates/pam_verification_upload.html:248
@@ -3921,77 +3924,82 @@ msgstr ""
 msgid "Без EN назви"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:90
+#: app/pam/templates/manage_pam_locations.html:67
+#: app/pam/templates/pam_location_coverage.html:10
+msgid "Календар покриття записами"
+msgstr ""
+
+#: app/pam/templates/manage_pam_locations.html:94
 #: app/pam/templates/pam_import.html:60
 msgid "Назва (укр)"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:94
+#: app/pam/templates/manage_pam_locations.html:98
 #: app/pam/templates/pam_import.html:64
 msgid "Назва (англ)"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:98
+#: app/pam/templates/manage_pam_locations.html:102
 msgid "Область / State-Province"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:99
+#: app/pam/templates/manage_pam_locations.html:103
 msgid "напр. Lviv Oblast"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:170
+#: app/pam/templates/manage_pam_locations.html:174
 msgid "Заміна батарейок"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:179
+#: app/pam/templates/manage_pam_locations.html:183
 msgid "Статус SD"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:190
+#: app/pam/templates/manage_pam_locations.html:194
 msgid "Год. запису/добу"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:194
+#: app/pam/templates/manage_pam_locations.html:198
 #: app/pam/templates/pam_service_log.html:82
 msgid "Стан приладу"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:327
+#: app/pam/templates/manage_pam_locations.html:331
 msgid "прострочено"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:327
+#: app/pam/templates/manage_pam_locations.html:331
 #: app/pam/templates/pam_service_log.html:197
 #: app/pam/templates/pam_service_log.html:200
 msgid "дн."
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:330
+#: app/pam/templates/manage_pam_locations.html:334
 msgid "Неактивна / демонтовано"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:332
 #: app/pam/templates/manage_pam_locations.html:336
+#: app/pam/templates/manage_pam_locations.html:340
 msgid "Останній візит"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:338
+#: app/pam/templates/manage_pam_locations.html:342
 msgid "дн. тому"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:343
+#: app/pam/templates/manage_pam_locations.html:347
 msgid "Батарея"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:344
+#: app/pam/templates/manage_pam_locations.html:348
 msgid "SD-карта"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:346
+#: app/pam/templates/manage_pam_locations.html:350
 msgid "Немає записів для прогнозу"
 msgstr ""
 
-#: app/pam/templates/manage_pam_locations.html:726
+#: app/pam/templates/manage_pam_locations.html:730
 msgid "Прилад:"
 msgstr ""
 
@@ -4562,6 +4570,78 @@ msgstr ""
 
 #: app/pam/templates/pam_import.html:622
 msgid "клієнт"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:3
+msgid "Календар покриття"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:14
+msgid "До локацій"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:21
+msgid "Усього записів"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:25
+msgid "Сумарне зусилля"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:29
+msgid "Днів із записами"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:34
+msgid "Діапазон"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:41
+msgid "Добре"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:42
+msgid "Частково"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:43
+msgid "Немає записів"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:47
+msgid "Для цієї локації ще немає записів."
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:49
+msgid "Пн"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:49
+msgid "Вт"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:49
+msgid "Ср"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:49
+msgid "Чт"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:49
+msgid "Пт"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:49
+msgid "Сб"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:49
+msgid "Нд"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:66
+msgid "записів"
 msgstr ""
 
 #: app/pam/templates/pam_overview.html:3
