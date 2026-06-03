@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-03 18:42+0300\n"
+"POT-Creation-Date: 2026-06-03 20:25+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -2408,10 +2408,6 @@ msgstr "Skip"
 #: app/camera_traps/templates/identification.html:145
 msgid "Позначити серію на повторний розгляд"
 msgstr "Flag this series for review"
-
-#: app/camera_traps/templates/identification.html:145
-msgid "Прапорець"
-msgstr "Flag"
 
 #: app/camera_traps/templates/identification.html:161
 msgid "Режим перегляду визначених серій"
@@ -6324,4 +6320,7 @@ msgstr "Message"
 
 #~ msgid "-- Всі доступні установи --"
 #~ msgstr "-- All available institutions --"
+
+#~ msgid "Прапорець"
+#~ msgstr "Flag"
 

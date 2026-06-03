@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-03 18:42+0300\n"
+"POT-Creation-Date: 2026-06-03 20:25+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2375,10 +2375,6 @@ msgstr ""
 
 #: app/camera_traps/templates/identification.html:145
 msgid "Позначити серію на повторний розгляд"
-msgstr ""
-
-#: app/camera_traps/templates/identification.html:145
-msgid "Прапорець"
 msgstr ""
 
 #: app/camera_traps/templates/identification.html:161
