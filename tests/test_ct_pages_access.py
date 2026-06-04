@@ -336,30 +336,34 @@ class TestIdentifyAccess(PageAccessBase):
 
     URL = '/uk/camera-traps/identify'
 
-    def _ranking_patch(self):
-        return patch('app.camera_traps.routes.get_species_ranking', return_value={})
+    def _ranking_patches(self):
+        # Обидва рейтинги (види + теги) мокаємо, щоб не ходити в реальну CT-БД.
+        return [
+            patch('app.camera_traps.routes.get_species_ranking', return_value={}),
+            patch('app.camera_traps.routes.get_behavior_ranking', return_value={}),
+        ]
 
     def test_anonymous_redirects(self):
         """Незалогінений користувач отримує редирект."""
-        resp = self._get(self.URL, extra_patches=[self._ranking_patch()])
+        resp = self._get(self.URL, extra_patches=self._ranking_patches())
         self.assertEqual(resp.status_code, 302)
 
     def test_viewer_redirects(self):
         """Viewer нижче ct_verifier — редирект."""
-        resp = self._get(self.URL, self.viewer.id, [self._ranking_patch()])
+        resp = self._get(self.URL, self.viewer.id, self._ranking_patches())
         self.assertEqual(resp.status_code, 302)
 
     def test_ct_verifier_gets_200(self):
-        resp = self._get(self.URL, self.ct_verifier.id, [self._ranking_patch()])
+        resp = self._get(self.URL, self.ct_verifier.id, self._ranking_patches())
         self.assertEqual(resp.status_code, 200)
 
     def test_manager_gets_200(self):
         """manager вище ct_verifier — доступ є."""
-        resp = self._get(self.URL, self.manager.id, [self._ranking_patch()])
+        resp = self._get(self.URL, self.manager.id, self._ranking_patches())
         self.assertEqual(resp.status_code, 200)
 
     def test_admin_gets_200(self):
-        resp = self._get(self.URL, self.admin.id, [self._ranking_patch()])
+        resp = self._get(self.URL, self.admin.id, self._ranking_patches())
         self.assertEqual(resp.status_code, 200)
 
 
