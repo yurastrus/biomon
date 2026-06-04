@@ -11,7 +11,10 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
     """Базова конфігурація додатку"""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'a-very-secret-string-for-development'
+    # Fail-fast: без SECRET_KEY у середовищі додаток НЕ стартує (KeyError).
+    # Прибрано fallback на відомий ключ (SEC-002): якщо .env не завантажиться,
+    # краще явна аварія, ніж тихий старт із ключем, відомим із git-історії.
+    SECRET_KEY = os.environ['SECRET_KEY']
 
     # Налаштування бази даних
     # Беремо DATABASE_URL з .env. Якщо його там немає, створюємо локальну app.db.
