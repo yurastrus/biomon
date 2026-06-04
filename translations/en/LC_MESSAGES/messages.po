@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-04 10:13+0300\n"
+"POT-Creation-Date: 2026-06-04 13:42+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -842,9 +842,7 @@ msgid "Фото без серій (сироти)"
 msgstr "Photos without series (orphans)"
 
 #: app/camera_traps/templates/admin.html:177
-#: app/pam/templates/pam_location_coverage.html:24
-#: app/pam/templates/pam_location_coverage.html:41
-#: app/pam/templates/pam_location_coverage.html:66
+#: app/pam/templates/pam_location_coverage.html:38
 msgid "год"
 msgstr "h"
 
@@ -1065,16 +1063,16 @@ msgid ""
 "Середня впевненість «вгадав» помітно вища за «помилився» — ознака доброго"
 " калібрування моделі."
 msgstr ""
-"Mean confidence for \"correct\" is noticeably higher than for \"wrong\" — a "
-"sign of a well-calibrated model."
+"Mean confidence for \"correct\" is noticeably higher than for \"wrong\" —"
+" a sign of a well-calibrated model."
 
 #: app/camera_traps/templates/ai_calibration.html:18
 msgid ""
 "Поки немає даних: жоден вид не має верифікованих AI-прогнозів за обраним "
 "порогом вибірки."
 msgstr ""
-"No data yet: no species has verified AI predictions above the chosen sample "
-"threshold."
+"No data yet: no species has verified AI predictions above the chosen "
+"sample threshold."
 
 #: app/camera_traps/templates/ai_calibration.html:24
 #: app/camera_traps/templates/behavior_analysis.html:23
@@ -4749,62 +4747,66 @@ msgid "Усього записів"
 msgstr "Total recordings"
 
 #: app/pam/templates/pam_location_coverage.html:25
-msgid "Сумарне зусилля"
-msgstr "Total effort"
-
-#: app/pam/templates/pam_location_coverage.html:29
 msgid "Днів із записами"
 msgstr "Days with recordings"
 
-#: app/pam/templates/pam_location_coverage.html:34
+#: app/pam/templates/pam_location_coverage.html:30
 msgid "Діапазон"
 msgstr "Range"
 
-#: app/pam/templates/pam_location_coverage.html:41
+#: app/pam/templates/pam_location_coverage.html:37
 msgid "Добре"
 msgstr "Good"
 
-#: app/pam/templates/pam_location_coverage.html:42
+#: app/pam/templates/pam_location_coverage.html:37
+msgid "год/день"
+msgstr "h/day"
+
+#: app/pam/templates/pam_location_coverage.html:38
 msgid "Частково"
 msgstr "Partial"
 
-#: app/pam/templates/pam_location_coverage.html:43
+#: app/pam/templates/pam_location_coverage.html:39
 msgid "Немає записів"
 msgstr "No recordings"
 
-#: app/pam/templates/pam_location_coverage.html:47
+#: app/pam/templates/pam_location_coverage.html:43
 msgid "Для цієї локації ще немає записів."
 msgstr "No recordings for this location yet."
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Пн"
 msgstr "Mon"
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Вт"
 msgstr "Tue"
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Ср"
 msgstr "Wed"
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Чт"
 msgstr "Thu"
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Пт"
 msgstr "Fri"
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Сб"
 msgstr "Sat"
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Нд"
 msgstr "Sun"
 
-#: app/pam/templates/pam_location_coverage.html:66
+#: app/pam/templates/pam_location_coverage.html:62
+msgid "год охоплення"
+msgstr "h covered"
+
+#: app/pam/templates/pam_location_coverage.html:62
 msgid "записів"
 msgstr "recordings"
 
@@ -6373,4 +6375,7 @@ msgstr "Message"
 
 #~ msgid "Прапорець"
 #~ msgstr "Flag"
+
+#~ msgid "Сумарне зусилля"
+#~ msgstr "Total effort"
 

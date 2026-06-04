@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-04 10:13+0300\n"
+"POT-Creation-Date: 2026-06-04 13:42+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -827,9 +827,7 @@ msgid "Фото без серій (сироти)"
 msgstr ""
 
 #: app/camera_traps/templates/admin.html:177
-#: app/pam/templates/pam_location_coverage.html:24
-#: app/pam/templates/pam_location_coverage.html:41
-#: app/pam/templates/pam_location_coverage.html:66
+#: app/pam/templates/pam_location_coverage.html:38
 msgid "год"
 msgstr ""
 
@@ -4685,62 +4683,66 @@ msgid "Усього записів"
 msgstr ""
 
 #: app/pam/templates/pam_location_coverage.html:25
-msgid "Сумарне зусилля"
-msgstr ""
-
-#: app/pam/templates/pam_location_coverage.html:29
 msgid "Днів із записами"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:34
+#: app/pam/templates/pam_location_coverage.html:30
 msgid "Діапазон"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:41
+#: app/pam/templates/pam_location_coverage.html:37
 msgid "Добре"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:42
+#: app/pam/templates/pam_location_coverage.html:37
+msgid "год/день"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:38
 msgid "Частково"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:43
+#: app/pam/templates/pam_location_coverage.html:39
 msgid "Немає записів"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:47
+#: app/pam/templates/pam_location_coverage.html:43
 msgid "Для цієї локації ще немає записів."
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Пн"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Вт"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Ср"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Чт"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Пт"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Сб"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/pam/templates/pam_location_coverage.html:45
 msgid "Нд"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:66
+#: app/pam/templates/pam_location_coverage.html:62
+msgid "год охоплення"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:62
 msgid "записів"
 msgstr ""
 

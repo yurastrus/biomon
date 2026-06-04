@@ -19,19 +19,36 @@ from app.pam.utils import build_coverage_calendar
 
 # ── Чиста функція ────────────────────────────────────────────────────────────
 
+def _d(count, hours):
+    return {'count': count, 'hours': hours}
+
+
 def test_empty_input():
     cov = build_coverage_calendar({})
     assert cov['months'] == []
     assert cov['total_recordings'] == 0
-    assert cov['total_effort_seconds'] == 0
     assert cov['active_days'] == 0
     assert cov['day_range'] is None
 
 
+def test_none_date_key_ignored():
+    """recordings без дати (DATE(NULL)=None ключ) не ламають сортування —
+    None-день ігнорується (regression: TypeError None < date)."""
+    cov = build_coverage_calendar({None: _d(50, 5), date(2025, 6, 2): _d(10, 3)})
+    assert cov['active_days'] == 1
+    assert cov['total_recordings'] == 10        # None-день не рахується
+    assert cov['day_range'] == (date(2025, 6, 2), date(2025, 6, 2))
+
+
+def test_only_none_dates_is_empty():
+    cov = build_coverage_calendar({None: _d(99, 9)})
+    assert cov['months'] == []
+    assert cov['active_days'] == 0
+
+
 def test_single_day_totals():
-    cov = build_coverage_calendar({date(2025, 6, 2): 100}, rec_seconds=5)
+    cov = build_coverage_calendar({date(2025, 6, 2): _d(100, 8)})
     assert cov['total_recordings'] == 100
-    assert cov['total_effort_seconds'] == 500
     assert cov['active_days'] == 1
     assert cov['day_range'] == (date(2025, 6, 2), date(2025, 6, 2))
     assert len(cov['months']) == 1
@@ -48,24 +65,30 @@ def _find_cell(cov, target):
 
 
 def test_coverage_levels():
-    # 2000 записів*5с=10000с ≥7200 → good; 100*5=500с → partial; інший день → missing
+    # 8 год ≥6 → good; 3 год → partial; день без записів → missing
     cov = build_coverage_calendar(
-        {date(2025, 6, 2): 2000, date(2025, 6, 3): 100}, rec_seconds=5)
+        {date(2025, 6, 2): _d(2000, 8), date(2025, 6, 3): _d(100, 3)})
     assert _find_cell(cov, date(2025, 6, 2))['level'] == 'good'
     assert _find_cell(cov, date(2025, 6, 3))['level'] == 'partial'
-    # день у межах місяця без записів — missing
     assert _find_cell(cov, date(2025, 6, 15))['level'] == 'missing'
+
+
+def test_boundary_6_hours_is_good():
+    """Рівно 6 год охоплення = good (поріг не строгий)."""
+    cov = build_coverage_calendar({date(2025, 6, 2): _d(50, 6)})
+    assert _find_cell(cov, date(2025, 6, 2))['level'] == 'good'
+    assert _find_cell(cov, date(2025, 6, 2))['hours'] == 6
 
 
 def test_padding_cells_are_none():
     """Дні сусіднього місяця в тижневих рядках = None (порожні клітинки)."""
-    cov = build_coverage_calendar({date(2025, 6, 2): 10})
+    cov = build_coverage_calendar({date(2025, 6, 2): _d(10, 2)})
     weeks = cov['months'][0]['weeks']
     assert any(any(c is None for c in wk) for wk in weeks)
 
 
 def test_spans_multiple_months():
-    cov = build_coverage_calendar({date(2025, 1, 5): 10, date(2025, 3, 20): 20})
+    cov = build_coverage_calendar({date(2025, 1, 5): _d(10, 2), date(2025, 3, 20): _d(20, 4)})
     labels = [m['label'] for m in cov['months']]
     assert labels == ['2025-01', '2025-02', '2025-03']  # включно з порожнім лютим
 
@@ -97,15 +120,16 @@ def test_coverage_route_renders(auth_client):
     cl = auth_client(role='admin')  # admin обходить перевірку установи
     loc = SimpleNamespace(location_id=9, location_name='Тестова локація',
                           location_name_en='Test Loc')
-    days = [SimpleNamespace(day=date(2025, 6, 2), cnt=2000),
-            SimpleNamespace(day=date(2025, 6, 3), cnt=50)]
+    days = [SimpleNamespace(day=date(2025, 6, 2), cnt=2000, hours=20),
+            SimpleNamespace(day=date(2025, 6, 3), cnt=50, hours=3)]
     with patch('app.pam.routes.get_pam_db_connection',
                return_value=_coverage_conn(loc, days)):
         resp = cl.get('/uk/pam/location/9/coverage')
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
     assert 'Тестова локація' in html
-    assert 'coverage-good' in html       # день з 2000 записів
+    assert 'coverage-good' in html       # день з 20 год охоплення
+    assert 'coverage-partial' in html    # день з 3 год
     assert '2025-06' in html             # місячний блок
 
 
