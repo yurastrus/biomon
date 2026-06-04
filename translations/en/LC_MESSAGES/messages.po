@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-04 14:20+0300\n"
+"POT-Creation-Date: 2026-06-04 18:11+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -148,16 +148,16 @@ msgid "Вид тварини"
 msgstr "Animal species:"
 
 #: app/camera_traps/forms.py:43
-msgid "Кількість особин"
-msgstr "Number of individuals"
+msgid "Особин"
+msgstr "Individuals"
 
 #: app/camera_traps/forms.py:46
 msgid "Додаткові теги"
 msgstr "Additional tags"
 
 #: app/camera_traps/forms.py:53
-msgid "Зберегти у вибране"
-msgstr "Save to favorites"
+msgid "У вибране"
+msgstr "Favorite"
 
 #: app/camera_traps/routes.py:142 app/camera_traps/routes.py:166
 #: app/camera_traps/routes.py:2346
@@ -169,8 +169,8 @@ msgid "Серію позначено на повторний розгляд."
 msgstr "Series flagged for review."
 
 #: app/camera_traps/routes.py:151
-#: app/camera_traps/templates/identification.html:697
-#: app/camera_traps/templates/identification.html:698
+#: app/camera_traps/templates/identification.html:695
+#: app/camera_traps/templates/identification.html:696
 msgid "Помилка позначення серії."
 msgstr "Failed to flag the series."
 
@@ -372,12 +372,12 @@ msgid "Недостатньо прав для режиму перегляду"
 msgstr "Insufficient permissions for review mode"
 
 #: app/camera_traps/routes.py:2577
-#: app/camera_traps/templates/identification.html:320
+#: app/camera_traps/templates/identification.html:318
 msgid "Немає серій для перегляду, які б відповідали критеріям."
 msgstr "No series available for review that match the criteria."
 
 #: app/camera_traps/routes.py:2579
-#: app/camera_traps/templates/identification.html:319
+#: app/camera_traps/templates/identification.html:317
 msgid "Вітаємо! Ви ідентифікували всі доступні серії фотографій."
 msgstr "Congratulations! You have identified all available photo series."
 
@@ -472,8 +472,8 @@ msgid "Помилка перерахунку консенсусу. Переві�
 msgstr "Consensus recalculation error. Please check the logs."
 
 #: app/camera_traps/routes.py:2948
-#: app/camera_traps/templates/identification.html:72
-#: app/camera_traps/templates/identification.html:382
+#: app/camera_traps/templates/identification.html:85
+#: app/camera_traps/templates/identification.html:380
 #: app/pam/templates/pam_verification_interface.html:23
 #: app/pam/templates/pam_verification_interface.html:178
 msgid "-- Всі види --"
@@ -748,7 +748,7 @@ msgid "Останні запити"
 msgstr "Recent requests"
 
 #: app/camera_traps/templates/admin.html:80
-#: app/camera_traps/templates/identification.html:314
+#: app/camera_traps/templates/identification.html:312
 msgid "Час"
 msgstr "Time"
 
@@ -1131,7 +1131,7 @@ msgstr "All available data"
 #: app/camera_traps/templates/contributors.html:38
 #: app/camera_traps/templates/daily_activity.html:37
 #: app/camera_traps/templates/dashboard.html:34
-#: app/camera_traps/templates/identification.html:21
+#: app/camera_traps/templates/identification.html:15
 #: app/camera_traps/templates/manage_locations.html:123
 #: app/camera_traps/templates/species_dashboard.html:35
 #: app/pam/templates/manage_pam_locations.html:120
@@ -1148,7 +1148,7 @@ msgstr "Institutions"
 #: app/camera_traps/templates/contributors.html:47
 #: app/camera_traps/templates/daily_activity.html:46
 #: app/camera_traps/templates/dashboard.html:43
-#: app/camera_traps/templates/identification.html:30
+#: app/camera_traps/templates/identification.html:24
 #: app/camera_traps/templates/species_dashboard.html:44
 msgid "Екорегіони"
 msgstr "Ecoregions"
@@ -1485,7 +1485,7 @@ msgstr "All data"
 
 #: app/camera_traps/templates/contributors.html:56
 #: app/camera_traps/templates/dashboard.html:63
-#: app/camera_traps/templates/identification.html:85
+#: app/camera_traps/templates/identification.html:98
 #: app/camera_traps/templates/species_detailed.html:41
 #: app/pam/templates/pam_species_detailed.html:62
 #: app/pam/templates/pam_verification_interface.html:31
@@ -2319,13 +2319,13 @@ msgid "Час:"
 msgstr "Time:"
 
 #: app/camera_traps/templates/gallery.html:214
-#: app/camera_traps/templates/identification.html:315
+#: app/camera_traps/templates/identification.html:313
 #: app/camera_traps/templates/photo_viewer.html:58
 msgid "Фото"
 msgstr "Photo"
 
 #: app/camera_traps/templates/gallery.html:220
-#: app/camera_traps/templates/identification.html:70
+#: app/camera_traps/templates/identification.html:83
 #: app/pam/templates/pam_verification_segments.html:21
 #: app/sdm/templates/sdm/coefficients.html:28 app/sdm/templates/sdm/map.html:34
 msgid "Вид:"
@@ -2370,15 +2370,14 @@ msgid "Помилка видалення з вибраного"
 msgstr "Error removing from favorites"
 
 #: app/camera_traps/templates/identification.html:4
-#: app/camera_traps/templates/identification.html:9
 msgid "Ідентифікація тварин"
 msgstr "Animal Identification"
 
-#: app/camera_traps/templates/identification.html:17
+#: app/camera_traps/templates/identification.html:11
 msgid "Регіон / Установа:"
 msgstr "Region / Institution:"
 
-#: app/camera_traps/templates/identification.html:19
+#: app/camera_traps/templates/identification.html:13
 #: app/pam/templates/pam_species_dashboard.html:47
 #: app/pam/templates/pam_species_dashboard.html:92
 #: app/pam/templates/pam_yearly_table.html:96
@@ -2386,103 +2385,103 @@ msgstr "Region / Institution:"
 msgid "Всі доступні"
 msgstr "All available"
 
-#: app/camera_traps/templates/identification.html:41
+#: app/camera_traps/templates/identification.html:35
 msgid "AI вид:"
 msgstr "AI species:"
 
-#: app/camera_traps/templates/identification.html:43
-#: app/camera_traps/templates/identification.html:444
+#: app/camera_traps/templates/identification.html:37
+#: app/camera_traps/templates/identification.html:442
 msgid "AI ще не виконував класифікацію — список порожній."
 msgstr "AI has not been run yet — the list is empty."
 
-#: app/camera_traps/templates/identification.html:44
-#: app/camera_traps/templates/identification.html:442
+#: app/camera_traps/templates/identification.html:38
+#: app/camera_traps/templates/identification.html:440
 msgid "Будь-який"
 msgstr "Any"
 
-#: app/camera_traps/templates/identification.html:57
+#: app/camera_traps/templates/identification.html:60
+msgid "Режим перегляду визначених серій"
+msgstr "Review mode for identified series"
+
+#: app/camera_traps/templates/identification.html:70
 msgid "🔍 РЕЖИМ ПЕРЕГЛЯДУ: Перевіряється вже визначена серія"
 msgstr "🔍 REVIEW MODE: Checking already identified series"
 
-#: app/camera_traps/templates/identification.html:64
+#: app/camera_traps/templates/identification.html:77
 msgid "Користувач:"
 msgstr "User:"
 
-#: app/camera_traps/templates/identification.html:66
-#: app/camera_traps/templates/identification.html:376
+#: app/camera_traps/templates/identification.html:79
+#: app/camera_traps/templates/identification.html:374
 msgid "-- Всі користувачі --"
 msgstr "-- All users --"
 
-#: app/camera_traps/templates/identification.html:76
+#: app/camera_traps/templates/identification.html:89
 msgid "Сортування:"
 msgstr "Sorting:"
 
-#: app/camera_traps/templates/identification.html:78
+#: app/camera_traps/templates/identification.html:91
 msgid "Випадково"
 msgstr "Random"
 
-#: app/camera_traps/templates/identification.html:79
+#: app/camera_traps/templates/identification.html:92
 msgid "Дата (спочатку нові)"
 msgstr "By date (newer first)"
 
-#: app/camera_traps/templates/identification.html:80
+#: app/camera_traps/templates/identification.html:93
 msgid "Дата (спочатку старі)"
 msgstr "By date (older first)"
 
-#: app/camera_traps/templates/identification.html:81
+#: app/camera_traps/templates/identification.html:94
 msgid "К-ть фото (спочатку більше)"
 msgstr "Number of photos (desc)"
 
-#: app/camera_traps/templates/identification.html:92
+#: app/camera_traps/templates/identification.html:105
 msgid "Існуючі ідентифікації серії:"
 msgstr "Existing series identifications:"
 
-#: app/camera_traps/templates/identification.html:105
+#: app/camera_traps/templates/identification.html:118
 msgid "Фото для ідентифікації"
 msgstr "Photo for Identification"
 
-#: app/camera_traps/templates/identification.html:109
+#: app/camera_traps/templates/identification.html:122
 msgid "Відкрити у повному розмірі"
 msgstr "Open in full size"
 
-#: app/camera_traps/templates/identification.html:143 app/utils/forms.py:20
+#: app/camera_traps/templates/identification.html:147 app/utils/forms.py:20
 msgid "Надіслати"
 msgstr "Send"
 
-#: app/camera_traps/templates/identification.html:144
+#: app/camera_traps/templates/identification.html:148
 #: app/pam/templates/pam_verification_interface.html:118
 msgid "Пропустити"
 msgstr "Skip"
 
-#: app/camera_traps/templates/identification.html:145
+#: app/camera_traps/templates/identification.html:149
 msgid "Позначити серію на повторний розгляд"
 msgstr "Flag this series for review"
 
-#: app/camera_traps/templates/identification.html:161
-msgid "Режим перегляду визначених серій"
-msgstr "Review mode for identified series"
-
-#: app/camera_traps/templates/identification.html:178
+#: app/camera_traps/templates/identification.html:176
 msgid "Загальні опції"
 msgstr "General Options"
 
-#: app/camera_traps/templates/identification.html:190
+#: app/camera_traps/templates/identification.html:188
 msgid "Ссавці"
 msgstr "Mammals"
 
-#: app/camera_traps/templates/identification.html:191
+#: app/camera_traps/templates/identification.html:189
 msgid "Птахи"
 msgstr "Birds"
 
-#: app/camera_traps/templates/identification.html:192
+#: app/camera_traps/templates/identification.html:190
 msgid "Інші"
 msgstr "Other"
 
-#: app/camera_traps/templates/identification.html:210
+#: app/camera_traps/templates/identification.html:208
 msgid "Інші категорії"
 msgstr "Other categories"
 
-#: app/camera_traps/templates/identification.html:313
+#: app/camera_traps/templates/identification.html:311
 #: app/camera_traps/templates/upload.html:30
 #: app/camera_traps/templates/upload_fast.html:92
 #: app/pam/templates/pam_import.html:40
@@ -2490,11 +2489,11 @@ msgstr "Other categories"
 msgid "Локація"
 msgstr "Location"
 
-#: app/camera_traps/templates/identification.html:316
+#: app/camera_traps/templates/identification.html:314
 msgid "Будь ласка, виберіть вид, або опцію \"Пусто\"."
 msgstr "Please select a species, or the \"Empty\" option."
 
-#: app/camera_traps/templates/identification.html:317
+#: app/camera_traps/templates/identification.html:315
 #: app/camera_traps/templates/manage_deployments.html:623
 #: app/camera_traps/templates/manage_locations.html:588
 #: app/camera_traps/templates/service_log.html:345
@@ -2503,27 +2502,27 @@ msgstr "Please select a species, or the \"Empty\" option."
 msgid "Помилка збереження:"
 msgstr "Save error:"
 
-#: app/camera_traps/templates/identification.html:318
+#: app/camera_traps/templates/identification.html:316
 msgid "Не вдалося завантажити дані."
 msgstr "Failed to load data."
 
-#: app/camera_traps/templates/identification.html:321
+#: app/camera_traps/templates/identification.html:319
 msgid "Залишилось вам:"
 msgstr "Pending for you:"
 
-#: app/camera_traps/templates/identification.html:537
+#: app/camera_traps/templates/identification.html:535
 msgid "AI пропонує"
 msgstr "AI suggests"
 
-#: app/camera_traps/templates/identification.html:538
+#: app/camera_traps/templates/identification.html:536
 msgid "впевненість"
 msgstr "confidence"
 
-#: app/camera_traps/templates/identification.html:539
+#: app/camera_traps/templates/identification.html:537
 msgid "особин"
 msgstr "individuals"
 
-#: app/camera_traps/templates/identification.html:684
+#: app/camera_traps/templates/identification.html:682
 msgid "Коментар до позначки (за бажанням):"
 msgstr "Comment for the flag (optional):"
 
@@ -6399,4 +6398,10 @@ msgstr "Message"
 
 #~ msgid "год охоплення"
 #~ msgstr "h covered"
+
+#~ msgid "Зберегти у вибране"
+#~ msgstr "Save to favorites"
+
+#~ msgid "Кількість особин"
+#~ msgstr "Number of individuals"
 
