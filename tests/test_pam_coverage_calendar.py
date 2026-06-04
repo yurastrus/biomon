@@ -80,11 +80,11 @@ def test_boundary_6_hours_is_good():
     assert _find_cell(cov, date(2025, 6, 2))['hours'] == 6.0
 
 
-def test_day_hours_capped_at_24():
-    """Сума > 24 год (перекриття/паралельні записи) → обрізається до 24."""
+def test_day_hours_not_capped():
+    """Кілька ресиверів на локації → сума за добу законно > 24 год (без cap)."""
     cov = build_coverage_calendar({date(2025, 6, 2): _d(473, 2365)})  # 39.4 год
     cell = _find_cell(cov, date(2025, 6, 2))
-    assert cell['hours'] == 24.0     # capped
+    assert cell['hours'] == 39.4     # без обмеження
     assert cell['level'] == 'good'
 
 
