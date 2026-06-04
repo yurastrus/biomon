@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-04 13:42+0300\n"
+"POT-Creation-Date: 2026-06-04 14:20+0300\n"
 "PO-Revision-Date: 2025-08-05 22:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -571,7 +571,7 @@ msgstr ""
 #: app/camera_traps/routes.py:3949
 #: app/camera_traps/templates/manage_locations.html:594
 #: app/pam/templates/manage_pam_locations.html:649
-#: app/pam/templates/pam_import.html:459
+#: app/pam/templates/pam_import.html:467
 msgid "Вкажіть назву локації."
 msgstr ""
 
@@ -829,7 +829,8 @@ msgid "Фото без серій (сироти)"
 msgstr ""
 
 #: app/camera_traps/templates/admin.html:177
-#: app/pam/templates/pam_location_coverage.html:38
+#: app/pam/templates/pam_location_coverage.html:24
+#: app/pam/templates/pam_location_coverage.html:42
 msgid "год"
 msgstr ""
 
@@ -1298,7 +1299,7 @@ msgstr ""
 #: app/pam/templates/manage_pam_locations.html:700
 #: app/pam/templates/pam_data_export.html:94
 #: app/pam/templates/pam_evaluation_results.html:172
-#: app/pam/templates/pam_import.html:181
+#: app/pam/templates/pam_import.html:189
 #: app/pam/templates/pam_service_log.html:239
 #: app/pam/templates/pam_verification_interface.html:137
 #: app/pam/templates/pam_verification_segments.html:104
@@ -2156,7 +2157,7 @@ msgstr ""
 #: app/camera_traps/templates/data_quality.html:240
 #: app/camera_traps/templates/upload.html:589
 #: app/pam/templates/pam_evaluation_results.html:380
-#: app/pam/templates/pam_import.html:589
+#: app/pam/templates/pam_import.html:598
 msgid "з"
 msgstr ""
 
@@ -2806,7 +2807,7 @@ msgstr ""
 #: app/pam/templates/manage_pam_locations.html:139
 #: app/pam/templates/manage_pam_locations.html:583
 #: app/pam/templates/manage_pam_locations.html:845
-#: app/pam/templates/pam_import.html:101 app/pam/templates/pam_import.html:488
+#: app/pam/templates/pam_import.html:101 app/pam/templates/pam_import.html:496
 msgid "Зберегти"
 msgstr ""
 
@@ -2866,8 +2867,8 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:534
 #: app/pam/templates/manage_pam_locations.html:16
 #: app/pam/templates/manage_pam_locations.html:598
-#: app/pam/templates/pam_import.html:52 app/pam/templates/pam_import.html:348
-#: app/pam/templates/pam_import.html:446
+#: app/pam/templates/pam_import.html:52 app/pam/templates/pam_import.html:356
+#: app/pam/templates/pam_import.html:454
 msgid "Нова локація"
 msgstr ""
 
@@ -3094,69 +3095,69 @@ msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:247
 #: app/pam/templates/manage_pam_locations.html:258
-#: app/pam/templates/pam_import.html:427
+#: app/pam/templates/pam_import.html:435
 msgid "Виберіть біотопи..."
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:248
 #: app/pam/templates/manage_pam_locations.html:259
-#: app/pam/templates/pam_import.html:426
+#: app/pam/templates/pam_import.html:434
 msgid "Виберіть установи..."
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:326
 #: app/camera_traps/templates/upload.html:268
 #: app/pam/templates/manage_pam_locations.html:375
-#: app/pam/templates/pam_import.html:297
+#: app/pam/templates/pam_import.html:305
 msgid "Національні природні парки"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:327
 #: app/camera_traps/templates/upload.html:269
 #: app/pam/templates/manage_pam_locations.html:376
-#: app/pam/templates/pam_import.html:298
+#: app/pam/templates/pam_import.html:306
 msgid "Біосферні заповідники"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:328
 #: app/camera_traps/templates/upload.html:270
 #: app/pam/templates/manage_pam_locations.html:377
-#: app/pam/templates/pam_import.html:299
+#: app/pam/templates/pam_import.html:307
 msgid "Регіональні ландшафтні парки"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:329
 #: app/camera_traps/templates/upload.html:271
 #: app/pam/templates/manage_pam_locations.html:378
-#: app/pam/templates/pam_import.html:300
+#: app/pam/templates/pam_import.html:308
 msgid "Заказники"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:330
 #: app/camera_traps/templates/upload.html:272
 #: app/pam/templates/manage_pam_locations.html:379
-#: app/pam/templates/pam_import.html:301
+#: app/pam/templates/pam_import.html:309
 msgid "Природні заповідники"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:331
 #: app/camera_traps/templates/upload.html:273
 #: app/pam/templates/manage_pam_locations.html:380
-#: app/pam/templates/pam_import.html:302
+#: app/pam/templates/pam_import.html:310
 msgid "Пам'ятки природи"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:332
 #: app/camera_traps/templates/upload.html:274
 #: app/pam/templates/manage_pam_locations.html:381
-#: app/pam/templates/pam_import.html:303
+#: app/pam/templates/pam_import.html:311
 msgid "Заповідні урочища"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:362
 #: app/camera_traps/templates/upload.html:288
 #: app/pam/templates/manage_pam_locations.html:411
-#: app/pam/templates/pam_import.html:317
+#: app/pam/templates/pam_import.html:325
 msgid "Території ПЗФ"
 msgstr ""
 
@@ -3215,7 +3216,7 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:761
 #: app/camera_traps/templates/service_log.html:341
 #: app/pam/templates/manage_pam_locations.html:819
-#: app/pam/templates/pam_import.html:599
+#: app/pam/templates/pam_import.html:609
 #: app/pam/templates/pam_service_log.html:317
 #: app/pam/templates/pam_verification_upload.html:248
 msgid "Невідома помилка"
@@ -3499,7 +3500,7 @@ msgid "Помилка завантаження історії."
 msgstr ""
 
 #: app/camera_traps/templates/service_log.html:283
-#: app/pam/templates/pam_import.html:470
+#: app/pam/templates/pam_import.html:478
 #: app/pam/templates/pam_service_log.html:282
 msgid "Збереження..."
 msgstr ""
@@ -3747,13 +3748,13 @@ msgstr ""
 
 #: app/camera_traps/templates/upload.html:112
 #: app/camera_traps/templates/upload_fast.html:151
-#: app/pam/templates/pam_import.html:131 app/pam/templates/pam_import.html:139
+#: app/pam/templates/pam_import.html:139 app/pam/templates/pam_import.html:147
 msgid "Файли"
 msgstr ""
 
 #: app/camera_traps/templates/upload.html:119
 #: app/camera_traps/templates/upload_fast.html:158
-#: app/pam/templates/pam_import.html:146
+#: app/pam/templates/pam_import.html:154
 msgid "Папка"
 msgstr ""
 
@@ -3768,14 +3769,14 @@ msgstr ""
 #: app/camera_traps/templates/upload_fast.html:529
 #: app/camera_traps/templates/upload_fast.html:532
 #: app/camera_traps/templates/upload_fast.html:707
-#: app/pam/templates/pam_import.html:152 app/pam/templates/pam_import.html:525
-#: app/pam/templates/pam_import.html:535
+#: app/pam/templates/pam_import.html:160 app/pam/templates/pam_import.html:533
+#: app/pam/templates/pam_import.html:543
 msgid "файлів"
 msgstr ""
 
 #: app/camera_traps/templates/upload.html:127
 #: app/camera_traps/templates/upload_fast.html:166
-#: app/pam/templates/pam_import.html:154
+#: app/pam/templates/pam_import.html:162
 msgid "Очистити"
 msgstr ""
 
@@ -3991,7 +3992,7 @@ msgid "Запуск групування серій..."
 msgstr ""
 
 #: app/camera_traps/templates/upload_fast.html:811
-#: app/pam/templates/pam_import.html:614
+#: app/pam/templates/pam_import.html:624
 msgid "Готово!"
 msgstr ""
 
@@ -4566,8 +4567,8 @@ msgstr ""
 msgid "Імпорт даних ПАМ"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:43 app/pam/templates/pam_import.html:390
-#: app/pam/templates/pam_import.html:413
+#: app/pam/templates/pam_import.html:43 app/pam/templates/pam_import.html:398
+#: app/pam/templates/pam_import.html:421
 msgid "— Виберіть локацію —"
 msgstr ""
 
@@ -4583,93 +4584,103 @@ msgstr ""
 msgid "Алгоритм класифікації"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:123 app/pam/templates/pam_import.html:550
+#: app/pam/templates/pam_import.html:123 app/pam/templates/pam_import.html:558
 msgid ""
 "BirdNET Analyzer: виберіть CSV-файли, що генеруються BirdNET (один файл ="
 " один запис)."
 msgstr ""
 
-#: app/pam/templates/pam_import.html:153 app/pam/templates/pam_import.html:526
+#: app/pam/templates/pam_import.html:127
+msgid "Тривалість файлу, хв"
+msgstr ""
+
+#: app/pam/templates/pam_import.html:131
+msgid ""
+"Однакова для всіх файлів цього імпорту. Використовується для розрахунку "
+"покриття."
+msgstr ""
+
+#: app/pam/templates/pam_import.html:161 app/pam/templates/pam_import.html:534
 msgid "порожніх відфільтровано"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:162
+#: app/pam/templates/pam_import.html:170
 msgid "Перевірка файлів..."
 msgstr ""
 
-#: app/pam/templates/pam_import.html:170
+#: app/pam/templates/pam_import.html:178
 msgid "Імпорт"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:175
+#: app/pam/templates/pam_import.html:183
 msgid "Розпочати імпорт"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:192
+#: app/pam/templates/pam_import.html:200
 msgid "Результати імпорту"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:195
+#: app/pam/templates/pam_import.html:203
 msgid "Файлів оброблено"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:196
+#: app/pam/templates/pam_import.html:204
 msgid "Порожніх (пропущено)"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:197
+#: app/pam/templates/pam_import.html:205
 msgid "Файлів з помилками"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:199
+#: app/pam/templates/pam_import.html:207
 msgid "Нових recordings"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:200
+#: app/pam/templates/pam_import.html:208
 msgid "Вже існувало"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:202
+#: app/pam/templates/pam_import.html:210
 msgid "Детекцій імпортовано"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:203
+#: app/pam/templates/pam_import.html:211
 msgid "Дублікатів (пропущено)"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:205
+#: app/pam/templates/pam_import.html:213
 msgid "Унікальних видів"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:210
+#: app/pam/templates/pam_import.html:218
 msgid "Новий імпорт"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:433
+#: app/pam/templates/pam_import.html:441
 msgid "Скасувати нову локацію"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:460
+#: app/pam/templates/pam_import.html:468
 msgid "Клацніть на карті або введіть координати."
 msgstr ""
 
-#: app/pam/templates/pam_import.html:506
+#: app/pam/templates/pam_import.html:514
 msgid "Перевірка"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:535
+#: app/pam/templates/pam_import.html:543
 msgid "ще"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:589
+#: app/pam/templates/pam_import.html:598
 msgid "Пакет"
 msgstr ""
 
-#: app/pam/templates/pam_import.html:609
+#: app/pam/templates/pam_import.html:619
 msgid "Помилка з'єднання: "
 msgstr ""
 
-#: app/pam/templates/pam_import.html:622
+#: app/pam/templates/pam_import.html:632
 msgid "клієнт"
 msgstr ""
 
@@ -4686,66 +4697,70 @@ msgid "Усього записів"
 msgstr ""
 
 #: app/pam/templates/pam_location_coverage.html:25
+msgid "Сумарно записано"
+msgstr ""
+
+#: app/pam/templates/pam_location_coverage.html:29
 msgid "Днів із записами"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:30
+#: app/pam/templates/pam_location_coverage.html:34
 msgid "Діапазон"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:37
+#: app/pam/templates/pam_location_coverage.html:41
 msgid "Добре"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:37
-msgid "год/день"
+#: app/pam/templates/pam_location_coverage.html:41
+msgid "год запису/день"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:38
+#: app/pam/templates/pam_location_coverage.html:42
 msgid "Частково"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:39
+#: app/pam/templates/pam_location_coverage.html:43
 msgid "Немає записів"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:43
+#: app/pam/templates/pam_location_coverage.html:47
 msgid "Для цієї локації ще немає записів."
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:45
+#: app/pam/templates/pam_location_coverage.html:49
 msgid "Пн"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:45
+#: app/pam/templates/pam_location_coverage.html:49
 msgid "Вт"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:45
+#: app/pam/templates/pam_location_coverage.html:49
 msgid "Ср"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:45
+#: app/pam/templates/pam_location_coverage.html:49
 msgid "Чт"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:45
+#: app/pam/templates/pam_location_coverage.html:49
 msgid "Пт"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:45
+#: app/pam/templates/pam_location_coverage.html:49
 msgid "Сб"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:45
+#: app/pam/templates/pam_location_coverage.html:49
 msgid "Нд"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:62
-msgid "год охоплення"
+#: app/pam/templates/pam_location_coverage.html:66
+msgid "год запису"
 msgstr ""
 
-#: app/pam/templates/pam_location_coverage.html:62
+#: app/pam/templates/pam_location_coverage.html:66
 msgid "записів"
 msgstr ""
 
@@ -6880,5 +6895,11 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Сумарне зусилля"
+#~ msgstr ""
+
+#~ msgid "год/день"
+#~ msgstr ""
+
+#~ msgid "год охоплення"
 #~ msgstr ""
 

@@ -374,6 +374,23 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
         self.assertEqual(stats['files_empty'], 0)
         self.assertEqual(stats['files_failed'], 0)
 
+    def test_default_duration_is_5(self):
+        """#37: тривалість за замовчуванням — 5 хв."""
+        proc = self._make_processor()
+        self.assertEqual(proc.duration_minutes, 5)
+
+    def test_duration_minutes_passed_to_recording_insert(self):
+        """#37: задана тривалість потрапляє у INSERT recordings (param 'dur')."""
+        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
+        mock_conn = _make_processor_conn()
+        proc = PAMImportProcessor(_make_engine(mock_conn), location_id=1,
+                                  importer=BirdNETImporter(), duration_minutes=10)
+        proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID, 'rec.csv')])
+        rec_calls = [c for c in mock_conn.execute.call_args_list
+                     if 'INSERT INTO recordings' in str(c.args[0])]
+        self.assertTrue(rec_calls, "немає виклику INSERT INTO recordings")
+        self.assertEqual(rec_calls[0].args[1]['dur'], 10)
+
     def test_mixed_empty_and_valid(self):
         mock_conn = _make_processor_conn()
         proc = self._make_processor(_make_engine(mock_conn))
