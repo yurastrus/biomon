@@ -80,6 +80,18 @@ def test_boundary_6_hours_is_good():
     assert _find_cell(cov, date(2025, 6, 2))['hours'] == 6.0
 
 
+def test_intensity_linear():
+    """#43: intensity лінійна (min→0, max→1); 0 год → None (сірий)."""
+    cov = build_coverage_calendar({
+        date(2025, 6, 1): _d(0, 0),     # 0 год → missing/None
+        date(2025, 6, 2): _d(10, 180),  # 3 год → min → 0.0
+        date(2025, 6, 3): _d(10, 360),  # 6 год → max → 1.0
+    })
+    assert _find_cell(cov, date(2025, 6, 1))['intensity'] is None
+    assert _find_cell(cov, date(2025, 6, 2))['intensity'] == 0.0
+    assert _find_cell(cov, date(2025, 6, 3))['intensity'] == 1.0
+
+
 def test_aggregated_mode_sums_across_years():
     """#39: режим aggregated зводить (місяць,день) за всі роки + рахує роки."""
     cov = build_coverage_calendar(
@@ -148,8 +160,7 @@ def test_coverage_route_renders(auth_client):
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
     assert 'Тестова локація' in html
-    assert 'coverage-good' in html       # 8 год запису
-    assert 'coverage-partial' in html    # 3 год
+    assert 'rgba(76,175,80' in html      # градієнтна заливка (#43)
     assert '2025-06' in html
 
 

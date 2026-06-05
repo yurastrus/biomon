@@ -62,6 +62,17 @@ def test_levels_covered_with_and_without_photos():
     assert cov['days_with_photos'] == 1
 
 
+def test_intensity_linear():
+    """#43: intensity лінійна за фото для covered днів; not-covered → None."""
+    covered = {date(2025, 6, 1), date(2025, 6, 2), date(2025, 6, 3)}
+    photos = {date(2025, 6, 2): 5, date(2025, 6, 3): 10}  # 6,1 → covered 0 фото
+    cov = build_ct_coverage_calendar(covered, photos)
+    assert _find(cov, date(2025, 6, 1))['intensity'] == 0.0   # covered, 0 фото → min
+    assert _find(cov, date(2025, 6, 2))['intensity'] == 0.5
+    assert _find(cov, date(2025, 6, 3))['intensity'] == 1.0
+    assert _find(cov, date(2025, 6, 10))['intensity'] is None  # не covered
+
+
 def test_aggregated_mode_sums_across_years():
     """#39: aggregated зводить (місяць,день) за всі роки."""
     covered = {date(2024, 5, 1), date(2025, 5, 1)}
@@ -112,8 +123,8 @@ def test_route_renders_with_deployment_and_photos(
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
     assert 'Ліс-1' in html
-    assert 'coverage-good' in html      # деплоймент + фото
-    assert 'coverage-partial' in html   # деплоймент-дні без фото
+    assert 'rgba(76,175,80' in html     # градієнтна заливка covered-днів (#43)
+    assert 'coverage-missing' in html   # дні поза деплойментом
 
 
 def test_route_requires_manager(auth_client, db_session, ct_route_session,

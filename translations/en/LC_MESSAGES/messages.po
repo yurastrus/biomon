@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-05 11:42+0300\n"
+"POT-Creation-Date: 2026-06-05 12:28+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -844,7 +844,6 @@ msgstr "Photos without series (orphans)"
 
 #: app/camera_traps/templates/admin.html:177
 #: app/pam/templates/pam_location_coverage.html:30
-#: app/pam/templates/pam_location_coverage.html:48
 msgid "год"
 msgstr "h"
 
@@ -1765,72 +1764,73 @@ msgid "Діапазон"
 msgstr "Range"
 
 #: app/camera_traps/templates/ct_location_coverage.html:52
-msgid "Працювала, є фото"
-msgstr "Working, has photos"
-
-#: app/camera_traps/templates/ct_location_coverage.html:53
-msgid "Працювала, без фото"
-msgstr "Working, no photos"
+#: app/pam/templates/pam_location_coverage.html:47
+msgid "менше"
+msgstr "less"
 
 #: app/camera_traps/templates/ct_location_coverage.html:54
+msgid "більше фото"
+msgstr "more photos"
+
+#: app/camera_traps/templates/ct_location_coverage.html:55
 #: app/camera_traps/templates/service_log.html:72
 msgid "Не працювала"
 msgstr "Not working"
 
-#: app/camera_traps/templates/ct_location_coverage.html:58
+#: app/camera_traps/templates/ct_location_coverage.html:59
 msgid "Для цієї локації ще немає даних про покриття."
 msgstr "No coverage data for this location yet."
 
-#: app/camera_traps/templates/ct_location_coverage.html:60
-#: app/pam/templates/pam_location_coverage.html:55
+#: app/camera_traps/templates/ct_location_coverage.html:61
+#: app/pam/templates/pam_location_coverage.html:56
 msgid "Пн"
 msgstr "Mon"
 
-#: app/camera_traps/templates/ct_location_coverage.html:60
-#: app/pam/templates/pam_location_coverage.html:55
+#: app/camera_traps/templates/ct_location_coverage.html:61
+#: app/pam/templates/pam_location_coverage.html:56
 msgid "Вт"
 msgstr "Tue"
 
-#: app/camera_traps/templates/ct_location_coverage.html:60
-#: app/pam/templates/pam_location_coverage.html:55
+#: app/camera_traps/templates/ct_location_coverage.html:61
+#: app/pam/templates/pam_location_coverage.html:56
 msgid "Ср"
 msgstr "Wed"
 
-#: app/camera_traps/templates/ct_location_coverage.html:60
-#: app/pam/templates/pam_location_coverage.html:55
+#: app/camera_traps/templates/ct_location_coverage.html:61
+#: app/pam/templates/pam_location_coverage.html:56
 msgid "Чт"
 msgstr "Thu"
 
-#: app/camera_traps/templates/ct_location_coverage.html:60
-#: app/pam/templates/pam_location_coverage.html:55
+#: app/camera_traps/templates/ct_location_coverage.html:61
+#: app/pam/templates/pam_location_coverage.html:56
 msgid "Пт"
 msgstr "Fri"
 
-#: app/camera_traps/templates/ct_location_coverage.html:60
-#: app/pam/templates/pam_location_coverage.html:55
+#: app/camera_traps/templates/ct_location_coverage.html:61
+#: app/pam/templates/pam_location_coverage.html:56
 msgid "Сб"
 msgstr "Sat"
 
-#: app/camera_traps/templates/ct_location_coverage.html:60
-#: app/pam/templates/pam_location_coverage.html:55
+#: app/camera_traps/templates/ct_location_coverage.html:61
+#: app/pam/templates/pam_location_coverage.html:56
 msgid "Нд"
 msgstr "Sun"
 
-#: app/camera_traps/templates/ct_location_coverage.html:77
+#: app/camera_traps/templates/ct_location_coverage.html:79
 #: app/camera_traps/templates/data_quality.html:190
 msgid "фото"
 msgstr "photos"
 
-#: app/camera_traps/templates/ct_location_coverage.html:77
-#: app/pam/templates/pam_location_coverage.html:72
+#: app/camera_traps/templates/ct_location_coverage.html:79
+#: app/pam/templates/pam_location_coverage.html:74
 msgid "р."
 msgstr "yr"
 
-#: app/camera_traps/templates/ct_location_coverage.html:77
+#: app/camera_traps/templates/ct_location_coverage.html:79
 msgid "камера працювала"
 msgstr "camera working"
 
-#: app/camera_traps/templates/ct_location_coverage.html:77
+#: app/camera_traps/templates/ct_location_coverage.html:79
 msgid "не працювала"
 msgstr "not working"
 
@@ -4870,31 +4870,23 @@ msgstr "Total recorded"
 msgid "Днів із записами"
 msgstr "Days with recordings"
 
-#: app/pam/templates/pam_location_coverage.html:47
-msgid "Добре"
-msgstr "Good"
-
-#: app/pam/templates/pam_location_coverage.html:47
-msgid "год запису/день"
-msgstr "rec. h/day"
-
-#: app/pam/templates/pam_location_coverage.html:48
-msgid "Частково"
-msgstr "Partial"
-
 #: app/pam/templates/pam_location_coverage.html:49
+msgid "більше годин запису"
+msgstr "more rec. hours"
+
+#: app/pam/templates/pam_location_coverage.html:50
 msgid "Немає записів"
 msgstr "No recordings"
 
-#: app/pam/templates/pam_location_coverage.html:53
+#: app/pam/templates/pam_location_coverage.html:54
 msgid "Для цієї локації ще немає записів."
 msgstr "No recordings for this location yet."
 
-#: app/pam/templates/pam_location_coverage.html:72
+#: app/pam/templates/pam_location_coverage.html:74
 msgid "год запису"
 msgstr "rec. h"
 
-#: app/pam/templates/pam_location_coverage.html:72
+#: app/pam/templates/pam_location_coverage.html:74
 msgid "записів"
 msgstr "recordings"
 
@@ -6478,4 +6470,19 @@ msgstr "Message"
 
 #~ msgid "Кількість особин"
 #~ msgstr "Number of individuals"
+
+#~ msgid "Працювала, є фото"
+#~ msgstr "Working, has photos"
+
+#~ msgid "Працювала, без фото"
+#~ msgstr "Working, no photos"
+
+#~ msgid "Добре"
+#~ msgstr "Good"
+
+#~ msgid "год запису/день"
+#~ msgstr "rec. h/day"
+
+#~ msgid "Частково"
+#~ msgstr "Partial"
 
