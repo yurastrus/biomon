@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-04 23:18+0300\n"
+"POT-Creation-Date: 2026-06-05 11:42+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -360,7 +360,7 @@ msgid "Помилка бази даних."
 msgstr "Database error."
 
 #: app/camera_traps/routes.py:2460 app/camera_traps/routes.py:3186
-#: app/camera_traps/routes.py:3606 app/camera_traps/routes.py:4025
+#: app/camera_traps/routes.py:3609 app/camera_traps/routes.py:4028
 msgid "Локацію не знайдено."
 msgstr "Location not found."
 
@@ -492,104 +492,104 @@ msgstr "There are no photos available for the selected species."
 msgid "Фото видалено з вибраного"
 msgstr "Photo removed from favorites"
 
-#: app/camera_traps/routes.py:3201 app/camera_traps/routes.py:3604
-#: app/camera_traps/routes.py:4020 app/camera_traps/routes.py:4604
-#: app/camera_traps/routes.py:4670 app/camera_traps/routes.py:4753
+#: app/camera_traps/routes.py:3201 app/camera_traps/routes.py:3607
+#: app/camera_traps/routes.py:4023 app/camera_traps/routes.py:4607
+#: app/camera_traps/routes.py:4673 app/camera_traps/routes.py:4756
 msgid "Немає доступу до цієї локації."
 msgstr "Access to this location denied."
 
-#: app/camera_traps/routes.py:3343
+#: app/camera_traps/routes.py:3346
 msgid "Помилка завантаження сторінки управління локаціями."
 msgstr "Error loading the location management page."
 
-#: app/camera_traps/routes.py:3537
+#: app/camera_traps/routes.py:3540
 msgid "Помилка завантаження сторінки управління деплойментами."
 msgstr "Error loading the deployment management page."
 
-#: app/camera_traps/routes.py:3551 app/camera_traps/routes.py:3568
-#: app/camera_traps/routes.py:3638
+#: app/camera_traps/routes.py:3554 app/camera_traps/routes.py:3571
+#: app/camera_traps/routes.py:3641
 msgid "Деплоймент не знайдено."
 msgstr "Deployment not found."
 
-#: app/camera_traps/routes.py:3553 app/camera_traps/routes.py:4012
-#: app/camera_traps/routes.py:4041 app/camera_traps/routes.py:4596
-#: app/camera_traps/routes.py:4662 app/camera_traps/routes.py:4745
+#: app/camera_traps/routes.py:3556 app/camera_traps/routes.py:4015
+#: app/camera_traps/routes.py:4044 app/camera_traps/routes.py:4599
+#: app/camera_traps/routes.py:4665 app/camera_traps/routes.py:4748
 msgid "Немає доступу."
 msgstr "Access denied."
 
-#: app/camera_traps/routes.py:3570 app/camera_traps/routes.py:3640
+#: app/camera_traps/routes.py:3573 app/camera_traps/routes.py:3643
 msgid "Немає доступу до цього деплойменту."
 msgstr "No access to this deployment."
 
-#: app/camera_traps/routes.py:3574 app/camera_traps/routes.py:3610
+#: app/camera_traps/routes.py:3577 app/camera_traps/routes.py:3613
 msgid "Назва деплойменту обов'язкова."
 msgstr "Deployment name is required."
 
-#: app/camera_traps/routes.py:3578
+#: app/camera_traps/routes.py:3581
 msgid "Деплоймент оновлено успішно!"
 msgstr "Deployment updated successfully!"
 
-#: app/camera_traps/routes.py:3582 app/camera_traps/routes.py:3620
+#: app/camera_traps/routes.py:3585 app/camera_traps/routes.py:3623
 msgid "Невірний формат дати/числа."
 msgstr "Invalid date/number format."
 
-#: app/camera_traps/routes.py:3586 app/camera_traps/routes.py:3624
-#: app/camera_traps/routes.py:4065
+#: app/camera_traps/routes.py:3589 app/camera_traps/routes.py:3627
+#: app/camera_traps/routes.py:4068
 msgid "Помилка збереження даних."
 msgstr "Data save error."
 
-#: app/camera_traps/routes.py:3601
+#: app/camera_traps/routes.py:3604
 msgid "Не вказано локацію."
 msgstr "No location specified."
 
-#: app/camera_traps/routes.py:3616
+#: app/camera_traps/routes.py:3619
 msgid "Деплоймент створено успішно!"
 msgstr "Deployment created successfully!"
 
-#: app/camera_traps/routes.py:3644
+#: app/camera_traps/routes.py:3647
 msgid "Деплоймент видалено."
 msgstr "Deployment deleted."
 
-#: app/camera_traps/routes.py:3649
+#: app/camera_traps/routes.py:3652
 msgid "Помилка видалення."
 msgstr "Deletion error."
 
-#: app/camera_traps/routes.py:3723 app/camera_traps/routes.py:4095
+#: app/camera_traps/routes.py:3726 app/camera_traps/routes.py:4098
 msgid "Немає доступу до цієї установи."
 msgstr "Access to this institution denied."
 
-#: app/camera_traps/routes.py:3814
+#: app/camera_traps/routes.py:3817
 msgid "Помилка експорту."
 msgstr "Export error."
 
-#: app/camera_traps/routes.py:3993
+#: app/camera_traps/routes.py:3996
 msgid "Помилка завантаження сторінки якості даних."
 msgstr "Error loading the data quality page."
 
-#: app/camera_traps/routes.py:4061
+#: app/camera_traps/routes.py:4064
 msgid "Дані локації оновлено успішно!"
 msgstr "Location data updated successfully!"
 
-#: app/camera_traps/routes.py:4088
+#: app/camera_traps/routes.py:4091
 #: app/camera_traps/templates/manage_locations.html:598
 #: app/pam/templates/manage_pam_locations.html:649
 #: app/pam/templates/pam_import.html:467
 msgid "Вкажіть назву локації."
 msgstr "Enter the location name."
 
-#: app/camera_traps/routes.py:4090
+#: app/camera_traps/routes.py:4093
 msgid "Вкажіть координати."
 msgstr "Please specify coordinates."
 
-#: app/camera_traps/routes.py:4123
+#: app/camera_traps/routes.py:4126
 msgid "Локацію створено успішно!"
 msgstr "Location created successfully!"
 
-#: app/camera_traps/routes.py:4128
+#: app/camera_traps/routes.py:4131
 msgid "Помилка сервера при створенні локації."
 msgstr "Server error while creating the location."
 
-#: app/camera_traps/routes.py:4152
+#: app/camera_traps/routes.py:4155
 msgid ""
 "Під час процесу видалення файлів сталася несподівана помилка. Перевірте "
 "логи."
@@ -597,77 +597,77 @@ msgstr ""
 "An unexpected error occurred during the file removing process. Please "
 "check the logs."
 
-#: app/camera_traps/routes.py:4167
+#: app/camera_traps/routes.py:4170
 msgid "Процес перерахунку аналітики успішно завершено."
 msgstr "Analytics recalculation process was successfully completed."
 
-#: app/camera_traps/routes.py:4171
+#: app/camera_traps/routes.py:4174
 msgid "Під час перерахунку аналітики сталася помилка. Перевірте логи."
 msgstr "An error occurred during analytics recalculation. Check the logs."
 
-#: app/camera_traps/routes.py:4521
+#: app/camera_traps/routes.py:4524
 #: app/pam/templates/manage_pam_locations.html:328
 msgid "Немає даних про обслуговування"
 msgstr "No maintenance data"
 
-#: app/camera_traps/routes.py:4557
+#: app/camera_traps/routes.py:4560
 msgid "Прогноз за кількістю фото"
 msgstr "Forecast by number of photos"
 
-#: app/camera_traps/routes.py:4561
+#: app/camera_traps/routes.py:4564
 #: app/camera_traps/templates/service_log.html:335
 msgid "Прогноз за часом"
 msgstr "Forecast by time"
 
-#: app/camera_traps/routes.py:4625
+#: app/camera_traps/routes.py:4628
 msgid "Не замінювались"
 msgstr "Not replaced"
 
-#: app/camera_traps/routes.py:4656 app/camera_traps/routes.py:4760
+#: app/camera_traps/routes.py:4659 app/camera_traps/routes.py:4763
 msgid "Не всі обов'язкові поля заповнені."
 msgstr "Not all required fields are filled in."
 
-#: app/camera_traps/routes.py:4711
+#: app/camera_traps/routes.py:4714
 msgid "Запис успішно додано до журналу!"
 msgstr "Record successfully added to the log!"
 
-#: app/camera_traps/routes.py:4717
+#: app/camera_traps/routes.py:4720
 msgid "Передано некоректні дані."
 msgstr "Invalid data submitted."
 
-#: app/camera_traps/routes.py:4721
+#: app/camera_traps/routes.py:4724
 msgid "Помилка сервера при збереженні запису."
 msgstr "Server error while saving the record."
 
-#: app/camera_traps/routes.py:4734
+#: app/camera_traps/routes.py:4737
 msgid "Запис не знайдено."
 msgstr "Record not found."
 
-#: app/camera_traps/routes.py:4741
+#: app/camera_traps/routes.py:4744
 msgid "Недостатньо прав для редагування цього запису."
 msgstr "Insufficient permissions to edit this record."
 
-#: app/camera_traps/routes.py:4785
+#: app/camera_traps/routes.py:4788
 msgid "Запис оновлено успішно!"
 msgstr "Record updated successfully!"
 
-#: app/camera_traps/routes.py:4789
+#: app/camera_traps/routes.py:4792
 msgid "Некоректні дані."
 msgstr "Invalid data."
 
-#: app/camera_traps/routes.py:4793
+#: app/camera_traps/routes.py:4796
 msgid "Помилка сервера."
 msgstr "Server error."
 
-#: app/camera_traps/routes.py:4808
+#: app/camera_traps/routes.py:4811
 msgid "Перерахунок статистики успішно завершено! Карта буде оновлена."
 msgstr "Statistics recalculated successfully! The map will be updated."
 
-#: app/camera_traps/routes.py:4812
+#: app/camera_traps/routes.py:4815
 msgid "Під час перерахунку сталася помилка."
 msgstr "An error occurred during recalculation."
 
-#: app/camera_traps/routes.py:5385
+#: app/camera_traps/routes.py:5388
 msgid "Помилка завантаження сторінки."
 msgstr "Error loading page."
 
@@ -843,8 +843,8 @@ msgid "Фото без серій (сироти)"
 msgstr "Photos without series (orphans)"
 
 #: app/camera_traps/templates/admin.html:177
-#: app/pam/templates/pam_location_coverage.html:24
-#: app/pam/templates/pam_location_coverage.html:42
+#: app/pam/templates/pam_location_coverage.html:30
+#: app/pam/templates/pam_location_coverage.html:48
 msgid "год"
 msgstr "h"
 
@@ -1728,96 +1728,111 @@ msgstr "Camera coverage calendar"
 msgid "До локацій"
 msgstr "Back to locations"
 
-#: app/camera_traps/templates/ct_location_coverage.html:19
+#: app/camera_traps/templates/ct_location_coverage.html:20
+#: app/pam/templates/pam_location_coverage.html:19
+msgid "Усі роки"
+msgstr "All years"
+
+#: app/camera_traps/templates/ct_location_coverage.html:21
+#: app/pam/templates/pam_location_coverage.html:20
+msgid "Зведено за рік"
+msgstr "Aggregated by year"
+
+#: app/camera_traps/templates/ct_location_coverage.html:25
 #, python-format
 msgid ""
 "«Камера працювала» = дні в межах деплойментів та дні з фото (прогалини до"
 " %(n)s днів вважаються неперервними)."
 msgstr ""
-"\"Camera working\" = days within deployments plus days with photos (gaps up "
-"to %(n)s days count as continuous)."
+"\"Camera working\" = days within deployments plus days with photos (gaps "
+"up to %(n)s days count as continuous)."
 
-#: app/camera_traps/templates/ct_location_coverage.html:26
+#: app/camera_traps/templates/ct_location_coverage.html:32
 msgid "Днів роботи камери"
 msgstr "Camera-working days"
 
-#: app/camera_traps/templates/ct_location_coverage.html:30
+#: app/camera_traps/templates/ct_location_coverage.html:36
 msgid "Днів із фото"
 msgstr "Days with photos"
 
-#: app/camera_traps/templates/ct_location_coverage.html:34
+#: app/camera_traps/templates/ct_location_coverage.html:40
 msgid "Усього фото"
 msgstr "Total photos"
 
-#: app/camera_traps/templates/ct_location_coverage.html:39
-#: app/pam/templates/pam_location_coverage.html:34
+#: app/camera_traps/templates/ct_location_coverage.html:45
+#: app/pam/templates/pam_location_coverage.html:40
 msgid "Діапазон"
 msgstr "Range"
 
-#: app/camera_traps/templates/ct_location_coverage.html:46
+#: app/camera_traps/templates/ct_location_coverage.html:52
 msgid "Працювала, є фото"
 msgstr "Working, has photos"
 
-#: app/camera_traps/templates/ct_location_coverage.html:47
+#: app/camera_traps/templates/ct_location_coverage.html:53
 msgid "Працювала, без фото"
 msgstr "Working, no photos"
 
-#: app/camera_traps/templates/ct_location_coverage.html:48
+#: app/camera_traps/templates/ct_location_coverage.html:54
 #: app/camera_traps/templates/service_log.html:72
 msgid "Не працювала"
 msgstr "Not working"
 
-#: app/camera_traps/templates/ct_location_coverage.html:52
+#: app/camera_traps/templates/ct_location_coverage.html:58
 msgid "Для цієї локації ще немає даних про покриття."
 msgstr "No coverage data for this location yet."
 
-#: app/camera_traps/templates/ct_location_coverage.html:54
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/camera_traps/templates/ct_location_coverage.html:60
+#: app/pam/templates/pam_location_coverage.html:55
 msgid "Пн"
 msgstr "Mon"
 
-#: app/camera_traps/templates/ct_location_coverage.html:54
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/camera_traps/templates/ct_location_coverage.html:60
+#: app/pam/templates/pam_location_coverage.html:55
 msgid "Вт"
 msgstr "Tue"
 
-#: app/camera_traps/templates/ct_location_coverage.html:54
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/camera_traps/templates/ct_location_coverage.html:60
+#: app/pam/templates/pam_location_coverage.html:55
 msgid "Ср"
 msgstr "Wed"
 
-#: app/camera_traps/templates/ct_location_coverage.html:54
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/camera_traps/templates/ct_location_coverage.html:60
+#: app/pam/templates/pam_location_coverage.html:55
 msgid "Чт"
 msgstr "Thu"
 
-#: app/camera_traps/templates/ct_location_coverage.html:54
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/camera_traps/templates/ct_location_coverage.html:60
+#: app/pam/templates/pam_location_coverage.html:55
 msgid "Пт"
 msgstr "Fri"
 
-#: app/camera_traps/templates/ct_location_coverage.html:54
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/camera_traps/templates/ct_location_coverage.html:60
+#: app/pam/templates/pam_location_coverage.html:55
 msgid "Сб"
 msgstr "Sat"
 
-#: app/camera_traps/templates/ct_location_coverage.html:54
-#: app/pam/templates/pam_location_coverage.html:49
+#: app/camera_traps/templates/ct_location_coverage.html:60
+#: app/pam/templates/pam_location_coverage.html:55
 msgid "Нд"
 msgstr "Sun"
 
-#: app/camera_traps/templates/ct_location_coverage.html:71
-msgid "камера працювала"
-msgstr "camera working"
-
-#: app/camera_traps/templates/ct_location_coverage.html:71
-msgid "не працювала"
-msgstr "not working"
-
-#: app/camera_traps/templates/ct_location_coverage.html:71
+#: app/camera_traps/templates/ct_location_coverage.html:77
 #: app/camera_traps/templates/data_quality.html:190
 msgid "фото"
 msgstr "photos"
+
+#: app/camera_traps/templates/ct_location_coverage.html:77
+#: app/pam/templates/pam_location_coverage.html:72
+msgid "р."
+msgstr "yr"
+
+#: app/camera_traps/templates/ct_location_coverage.html:77
+msgid "камера працювала"
+msgstr "camera working"
+
+#: app/camera_traps/templates/ct_location_coverage.html:77
+msgid "не працювала"
+msgstr "not working"
 
 #: app/camera_traps/templates/daily_activity.html:3
 #: app/camera_traps/templates/daily_activity.html:12
@@ -4843,43 +4858,43 @@ msgstr "Connection error: "
 msgid "клієнт"
 msgstr "client"
 
-#: app/pam/templates/pam_location_coverage.html:21
+#: app/pam/templates/pam_location_coverage.html:27
 msgid "Усього записів"
 msgstr "Total recordings"
 
-#: app/pam/templates/pam_location_coverage.html:25
+#: app/pam/templates/pam_location_coverage.html:31
 msgid "Сумарно записано"
 msgstr "Total recorded"
 
-#: app/pam/templates/pam_location_coverage.html:29
+#: app/pam/templates/pam_location_coverage.html:35
 msgid "Днів із записами"
 msgstr "Days with recordings"
 
-#: app/pam/templates/pam_location_coverage.html:41
+#: app/pam/templates/pam_location_coverage.html:47
 msgid "Добре"
 msgstr "Good"
 
-#: app/pam/templates/pam_location_coverage.html:41
+#: app/pam/templates/pam_location_coverage.html:47
 msgid "год запису/день"
 msgstr "rec. h/day"
 
-#: app/pam/templates/pam_location_coverage.html:42
+#: app/pam/templates/pam_location_coverage.html:48
 msgid "Частково"
 msgstr "Partial"
 
-#: app/pam/templates/pam_location_coverage.html:43
+#: app/pam/templates/pam_location_coverage.html:49
 msgid "Немає записів"
 msgstr "No recordings"
 
-#: app/pam/templates/pam_location_coverage.html:47
+#: app/pam/templates/pam_location_coverage.html:53
 msgid "Для цієї локації ще немає записів."
 msgstr "No recordings for this location yet."
 
-#: app/pam/templates/pam_location_coverage.html:66
+#: app/pam/templates/pam_location_coverage.html:72
 msgid "год запису"
 msgstr "rec. h"
 
-#: app/pam/templates/pam_location_coverage.html:66
+#: app/pam/templates/pam_location_coverage.html:72
 msgid "записів"
 msgstr "recordings"
 

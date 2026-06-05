@@ -80,6 +80,19 @@ def test_boundary_6_hours_is_good():
     assert _find_cell(cov, date(2025, 6, 2))['hours'] == 6.0
 
 
+def test_aggregated_mode_sums_across_years():
+    """#39: режим aggregated зводить (місяць,день) за всі роки + рахує роки."""
+    cov = build_coverage_calendar(
+        {date(2024, 5, 1): _d(10, 300), date(2025, 5, 1): _d(8, 240)},
+        mode='aggregated')
+    assert cov['mode'] == 'aggregated'
+    assert len(cov['months']) == 12          # умовний рік
+    cell = _find_cell(cov, date(2000, 5, 1))  # 2000 — умовний leap-рік
+    assert cell['hours'] == 9.0              # (300+240)/60
+    assert cell['years'] == 2
+    assert cov['years'] == [2024, 2025]
+
+
 def test_day_hours_not_capped():
     """Кілька ресиверів на локації → сума за добу законно > 24 год (без cap)."""
     cov = build_coverage_calendar({date(2025, 6, 2): _d(473, 2365)})  # 39.4 год

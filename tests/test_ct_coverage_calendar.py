@@ -62,6 +62,20 @@ def test_levels_covered_with_and_without_photos():
     assert cov['days_with_photos'] == 1
 
 
+def test_aggregated_mode_sums_across_years():
+    """#39: aggregated зводить (місяць,день) за всі роки."""
+    covered = {date(2024, 5, 1), date(2025, 5, 1)}
+    photos = {date(2024, 5, 1): 3, date(2025, 5, 1): 2}
+    cov = build_ct_coverage_calendar(covered, photos, mode='aggregated')
+    assert cov['mode'] == 'aggregated'
+    assert len(cov['months']) == 12
+    cell = _find(cov, date(2000, 5, 1))
+    assert cell['photos'] == 5
+    assert cell['years'] == 2
+    assert cell['covered'] is True
+    assert cell['level'] == 'good'
+
+
 def test_empty_calendar():
     cov = build_ct_coverage_calendar(set(), {})
     assert cov['months'] == []
