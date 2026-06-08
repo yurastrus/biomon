@@ -147,6 +147,12 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
+    # SEC Phase 3 (#25): сесійні куки лише по HTTPS — захист від перехоплення
+    # сесії (MITM на open Wi-Fi). biomon.app працює по HTTPS (nginx: HTTP→HTTPS
+    # redirect). Базовий Config лишає SECURE=False для dev/testing по HTTP.
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'Lax'   # явно закріплено (успадковується з Config)
+    REMEMBER_COOKIE_SECURE = True     # на випадок Flask-Login remember-me
     GEOSERVER_URL = '/geoserver'
     CAMERA_TRAP_CONFIG = Config.CAMERA_TRAP_CONFIG.copy()
     CAMERA_TRAP_CONFIG.update({
