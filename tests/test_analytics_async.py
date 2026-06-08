@@ -343,7 +343,7 @@ class TestAnalyticsGuardIntegration:
         from sqlalchemy import text
         with self._engine_scoped.begin() as c:
             return c.execute(text(
-                "SELECT status, started_at, error_message "
+                "SELECT status, started_at, last_calculated_at, error_message "
                 "FROM calculation_log WHERE source_name='completed_observations'"
             )).first()
 
@@ -418,3 +418,18 @@ class TestAnalyticsGuardIntegration:
         row = self._status_row()
         assert row.status == 'failed'
         assert row.error_message == 'something broke'
+        # 'failed' НЕ оновлює час останнього успіху
+        assert row.last_calculated_at is None
+
+    def test_finish_completed_sets_last_calculated_at(self):
+        from app.camera_traps.analytics_calculator import (
+            try_start_analytics_run, _finish_analytics_run)
+        try_start_analytics_run(triggered_by=1)
+        # до завершення часу успіху ще нема
+        assert self._status_row().last_calculated_at is None
+        _finish_analytics_run('completed')
+        row = self._status_row()
+        assert row.status == 'completed'
+        assert row.error_message is None
+        # бейдж «Останній успішний перерахунок» отримує правдивий час
+        assert row.last_calculated_at is not None
