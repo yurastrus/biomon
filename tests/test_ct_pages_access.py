@@ -200,6 +200,26 @@ class TestSpeciesDashboardAccess(PageAccessBase):
     def test_english_url_gets_200(self):
         self.assertEqual(self._get('/en/camera-traps/analysis/species-dashboard').status_code, 200)
 
+    def test_manager_sees_all_option_not_institution_default(self):
+        """#49: НЕ-адмін бачить опцію «усі» ПЕРШОЮ — жодна установа не вибрана
+        за замовчуванням (раніше global-опція рендерилась лише для адміна, тож
+        браузер авто-вибирав першу установу)."""
+        resp = self._get(self.URL, self.manager.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'value="global:"', resp.data)
+        self.assertIn('Всі доступні мені'.encode(), resp.data)
+        # «усі» має передувати першій установі → саме вона є браузерним дефолтом
+        self.assertIn(b'value="institution:', resp.data)
+        self.assertLess(resp.data.find(b'value="global:"'),
+                        resp.data.find(b'value="institution:'))
+
+    def test_admin_still_has_all_data_option(self):
+        """#49 не зламав адмінський варіант: «Всі дані» лишається першою опцією."""
+        resp = self._get(self.URL, self.admin.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'value="global:"', resp.data)
+        self.assertIn('Всі дані'.encode(), resp.data)
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 # 3. SPECIES DETAILED
