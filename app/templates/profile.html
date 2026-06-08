@@ -1,92 +1,183 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Мій профіль') }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* ── Profile page — узгоджено з дизайн-системою дашбордів (style.css) ── */
+    .profile-page { width: 100%; max-width: 960px; margin: 0 auto; text-align: left; }
+
+    .profile-page .page-header { margin-bottom: 30px; }
+    .profile-page .page-header .lead { margin-top: 4px; }
+    .profile-page .page-header .username-chip {
+        display: inline-block; background: #eef4fb; color: #0056b3;
+        padding: 4px 14px; border-radius: 18px; font-weight: 600; font-size: 18px;
+    }
+
+    .profile-page .dashboard-section { margin-bottom: 25px; }
+
+    /* Форми */
+    .profile-page .form-row { margin-bottom: 1rem; max-width: 360px; }
+    .profile-page .form-label,
+    .profile-page label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; color: #333; }
+    .profile-page .form-control {
+        width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;
+        font-size: 1em; font-family: inherit; background: #fff; transition: border-color .2s, box-shadow .2s;
+    }
+    .profile-page .form-control:focus {
+        outline: none; border-color: #0779e4; box-shadow: 0 0 0 2px rgba(7, 121, 228, .15);
+    }
+    .profile-page .field-error { color: #c0392b; font-size: .88em; margin-top: 4px; }
+    .profile-page .form-hint { color: #666; font-size: .88em; display: block; margin: -.25rem 0 1rem; }
+    .profile-page .current-login { margin-bottom: 1rem; color: #555; }
+    .profile-page .current-login strong { color: #333; }
+
+    /* Статистика */
+    .profile-page .stat-line {
+        display: flex; justify-content: space-between; align-items: baseline;
+        padding: 12px 0; border-bottom: 1px solid #eee;
+    }
+    .profile-page .stat-line:last-child { border-bottom: none; }
+    .profile-page .stat-line .stat-label { color: #555; }
+    .profile-page .stat-line .stat-num { font-size: 24px; font-weight: 600; color: #0779e4; line-height: 1; }
+    .profile-page .stat-line .stat-num .stat-suffix { font-size: 14px; font-weight: 500; color: #888; }
+
+    .profile-page .top-species-title {
+        font-size: 14px; font-weight: 600; color: #555; text-transform: uppercase;
+        letter-spacing: .03em; margin: 18px 0 8px;
+    }
+    .profile-page .top-species { list-style: none; padding: 0; margin: 0; counter-reset: rank; }
+    .profile-page .top-species li {
+        display: flex; align-items: center; gap: 10px; padding: 6px 0; counter-increment: rank;
+    }
+    .profile-page .top-species li::before {
+        content: counter(rank); flex: 0 0 22px; height: 22px; border-radius: 50%;
+        background: #eef4fb; color: #0056b3; font-size: 12px; font-weight: 700;
+        display: inline-flex; align-items: center; justify-content: center;
+    }
+    .profile-page .top-species .sp-name { flex: 1; }
+    .profile-page .top-species .sp-count { color: #888; font-size: .9em; }
+
+    .profile-page .info-message { text-align: left; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container" style="max-width: 920px; margin: 0 auto;">
-    <h2>{{ _('Мій профіль') }}</h2>
+<div class="container">
+<div class="profile-page">
 
-    {# ── Обліковий запис: логін ── #}
-    <section style="margin: 1.5rem 0; padding: 1rem 1.25rem; border: 1px solid #ddd; border-radius: 8px;">
-        <h3>{{ _('Обліковий запис') }}</h3>
-        <p>{{ _('Поточний логін') }}: <strong>{{ current_user.username }}</strong></p>
-        <form method="POST" action="{{ url_for('main.profile', lang_code=lang_code) }}">
-            {{ username_form.hidden_tag() }}
-            <div class="form-group" style="margin-bottom: .75rem;">
-                {{ username_form.new_username.label(class="form-label") }}
-                {{ username_form.new_username(class="form-control", style="max-width: 320px;") }}
-                {% for e in username_form.new_username.errors %}
-                <div style="color: #c0392b; font-size: .9em;">{{ e }}</div>
-                {% endfor %}
-            </div>
-            {{ username_form.submit_username(class="btn btn-primary") }}
-        </form>
-    </section>
+    <div class="page-header" style="text-align: left;">
+        <h1>{{ _('Мій профіль') }}</h1>
+        <p class="lead"><span class="username-chip">{{ current_user.username }}</span></p>
+    </div>
 
-    {# ── Зміна пароля ── #}
-    <section style="margin: 1.5rem 0; padding: 1rem 1.25rem; border: 1px solid #ddd; border-radius: 8px;">
-        <h3>{{ _('Зміна пароля') }}</h3>
-        <form method="POST" action="{{ url_for('main.profile', lang_code=lang_code) }}">
-            {{ password_form.hidden_tag() }}
-            <div class="form-group" style="margin-bottom: .75rem;">
-                {{ password_form.current_password.label(class="form-label") }}
-                {{ password_form.current_password(class="form-control", style="max-width: 320px;") }}
-                {% for e in password_form.current_password.errors %}
-                <div style="color: #c0392b; font-size: .9em;">{{ e }}</div>
-                {% endfor %}
-            </div>
-            <div class="form-group" style="margin-bottom: .75rem;">
-                {{ password_form.new_password.label(class="form-label") }}
-                {{ password_form.new_password(class="form-control", style="max-width: 320px;") }}
-                {% for e in password_form.new_password.errors %}
-                <div style="color: #c0392b; font-size: .9em;">{{ e }}</div>
-                {% endfor %}
-            </div>
-            <div class="form-group" style="margin-bottom: .5rem;">
-                {{ password_form.confirm_password.label(class="form-label") }}
-                {{ password_form.confirm_password(class="form-control", style="max-width: 320px;") }}
-                {% for e in password_form.confirm_password.errors %}
-                <div style="color: #c0392b; font-size: .9em;">{{ e }}</div>
-                {% endfor %}
-            </div>
-            <small style="color: #666; display: block; margin-bottom: .75rem;">
-                {{ _('Мінімум %(n)d символів; потрібні і літери, і цифри.', n=config.PASSWORD_MIN_LENGTH) }}
-            </small>
-            {{ password_form.submit_password(class="btn btn-primary") }}
-        </form>
-    </section>
+    {# ── Налаштування облікового запису: логін + пароль ── #}
+    <div class="dashboard-grid">
+
+        {# ── Обліковий запис: логін ── #}
+        <section class="dashboard-section">
+            <h2 class="section-title">{{ _('Обліковий запис') }}</h2>
+            <p class="current-login">{{ _('Поточний логін') }}: <strong>{{ current_user.username }}</strong></p>
+            <form method="POST" action="{{ url_for('main.profile', lang_code=lang_code) }}">
+                {{ username_form.hidden_tag() }}
+                <div class="form-row">
+                    {{ username_form.new_username.label(class="form-label") }}
+                    {{ username_form.new_username(class="form-control") }}
+                    {% for e in username_form.new_username.errors %}
+                    <div class="field-error">{{ e }}</div>
+                    {% endfor %}
+                </div>
+                {{ username_form.submit_username(class="btn") }}
+            </form>
+        </section>
+
+        {# ── Зміна пароля ── #}
+        <section class="dashboard-section">
+            <h2 class="section-title">{{ _('Зміна пароля') }}</h2>
+            <form method="POST" action="{{ url_for('main.profile', lang_code=lang_code) }}">
+                {{ password_form.hidden_tag() }}
+                <div class="form-row">
+                    {{ password_form.current_password.label(class="form-label") }}
+                    {{ password_form.current_password(class="form-control") }}
+                    {% for e in password_form.current_password.errors %}
+                    <div class="field-error">{{ e }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-row">
+                    {{ password_form.new_password.label(class="form-label") }}
+                    {{ password_form.new_password(class="form-control") }}
+                    {% for e in password_form.new_password.errors %}
+                    <div class="field-error">{{ e }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-row">
+                    {{ password_form.confirm_password.label(class="form-label") }}
+                    {{ password_form.confirm_password(class="form-control") }}
+                    {% for e in password_form.confirm_password.errors %}
+                    <div class="field-error">{{ e }}</div>
+                    {% endfor %}
+                </div>
+                <small class="form-hint">
+                    {{ _('Мінімум %(n)d символів; потрібні і літери, і цифри.', n=config.PASSWORD_MIN_LENGTH) }}
+                </small>
+                {{ password_form.submit_password(class="btn") }}
+            </form>
+        </section>
+
+    </div>
 
     {# ── Персональна статистика ── #}
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <section style="flex: 1; min-width: 280px; padding: 1rem 1.25rem; border: 1px solid #ddd; border-radius: 8px;">
-            <h3>{{ _('Моя статистика — Фотопастки') }}</h3>
+    <div class="dashboard-grid">
+
+        <section class="dashboard-section">
+            <h2 class="section-title">{{ _('Моя статистика — Фотопастки') }}</h2>
             {% if ct_stats %}
-            <ul style="list-style: none; padding-left: 0;">
-                <li>{{ _('Опрацьовано серій') }}: <strong>{{ ct_stats.series }}</strong></li>
-                <li>{{ _('Усього визначень') }}: <strong>{{ ct_stats.identifications }}</strong></li>
-                <li>{{ _('Унікальних видів') }}: <strong>{{ ct_stats.species_count }}</strong></li>
-            </ul>
+            <div class="stat-line">
+                <span class="stat-label">{{ _('Опрацьовано серій') }}</span>
+                <span class="stat-num">{{ ct_stats.series }}</span>
+            </div>
+            <div class="stat-line">
+                <span class="stat-label">{{ _('Усього визначень') }}</span>
+                <span class="stat-num">{{ ct_stats.identifications }}</span>
+            </div>
+            <div class="stat-line">
+                <span class="stat-label">{{ _('Унікальних видів') }}</span>
+                <span class="stat-num">{{ ct_stats.species_count }}</span>
+            </div>
             {% if ct_stats.top_species %}
-            <p style="margin-bottom: .25rem;">{{ _('Топ види (за серіями)') }}:</p>
-            <ol style="margin-top: 0;">
-                {% for s in ct_stats.top_species %}<li>{{ s.name }} — {{ s.count }}</li>{% endfor %}
+            <p class="top-species-title">{{ _('Топ види (за серіями)') }}</p>
+            <ol class="top-species">
+                {% for s in ct_stats.top_species %}
+                <li><span class="sp-name">{{ s.name }}</span><span class="sp-count">{{ s.count }}</span></li>
+                {% endfor %}
             </ol>
             {% endif %}
             {% else %}
-            <p style="color: #888;">{{ _('Статистика тимчасово недоступна.') }}</p>
+            <div class="info-message">{{ _('Статистика тимчасово недоступна.') }}</div>
             {% endif %}
         </section>
 
-        <section style="flex: 1; min-width: 280px; padding: 1rem 1.25rem; border: 1px solid #ddd; border-radius: 8px;">
-            <h3>{{ _('Моя статистика — ПАМ') }}</h3>
+        <section class="dashboard-section">
+            <h2 class="section-title">{{ _('Моя статистика — ПАМ') }}</h2>
             {% if pam_stats %}
-            <ul style="list-style: none; padding-left: 0;">
-                <li>{{ _('Верифікацій') }}: <strong>{{ pam_stats.verifications }}</strong></li>
-                <li>{{ _('Підтверджень') }}: <strong>{{ pam_stats.positive }}</strong> ({{ pam_stats.positive_rate }}%)</li>
-                <li>{{ _('Унікальних видів') }}: <strong>{{ pam_stats.species_count }}</strong></li>
-            </ul>
+            <div class="stat-line">
+                <span class="stat-label">{{ _('Верифікацій') }}</span>
+                <span class="stat-num">{{ pam_stats.verifications }}</span>
+            </div>
+            <div class="stat-line">
+                <span class="stat-label">{{ _('Підтверджень') }}</span>
+                <span class="stat-num">{{ pam_stats.positive }} <span class="stat-suffix">({{ pam_stats.positive_rate }}%)</span></span>
+            </div>
+            <div class="stat-line">
+                <span class="stat-label">{{ _('Унікальних видів') }}</span>
+                <span class="stat-num">{{ pam_stats.species_count }}</span>
+            </div>
             {% else %}
-            <p style="color: #888;">{{ _('Статистика тимчасово недоступна.') }}</p>
+            <div class="info-message">{{ _('Статистика тимчасово недоступна.') }}</div>
             {% endif %}
         </section>
+
     </div>
+
+</div>
 </div>
 {% endblock %}
