@@ -94,8 +94,7 @@ def test_check_consensus_with_three_matching_votes(app, ct_session,
 
     for uid in (1, 2, 3):
         ct_session.add(Identification(photo_id=photo.id, user_id=uid,
-                                      species_id=species.id,
-                                      confidence_level=4))
+                                      species_id=species.id))
     ct_session.commit()
 
     with app.app_context():
@@ -115,7 +114,7 @@ def test_check_consensus_insufficient_votes_stays_pending(app, ct_session,
     species = make_ct_species()
 
     ct_session.add(Identification(photo_id=photo.id, user_id=1,
-                                  species_id=species.id, confidence_level=3))
+                                  species_id=species.id))
     ct_session.commit()
 
     with app.app_context():

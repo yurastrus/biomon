@@ -52,7 +52,7 @@ def test_identification_links_photo_species_user(ct_session, make_ct_photo,
     photo = make_ct_photo()
     species = make_ct_species()
     ident = Identification(photo_id=photo.id, user_id=42,
-                           species_id=species.id, confidence_level=4)
+                           species_id=species.id)
     ct_session.add(ident)
     ct_session.commit()
     assert ident.id is not None
@@ -66,9 +66,9 @@ def test_identification_unique_per_photo_user(ct_session, make_ct_photo,
     photo = make_ct_photo()
     species = make_ct_species()
     ct_session.add(Identification(photo_id=photo.id, user_id=42,
-                                  species_id=species.id, confidence_level=3))
+                                  species_id=species.id))
     ct_session.commit()
     ct_session.add(Identification(photo_id=photo.id, user_id=42,
-                                  species_id=species.id, confidence_level=5))
+                                  species_id=species.id))
     with pytest.raises(Exception):
         ct_session.commit()
