@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Мій профіль') }}{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 920px; margin: 0 auto;">
+    <h2>{{ _('Мій профіль') }}</h2>
+
+    {# ── Обліковий запис: логін ── #}
+    <section style="margin: 1.5rem 0; padding: 1rem 1.25rem; border: 1px solid #ddd; border-radius: 8px;">
+        <h3>{{ _('Обліковий запис') }}</h3>
+        <p>{{ _('Поточний логін') }}: <strong>{{ current_user.username }}</strong></p>
+        <form method="POST" action="{{ url_for('main.profile', lang_code=lang_code) }}">
+            {{ username_form.hidden_tag() }}
+            <div class="form-group" style="margin-bottom: .75rem;">
+                {{ username_form.new_username.label(class="form-label") }}
+                {{ username_form.new_username(class="form-control", style="max-width: 320px;") }}
+                {% for e in username_form.new_username.errors %}
+                <div style="color: #c0392b; font-size: .9em;">{{ e }}</div>
+                {% endfor %}
+            </div>
+            {{ username_form.submit_username(class="btn btn-primary") }}
+        </form>
+    </section>
+
+    {# ── Зміна пароля ── #}
+    <section style="margin: 1.5rem 0; padding: 1rem 1.25rem; border: 1px solid #ddd; border-radius: 8px;">
+        <h3>{{ _('Зміна пароля') }}</h3>
+        <form method="POST" action="{{ url_for('main.profile', lang_code=lang_code) }}">
+            {{ password_form.hidden_tag() }}
+            <div class="form-group" style="margin-bottom: .75rem;">
+                {{ password_form.current_password.label(class="form-label") }}
+                {{ password_form.current_password(class="form-control", style="max-width: 320px;") }}
+                {% for e in password_form.current_password.errors %}
+                <div style="color: #c0392b; font-size: .9em;">{{ e }}</div>
+                {% endfor %}
+            </div>
+            <div class="form-group" style="margin-bottom: .75rem;">
+                {{ password_form.new_password.label(class="form-label") }}
+                {{ password_form.new_password(class="form-control", style="max-width: 320px;") }}
+                {% for e in password_form.new_password.errors %}
+                <div style="color: #c0392b; font-size: .9em;">{{ e }}</div>
+                {% endfor %}
+            </div>
+            <div class="form-group" style="margin-bottom: .5rem;">
+                {{ password_form.confirm_password.label(class="form-label") }}
+                {{ password_form.confirm_password(class="form-control", style="max-width: 320px;") }}
+                {% for e in password_form.confirm_password.errors %}
+                <div style="color: #c0392b; font-size: .9em;">{{ e }}</div>
+                {% endfor %}
+            </div>
+            <small style="color: #666; display: block; margin-bottom: .75rem;">
+                {{ _('Мінімум %(n)d символів; потрібні і літери, і цифри.', n=config.PASSWORD_MIN_LENGTH) }}
+            </small>
+            {{ password_form.submit_password(class="btn btn-primary") }}
+        </form>
+    </section>
+
+    {# ── Персональна статистика ── #}
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <section style="flex: 1; min-width: 280px; padding: 1rem 1.25rem; border: 1px solid #ddd; border-radius: 8px;">
+            <h3>{{ _('Моя статистика — Фотопастки') }}</h3>
+            {% if ct_stats %}
+            <ul style="list-style: none; padding-left: 0;">
+                <li>{{ _('Опрацьовано серій') }}: <strong>{{ ct_stats.series }}</strong></li>
+                <li>{{ _('Усього визначень') }}: <strong>{{ ct_stats.identifications }}</strong></li>
+                <li>{{ _('Унікальних видів') }}: <strong>{{ ct_stats.species_count }}</strong></li>
+            </ul>
+            {% if ct_stats.top_species %}
+            <p style="margin-bottom: .25rem;">{{ _('Топ види (за серіями)') }}:</p>
+            <ol style="margin-top: 0;">
+                {% for s in ct_stats.top_species %}<li>{{ s.name }} — {{ s.count }}</li>{% endfor %}
+            </ol>
+            {% endif %}
+            {% else %}
+            <p style="color: #888;">{{ _('Статистика тимчасово недоступна.') }}</p>
+            {% endif %}
+        </section>
+
+        <section style="flex: 1; min-width: 280px; padding: 1rem 1.25rem; border: 1px solid #ddd; border-radius: 8px;">
+            <h3>{{ _('Моя статистика — ПАМ') }}</h3>
+            {% if pam_stats %}
+            <ul style="list-style: none; padding-left: 0;">
+                <li>{{ _('Верифікацій') }}: <strong>{{ pam_stats.verifications }}</strong></li>
+                <li>{{ _('Підтверджень') }}: <strong>{{ pam_stats.positive }}</strong> ({{ pam_stats.positive_rate }}%)</li>
+                <li>{{ _('Унікальних видів') }}: <strong>{{ pam_stats.species_count }}</strong></li>
+            </ul>
+            {% else %}
+            <p style="color: #888;">{{ _('Статистика тимчасово недоступна.') }}</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

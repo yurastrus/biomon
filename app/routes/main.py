@@ -5,12 +5,12 @@ import json
 
 from flask import render_template, session, redirect, url_for, current_app, request, g, jsonify, flash
 from flask_login import login_required, current_user, login_user, logout_user
-from app.utils.forms import LoginForm, ContactForm
+from app.utils.forms import LoginForm, ContactForm, ChangePasswordForm, ChangeUsernameForm
 from app.utils.utils import is_safe_url
 from flask_babel import lazy_gettext as _l
 from app.routes import bp
 from app.models import User, SiteTextContent
-from app.extensions import bcrypt, limiter, csrf
+from app.extensions import bcrypt, limiter, csrf, db
 from werkzeug.security import check_password_hash
 
 
@@ -86,6 +86,69 @@ def login(lang_code):
 def logout(lang_code):
     logout_user()
     return redirect(url_for('main.index', lang_code=lang_code))
+
+
+@bp.route('/<lang_code>/profile', methods=['GET', 'POST'])
+@login_required
+@limiter.limit("10/hour", methods=["POST"])
+def profile(lang_code):
+    """#31: особиста сторінка — зміна пароля/логіну + персональна статистика CT/PAM."""
+    if lang_code not in current_app.config['LANGUAGES']:
+        return redirect(url_for('main.root'))
+
+    password_form = ChangePasswordForm()
+    username_form = ChangeUsernameForm()
+
+    # --- Зміна пароля ---
+    if password_form.submit_password.data and password_form.validate_on_submit():
+        if not bcrypt.check_password_hash(current_user.password_hash,
+                                          password_form.current_password.data):
+            flash(_l('Поточний пароль невірний.'), 'danger')
+        else:
+            current_user.password_hash = bcrypt.generate_password_hash(
+                password_form.new_password.data).decode('utf-8')
+            db.session.commit()
+            current_app.logger.info(f"Password changed by user_id={current_user.id}")
+            flash(_l('Пароль успішно змінено.'), 'success')
+            return redirect(url_for('main.profile', lang_code=lang_code))
+
+    # --- Зміна логіну (id стабільний, тож FK не ламаються; перевіряємо унікальність) ---
+    if username_form.submit_username.data and username_form.validate_on_submit():
+        new_username = (username_form.new_username.data or '').strip()
+        if new_username == current_user.username:
+            flash(_l('Це ваш поточний логін.'), 'info')
+        elif User.query.filter(User.username == new_username,
+                               User.id != current_user.id).first():
+            flash(_l('Цей логін уже зайнятий.'), 'danger')
+        else:
+            old = current_user.username
+            current_user.username = new_username
+            db.session.commit()
+            current_app.logger.info(
+                f"Username changed: user_id={current_user.id} {old!r} -> {new_username!r}")
+            flash(_l('Логін успішно змінено.'), 'success')
+            return redirect(url_for('main.profile', lang_code=lang_code))
+
+    # --- Статистика (read-only; збій БД не має ламати сторінку) ---
+    ct_stats = pam_stats = None
+    try:
+        from app.camera_traps.utils import get_user_ct_stats
+        ct_stats = get_user_ct_stats(current_user.id, lang=lang_code)
+    except Exception as e:
+        current_app.logger.warning(f"profile: CT-статистика недоступна: {e}")
+    try:
+        from app.pam.utils import get_user_pam_stats
+        pam_stats = get_user_pam_stats(current_user.id)
+    except Exception as e:
+        current_app.logger.warning(f"profile: PAM-статистика недоступна: {e}")
+
+    if not username_form.new_username.data:
+        username_form.new_username.data = current_user.username
+
+    return render_template('profile.html', lang_code=lang_code,
+                           password_form=password_form,
+                           username_form=username_form,
+                           ct_stats=ct_stats, pam_stats=pam_stats)
 
 
 @bp.route('/csp-report', methods=['POST'])

@@ -2,9 +2,11 @@
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email
+from wtforms.validators import DataRequired, Email, Length, Regexp, EqualTo
 from flask_babel import lazy_gettext as _l
 from flask_wtf.recaptcha import RecaptchaField
+
+from config import Config
 
 class LoginForm(FlaskForm):
     username = StringField(_l('Ім\'я користувача'), validators=[DataRequired()])
@@ -18,3 +20,29 @@ class ContactForm(FlaskForm):
     message = TextAreaField(_l('Повідомлення'), validators=[DataRequired()])
     recaptcha = RecaptchaField()
     submit = SubmitField(_l('Надіслати'))
+
+
+class ChangePasswordForm(FlaskForm):
+    """#31: самостійна зміна пароля. Політика — як у #27 (мін. довжина з config + літери/цифри)."""
+    current_password = PasswordField(_l('Поточний пароль'), validators=[DataRequired()])
+    new_password = PasswordField(
+        _l('Новий пароль'),
+        validators=[
+            DataRequired(),
+            Length(min=Config.PASSWORD_MIN_LENGTH, max=128),
+            Regexp(r'(?=.*[A-Za-z])(?=.*\d)',
+                   message=_l('Пароль має містити і літери, і цифри.')),
+        ]
+    )
+    confirm_password = PasswordField(
+        _l('Підтвердити новий пароль'),
+        validators=[DataRequired(), EqualTo('new_password', message=_l('Паролі не співпадають.'))]
+    )
+    submit_password = SubmitField(_l('Змінити пароль'))
+
+
+class ChangeUsernameForm(FlaskForm):
+    """#31: зміна логіну. Унікальність перевіряється в маршруті (потрібен current_user.id)."""
+    new_username = StringField(_l('Новий логін'),
+                               validators=[DataRequired(), Length(min=3, max=20)])
+    submit_username = SubmitField(_l('Змінити логін'))

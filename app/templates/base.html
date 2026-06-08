@@ -36,7 +36,7 @@
                     <!-- Блок аутентифікації -->
                     <div id="auth-status">
                         {% if current_user.is_authenticated %}
-                            <span style="color: #fff; margin-right: 10px;">{{ current_user.username }}</span>
+                            <a href="{{ url_for('main.profile', lang_code=g.lang_code or 'uk') }}" class="lang-link" style="margin-right: 10px;" title="{{ _('Мій профіль') }}">{{ current_user.username }}</a>
                             <a href="{{ url_for('main.logout', lang_code=g.lang_code or 'uk') }}" class="lang-link">{{ _('Вийти') }}</a>
                         {% else %}
                             <!-- ВИПРАВЛЕННЯ: Додаємо параметр 'next' до посилання на логін -->

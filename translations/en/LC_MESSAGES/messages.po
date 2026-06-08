@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-08 16:30+0300\n"
+"POT-Creation-Date: 2026-06-08 17:39+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app/admin/forms.py:26
+#: app/admin/forms.py:26 app/utils/forms.py:34
 msgid "Пароль має містити і літери, і цифри."
 msgstr "Password must contain both letters and digits."
 
@@ -28,7 +28,7 @@ msgid "Логін"
 msgstr "Login"
 
 #: app/admin/forms.py:33 app/templates/admin/admin_user_form.html:44
-#: app/utils/forms.py:11
+#: app/utils/forms.py:13
 msgid "Пароль"
 msgstr "Password"
 
@@ -55,7 +55,7 @@ msgstr "Last name"
 msgid "Користувач з таким іменем вже існує."
 msgstr "A user with this name already exists."
 
-#: app/admin/forms.py:52
+#: app/admin/forms.py:52 app/utils/forms.py:29
 msgid "Новий пароль"
 msgstr "New password"
 
@@ -2577,7 +2577,7 @@ msgstr "Photo for Identification"
 msgid "Відкрити у повному розмірі"
 msgstr "Open in full size"
 
-#: app/camera_traps/templates/identification.html:148 app/utils/forms.py:20
+#: app/camera_traps/templates/identification.html:148 app/utils/forms.py:22
 msgid "Надіслати"
 msgstr "Send"
 
@@ -4832,7 +4832,8 @@ msgstr "Detections imported"
 msgid "Дублікатів (пропущено)"
 msgstr "Duplicates (skipped)"
 
-#: app/pam/templates/pam_import.html:213
+#: app/pam/templates/pam_import.html:213 app/templates/profile.html:65
+#: app/templates/profile.html:84
 msgid "Унікальних видів"
 msgstr "Unique species"
 
@@ -5757,6 +5758,26 @@ msgstr "Incorrect login or password. Please try again."
 msgid "Увійти"
 msgstr "Log in"
 
+#: app/routes/main.py:106
+msgid "Поточний пароль невірний."
+msgstr "Current password is incorrect."
+
+#: app/routes/main.py:112
+msgid "Пароль успішно змінено."
+msgstr "Password changed successfully."
+
+#: app/routes/main.py:119
+msgid "Це ваш поточний логін."
+msgstr "This is your current username."
+
+#: app/routes/main.py:122
+msgid "Цей логін уже зайнятий."
+msgstr "This username is already taken."
+
+#: app/routes/main.py:129
+msgid "Логін успішно змінено."
+msgstr "Username changed successfully."
+
 #: app/sdm/templates/sdm/coefficients.html:3
 #: app/sdm/templates/sdm/coefficients.html:18
 msgid "SDM — Параметри моделей"
@@ -6027,6 +6048,11 @@ msgstr "CONTACTS"
 msgid "АДМІН"
 msgstr "ADMIN"
 
+#: app/templates/base.html:39 app/templates/profile.html:2
+#: app/templates/profile.html:5
+msgid "Мій профіль"
+msgstr "My profile"
+
 #: app/templates/base.html:40
 msgid "Вийти"
 msgstr "Log out"
@@ -6055,7 +6081,7 @@ msgstr ""
 msgid "Форма"
 msgstr "Form"
 
-#: app/templates/login.html:6 app/utils/forms.py:12
+#: app/templates/login.html:6 app/utils/forms.py:14
 msgid "Увійти в систему"
 msgstr "Sign in"
 
@@ -6071,6 +6097,55 @@ msgstr ""
 #: app/templates/login.html:10
 msgid "зв`яжіться з автором"
 msgstr "contact the author"
+
+#: app/templates/profile.html:9
+msgid "Обліковий запис"
+msgstr "Account"
+
+#: app/templates/profile.html:10
+msgid "Поточний логін"
+msgstr "Current username"
+
+#: app/templates/profile.html:26
+msgid "Зміна пароля"
+msgstr "Change password"
+
+#: app/templates/profile.html:51
+#, python-format
+msgid "Мінімум %(n)d символів; потрібні і літери, і цифри."
+msgstr "At least %(n)d characters; both letters and digits required."
+
+#: app/templates/profile.html:60
+msgid "Моя статистика — Фотопастки"
+msgstr "My statistics — Camera traps"
+
+#: app/templates/profile.html:63
+msgid "Опрацьовано серій"
+msgstr "Series processed"
+
+#: app/templates/profile.html:64
+msgid "Усього визначень"
+msgstr "Total identifications"
+
+#: app/templates/profile.html:68
+msgid "Топ види (за серіями)"
+msgstr "Top species (by series)"
+
+#: app/templates/profile.html:74 app/templates/profile.html:87
+msgid "Статистика тимчасово недоступна."
+msgstr "Statistics temporarily unavailable."
+
+#: app/templates/profile.html:79
+msgid "Моя статистика — ПАМ"
+msgstr "My statistics — PAM"
+
+#: app/templates/profile.html:82
+msgid "Верифікацій"
+msgstr "Verifications"
+
+#: app/templates/profile.html:83
+msgid "Підтверджень"
+msgstr "Positive"
 
 #: app/templates/admin/admin_home.html:12
 msgid "Панель керування"
@@ -6371,25 +6446,49 @@ msgstr "Users not found."
 msgid "Жодного користувача не відповідає фільтру."
 msgstr "No users match the filter."
 
-#: app/utils/forms.py:10
+#: app/utils/forms.py:12
 msgid "Ім'я користувача"
 msgstr "Username"
 
-#: app/utils/forms.py:15
+#: app/utils/forms.py:17
 msgid "Ваше ім'я"
 msgstr "Your name"
 
-#: app/utils/forms.py:16
+#: app/utils/forms.py:18
 msgid "Ваш Email"
 msgstr "Your Email"
 
-#: app/utils/forms.py:17
+#: app/utils/forms.py:19
 msgid "Тема"
 msgstr "Subject"
 
-#: app/utils/forms.py:18
+#: app/utils/forms.py:20
 msgid "Повідомлення"
 msgstr "Message"
+
+#: app/utils/forms.py:27
+msgid "Поточний пароль"
+msgstr "Current password"
+
+#: app/utils/forms.py:38
+msgid "Підтвердити новий пароль"
+msgstr "Confirm new password"
+
+#: app/utils/forms.py:39
+msgid "Паролі не співпадають."
+msgstr "Passwords do not match."
+
+#: app/utils/forms.py:41
+msgid "Змінити пароль"
+msgstr "Change password"
+
+#: app/utils/forms.py:46
+msgid "Новий логін"
+msgstr "New username"
+
+#: app/utils/forms.py:48
+msgid "Змінити логін"
+msgstr "Change username"
 
 #~ msgid ""
 #~ "Завантажуйте архіви з аудіосегментами для "
