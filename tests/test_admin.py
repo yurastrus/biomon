@@ -196,7 +196,7 @@ class TestAddUser(AdminTestBase):
     def _valid_data(self, username='newuser'):
         return {
             'username': username,
-            'password': 'securepass',
+            'password': 'securepass123',
             'email': 'new@example.com',
             'phone': '',
             'first_name': 'Іван',
@@ -230,7 +230,7 @@ class TestAddUser(AdminTestBase):
         from app.models import User
         resp = self._post(self._add_url(), {
             'username': 'ab',  # < 3 символи
-            'password': 'securepass',
+            'password': 'securepass123',
         }, self.admin.id)
         self.assertIsNone(User.query.filter_by(username='ab').first())
 
@@ -238,14 +238,14 @@ class TestAddUser(AdminTestBase):
         from app.models import User
         resp = self._post(self._add_url(), {
             'username': 'validname',
-            'password': '123',  # < 6 символів
+            'password': '123',  # відхиляється: < 8 символів і без літери
         }, self.admin.id)
         self.assertIsNone(User.query.filter_by(username='validname').first())
 
     def test_missing_username_rejected(self):
         from app.models import User
         before = User.query.count()
-        self._post(self._add_url(), {'password': 'securepass'}, self.admin.id)
+        self._post(self._add_url(), {'password': 'securepass123'}, self.admin.id)
         self.assertEqual(User.query.count(), before)
 
     def test_missing_password_rejected(self):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-08 10:49+0300\n"
+"POT-Creation-Date: 2026-06-08 16:30+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,60 +17,64 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app/admin/forms.py:22 app/admin/forms.py:41
+#: app/admin/forms.py:26
+msgid "Пароль має містити і літери, і цифри."
+msgstr ""
+
+#: app/admin/forms.py:32 app/admin/forms.py:51
 #: app/templates/admin/admin_users_list.html:88
 msgid "Логін"
 msgstr ""
 
-#: app/admin/forms.py:23 app/templates/admin/admin_user_form.html:44
+#: app/admin/forms.py:33 app/templates/admin/admin_user_form.html:44
 #: app/utils/forms.py:11
 msgid "Пароль"
 msgstr ""
 
-#: app/admin/forms.py:24 app/admin/forms.py:43
+#: app/admin/forms.py:34 app/admin/forms.py:53
 #: app/templates/admin/admin_user_form.html:53
 msgid "Email"
 msgstr ""
 
-#: app/admin/forms.py:25 app/admin/forms.py:44
+#: app/admin/forms.py:35 app/admin/forms.py:54
 #: app/templates/admin/admin_user_form.html:59
 msgid "Телефон"
 msgstr ""
 
-#: app/admin/forms.py:26 app/admin/forms.py:45
+#: app/admin/forms.py:36 app/admin/forms.py:55
 msgid "Ім'я"
 msgstr ""
 
-#: app/admin/forms.py:27 app/admin/forms.py:46
+#: app/admin/forms.py:37 app/admin/forms.py:56
 #: app/templates/admin/admin_user_form.html:76
 msgid "Прізвище"
 msgstr ""
 
-#: app/admin/forms.py:32 app/admin/forms.py:56
+#: app/admin/forms.py:42 app/admin/forms.py:66
 msgid "Користувач з таким іменем вже існує."
 msgstr ""
 
-#: app/admin/forms.py:42
+#: app/admin/forms.py:52
 msgid "Новий пароль"
 msgstr ""
 
-#: app/admin/forms.py:61 app/templates/admin/admin_institutions_list.html:27
+#: app/admin/forms.py:71 app/templates/admin/admin_institutions_list.html:27
 msgid "Назва (Українською)"
 msgstr ""
 
-#: app/admin/forms.py:62 app/templates/admin/admin_institutions_list.html:28
+#: app/admin/forms.py:72 app/templates/admin/admin_institutions_list.html:28
 msgid "Назва (Англійською)"
 msgstr ""
 
-#: app/admin/forms.py:63
+#: app/admin/forms.py:73
 msgid "Унікальний код"
 msgstr ""
 
-#: app/admin/forms.py:68
+#: app/admin/forms.py:78
 msgid "Системна назва"
 msgstr ""
 
-#: app/admin/forms.py:69
+#: app/admin/forms.py:79
 msgid "Призначається"
 msgstr ""
 

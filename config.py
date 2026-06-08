@@ -130,6 +130,10 @@ class Config:
     SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
+
+    # Політика паролів (#27): мін. довжина НОВИХ паролів (admin-форми створення/
+    # зміни). Складність (літери+цифри) — у валідаторах форм. Один рядок — важіль.
+    PASSWORD_MIN_LENGTH = 8
     
     @staticmethod
     def init_app(app):

@@ -13,14 +13,24 @@ WTForms-класи для адмін-панелі.
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
-from wtforms.validators import DataRequired, Optional, Length, Email, ValidationError
+from wtforms.validators import DataRequired, Optional, Length, Email, ValidationError, Regexp
 from flask_babel import lazy_gettext as _l
+
+from config import Config
+
+# Політика паролів (#27): мін. довжина — з config (PASSWORD_MIN_LENGTH);
+# складність — мають бути і літери, і цифри (без вимоги спецсимволу, UX-friendly).
+# Діє лише на НОВІ паролі (створення / зміна адміном); існуючі хеші не зачіпаються.
+_PW_COMPLEXITY = Regexp(
+    r'(?=.*[A-Za-z])(?=.*\d)',
+    message=_l('Пароль має містити і літери, і цифри.')
+)
 
 
 class UserCreateForm(FlaskForm):
     """Форма створення користувача (пароль обов'язковий)."""
     username   = StringField(_l('Логін'),     validators=[DataRequired(), Length(min=3, max=20)])
-    password   = PasswordField(_l('Пароль'), validators=[DataRequired(), Length(min=6, max=128)])
+    password   = PasswordField(_l('Пароль'), validators=[DataRequired(), Length(min=Config.PASSWORD_MIN_LENGTH, max=128), _PW_COMPLEXITY])
     email      = StringField(_l('Email'),     validators=[Optional(), Email(), Length(max=120)])
     phone      = StringField(_l('Телефон'),   validators=[Optional(), Length(max=20)])
     first_name = StringField(_l('Ім\'я'),     validators=[Optional(), Length(max=50)])
@@ -39,7 +49,7 @@ class UserEditForm(FlaskForm):
     username не конфліктувала з поточним користувачем.
     """
     username   = StringField(_l('Логін'),        validators=[DataRequired(), Length(min=3, max=20)])
-    password   = PasswordField(_l('Новий пароль'), validators=[Optional(), Length(min=6, max=128)])
+    password   = PasswordField(_l('Новий пароль'), validators=[Optional(), Length(min=Config.PASSWORD_MIN_LENGTH, max=128), _PW_COMPLEXITY])
     email      = StringField(_l('Email'),          validators=[Optional(), Email(), Length(max=120)])
     phone      = StringField(_l('Телефон'),        validators=[Optional(), Length(max=20)])
     first_name = StringField(_l('Ім\'я'),          validators=[Optional(), Length(max=50)])
