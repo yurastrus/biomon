@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-09 11:35+0300\n"
+"POT-Creation-Date: 2026-06-09 11:46+0300\n"
 "PO-Revision-Date: 2025-08-05 22:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -640,7 +640,7 @@ msgid "Прогноз за кількістю фото"
 msgstr ""
 
 #: app/camera_traps/routes.py:4627
-#: app/camera_traps/templates/service_log.html:335
+#: app/camera_traps/templates/service_log.html:340
 msgid "Прогноз за часом"
 msgstr ""
 
@@ -1261,7 +1261,7 @@ msgid "Дані відсутні"
 msgstr ""
 
 #: app/camera_traps/templates/behavior_analysis.html:316
-#: app/camera_traps/templates/dashboard.html:223
+#: app/camera_traps/templates/dashboard.html:230
 msgid "Кількість спостережень"
 msgstr ""
 
@@ -1347,7 +1347,7 @@ msgstr ""
 #: app/camera_traps/templates/comparison.html:159
 #: app/camera_traps/templates/ct_data_export.html:137
 #: app/camera_traps/templates/manage_locations.html:648
-#: app/camera_traps/templates/service_log.html:237
+#: app/camera_traps/templates/service_log.html:242
 #: app/camera_traps/templates/species_detailed.html:147
 #: app/camera_traps/templates/upload.html:153
 #: app/camera_traps/templates/upload.html:616
@@ -1847,7 +1847,7 @@ msgid "Нд"
 msgstr ""
 
 #: app/camera_traps/templates/ct_location_coverage.html:79
-#: app/camera_traps/templates/data_quality.html:190
+#: app/camera_traps/templates/data_quality.html:195
 msgid "фото"
 msgstr ""
 
@@ -2066,27 +2066,57 @@ msgstr ""
 msgid "-- Всі біотопи --"
 msgstr ""
 
-#: app/camera_traps/templates/dashboard.html:215
+#: app/camera_traps/templates/dashboard.html:207
+#: app/camera_traps/templates/data_quality.html:188
+#: app/camera_traps/templates/manage_deployments.html:367
+#: app/camera_traps/templates/manage_locations.html:355
+#: app/camera_traps/templates/service_log.html:158
+#: app/camera_traps/templates/upload.html:303
+#: app/camera_traps/templates/upload_fast.html:390
+#: app/pam/templates/manage_pam_locations.html:400
+#: app/pam/templates/pam_import.html:340
+#: app/pam/templates/pam_overview.html:387
+#: app/pam/templates/pam_service_log.html:158
+#: app/pam/templates/pam_species_detailed.html:379
+msgid "OSM"
+msgstr ""
+
+#: app/camera_traps/templates/dashboard.html:207
+#: app/camera_traps/templates/data_quality.html:188
+#: app/camera_traps/templates/manage_deployments.html:367
+#: app/camera_traps/templates/manage_locations.html:355
+#: app/camera_traps/templates/service_log.html:158
+#: app/camera_traps/templates/upload.html:303
+#: app/camera_traps/templates/upload_fast.html:390
+#: app/pam/templates/manage_pam_locations.html:400
+#: app/pam/templates/pam_import.html:340
+#: app/pam/templates/pam_overview.html:387
+#: app/pam/templates/pam_service_log.html:158
+#: app/pam/templates/pam_species_detailed.html:379
+msgid "Супутник"
+msgstr ""
+
+#: app/camera_traps/templates/dashboard.html:222
 msgid "За цей період даних для діаграми немає."
 msgstr ""
 
-#: app/camera_traps/templates/dashboard.html:277
+#: app/camera_traps/templates/dashboard.html:284
 msgid "К-ть фото:"
 msgstr ""
 
-#: app/camera_traps/templates/dashboard.html:279
+#: app/camera_traps/templates/dashboard.html:286
 msgid "Включити у фільтр"
 msgstr ""
 
-#: app/camera_traps/templates/dashboard.html:309
+#: app/camera_traps/templates/dashboard.html:316
 msgid "Вибрати всі"
 msgstr ""
 
-#: app/camera_traps/templates/dashboard.html:310
+#: app/camera_traps/templates/dashboard.html:317
 msgid "Зняти виділення"
 msgstr ""
 
-#: app/camera_traps/templates/dashboard.html:311
+#: app/camera_traps/templates/dashboard.html:318
 msgid "Інвертувати"
 msgstr ""
 
@@ -2238,7 +2268,7 @@ msgid "До деплойментів"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:85
-#: app/camera_traps/templates/data_quality.html:296
+#: app/camera_traps/templates/data_quality.html:301
 msgid "Деплойментів"
 msgstr ""
 
@@ -2289,18 +2319,18 @@ msgid "Усі"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:121
-#: app/camera_traps/templates/data_quality.html:268
-#: app/camera_traps/templates/data_quality.html:283
+#: app/camera_traps/templates/data_quality.html:273
+#: app/camera_traps/templates/data_quality.html:288
 msgid "Проблема"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:122
-#: app/camera_traps/templates/data_quality.html:283
+#: app/camera_traps/templates/data_quality.html:288
 msgid "Норма (літо)"
 msgstr ""
 
 #: app/camera_traps/templates/data_quality.html:123
-#: app/camera_traps/templates/data_quality.html:283
+#: app/camera_traps/templates/data_quality.html:288
 msgid "Норма (зима)"
 msgstr ""
 
@@ -2324,30 +2354,30 @@ msgstr ""
 msgid "Деплойменти за роками"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:190
+#: app/camera_traps/templates/data_quality.html:195
 msgid "днів"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:192
+#: app/camera_traps/templates/data_quality.html:197
 msgid "Редагувати деплоймент"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:240
+#: app/camera_traps/templates/data_quality.html:245
 msgid "Показано"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:240
+#: app/camera_traps/templates/data_quality.html:245
 #: app/camera_traps/templates/upload.html:589
 #: app/pam/templates/pam_evaluation_results.html:380
 #: app/pam/templates/pam_import.html:598
 msgid "з"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:269
+#: app/camera_traps/templates/data_quality.html:274
 msgid "Норма"
 msgstr ""
 
-#: app/camera_traps/templates/data_quality.html:270
+#: app/camera_traps/templates/data_quality.html:275
 #: app/camera_traps/templates/species_detailed.html:296
 msgid "Немає даних"
 msgstr ""
@@ -2487,9 +2517,9 @@ msgstr ""
 
 #: app/camera_traps/templates/gallery.html:238
 #: app/camera_traps/templates/photo_viewer.html:73
-#: app/camera_traps/templates/service_log.html:175
-#: app/camera_traps/templates/service_log.html:178
-#: app/camera_traps/templates/service_log.html:335
+#: app/camera_traps/templates/service_log.html:180
+#: app/camera_traps/templates/service_log.html:183
+#: app/camera_traps/templates/service_log.html:340
 #: app/pam/templates/pam_verification_segments.html:30
 msgid "Статус:"
 msgstr ""
@@ -2644,9 +2674,9 @@ msgid "Будь ласка, виберіть вид, або опцію \"Пус�
 msgstr ""
 
 #: app/camera_traps/templates/identification.html:323
-#: app/camera_traps/templates/manage_deployments.html:623
+#: app/camera_traps/templates/manage_deployments.html:628
 #: app/camera_traps/templates/manage_locations.html:592
-#: app/camera_traps/templates/service_log.html:345
+#: app/camera_traps/templates/service_log.html:350
 #: app/pam/templates/manage_pam_locations.html:643
 #: app/pam/templates/pam_service_log.html:325
 msgid "Помилка збереження:"
@@ -3005,36 +3035,36 @@ msgstr ""
 msgid "Скасувати"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:522
+#: app/camera_traps/templates/manage_deployments.html:527
 #: app/camera_traps/templates/manage_locations.html:689
 #: app/pam/templates/manage_pam_locations.html:740
 msgid "Помилка завантаження."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:526
+#: app/camera_traps/templates/manage_deployments.html:531
 msgid "Спершу виберіть локацію."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:532
+#: app/camera_traps/templates/manage_deployments.html:537
 msgid "Новий деплоймент:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:540
-#: app/camera_traps/templates/manage_deployments.html:611
+#: app/camera_traps/templates/manage_deployments.html:545
+#: app/camera_traps/templates/manage_deployments.html:616
 #: app/camera_traps/templates/manage_locations.html:524
 #: app/pam/templates/manage_pam_locations.html:582
 msgid "Редагування:"
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:586
+#: app/camera_traps/templates/manage_deployments.html:591
 msgid "Назва обов'язкова."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:629
+#: app/camera_traps/templates/manage_deployments.html:634
 msgid "Видалити цей деплоймент? Дію не можна скасувати."
 msgstr ""
 
-#: app/camera_traps/templates/manage_deployments.html:643
+#: app/camera_traps/templates/manage_deployments.html:648
 msgid "Помилка видалення:"
 msgstr ""
 
@@ -3104,7 +3134,7 @@ msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:55
 #: app/camera_traps/templates/service_log.html:76
-#: app/camera_traps/templates/service_log.html:253
+#: app/camera_traps/templates/service_log.html:258
 #: app/pam/templates/manage_pam_locations.html:52
 #: app/pam/templates/pam_service_log.html:94
 #: app/pam/templates/pam_service_log.html:258
@@ -3208,8 +3238,8 @@ msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:183
 #: app/camera_traps/templates/manage_locations.html:657
-#: app/camera_traps/templates/service_log.html:250
-#: app/camera_traps/templates/service_log.html:264
+#: app/camera_traps/templates/service_log.html:255
+#: app/camera_traps/templates/service_log.html:269
 #: app/pam/templates/manage_pam_locations.html:202
 #: app/pam/templates/manage_pam_locations.html:709
 #: app/pam/templates/pam_service_log.html:255
@@ -3219,8 +3249,8 @@ msgstr ""
 #: app/camera_traps/templates/manage_locations.html:187
 #: app/camera_traps/templates/manage_locations.html:659
 #: app/camera_traps/templates/manage_locations.html:663
-#: app/camera_traps/templates/service_log.html:252
-#: app/camera_traps/templates/service_log.html:264
+#: app/camera_traps/templates/service_log.html:257
+#: app/camera_traps/templates/service_log.html:269
 #: app/pam/templates/manage_pam_locations.html:206
 #: app/pam/templates/manage_pam_locations.html:711
 #: app/pam/templates/pam_service_log.html:257
@@ -3394,7 +3424,7 @@ msgid "Зберегти зміни"
 msgstr ""
 
 #: app/camera_traps/templates/manage_locations.html:765
-#: app/camera_traps/templates/service_log.html:341
+#: app/camera_traps/templates/service_log.html:346
 #: app/pam/templates/manage_pam_locations.html:819
 #: app/pam/templates/pam_import.html:609
 #: app/pam/templates/pam_service_log.html:322
@@ -3632,66 +3662,66 @@ msgstr ""
 msgid "Немає даних для відображення."
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:170
-#: app/camera_traps/templates/service_log.html:335
+#: app/camera_traps/templates/service_log.html:175
+#: app/camera_traps/templates/service_log.html:340
 #: app/pam/templates/pam_service_log.html:196
 msgid "Останній візит:"
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:183
-#: app/camera_traps/templates/service_log.html:335
+#: app/camera_traps/templates/service_log.html:188
+#: app/camera_traps/templates/service_log.html:340
 msgid "Днів тому:"
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:183
-#: app/camera_traps/templates/service_log.html:335
+#: app/camera_traps/templates/service_log.html:188
+#: app/camera_traps/templates/service_log.html:340
 msgid "міс."
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:186
+#: app/camera_traps/templates/service_log.html:191
 msgid "Прогноз фото:"
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:221
+#: app/camera_traps/templates/service_log.html:226
 #: app/pam/templates/pam_service_log.html:233
 msgid "Новий запис для:"
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:262
+#: app/camera_traps/templates/service_log.html:267
 msgid "Стан камери:"
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:263
+#: app/camera_traps/templates/service_log.html:268
 #: app/pam/templates/pam_service_log.html:269
 msgid "Батарейки:"
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:264
+#: app/camera_traps/templates/service_log.html:269
 msgid "SD-карта замінена:"
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:273
+#: app/camera_traps/templates/service_log.html:278
 #: app/pam/templates/pam_service_log.html:279
 msgid "Помилка завантаження історії."
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:283
+#: app/camera_traps/templates/service_log.html:288
 #: app/pam/templates/pam_import.html:478
 #: app/pam/templates/pam_service_log.html:287
 msgid "Збереження..."
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:360
+#: app/camera_traps/templates/service_log.html:365
 msgid ""
 "Це може зайняти деякий час. Ви впевнені, що хочете запустити повний "
 "перерахунок статистики для всіх локацій?"
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:365
+#: app/camera_traps/templates/service_log.html:370
 msgid "Розрахунок..."
 msgstr ""
 
-#: app/camera_traps/templates/service_log.html:387
+#: app/camera_traps/templates/service_log.html:392
 msgid "Критична помилка запиту."
 msgstr ""
 
@@ -4274,22 +4304,6 @@ msgstr ""
 
 #: app/pam/templates/manage_pam_locations.html:350
 msgid "Немає записів для прогнозу"
-msgstr ""
-
-#: app/pam/templates/manage_pam_locations.html:400
-#: app/pam/templates/pam_import.html:340
-#: app/pam/templates/pam_overview.html:387
-#: app/pam/templates/pam_service_log.html:158
-#: app/pam/templates/pam_species_detailed.html:379
-msgid "OSM"
-msgstr ""
-
-#: app/pam/templates/manage_pam_locations.html:400
-#: app/pam/templates/pam_import.html:340
-#: app/pam/templates/pam_overview.html:387
-#: app/pam/templates/pam_service_log.html:158
-#: app/pam/templates/pam_species_detailed.html:379
-msgid "Супутник"
 msgstr ""
 
 #: app/pam/templates/manage_pam_locations.html:730
