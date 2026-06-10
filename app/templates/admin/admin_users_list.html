@@ -3,7 +3,6 @@
 {% block content %}
 <div class="container" style="margin-top: 20px; margin-bottom: 50px;">
 
-    <!-- Навігація -->
     <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
         <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a>
         &raquo; <strong>{{ _('Користувачі') }}</strong>
@@ -11,14 +10,13 @@
 
     <h2 style="text-align: left; margin-bottom: 15px;">{{ _('Керування користувачами') }}</h2>
 
-    <!-- Кнопка додавання -->
     <div style="text-align: left; margin-bottom: 20px;">
         <a href="{{ url_for('admin.add_user', lang_code=g.lang_code) }}" class="button" style="min-width: 200px; margin-top: 0;">
             + {{ _('Додати користувача') }}
         </a>
     </div>
 
-    {# Збираємо унікальні установи та ролі для фільтрів #}
+    {# Collect unique institutions and roles for the filter dropdowns #}
     {% set seen_inst_ids = namespace(v=[]) %}
     {% set filter_institutions = namespace(v=[]) %}
     {% set seen_role_names = namespace(v=[]) %}
@@ -38,7 +36,6 @@
         {% endfor %}
     {% endfor %}
 
-    <!-- Панель фільтрів -->
     <div class="dashboard-section" style="padding: 16px 20px; margin-bottom: 20px;">
         <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
 
@@ -81,7 +78,6 @@
         </div>
     </div>
 
-    <!-- Таблиця -->
     <table class="admin-table">
         <thead>
             <tr>

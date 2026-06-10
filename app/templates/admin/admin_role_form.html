@@ -3,14 +3,12 @@
 {% block content %}
 <div class="container" style="margin-top: 20px; margin-bottom: 50px;">
     
-    <!-- Навігація -->
     <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
-        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a> 
+        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a>
         &raquo; <a href="{{ url_for('admin.role_list', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Ролі') }}</a>
         &raquo; <strong>{{ title }}</strong>
     </div>
 
-    <!-- Головний блок із сірим фоном -->
     <div class="dashboard-section" style="padding: 30px; max-width: 700px; margin: 0 auto;">
         
         <h2 class="section-title" style="text-align: left; border-bottom: none; margin-bottom: 30px;">
@@ -68,7 +66,6 @@
                 </div>
             </div>
 
-            <!-- Нижні кнопки -->
             <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; display: flex; justify-content: flex-end; gap: 15px;">
                 <a href="{{ url_for('admin.role_list', lang_code=g.lang_code) }}" class="button cancel" style="margin: 0; min-width: 150px;">
                     {{ _('Скасувати') }}
@@ -82,7 +79,6 @@
 </div>
 
 <style>
-    /* Стиль для інпутів (як у інших формах) */
     .site-input {
         width: 100%; 
         padding: 10px 12px; 

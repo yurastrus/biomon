@@ -3,14 +3,12 @@
 {% block content %}
 <div class="container" style="margin-top: 20px; margin-bottom: 50px;">
     
-    <!-- Навігація -->
     <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
-        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a> 
+        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a>
         &raquo; <a href="{{ url_for('admin.user_list', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Користувачі') }}</a>
         &raquo; <strong>{{ title }}</strong>
     </div>
 
-    <!-- Головний блок із сірим фоном (з твого CSS) -->
     <div class="dashboard-section" style="padding: 30px;">
         
         <h2 class="section-title" style="text-align: left; border-bottom: none; margin-bottom: 30px;">
@@ -25,10 +23,8 @@
         <form method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <!-- Сітка (2 колонки) з твого CSS -->
             <div class="dashboard-grid">
-                
-                <!-- Блок 1: Облікові дані -->
+
                 <div class="stat-card" style="text-align: left;">
                     <h5 style="color: #0779e4; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _('Облікові дані') }}</h5>
                     
@@ -62,7 +58,6 @@
                     </div>
                 </div>
 
-                <!-- Блок 2: Персональні дані -->
                 <div class="stat-card" style="text-align: left;">
                     <h5 style="color: #0779e4; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _('Персональна інформація') }}</h5>
                     
@@ -83,7 +78,6 @@
                     </div>
                 </div>
 
-                <!-- Блок 3: Установи (повна ширина) -->
                 <div class="stat-card" style="text-align: left; grid-column: 1 / -1;">
                     <h5 style="color: #28a745; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _("Прив’язка до установ") }}</h5>
                     <small style="color: #666; display: block; margin-bottom: 12px;">
@@ -171,7 +165,6 @@
                     </script>
                 </div>
 
-                <!-- Блок 4: Ролі -->
                 <div class="stat-card" style="text-align: left;">
                     <h5 style="color: #dc3545; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _('Призначення ролей') }}</h5>
                     <small style="color: #666; display: block; margin-bottom: 10px;">{{ _('Визначте рівень доступу') }}</small>
@@ -199,7 +192,6 @@
 
             </div>
 
-            <!-- Нижні кнопки дій -->
             <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; display: flex; justify-content: flex-end; gap: 15px;">
                 <a href="{{ url_for('admin.user_list', lang_code=g.lang_code) }}" class="button cancel" style="margin: 0; min-width: 150px;">
                     {{ _('Скасувати') }}
@@ -213,7 +205,6 @@
 </div>
 
 <style>
-    /* Стиль для інпутів (базується на ваших .form-control з фільтрів) */
     .site-input {
         width: 100%; 
         padding: 8px 12px; 
@@ -227,7 +218,7 @@
         border-color: #0779e4;
         outline: none;
     }
-    /* Виділення вибраних пунктів у селекті */
+    /* Highlight selected options in multi-select */
     .site-input[multiple] option:checked {
         background-color: #0779e4 linear-gradient(0deg, #0779e4 0%, #0779e4 100%);
         color: white;
