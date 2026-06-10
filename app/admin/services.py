@@ -1,37 +1,35 @@
-# app/admin/services.py
-"""
-Бізнес-логіка адмін-модуля, відокремлена від HTTP-шару.
+"""Business logic for the admin module, separated from the HTTP layer.
 
-Кожен сервіс містить чисті функції/методи, які не знають про request/response.
-Всі методи повертають дані або кидають виняток; flush/commit виконується в routes.py.
+Each service contains pure functions/methods with no knowledge of request/response.
+All methods return data or raise exceptions; flush/commit is performed in routes.py.
 """
 
 from sqlalchemy import or_
 from app.extensions import db, bcrypt
 from app.models import User, Role, Institution, UserInstitution
 
-# Ролі, що дають право на експорт
+# Roles that grant export rights
 EXPORT_ROLES = frozenset({'analyst', 'manager', 'admin'})
-# Системні ролі, які не можна перейменовувати або видаляти
+# System roles that cannot be renamed or deleted
 SYSTEM_ROLES = frozenset({'admin', 'manager'})
 
 
 # ===========================================================================
-# UserService
+# User service
 # ===========================================================================
 
 class UserService:
 
     @staticmethod
     def get_available_institutions(requester):
-        """Повертає установи, доступні requester-у для призначення."""
+        """Return institutions the requester is allowed to assign."""
         if requester.has_role('admin'):
             return Institution.query.all()
         return list(requester.institutions)
 
     @staticmethod
     def get_available_roles(requester):
-        """Повертає ролі, які requester може призначати."""
+        """Return roles the requester is allowed to assign."""
         if requester.has_role('admin'):
             return Role.query.all()
         return Role.query.filter(
@@ -40,9 +38,10 @@ class UserService:
 
     @staticmethod
     def can_edit(requester, target):
-        """
-        Перевіряє, чи має requester право редагувати target.
-        Повертає (True, None) або (False, повідомлення_про_помилку).
+        """Check whether requester may edit target.
+
+        Returns:
+            Tuple of (True, None) on success or (False, error_message) on denial.
         """
         if requester.has_role('admin'):
             return True, None
@@ -59,9 +58,10 @@ class UserService:
 
     @staticmethod
     def can_delete(requester, target):
-        """
-        Перевіряє, чи має requester право видаляти target.
-        Повертає (True, None) або (False, повідомлення_про_помилку).
+        """Check whether requester may delete target.
+
+        Returns:
+            Tuple of (True, None) on success or (False, error_message) on denial.
         """
         if requester.id == target.id:
             return False, 'Помилка: Ви не можете видалити власного користувача!'
@@ -81,7 +81,7 @@ class UserService:
 
     @staticmethod
     def _role_names_for_ids(role_ids):
-        """Повертає множину назв ролей за списком ID."""
+        """Return a set of role names for the given list of role IDs."""
         if not role_ids:
             return set()
         int_ids = [int(x) for x in role_ids]
@@ -91,9 +91,10 @@ class UserService:
     def create_user(creator, username, password,
                     email, phone, first_name, last_name,
                     selected_inst_ids, can_export_ids, selected_role_ids):
-        """
-        Створює нового користувача та додає його до сесії (без commit).
-        Повертає новий об'єкт User.
+        """Create a new user and add it to the session (no commit).
+
+        Returns:
+            The newly created User instance.
         """
         hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
         new_user = User(
@@ -132,10 +133,11 @@ class UserService:
                     username, email, phone, first_name, last_name,
                     new_password,
                     selected_inst_ids, can_export_ids, selected_role_ids):
-        """
-        Оновлює існуючого користувача (без commit).
-        available_roles — список ролей, які бачить requester у формі
-        (потрібен, щоб не зачепити приховані ролі, наприклад admin).
+        """Update an existing user in place (no commit).
+
+        Args:
+            available_roles: roles visible to the requester in the form — needed
+                to avoid accidentally removing hidden roles (e.g. admin).
         """
         user.username = username
         user.email = email or None
@@ -146,14 +148,14 @@ class UserService:
         if new_password:
             user.password_hash = bcrypt.generate_password_hash(new_password).decode('utf-8')
 
-        # Визначаємо чи буде право на експорт після оновлення
+        # Determine whether the user will have export rights after the update
         selected_role_names = UserService._role_names_for_ids(selected_role_ids)
-        # Порівнюємо за ID (не по ідентичності об'єкта) — безпечно між сесіями
+        # Compare by ID, not object identity — safe across sessions
         available_role_ids = {r.id for r in available_roles}
         hidden_role_names = {r.name for r in user.roles if r.id not in available_role_ids}
         will_have_export = bool((selected_role_names | hidden_role_names) & EXPORT_ROLES)
 
-        # Зберігаємо поточні can_export-значення (щоб не втратити при зміні ролі)
+        # Preserve existing can_export flags so a role change does not silently reset them
         existing_export_map = {link.institution_id: link.can_export for link in user.institution_links}
 
         user.institution_links = []
@@ -168,8 +170,8 @@ class UserService:
                     UserInstitution(institution_id=inst.id, can_export=new_can_export)
                 )
 
-        # Менеджер не повинен випадково видалити ролі, які він не бачить у формі
-        # Порівнюємо за ID — гарантовано коректно незалежно від identity map
+        # Retain roles not visible in the form so managers can't accidentally remove hidden roles.
+        # Compare by ID — correct regardless of SQLAlchemy's identity map.
         roles_to_keep = [r for r in user.roles if r.id not in available_role_ids]
         user.roles = roles_to_keep
         for r_id in selected_role_ids:
@@ -179,19 +181,19 @@ class UserService:
 
     @staticmethod
     def delete_user(user):
-        """Видаляє користувача із сесії (без commit)."""
+        """Delete the user from the session (no commit)."""
         db.session.delete(user)
 
 
 # ===========================================================================
-# InstitutionService
+# Institution service
 # ===========================================================================
 
 class InstitutionService:
 
     @staticmethod
     def is_code_unique(code, exclude_id=None):
-        """True якщо код унікальний (exclude_id — для режиму редагування)."""
+        """Return True if the institution code is unique (exclude_id for edit mode)."""
         existing = Institution.query.filter_by(code=code).first()
         if existing is None:
             return True
@@ -201,33 +203,33 @@ class InstitutionService:
 
     @staticmethod
     def create(name_uk, name_en, code):
-        """Створює установу та додає до сесії (без commit)."""
+        """Create an institution and add it to the session (no commit)."""
         inst = Institution(name_uk=name_uk, name_en=name_en or None, code=code)
         db.session.add(inst)
         return inst
 
     @staticmethod
     def update(inst, name_uk, name_en, code):
-        """Оновлює установу (без commit)."""
+        """Update institution fields in place (no commit)."""
         inst.name_uk = name_uk
         inst.name_en = name_en or None
         inst.code = code
 
     @staticmethod
     def delete(inst):
-        """Видаляє установу із сесії (без commit)."""
+        """Delete the institution from the session (no commit)."""
         db.session.delete(inst)
 
 
 # ===========================================================================
-# RoleService
+# Role service
 # ===========================================================================
 
 class RoleService:
 
     @staticmethod
     def is_name_unique(name, exclude_id=None):
-        """True якщо назва ролі унікальна."""
+        """Return True if the role name is unique."""
         existing = Role.query.filter_by(name=name).first()
         if existing is None:
             return True
@@ -237,23 +239,23 @@ class RoleService:
 
     @staticmethod
     def is_system_role(role):
-        """True якщо роль системна (admin/manager) — її не можна видаляти/перейменовувати."""
+        """Return True if the role is a system role (admin/manager) that cannot be renamed or deleted."""
         return role.name in SYSTEM_ROLES
 
     @staticmethod
     def create(name, assignable_by):
-        """Створює роль та додає до сесії (без commit)."""
+        """Create a role and add it to the session (no commit)."""
         role = Role(name=name, assignable_by=assignable_by or None)
         db.session.add(role)
         return role
 
     @staticmethod
     def update(role, name, assignable_by):
-        """Оновлює роль (без commit)."""
+        """Update role fields in place (no commit)."""
         role.name = name
         role.assignable_by = assignable_by or None
 
     @staticmethod
     def delete(role):
-        """Видаляє роль із сесії (без commit)."""
+        """Delete the role from the session (no commit)."""
         db.session.delete(role)

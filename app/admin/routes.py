@@ -1,5 +1,3 @@
-# app/admin/routes.py
-
 from flask import render_template, g, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
@@ -13,7 +11,7 @@ from . import admin_bp
 
 
 # ===========================================================================
-# ГОЛОВНА СТОРІНКА АДМІН-ПАНЕЛІ
+# Admin panel home
 # ===========================================================================
 
 @admin_bp.route('/')
@@ -24,7 +22,7 @@ def home():
 
 
 # ===========================================================================
-# УПРАВЛІННЯ КОРИСТУВАЧАМИ
+# User management
 # ===========================================================================
 
 @admin_bp.route('/users')
@@ -34,7 +32,7 @@ def user_list():
     if current_user.has_role('admin'):
         users = User.query.order_by(User.id.desc()).all()
     else:
-        # Менеджер бачить ТІЛЬКИ тих, кого він сам створив
+        # Managers see only users they created
         users = User.query.filter_by(created_by_id=current_user.id).order_by(User.id.desc()).all()
     return render_template('admin_users_list.html', users=users)
 
@@ -73,7 +71,7 @@ def add_user():
             db.session.rollback()
             flash(f'Помилка при збереженні: {str(e)}', 'danger')
 
-    # Показуємо помилки валідації через flash (шаблон не змінюємо)
+    # Surface validation errors via flash (template is not modified)
     if form.errors:
         for field_errors in form.errors.values():
             for err in field_errors:
@@ -168,7 +166,7 @@ def delete_user(user_id):
 
 
 # ===========================================================================
-# УПРАВЛІННЯ УСТАНОВАМИ (тільки admin)
+# Institution management (admin only)
 # ===========================================================================
 
 @admin_bp.route('/institutions')
@@ -235,7 +233,7 @@ def delete_institution(inst_id):
 
 
 # ===========================================================================
-# УПРАВЛІННЯ РОЛЯМИ (тільки admin)
+# Role management (admin only)
 # ===========================================================================
 
 @admin_bp.route('/roles')
