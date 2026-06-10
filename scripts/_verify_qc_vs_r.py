@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Звірка результатів сторінки «Оцінка якості даних» (наш бекенд) з R-скриптом
+"""Verify the data-quality page backend against the R script
 01_Camera_trap_location_analysis.qmd.
 
-Замість запуску R відтворюємо його логіку в Python з тригран-NA (pandas
-BooleanDtype/Int64). Логіка точно як у R-скрипті:
+Instead of running R we replicate its logic in Python using three-valued NA
+(pandas BooleanDtype/Int64). Logic matches the R script exactly:
 
   qc_no_GPS_coordinates = is.na(lat) | is.na(lon)
   qc_data_not_usable    = qc_data_not_usable | qc_no_GPS_coordinates |
@@ -15,9 +15,9 @@ BooleanDtype/Int64). Логіка точно як у R-скрипті:
                           qc_sd_issue | qc_stolen | qc_non_functional
   qc_min_days_not_reached = (season=='Winter' & n_days<100) | (season=='Summer' & n_days<60)
 
-Потім по кожному QC-параметру рахуємо Issue / Normal / Missing — як на графіку
-data-quality. Порівнюємо «R-reference (по Екселю)» з «DB-derived (як рахує наш
-data_quality)» і повідомляємо розбіжності.
+For each QC parameter we compute Issue / Normal / Missing counts — as on the
+data-quality chart — then compare «R-reference (from Excel)» with
+«DB-derived (as our data_quality route computes)» and report discrepancies.
 """
 import warnings
 warnings.filterwarnings('ignore')
@@ -36,7 +36,7 @@ XLSX = 'CT_LocationARD_Dataset.xlsx'
 SHEETS = ['SMM_2023','Data 2023-2024','WLCM_2023-24','SMM_2024',
           'WLCM_2024-2025','SMM_2025','WLCM_2025-26']
 
-# Канонічні bool QC-поля (як у БД, малими літерами)
+# Canonical boolean QC fields (DB column names, lowercase)
 QC_STORED = [
     'qc_non_functional','qc_stolen','qc_hardware_issue','qc_firmware_issue',
     'qc_settings_issue','qc_battery_issue','qc_sd_issue','qc_no_data_uploaded_by_pa',
@@ -46,13 +46,13 @@ QC_STORED = [
     'qc_distance_reference_photos_missed','qc_datetime_photos_missed',
     'qc_local_datetime_not_set','qc_data_not_usable',
 ]
-# Похідні (рахуються; не зчитуються з Екселю напряму)
+# Derived (computed; not read directly from Excel)
 QC_DERIVED = ['qc_no_gps_coordinates','qc_summary','qc_min_days_not_reached']
 QC_ALL = QC_STORED + QC_DERIVED
 
 
 def coerce_excel_bool(v):
-    """Те саме, що в нашому імпортері. NA-варіанти -> pd.NA. true/false -> True/False."""
+    """Same coercion logic as the deployment importer. NA variants → pd.NA; true/false → True/False."""
     if pd.isna(v):
         return pd.NA
     if isinstance(v, bool):
@@ -68,11 +68,11 @@ def coerce_excel_bool(v):
 
 
 def build_r_reference():
-    """Зчитуємо ті ж листи Екселю й застосовуємо ТОЧНО R-логіку (3-значна NA)."""
+    """Read the same Excel sheets and apply R logic exactly (3-valued NA semantics)."""
     frames = []
     for sheet in SHEETS:
         df = pd.read_excel(XLSX, sheet_name=sheet)
-        # нормалізуємо назви через ALIAS_MAP/INVERT_SOURCES (як в імпорті)
+        # normalize column names via ALIAS_MAP/INVERT_SOURCES (same as in the importer)
         canon = {}  # canonical attr -> series
         for col in df.columns:
             norm = normalize_header(col)
@@ -91,7 +91,7 @@ def build_r_reference():
                 ser = ser.astype('string')
             else:
                 pass
-            # пріоритет: пряме мапування перетирає інверсію, тож не перезаписуємо вже існуюче
+            # direct mapping takes priority over inversion — don't overwrite what's already set
             if attr not in canon:
                 canon[attr] = ser
         # lat/lon as numeric
@@ -108,18 +108,16 @@ def build_r_reference():
         f = pd.DataFrame(canon)
         frames.append(f)
     df = pd.concat(frames, ignore_index=True)
-    # дроп рядків без deployment_id (R фільтрує по study_area_id, ми — по наявності name)
+    # drop rows without deployment_id (R filters by study_area_id; we filter by name presence)
     df = df[df['name'].notna()].reset_index(drop=True)
 
-    # Похідні поля
     n_days = (df['end_date'] - df['start_date']).dt.days
     df['n_days_working'] = n_days
     df['qc_no_gps_coordinates'] = (df['latitude'].isna() | df['longitude'].isna())
 
-    # OR з 3-знач. NA через pandas BooleanArray
+    # three-valued OR via pandas BooleanArray
     def b(col): return df[col].astype('boolean') if col in df.columns else pd.Series([pd.NA]*len(df), dtype='boolean')
 
-    # qc_data_not_usable derived
     incorrect_install_no_species = b('qc_installation_incorrect') & b('qc_no_species_captured')
     incorrect_placement_no_species = b('qc_placement_incorrect') & b('qc_no_species_captured')
     poor_placement_no_species = b('qc_poor_placement') & b('qc_no_species_captured')
@@ -148,7 +146,7 @@ def build_r_reference():
 
 
 def status_counts(series):
-    """Issue (True) / Normal (False) / Missing (NA) — як на графіку data_quality."""
+    """Tally Issue (True) / Normal (False) / Missing (NA) — matching the data_quality chart."""
     s = series
     if not str(s.dtype).startswith('boolean'):
         s = s.astype('boolean')
@@ -159,7 +157,7 @@ def status_counts(series):
 
 
 def db_records_counts(records):
-    """Те саме, але по записах, які віддає наш бекенд (data_quality)."""
+    """Same tallies but over records returned by our backend data_quality route."""
     out = {}
     for f in QC_ALL:
         i = n = m = 0
@@ -173,7 +171,7 @@ def db_records_counts(records):
 
 
 def build_db_records():
-    """Будуємо набір записів так, як це робить роут /data-quality для адміна."""
+    """Replicate the record set produced by the /data-quality route for admin users."""
     app = create_app()
     with app.app_context():
         s = get_ct_session()

@@ -1,16 +1,16 @@
 """
-Створює таблицю deployments у ct_db (встановлення фотопастки на локації за період).
+Create the deployments table in ct_db (camera trap placement at a location over a period).
 
-Запуск з кореня проекту:
-    venv/bin/python -m scripts.init_deployments        # Linux / прод
+Run from the project root:
+    venv/bin/python -m scripts.init_deployments        # Linux / prod
     venv/Scripts/python -m scripts.init_deployments    # Windows / dev
 
-Скрипт ідемпотентний:
-    • CREATE TABLE IF NOT EXISTS — повторний запуск безпечний
-    • CREATE INDEX IF NOT EXISTS — повторний запуск безпечний
+Idempotent:
+    CREATE TABLE IF NOT EXISTS — safe to run multiple times.
+    CREATE INDEX IF NOT EXISTS — safe to run multiple times.
 
-ct_db історично не керується Alembic — лише CTBase.metadata.create_all(),
-який не додає нові таблиці/індекси на існуючу БД. Тож DDL тут явний.
+ct_db is not managed by Alembic — only CTBase.metadata.create_all(),
+which does not add new tables/indexes to an existing DB. DDL is explicit here.
 """
 
 import sys
@@ -70,9 +70,9 @@ DDL_STATEMENTS = [
         created_by_id                       INTEGER
     )
     """,
-    # Розширення camera_id для таблиць, створених раніше з VARCHAR(4) (безпечно повторювати).
+    # Widen camera_id for tables created earlier with VARCHAR(4) — safe to repeat.
     "ALTER TABLE deployments ALTER COLUMN camera_id TYPE VARCHAR(10)",
-    # location_id NULL для деплойментів без GPS — щоб включити їх у QC-аналіз як qc_no_gps_coordinates.
+    # location_id nullable for GPS-less deployments — includes them in QC analysis as qc_no_gps_coordinates.
     "ALTER TABLE deployments ALTER COLUMN location_id DROP NOT NULL",
     "CREATE INDEX IF NOT EXISTS idx_deployments_location ON deployments (location_id)",
     "CREATE INDEX IF NOT EXISTS idx_deployments_loc_dates ON deployments (location_id, start_date, end_date)",

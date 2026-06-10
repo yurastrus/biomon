@@ -1,19 +1,19 @@
 """
-Імпорт деплойментів з ARD-Екселю у ct_db.
+Import deployments from the ARD Excel file into ct_db.
 
-Ексель лежить у корені проекту (CT_LocationARD_Dataset.xlsx). Заміни файл на
-свіжий з тим самим іменем і запусти скрипт ще раз — імпорт ідемпотентний
-(оновлює наявні деплойменти за deployment_id, нові додає).
+Place the file in the project root (CT_LocationARD_Dataset.xlsx). Replace it
+with an updated version under the same name and re-run — import is idempotent
+(updates existing deployments by deployment_id, inserts new ones).
 
-Запуск з кореня проекту:
-    venv/Scripts/python -m scripts.import_deployments                  # запис (лише наявні локації)
-    venv/Scripts/python -m scripts.import_deployments --create-locations  # + створювати локації
-    venv/Scripts/python -m scripts.import_deployments --dry-run        # лише звіт
+Run from the project root:
+    venv/Scripts/python -m scripts.import_deployments                     # write (existing locations only)
+    venv/Scripts/python -m scripts.import_deployments --create-locations  # also create missing locations
+    venv/Scripts/python -m scripts.import_deployments --dry-run           # report only, no writes
     venv/Scripts/python -m scripts.import_deployments --file other.xlsx
 
-Без --create-locations імпортуються лише деплойменти, чиї координати вже є
-серед локацій. З --create-locations для решти створюються нові локації
-(name = deployment_id) і прив'язуються до установи за назвою парку.
+Without --create-locations only deployments whose coordinates already exist
+as locations are imported. With --create-locations the remaining ones get new
+location rows (name = deployment_id) linked to the institution by park name.
 """
 import argparse
 import os
@@ -27,7 +27,7 @@ from app.camera_traps.deployment_import import (
 
 DEFAULT_XLSX = 'CT_LocationARD_Dataset.xlsx'
 
-# Затверджений мапінг: назва парку в Екселі (різні написання) -> code установи в БД.
+# Approved mapping: park name in Excel (various spellings) -> institution code in DB.
 PARK_NAME_TO_CODE = {
     'carpathian biosphere reserve': 'KBR', 'karpatskyi br': 'KBR',
     'carpathian nnp': 'CNNP', 'karpatskyi nnp': 'CNNP',
@@ -44,7 +44,7 @@ PARK_NAME_TO_CODE = {
     'vyzhnitski nnp': 'VZNNP', 'vyzhnystki nnp': 'VZNNP', 'vyzhnytskyi nnp': 'VZNNP',
     'yavorivski nnp': 'YNNP', 'yavorivskyi nnp': 'YNNP',
     'zacharovany kraii nnp': 'ZKNNP', 'zacharovanyi krai nnp': 'ZKNNP',
-    # додані установи Полісся + Бойківщина
+    # added Polissia + Boikivshchyna institutions
     'boikivshchyna nnp': 'BNNP',
     'cheremskyi nr': 'CHNR',
     'chornobyl radiation and ecological br': 'CREBR',
@@ -55,7 +55,7 @@ PARK_NAME_TO_CODE = {
 
 
 def build_park_institution_map():
-    """{нормалізована назва парку -> institution_id} за затвердженим мапінгом."""
+    """Build {normalized park name -> institution_id} using the approved mapping."""
     code_to_id = {i.code: i.id for i in Institution.query.all()}
     result = {}
     missing_codes = set()

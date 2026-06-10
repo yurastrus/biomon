@@ -1,20 +1,20 @@
 """
-Створює таблиці AI-runner'а в базі ct_db.
+Create AI-runner tables in ct_db.
 
-Запуск з кореня проекту:
-    venv/Scripts/python -m scripts.init_ai_tables          # Windows
-    venv/bin/python -m scripts.init_ai_tables              # Linux
+Run from the project root:
+    venv/Scripts/python -m scripts.init_ai_tables      # Windows
+    venv/bin/python -m scripts.init_ai_tables          # Linux
 
-Або з прапором --drop для пересоздання (УВАГА: видаляє всі дані прогнозів):
+Use --drop to recreate tables (WARNING: destroys all prediction data):
     python -m scripts.init_ai_tables --drop
 
-Що робить:
-    1. Підключається до ct_db через CT_DATABASE_URI з .env
-    2. Перевіряє які з 3 таблиць (ai_models, ai_predictions, ai_run_queue) уже існують
-    3. Створює відсутні (`CREATE TABLE IF NOT EXISTS` через SQLAlchemy)
-    4. Виводить підсумок
+What it does:
+    1. Connects to ct_db via CT_DATABASE_URI from .env.
+    2. Checks which of the 3 tables (ai_models, ai_predictions, ai_run_queue) exist.
+    3. Creates missing ones (CREATE TABLE IF NOT EXISTS via SQLAlchemy).
+    4. Prints a summary.
 
-Скрипт є ідемпотентним: повторний запуск без --drop безпечний.
+Idempotent: safe to run without --drop.
 """
 
 import argparse
@@ -57,13 +57,13 @@ def main():
             if confirm != 'DROP':
                 print("Скасовано.")
                 sys.exit(1)
-            # порядок drop важливий: спершу залежні (predictions посилається на models)
+            # drop order matters: dependents first (predictions references models)
             for table in reversed(AI_TABLES):
                 if table.name in existing:
                     print(f"  DROP TABLE {table.name}")
                     table.drop(engine)
 
-        # CREATE: refresh inspector після можливого drop
+        # refresh inspector after possible drop
         existing = set(inspect(engine).get_table_names())
 
         print("Стан таблиць:")
@@ -85,7 +85,6 @@ def main():
             table.create(engine)
             print(f"  ✓ {table.name}")
 
-        # Перевірка
         existing_after = set(inspect(engine).get_table_names())
         for table in to_create:
             if table.name not in existing_after:

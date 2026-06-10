@@ -1,15 +1,15 @@
-"""Ідемпотентна міграція: довідник ai_label_map (DeepFaune label → species_id).
+"""Idempotent migration: ai_label_map table (DeepFaune label → species_id).
 
-Створює таблицю ai_label_map і засіває її з наявного вшитого словника
-services/biomon_ai/species_map.DEEPFAUNE_TO_SPECIES_ID — щоб worker і нова
-сторінка імпорту користувалися ОДНИМ джерелом правди в БД.
+Creates the ai_label_map table and seeds it from the embedded dictionary
+services/biomon_ai/species_map.DEEPFAUNE_TO_SPECIES_ID — so the worker and
+the import page share a single source of truth in the DB.
 
-Сід НЕ перетирає вже наявні рядки (ON CONFLICT DO NOTHING) — якщо хтось
-відредагував мапінг у БД вручну, повторний запуск його збереже.
+The seed does NOT overwrite existing rows (ON CONFLICT DO NOTHING) — manual
+edits to the mapping in the DB survive a re-run.
 
-Запуск:
-    venv/Scripts/python -m scripts.init_label_map   # Windows/dev (тунель 5433)
-    venv/bin/python -m scripts.init_label_map       # Linux/прод
+Run:
+    venv/Scripts/python -m scripts.init_label_map   # Windows/dev (tunnel 5433)
+    venv/bin/python -m scripts.init_label_map       # Linux/prod
 """
 import re
 from pathlib import Path

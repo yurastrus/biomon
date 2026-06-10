@@ -1,21 +1,20 @@
-"""Ідемпотентна міграція: довідник рівнів детектора AI + ai_models.level_id.
+"""Idempotent migration: AI detector level lookup table + ai_models.level_id.
 
-Створює таблицю ai_model_levels, сідить 4 відомі рівні (DF, MDS, DF+MDS, MDR),
-додає колонку ai_models.level_id (FK), розширює unique-constraint на
-(name, version, level_id) і проставляє наявному рядку DeepFaune його рівень
-за detector з config_json.
+Creates ai_model_levels, seeds the 4 known levels (DF, MDS, DF+MDS, MDR),
+adds the ai_models.level_id FK column, replaces the unique constraint with
+(name, version, level_id), and tags the existing DeepFaune row with its level
+based on detector from config_json.
 
-Запуск:
-    venv/Scripts/python -m scripts.init_model_levels   # Windows/dev (через тунель 5433)
-    venv/bin/python -m scripts.init_model_levels       # Linux/прод
+Run:
+    venv/Scripts/python -m scripts.init_model_levels   # Windows/dev (via tunnel 5433)
+    venv/bin/python -m scripts.init_model_levels       # Linux/prod
 
-Безпечно запускати багаторазово.
+Safe to run multiple times.
 """
 import re
 from pathlib import Path
 import psycopg2
 
-# --- читаємо CT_DATABASE_URL з .env ---
 env = {}
 for line in Path('.env').read_text(encoding='utf-8').splitlines():
     m = re.match(r"^([A-Z_]+)=['\"]?(.*?)['\"]?$", line.strip())
@@ -79,7 +78,7 @@ def main():
             cur.execute(SEED, row)
         cur.execute(SWAP_CONSTRAINT)
 
-        # Проставити рівень наявним рядкам ai_models за detector з config_json.
+        # Tag existing ai_models rows with their level based on detector from config_json.
         cur.execute("""
             UPDATE ai_models m
                SET level_id = l.id
@@ -91,7 +90,6 @@ def main():
 
         conn.commit()
 
-        # Звіт
         cur.execute("SELECT id, code, name, detector, accuracy_rank FROM ai_model_levels ORDER BY accuracy_rank")
         print('=== ai_model_levels ===')
         for r in cur.fetchall():
