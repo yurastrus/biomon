@@ -13,7 +13,6 @@
     {% if content %}
         <h1>{{ content.title_uk if lang_code == 'uk' else content.title_en }}</h1>
         
-        <!-- Використовуємо існуючий клас full-article для вирівнювання по лівому краю -->
         <div class="full-article">
             {% if lang_code == 'uk' %}
                 {{ content.body_uk | safe }}

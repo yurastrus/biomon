@@ -1,5 +1,3 @@
-<!-- templates/macros.html -->
-
 {% macro render_markdown(content) %}
     {{ content | safe }}
 {% endmacro %}
@@ -11,7 +9,7 @@
   {% endif %}
 
   <div class="form-group mb-3">
-    {# Явно використовуємо field.id для атрибута 'for', це найнадійніше #}
+    {# Use field.id for the 'for' attribute — most reliable approach #}
     {{ field.label(class="form-label", for=field.id) }}
     
     {{ field(class=field_class, **kwargs) }}

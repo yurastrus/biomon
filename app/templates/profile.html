@@ -3,7 +3,7 @@
 
 {% block head_extra %}
 <style>
-    /* ── Profile page — узгоджено з дизайн-системою дашбордів (style.css) ── */
+    /* Profile page — follows the dashboard design system (style.css) */
     .profile-page { width: 100%; max-width: 960px; margin: 0 auto; text-align: left; }
 
     .profile-page .page-header { margin-bottom: 30px; }
@@ -15,7 +15,7 @@
 
     .profile-page .dashboard-section { margin-bottom: 25px; }
 
-    /* Форми */
+    /* Forms */
     .profile-page .form-row { margin-bottom: 1rem; max-width: 360px; }
     .profile-page .form-label,
     .profile-page label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; color: #333; }
@@ -31,7 +31,7 @@
     .profile-page .current-login { margin-bottom: 1rem; color: #555; }
     .profile-page .current-login strong { color: #333; }
 
-    /* Статистика */
+    /* Stats */
     .profile-page .stat-line {
         display: flex; justify-content: space-between; align-items: baseline;
         padding: 12px 0; border-bottom: 1px solid #eee;
@@ -70,10 +70,8 @@
         <p class="lead"><span class="username-chip">{{ current_user.username }}</span></p>
     </div>
 
-    {# ── Налаштування облікового запису: логін + пароль ── #}
     <div class="dashboard-grid">
 
-        {# ── Обліковий запис: логін ── #}
         <section class="dashboard-section">
             <h2 class="section-title">{{ _('Обліковий запис') }}</h2>
             <p class="current-login">{{ _('Поточний логін') }}: <strong>{{ current_user.username }}</strong></p>
@@ -90,7 +88,6 @@
             </form>
         </section>
 
-        {# ── Зміна пароля ── #}
         <section class="dashboard-section">
             <h2 class="section-title">{{ _('Зміна пароля') }}</h2>
             <form method="POST" action="{{ url_for('main.profile', lang_code=lang_code) }}">
@@ -125,7 +122,6 @@
 
     </div>
 
-    {# ── Персональна статистика ── #}
     <div class="dashboard-grid">
 
         <section class="dashboard-section">

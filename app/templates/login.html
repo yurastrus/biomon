@@ -10,15 +10,6 @@
     будь ласка,') }} <a href="{{ url_for('main.contacts', lang_code=g.lang_code) }}">{{ _('зв`яжіться з автором') }}</a>.
     </p>
 
-    {#
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-    #}
     <form method="POST" action="">
         {{ form.hidden_tag() }}
         <div class="form-group" style="margin-bottom: 1rem;">

@@ -3,23 +3,19 @@
 {% block content %}
 <div class="container" style="margin-top: 20px; margin-bottom: 50px;">
     
-    <!-- Навігація -->
     <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
         <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a> 
         &raquo; <strong>{{ _('Ролі') }}</strong>
     </div>
 
-    <!-- Заголовок -->
     <h2 style="text-align: left; margin-bottom: 15px;">{{ _('Керування ролями') }}</h2>
-    
-    <!-- Кнопка додавання -->
+
     <div style="text-align: left; margin-bottom: 20px;">
         <a href="{{ url_for('admin.edit_role', lang_code=g.lang_code) }}" class="button" style="min-width: 200px; margin-top: 0; background-color: #28a745;">
             + {{ _('Додати роль') }}
         </a>
     </div>
 
-    <!-- Таблиця -->
     <table class="admin-table">
         <thead>
             <tr>
@@ -50,12 +46,10 @@
                 </td>
                 
                 <td style="text-align: right; white-space: nowrap;">
-                    <!-- Редагувати -->
                     <a href="{{ url_for('admin.edit_role', lang_code=g.lang_code, role_id=role.id) }}" class="button-small">
                         {{ _('Редагувати') }}
                     </a>
 
-                    <!-- Видалити -->
                     {% if role.name not in ['admin', 'manager'] %}
                         <form action="{{ url_for('admin.delete_role', lang_code=g.lang_code, role_id=role.id) }}" 
                               method="POST" 
