@@ -1,16 +1,13 @@
-# ==============================================
-# app/__init__.py
-# ==============================================
 from flask import Flask
 from config import config
 import os
 
 
 def _init_talisman(app):
-    """SEC-010: Flask-Talisman security headers + CSP (report-only Phase 2).
+    """Configure Flask-Talisman security headers and CSP policy (report-only).
 
-    Виділено у функцію щоб тести могли застосовувати Talisman до тестового
-    app окремо (у `create_app` пропускаємо коли TESTING=True).
+    Extracted so tests can apply Talisman to a test app independently;
+    skipped in create_app when TESTING=True.
     """
     from app.extensions import talisman, csrf
     talisman.init_app(
@@ -20,7 +17,7 @@ def _init_talisman(app):
             'img-src': ["'self'", 'data:', 'https:', 'blob:'],
             'script-src': [
                 "'self'",
-                "'unsafe-inline'",  # потрібно для inline JS у шаблонах
+                "'unsafe-inline'",  # required for inline JS in templates
                 'https://cdn.jsdelivr.net',
                 'https://code.jquery.com',
                 'https://cdn.plot.ly',
@@ -47,7 +44,7 @@ def _init_talisman(app):
 
 
 def create_app(config_name=None):
-    """Application factory для створення додатку"""
+    """Application factory."""
     if config_name is None:
         config_name = os.environ.get('FLASK_CONFIG', 'default')
 
@@ -57,7 +54,6 @@ def create_app(config_name=None):
 
     app.jinja_env.add_extension('jinja2.ext.do')
 
-    # Ініціалізація розширень
     from app.extensions import init_extensions, db, limiter
     init_extensions(app)
     limiter.init_app(app)
@@ -65,26 +61,22 @@ def create_app(config_name=None):
     if not app.config.get('TESTING'):
         _init_talisman(app)
     
-    # Реєстрація blueprints
+    # Register blueprints
     from app.routes import bp as main_bp
     app.register_blueprint(main_bp)
 
     from app.admin import admin_bp
     app.register_blueprint(admin_bp)
 
-    # Імпорт модуля ПАМ
     from app.pam import pam_bp
     app.register_blueprint(pam_bp)
 
-    # Імпорт модуля фотопасток
     from app.camera_traps import camera_traps_bp
     app.register_blueprint(camera_traps_bp, url_prefix='/<lang_code>/camera-traps')
 
-    # SDM blueprint
     from app.sdm import sdm_bp
     app.register_blueprint(sdm_bp, url_prefix='/<lang_code>/sdm')
 
-    # Реєстрація CLI-команд
     from app.commands import register_commands
     register_commands(app)
 

@@ -1,13 +1,9 @@
-# /app/utils/utils.py
-
 from flask import request
-#from flask_mail import Message
 from urllib.parse import urlparse
-#from threading import Thread
-#from app.extensions import mail
+
 
 def is_safe_url(target):
-    """Перевіряє чи безпечний URL для редиректу"""
+    """Return True if the redirect target URL is safe (same host, no open-redirect)."""
     if not target: 
         return False
     test_url = urlparse(target)

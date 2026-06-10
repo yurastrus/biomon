@@ -1,6 +1,3 @@
-# ==============================================
-# app/extensions.py
-# ==============================================
 from flask_babel import Babel
 
 from flask_sqlalchemy import SQLAlchemy
@@ -31,40 +28,32 @@ def unauthorized():
     return redirect(url_for('main.login', lang_code=lang_code, next=request.url))
 
 def init_extensions(app):
-    """Ініціалізація всіх розширень Flask"""
-
-     # Ініціалізація бази даних та міграцій
+    """Initialize all Flask extensions."""
     db.init_app(app)
     migrate.init_app(app, db)
 
-    login_manager.init_app(app) # Ініціалізуйте його для додатка
+    login_manager.init_app(app)
     csrf.init_app(app)
     mail.init_app(app)
     login_manager.login_message = "Будь ласка, увійдіть, щоб отримати доступ."
     login_manager.login_message_category = "warning"
 
-    
-    # ВАЖЛИВО: Ініціалізація Babel з правильними налаштуваннями
     babel.init_app(app, locale_selector=get_locale_function)
-    
-    # Реєстрація context processor для глобальних змінних
     app.context_processor(inject_global_vars)
-    
-    # Реєстрація before_request handler
     app.before_request(before_request_handler)
 
 def get_locale_function():
-    """Функція для Babel - має бути доступна на рівні модуля"""
+    """Return the active locale; called by Babel on every request."""
     from app.utils.i18n import select_locale
     return select_locale()
 
 def inject_global_vars():
-    """Context processor для шаблонів"""
+    """Inject common variables into every template context."""
     from app.utils.i18n import inject_global_vars as get_vars
     return get_vars()
 
 def before_request_handler():
-    """Before request handler"""
+    """Set up per-request globals (lang_code, Babel refresh)."""
     from app.utils.i18n import before_request_handler as handler
     return handler()
 

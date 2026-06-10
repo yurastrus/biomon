@@ -4,13 +4,11 @@ from app.extensions import db
 from sqlalchemy.dialects.postgresql import ARRAY, TEXT
 from sqlalchemy import CheckConstraint
 
-# Таблиця зв'язку Користувач-Роль
 user_roles = db.Table('user_roles',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
     db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
 )
 
-# Асоціативна модель Користувач-Установа з правами доступу
 class UserInstitution(db.Model):
     __tablename__ = 'user_institutions'
     user_id        = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
@@ -19,7 +17,6 @@ class UserInstitution(db.Model):
 
     institution = db.relationship('Institution')
 
-# Визначаємо моделі
 class Institution(db.Model):
     __tablename__ = 'institutions'
     id = db.Column(db.Integer, primary_key=True)
@@ -47,7 +44,7 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
 
-    # viewonly=True: лише для читання (запис — через institution_links)
+    # viewonly=True: read-only join; mutations go through institution_links
     institutions = db.relationship('Institution', secondary=lambda: UserInstitution.__table__, viewonly=True)
     institution_links = db.relationship('UserInstitution', cascade='all, delete-orphan')
 
@@ -58,32 +55,25 @@ class User(db.Model, UserMixin):
 
     @property
     def full_name(self):
-        """
-        Повертає повне ім'я користувача, якщо воно вказане.
-        В іншому випадку повертає логін як запасний варіант.
-        """
+        """Return the user's full name, falling back to username if names are not set."""
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
-        # Якщо є тільки одне з полів, повернемо його
         elif self.first_name:
             return self.first_name
         elif self.last_name:
             return self.last_name
-        # Якщо жодного поля немає, повертаємо логін
         else:
             return self.username
     
     def has_role(self, *required_roles):
+        """Return True if the user holds at least one of the given roles.
+
+        Respects the role hierarchy: higher roles implicitly include lower ones.
+        Admin always passes regardless of the required roles list.
         """
-        Перевіряє, чи має користувач хоча б ОДНУ з перерахованих ролей,
-        враховуючи ієрархію (вищі ролі автоматично включають нижчі).
-        """
-        # 1. Супер-адмін завжди має доступ до всього (швидка перевірка)
         if any(role.name == 'admin' for role in self.roles):
             return True
 
-        # 2. СЛОВНИК ІЄРАРХІЇ: Яка роль які права в себе включає
-        # (Налаштуй під свої потреби)
         ROLE_HIERARCHY = {
             'manager':['pam_verifier', 'ct_verifier', 'analyst', 'viewer'],
             'pam_verifier':  ['viewer'],
@@ -91,16 +81,12 @@ class User(db.Model, UserMixin):
             'analyst': ['ct_verifier', 'viewer'],
         }
 
-        # 3. Отримуємо базові ролі користувача з БД
         user_base_roles = {role.name for role in self.roles}
-        
-        # 4. "Розгортаємо" ролі користувача на основі ієрархії
         expanded_user_roles = set(user_base_roles)
         for role in user_base_roles:
             if role in ROLE_HIERARCHY:
                 expanded_user_roles.update(ROLE_HIERARCHY[role])
 
-        # 5. Перевіряємо, чи є збіг між необхідними ролями та розширеними правами
         for req_role in required_roles:
             if req_role in expanded_user_roles:
                 return True
@@ -115,30 +101,27 @@ class User(db.Model, UserMixin):
         return f"User('{self.username}')"
     
     def get_ct_profile(self):
+        """Find or create this user's camera-traps module profile.
+
+        Acts as a bridge between the main database and ct_db.
         """
-        Знаходить або створює профіль користувача для модуля фотопасток.
-        Цей метод є "мостом" між двома базами даних.
-        """
-        # Локальні імпорти, щоб уникнути циклічних залежностей
         from app.camera_traps.database import get_ct_session, close_ct_session
-        from app.camera_traps.models import UserProfile  # Виправлено назву!
-        
+        from app.camera_traps.models import UserProfile
+
         ct_session = get_ct_session()
         try:
-            # Запитуємо профіль з бази даних камера-трапів
             profile = ct_session.query(UserProfile).filter_by(user_id=self.id).first()
-            
+
             if not profile:
-                # Якщо профіль ще не існує, створюємо його
                 profile = UserProfile(
                     user_id=self.id,
-                    camera_trap_role='viewer',  # Роль за замовчуванням
+                    camera_trap_role='viewer',  # default role
                     identifications_count=0,
                     accuracy_score=0.0
                 )
                 ct_session.add(profile)
                 ct_session.commit()
-                
+
             return profile
         finally:
             close_ct_session()

@@ -23,7 +23,7 @@ class ContactForm(FlaskForm):
 
 
 class ChangePasswordForm(FlaskForm):
-    """#31: самостійна зміна пароля. Політика — як у #27 (мін. довжина з config + літери/цифри)."""
+    """Password change form. Minimum length from Config; requires letters and digits."""
     current_password = PasswordField(_l('Поточний пароль'), validators=[DataRequired()])
     new_password = PasswordField(
         _l('Новий пароль'),
@@ -42,7 +42,7 @@ class ChangePasswordForm(FlaskForm):
 
 
 class ChangeUsernameForm(FlaskForm):
-    """#31: зміна логіну. Унікальність перевіряється в маршруті (потрібен current_user.id)."""
+    """Username change form. Uniqueness is validated in the route (requires current_user.id)."""
     new_username = StringField(_l('Новий логін'),
                                validators=[DataRequired(), Length(min=3, max=20)])
     submit_username = SubmitField(_l('Змінити логін'))

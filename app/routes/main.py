@@ -1,6 +1,3 @@
-# ==============================================
-# app/routes/main.py - Спрощені маршрути
-# ==============================================
 import json
 
 from flask import render_template, session, redirect, url_for, current_app, request, g, jsonify, flash
@@ -16,18 +13,17 @@ from werkzeug.security import check_password_hash
 
 @bp.route('/')
 def root():
-    """Перенаправлення на головну з мовою"""
+    """Redirect to the homepage with language prefix."""
     from app.utils.i18n import select_locale
     lang_code = select_locale()
     return redirect(url_for('main.index', lang_code=lang_code))
 
 @bp.route('/<lang_code>/')
 def index(lang_code):
-    """Головна сторінка з динамічним контентом"""
+    """Render homepage with dynamic content from the database."""
     if lang_code not in current_app.config['LANGUAGES']:
         return redirect(url_for('main.root'))
-    
-    # Отримуємо контент для головної сторінки (page_key='home')
+
     content = SiteTextContent.query.filter_by(page_key='home').first()
     
     return render_template('index.html', 
@@ -36,22 +32,19 @@ def index(lang_code):
 
 @bp.route('/<lang_code>/about')
 def about(lang_code):
-    """Сторінка про проект з даними з БД"""
-    # Перевірка підтримуваних мов
+    """Render the about page with content loaded from the database."""
     if lang_code not in current_app.config['LANGUAGES']:
         return redirect(url_for('main.root'))
-    
-    # Отримуємо контент із нашої нової таблиці
+
     content = SiteTextContent.query.filter_by(page_key='about').first()
-    
-    # Якщо в базі ще немає тексту, передаємо None або пустий словник
-    return render_template('about.html', 
+
+    return render_template('about.html',
                            lang_code=lang_code, 
                            content=content)
 
 @bp.route('/<lang_code>/contacts')
 def contacts(lang_code):
-    """Сторінка контактів"""
+    """Render the contacts page."""
     if lang_code not in current_app.config['LANGUAGES']:
         return redirect(url_for('main.root'))
     return render_template('contacts.html')
@@ -92,14 +85,14 @@ def logout(lang_code):
 @login_required
 @limiter.limit("10/hour", methods=["POST"])
 def profile(lang_code):
-    """#31: особиста сторінка — зміна пароля/логіну + персональна статистика CT/PAM."""
+    """Render the user profile page: password/username change forms and CT/PAM stats."""
     if lang_code not in current_app.config['LANGUAGES']:
         return redirect(url_for('main.root'))
 
     password_form = ChangePasswordForm()
     username_form = ChangeUsernameForm()
 
-    # --- Зміна пароля ---
+    # Password change
     if password_form.submit_password.data and password_form.validate_on_submit():
         if not bcrypt.check_password_hash(current_user.password_hash,
                                           password_form.current_password.data):
@@ -112,7 +105,7 @@ def profile(lang_code):
             flash(_l('Пароль успішно змінено.'), 'success')
             return redirect(url_for('main.profile', lang_code=lang_code))
 
-    # --- Зміна логіну (id стабільний, тож FK не ламаються; перевіряємо унікальність) ---
+    # Username change (user id is stable so no FK breakage; uniqueness validated here)
     if username_form.submit_username.data and username_form.validate_on_submit():
         new_username = (username_form.new_username.data or '').strip()
         if new_username == current_user.username:
@@ -129,7 +122,7 @@ def profile(lang_code):
             flash(_l('Логін успішно змінено.'), 'success')
             return redirect(url_for('main.profile', lang_code=lang_code))
 
-    # --- Статистика (read-only; збій БД не має ламати сторінку) ---
+    # Stats — read-only; module errors must not break the page
     ct_stats = pam_stats = None
     try:
         from app.camera_traps.utils import get_user_ct_stats
@@ -155,11 +148,11 @@ def profile(lang_code):
 @csrf.exempt
 @limiter.limit("100/hour")
 def csp_report():
-    """SEC-010: отримує CSP violation reports від браузерів і логує їх.
+    """Receive and log CSP violation reports from browsers.
 
-    Без auth — браузери не прикріплюють cookies до violation reports (RFC).
-    Rate-limit захищає від спаму бот-нетами. CSRF exempt — браузер не додає
-    CSRF-токен до auto-generated reports.
+    No auth required — browsers do not attach cookies to violation reports (RFC).
+    Rate-limited to guard against bot spam. CSRF exempt because browsers do not
+    include CSRF tokens in auto-generated reports.
     """
     # Браузери надсилають з Content-Type: application/csp-report (legacy)
     # або application/reports+json (modern, через report-to header).
