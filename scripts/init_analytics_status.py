@@ -1,20 +1,20 @@
 """
-Додає колонки відстеження стану асинхронного перерахунку аналітики в
-calculation_log (ct_db): status / started_at / error_message.
+Add async analytics status columns to calculation_log (ct_db):
+status / started_at / error_message.
 
-Запуск з кореня проекту:
-    venv/bin/python -m scripts.init_analytics_status        # Linux / прод
+Run from the project root:
+    venv/bin/python -m scripts.init_analytics_status        # Linux / prod
     venv/Scripts/python -m scripts.init_analytics_status    # Windows / dev
 
-Скрипт ідемпотентний:
-    • ADD COLUMN IF NOT EXISTS — повторний запуск безпечний.
+Idempotent:
+    ADD COLUMN IF NOT EXISTS — safe to run multiple times.
 
-Навіщо окремо (а не через create_all):
-    ct_db не керується Alembic, а CTBase.metadata.create_all() НЕ додає
-    нові колонки до вже існуючої таблиці — лише створює відсутні таблиці.
-    calculation_log існує здавна, тож колонки треба долити цим ALTER-ом.
-    На новій/dev-БД таблиця з колонками створиться через create_all —
-    скрипт там просто нічого не змінить.
+Why not via create_all:
+    ct_db is not managed by Alembic; CTBase.metadata.create_all() does NOT
+    add new columns to existing tables — it only creates missing tables.
+    calculation_log already exists, so columns must be added via ALTER.
+    On a fresh dev DB the table is created with all columns via create_all
+    and this script becomes a no-op.
 """
 
 import sys

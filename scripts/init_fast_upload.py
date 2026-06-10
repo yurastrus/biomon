@@ -1,23 +1,23 @@
 """
-Підготовка ct_db до швидкого завантаження /upload-fast.
+Prepare ct_db for the fast-upload route (/upload-fast).
 
-Запуск з кореня проекту:
-    venv/Scripts/python -m scripts.init_fast_upload          # Windows
-    venv/bin/python -m scripts.init_fast_upload              # Linux
+Run from the project root:
+    venv/Scripts/python -m scripts.init_fast_upload      # Windows
+    venv/bin/python -m scripts.init_fast_upload          # Linux
 
-Що робить:
-    1. Підключається до ct_db через CT_DATABASE_URI.
+What it does:
+    1. Connects to ct_db via CT_DATABASE_URI.
     2. CREATE INDEX IF NOT EXISTS idx_photos_batch_captured
        ON photos(upload_batch_id, captured_at, id)
-       — обовʼязковий для CTE-групування (LAG OVER ORDER BY captured_at).
+       — required by the CTE grouping query (LAG OVER ORDER BY captured_at).
 
-Скрипт ідемпотентний: повторний запуск без помилок.
+Idempotent: safe to run multiple times.
 
-Чому окремо від init_ai_tables і не через Alembic:
-    ct_db історично не керується Alembic — лише CTBase.metadata.create_all().
-    create_all() НЕ додає індекси на існуючі таблиці. Тому одноразовий
-    DDL-скрипт. Якщо коли-небудь ct_db переведеться на Alembic — цей
-    індекс має увійти у відповідну ревізію.
+Why not via Alembic:
+    ct_db is not managed by Alembic — only CTBase.metadata.create_all().
+    create_all() does NOT add indexes to existing tables, so a one-off
+    DDL script is needed. If ct_db is ever migrated to Alembic, this index
+    should be included in the corresponding revision.
 """
 
 import sys

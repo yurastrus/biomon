@@ -1,18 +1,17 @@
 """
-Створює таблицю cleanup_log у ct_db (журнал dry-run/execute очищення сиріт).
+Create the cleanup_log table in ct_db (dry-run/execute orphan-cleanup journal).
 
-Запуск з кореня проекту:
-    venv/bin/python -m scripts.init_cleanup_log        # Linux / прод
+Run from the project root:
+    venv/bin/python -m scripts.init_cleanup_log        # Linux / prod
     venv/Scripts/python -m scripts.init_cleanup_log    # Windows / dev
 
-Скрипт ідемпотентний:
-    • CREATE TABLE IF NOT EXISTS — повторний запуск безпечний
-    • CREATE INDEX IF NOT EXISTS — повторний запуск безпечний
+Idempotent:
+    CREATE TABLE IF NOT EXISTS — safe to run multiple times.
+    CREATE INDEX IF NOT EXISTS — safe to run multiple times.
 
-Чому окремо від init_ai_tables / init_fast_upload:
-    ct_db історично не керується Alembic — лише CTBase.metadata.create_all(),
-    який не додає нові таблиці/індекси на існуючу БД ідеально для production
-    (особливо коли таблиць багато й хочеться явного контролю).
+Why separate from init_ai_tables / init_fast_upload:
+    ct_db is not managed by Alembic — only CTBase.metadata.create_all(),
+    which does not add new tables/indexes to an existing production DB.
 """
 
 import sys

@@ -1,21 +1,21 @@
 """
-Додає колонку тривалості запису до recordings (PAM coverage #37).
+Add a recording duration column to the recordings table (PAM coverage #37).
 
-Запуск з кореня проекту:
-    venv/Scripts/python -m scripts.init_recording_duration          # Windows
-    venv/bin/python -m scripts.init_recording_duration              # Linux
+Run from the project root:
+    venv/Scripts/python -m scripts.init_recording_duration      # Windows
+    venv/bin/python -m scripts.init_recording_duration          # Linux
 
-Що робить (ідемпотентно):
+What it does (idempotent):
     recordings.duration_minutes NUMERIC(6,2) NOT NULL DEFAULT 5
 
-    DEFAULT 5 ОДРАЗУ заповнює всі наявні рядки значенням 5 (усі записи в
-    системі — 5-хвилинні), тож окремий backfill не потрібен. Надалі тривалість
-    проставляється при імпорті (поле у формі pam/import).
+    DEFAULT 5 immediately populates all existing rows (all recordings in
+    the system are 5-minute recordings), so no separate backfill is needed.
+    Duration is set on import going forward (pam/import form field).
 
-Зворотно-сумісно (NOT NULL DEFAULT — наявний код, що не знає колонки, працює).
-Застосувати на проді РАЗОМ із деплоєм коду #37.
+Backwards-compatible (NOT NULL DEFAULT — existing code unaware of the column works).
+Deploy together with the code changes for #37.
 
-Чому не Alembic: pam_db історично не керується Alembic — одноразові DDL-скрипти.
+Why not Alembic: pam_db is not managed by Alembic — one-off DDL scripts only.
 """
 
 from sqlalchemy import text

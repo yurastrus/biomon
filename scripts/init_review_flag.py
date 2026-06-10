@@ -1,21 +1,21 @@
 """
-Додає колонки прапорця «на повторний розгляд» до observations (Idea 6).
+Add "flag for re-review" columns to observations (Idea 6).
 
-Запуск з кореня проекту:
-    venv/Scripts/python -m scripts.init_review_flag          # Windows
-    venv/bin/python -m scripts.init_review_flag              # Linux
+Run from the project root:
+    venv/Scripts/python -m scripts.init_review_flag      # Windows
+    venv/bin/python -m scripts.init_review_flag          # Linux
 
-Що робить (ідемпотентно, ADD COLUMN IF NOT EXISTS):
+What it does (idempotent, ADD COLUMN IF NOT EXISTS):
     observations.flagged   BOOLEAN NOT NULL DEFAULT FALSE
     observations.flag_note TEXT
 
-Зворотно-сумісно: нові колонки nullable/default — наявний код, що їх не
-знає (зокрема /var/www/myproject зі старим shared-ct), працює без змін.
-ВАЖЛИВО: застосувати на проді ОДНОЧАСНО з деплоєм коду, що використовує
-прапорець (інакше нова логіка впаде на відсутній колонці).
+Backwards-compatible: new nullable/default columns — existing code unaware of
+them (including /var/www/myproject with the older shared-ct) works unchanged.
+IMPORTANT: deploy together with the code that uses the flag; applying the schema
+change alone will not break anything, but missing columns crash the new logic.
 
-Чому не Alembic: ct_db історично не керується Alembic — лише
-CTBase.metadata.create_all() + одноразові DDL-скрипти (як init_fast_upload,
+Why not Alembic: ct_db is not managed by Alembic — only
+CTBase.metadata.create_all() + one-off DDL scripts (see also init_fast_upload,
 init_query_indexes).
 """
 

@@ -1,9 +1,10 @@
-"""READ-ONLY: для split-CSV рахує, з якою локацією найбільше збігів
-(filename + captured_at до секунди). Нічого не пише. Перевіряє коректність
-ключа матчингу й часових зон на реальних даних + знаходить папка->локація.
+"""READ-ONLY: counts matches per location for a split-CSV
+(filename + captured_at to the second). Writes nothing. Validates the
+matching key and timezone assumptions against real data; also resolves
+folder → location mapping.
 
-Запуск:
-    venv/Scripts/python scripts/_validate_import_match.py <шлях_до_csv>
+Usage:
+    venv/Scripts/python scripts/_validate_import_match.py <path_to_csv>
 """
 import sys, csv, os, re
 from datetime import datetime

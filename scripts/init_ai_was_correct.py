@@ -1,21 +1,21 @@
 """
-Додає колонку was_correct до ai_predictions (Idea 4).
+Add the was_correct column to ai_predictions (Idea 4).
 
-Запуск з кореня проекту:
-    venv/Scripts/python -m scripts.init_ai_was_correct          # Windows
-    venv/bin/python -m scripts.init_ai_was_correct              # Linux
+Run from the project root:
+    venv/Scripts/python -m scripts.init_ai_was_correct      # Windows
+    venv/bin/python -m scripts.init_ai_was_correct          # Linux
 
-Що робить (ідемпотентно):
+What it does (idempotent):
     ai_predictions.was_correct BOOLEAN NULL
-        — заповнюється у момент консенсусу (mark_observation_complete):
-          True/False = прогноз збігся/не збігся з консенсусним видом,
-          NULL = ще не оцінено або AI не визначив вид.
+        — populated at consensus time (mark_observation_complete):
+          True/False = prediction matched/did not match the consensus species,
+          NULL = not yet evaluated, or AI did not identify a species.
 
-Зворотно-сумісно (nullable). Застосувати на проді РАЗОМ з деплоєм коду.
-Історичні completed-серії заповнюються окремо: scripts.backfill_was_correct.
+Backwards-compatible (nullable). Deploy together with the corresponding code.
+Historical completed series are backfilled separately: scripts.backfill_was_correct.
 
-Чому не Alembic: ct_db історично не керується Alembic — лише
-CTBase.metadata.create_all() + одноразові DDL-скрипти.
+Why not Alembic: ct_db is not managed by Alembic — only
+CTBase.metadata.create_all() + one-off DDL scripts.
 """
 
 from sqlalchemy import text
