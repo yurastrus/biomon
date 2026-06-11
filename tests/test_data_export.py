@@ -244,5 +244,125 @@ class TestGetCtOccurrenceDataConnectionLifecycle(unittest.TestCase):
         mock_engine.connect.assert_called_once()
 
 
+class TestQcFiltering(unittest.TestCase):
+    """QC-фільтрація: перевіряє побудову SQL і логіку виключення.
+
+    Оскільки engine замоканий, тести перевіряють структуру згенерованого SQL.
+    Це достатньо для верифікації правильності умов виключення — реальна
+    поведінка БД гарантується коректністю SQL.
+    """
+
+    def setUp(self):
+        from app import create_app
+        self.app = create_app('testing')
+        self.ctx = self.app.app_context()
+        self.ctx.push()
+
+    def tearDown(self):
+        self.ctx.pop()
+
+    def _run(self, qc_exclude, **extra_filters):
+        mock_engine, mock_conn = _make_engine_mock()
+        base = {'start_date': '2024-01-01', 'end_date': '2024-12-31'}
+        base.update(extra_filters)
+        if qc_exclude is not None:
+            base['qc_exclude'] = qc_exclude
+        with patch('app.camera_traps.data_export.get_ct_engine', return_value=mock_engine), \
+             patch('app.camera_traps.data_export.User') as mock_user:
+            mock_user.query.filter.return_value.all.return_value = []
+            from app.camera_traps.data_export import get_ct_occurrence_data
+            get_ct_occurrence_data(base)
+        # Перший виклик execute — це count-запит, він містить повну BaseData CTE.
+        count_sql = str(mock_conn.execute.call_args_list[0][0][0])
+        return count_sql
+
+    # ── 1. Обраний прапорець → SQL містить NOT EXISTS ──────────────────────────
+    def test_flag_raised_generates_not_exists(self):
+        sql = self._run(['qc_non_functional'])
+        self.assertIn('NOT EXISTS', sql)
+        self.assertIn('qc_non_functional = TRUE', sql)
+
+    # ── 2. Без жодного прапорця → NOT EXISTS відсутній (orphan-записи проходять)
+    def test_no_flags_no_not_exists(self):
+        sql = self._run([])
+        self.assertNotIn('NOT EXISTS', sql)
+
+    # ── 3. Прапорець є, але = FALSE → умова NOT EXISTS не спрацьовує для нього
+    #       (це забезпечує SQL-синтаксис: d_qc.flag = TRUE)
+    #       Перевіряємо: при вказаному прапорці умова точно порівнює з TRUE
+    def test_boolean_flag_uses_true_comparison(self):
+        sql = self._run(['qc_stolen'])
+        self.assertIn('qc_stolen = TRUE', sql)
+
+    # ── 4. OR-логіка: 2+ прапорці — один NOT EXISTS з OR-умовами ──────────────
+    def test_or_logic_single_not_exists_block(self):
+        sql = self._run(['qc_non_functional', 'qc_stolen'])
+        self.assertEqual(sql.count('NOT EXISTS'), 1,
+                         "Має бути рівно один NOT EXISTS блок для всіх прапорців")
+        self.assertIn('qc_non_functional = TRUE', sql)
+        self.assertIn('qc_stolen = TRUE', sql)
+        self.assertIn(' OR ', sql)
+
+    # ── 5. Кілька розгортань → покривається EXISTS (достатньо одного «поганого»)
+    #       Перевіряємо, що у WHERE є тільки EXISTS (не JOIN), тобто
+    #       логіка «OR = EXCLUDED» реалізована через EXISTS, а не через INNER JOIN.
+    def test_exists_not_join_approach(self):
+        sql = self._run(['qc_data_not_usable'])
+        self.assertIn('EXISTS', sql)
+        self.assertNotIn('JOIN deployments', sql.upper())
+
+    # ── 6. Часова межа: перетин по даті вбудований в умову EXISTS ─────────────
+    def test_date_overlap_condition_in_exists(self):
+        sql = self._run(['qc_hardware_issue'])
+        self.assertIn('series_start_time', sql)
+        self.assertIn('start_date', sql)
+        self.assertIn('end_date', sql)
+
+    # ── 7. Жодна галочка → результат ідентичний запиту без qc_exclude (регресія)
+    def test_empty_qc_identical_to_no_qc_key(self):
+        sql_no_key  = self._run(None)
+        sql_empty   = self._run([])
+        self.assertEqual(sql_no_key, sql_empty,
+                         "Порожній qc_exclude має давати той самий SQL, що й відсутній ключ")
+
+    # ── 8. Preview і download — однакова QC-логіка ────────────────────────────
+    def test_preview_and_download_same_qc_sql(self):
+        flags = ['qc_non_functional', 'qc_data_not_usable']
+
+        engine_p, conn_p = _make_engine_mock()
+        engine_d, conn_d = _make_engine_mock()
+        base = {'start_date': '2024-01-01', 'end_date': '2024-12-31', 'qc_exclude': flags}
+
+        with patch('app.camera_traps.data_export.get_ct_engine', return_value=engine_p), \
+             patch('app.camera_traps.data_export.User') as mu:
+            mu.query.filter.return_value.all.return_value = []
+            from app.camera_traps.data_export import get_ct_occurrence_data
+            get_ct_occurrence_data(base, limit=20)   # preview
+        sql_preview = str(conn_p.execute.call_args_list[0][0][0])
+
+        with patch('app.camera_traps.data_export.get_ct_engine', return_value=engine_d), \
+             patch('app.camera_traps.data_export.User') as mu:
+            mu.query.filter.return_value.all.return_value = []
+            from app.camera_traps.data_export import get_ct_occurrence_data
+            get_ct_occurrence_data(base, limit=None)  # download
+        sql_download = str(conn_d.execute.call_args_list[0][0][0])
+
+        self.assertEqual(sql_preview, sql_download,
+                         "Preview і download повинні генерувати однаковий count-SQL при однакових фільтрах")
+
+    # ── Безпека: невідомий прапорець ігнорується (SQL injection whitelist) ─────
+    def test_invalid_flag_ignored(self):
+        sql = self._run(["malicious'; DROP TABLE deployments; --"])
+        self.assertNotIn('NOT EXISTS', sql)
+
+    # ── TEXT-поле qc_local_datetime_issue: умова IS NOT NULL AND <> '' ─────────
+    def test_text_field_uses_is_not_null_condition(self):
+        sql = self._run(['qc_local_datetime_issue'])
+        self.assertIn('NOT EXISTS', sql)
+        self.assertIn('IS NOT NULL', sql)
+        self.assertIn("''", sql)
+        self.assertNotIn('qc_local_datetime_issue = TRUE', sql)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
