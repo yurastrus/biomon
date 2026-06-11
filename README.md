@@ -180,18 +180,36 @@ This only covers the **main database**. Each submodule manages its own schema �
 
 ### 5. Compile translations
 
+The application uses three independent Babel domains. Each submodule owns its own `babel.cfg`, `messages.pot`, and `translations/` directory; the main app's `babel.cfg` explicitly excludes submodule paths.
+
+| Domain | Catalog location | Covers |
+|---|---|---|
+| `messages` | `translations/` | Main app (routes, admin, models, base templates) |
+| `camera_traps` | `app/camera_traps/translations/` | Camera traps module (shared-ct) |
+| `pam` | `app/pam/translations/` | PAM module (shared-pam) |
+
+Run the commands for every domain you modified:
+
 ```bash
-# Extract translatable strings
+# ── Main app (messages domain) ─────────────────────────────────────────────
 venv/Scripts/pybabel extract -F babel.cfg -k _l -k lazy_gettext -o messages.pot .
-
-# Merge into existing .po catalogues
 venv/Scripts/pybabel update -i messages.pot -d translations
-
-# Compile .po → .mo  (-f required to include fuzzy entries)
 venv/Scripts/pybabel compile -f -d translations
+
+# ── Camera traps module (camera_traps domain) ──────────────────────────────
+venv/Scripts/pybabel extract -F app/camera_traps/babel.cfg -k _l -k lazy_gettext -D camera_traps -o app/camera_traps/messages.pot .
+venv/Scripts/pybabel update -i app/camera_traps/messages.pot -d app/camera_traps/translations -D camera_traps
+venv/Scripts/pybabel compile -f -d app/camera_traps/translations -D camera_traps
+
+# ── PAM module (pam domain) ────────────────────────────────────────────────
+venv/Scripts/pybabel extract -F app/pam/babel.cfg -k _l -k lazy_gettext -D pam -o app/pam/messages.pot .
+venv/Scripts/pybabel update -i app/pam/messages.pot -d app/pam/translations -D pam
+venv/Scripts/pybabel compile -f -d app/pam/translations -D pam
 ```
 
 On Linux replace `venv/Scripts/` with `venv/bin/`.
+
+`-k _l -k lazy_gettext` are required on `extract` only (not `update`). `-f` (`--use-fuzzy`) is required on `compile` — fuzzy entries are otherwise silently dropped. After `update`, translate new `msgstr` values in the `en` catalog and remove `#, fuzzy` markers; the `uk` catalog needs no changes (msgids are already in Ukrainian).
 
 ### 6. Run one-time init scripts (if needed)
 
@@ -299,7 +317,7 @@ Three directories inside `app/` are Git submodules — independent repositories 
 
 | Path | Repository | Branch | Content |
 |---|---|---|---|
-| `app/camera_traps` | `yurastrus/shared-ct` | `main` | Camera trap models, routes, upload pipeline, analytics, AI integration |
+| `app/camera_traps` | `yurastrus/shared-ct` | `main` | Camera trap models, routes, upload pipeline, analytics, activity heatmap, AI integration |
 | `app/pam` | `yurastrus/shared-pam` | *(default)* | PAM models, routes, audio import, evaluation |
 | `app/sdm` | `yurastrus/shared-sdm` | *(default)* | SDM routes, occupancy modelling, GEE integration |
 
