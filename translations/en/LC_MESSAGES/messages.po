@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-11 09:53+0300\n"
+"POT-Creation-Date: 2026-06-11 15:25+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -102,1141 +102,6 @@ msgstr "Edit role"
 #: app/admin/routes.py:253 app/templates/admin/admin_roles_list.html:15
 msgid "Додати роль"
 msgstr "Add role"
-
-#: app/camera_traps/routes.py:497 app/pam/templates/pam_overview.html:351
-msgid "Помилка завантаження статистики."
-msgstr "Error loading statistics."
-
-#: app/camera_traps/routes.py:1395 app/camera_traps/routes.py:1572
-#: app/camera_traps/templates/upload.html:232
-#: app/camera_traps/templates/upload.html:347
-#: app/camera_traps/templates/upload_fast.html:365
-#: app/camera_traps/templates/upload_fast.html:425
-#: app/pam/templates/pam_species_detailed.html:229
-msgid "-- Будь ласка, виберіть --"
-msgstr "-- Please select --"
-
-#: app/camera_traps/routes.py:3016
-#: app/camera_traps/templates/identification.html:85
-#: app/camera_traps/templates/identification.html:388
-#: app/pam/templates/pam_verification_interface.html:23
-#: app/pam/templates/pam_verification_interface.html:178
-msgid "-- Всі види --"
-msgstr "-- All species --"
-
-#: app/camera_traps/routes.py:4103
-#: app/camera_traps/templates/manage_locations.html:597
-#: app/pam/templates/manage_pam_locations.html:648
-#: app/pam/templates/pam_import.html:467
-msgid "Вкажіть назву локації."
-msgstr "Enter the location name."
-
-#: app/camera_traps/routes.py:4571
-#: app/pam/templates/manage_pam_locations.html:327
-msgid "Немає даних про обслуговування"
-msgstr "No maintenance data"
-
-#: app/camera_traps/templates/admin.html:10
-#: app/camera_traps/templates/overview.html:131
-#: app/templates/admin/admin_home.html:7
-#: app/templates/admin/admin_institution_form.html:7
-#: app/templates/admin/admin_institutions_list.html:7
-#: app/templates/admin/admin_role_form.html:7
-#: app/templates/admin/admin_roles_list.html:7
-#: app/templates/admin/admin_user_form.html:7
-#: app/templates/admin/admin_users_list.html:7
-msgid "Адмін-панель"
-msgstr "Admin panel"
-
-#: app/camera_traps/templates/admin.html:83
-#: app/pam/templates/pam_verification_segments.html:270
-#: app/sdm/templates/sdm/dashboard.html:133
-msgid "Статус"
-msgstr "Status"
-
-#: app/camera_traps/templates/admin.html:178
-#: app/pam/templates/pam_location_coverage.html:30
-msgid "год"
-msgstr "h"
-
-#: app/camera_traps/templates/admin.html:206
-#: app/camera_traps/templates/admin.html:219
-#: app/camera_traps/templates/manage_deployments.html:306
-#: app/templates/admin/admin_institutions_list.html:49
-#: app/templates/admin/admin_roles_list.html:61
-#: app/templates/admin/admin_roles_list.html:66
-#: app/templates/admin/admin_users_list.html:124
-#: app/templates/admin/admin_users_list.html:129
-msgid "Видалити"
-msgstr "Delete"
-
-#: app/camera_traps/templates/admin.html:280
-#: app/pam/templates/pam_evaluation_species_detail.html:23
-msgid "Закрити"
-msgstr "Close"
-
-#: app/camera_traps/templates/admin.html:400
-#: app/camera_traps/templates/ct_data_export.html:331
-#: app/camera_traps/templates/species_detailed.html:159
-#: app/camera_traps/templates/upload.html:462
-#: app/camera_traps/templates/upload_fast.html:502
-#: app/pam/templates/pam_data_export.html:325
-#: app/sdm/templates/sdm/dashboard.html:149
-msgid "Помилка"
-msgstr "Error"
-
-#: app/camera_traps/templates/ai_calibration.html:24
-#: app/camera_traps/templates/behavior_analysis.html:23
-#: app/pam/templates/pam_evaluation_results.html:53
-#: app/pam/templates/pam_evaluation_results.html:197
-#: app/pam/templates/pam_overview.html:415
-#: app/pam/templates/pam_verification_segments.html:265
-#: app/pam/templates/pam_yearly_table.html:186
-#: app/sdm/templates/sdm/dashboard.html:42
-#: app/sdm/templates/sdm/dashboard.html:102
-#: app/sdm/templates/sdm/dashboard.html:133
-msgid "Вид"
-msgstr "Species"
-
-#: app/camera_traps/templates/behavior_analysis.html:52
-#: app/camera_traps/templates/comparison.html:44
-#: app/camera_traps/templates/comparison.html:70
-#: app/camera_traps/templates/contributors.html:38
-#: app/camera_traps/templates/daily_activity.html:37
-#: app/camera_traps/templates/dashboard.html:34
-#: app/camera_traps/templates/identification.html:15
-#: app/camera_traps/templates/manage_locations.html:127
-#: app/camera_traps/templates/species_dashboard.html:37
-#: app/pam/templates/manage_pam_locations.html:120
-#: app/pam/templates/pam_import.html:80 app/templates/admin/admin_home.html:31
-#: app/templates/admin/admin_institution_form.html:8
-#: app/templates/admin/admin_institutions_list.html:8
-#: app/templates/admin/admin_users_list.html:86
-msgid "Установи"
-msgstr "Institutions"
-
-#: app/camera_traps/templates/behavior_analysis.html:232
-#: app/camera_traps/templates/daily_activity.html:255
-#: app/pam/templates/pam_overview.html:430
-#: app/pam/templates/pam_species_detailed.html:500
-#: app/pam/templates/pam_species_detailed.html:516
-#: app/pam/templates/pam_species_detailed.html:523
-msgid "Помилка завантаження даних."
-msgstr "Data loading error."
-
-#: app/camera_traps/templates/comparison.html:159
-#: app/camera_traps/templates/ct_data_export.html:182
-#: app/camera_traps/templates/manage_locations.html:647
-#: app/camera_traps/templates/service_log.html:242
-#: app/camera_traps/templates/species_detailed.html:147
-#: app/camera_traps/templates/upload.html:153
-#: app/camera_traps/templates/upload.html:615
-#: app/camera_traps/templates/upload_fast.html:274
-#: app/camera_traps/templates/upload_fast.html:764
-#: app/pam/templates/manage_pam_locations.html:699
-#: app/pam/templates/pam_data_export.html:92
-#: app/pam/templates/pam_evaluation_results.html:172
-#: app/pam/templates/pam_import.html:189
-#: app/pam/templates/pam_service_log.html:242
-#: app/pam/templates/pam_verification_interface.html:137
-#: app/pam/templates/pam_verification_segments.html:104
-msgid "Завантаження..."
-msgstr "Loading..."
-
-#: app/camera_traps/templates/contributors.html:56
-#: app/camera_traps/templates/dashboard.html:63
-#: app/camera_traps/templates/identification.html:98
-#: app/camera_traps/templates/species_detailed.html:41
-#: app/pam/templates/pam_species_detailed.html:62
-#: app/pam/templates/pam_verification_interface.html:31
-#: app/pam/templates/pam_verification_segments.html:49
-msgid "Застосувати"
-msgstr "Apply"
-
-#: app/camera_traps/templates/contributors.html:57
-#: app/camera_traps/templates/photo_viewer.html:25
-#: app/pam/templates/pam_verification_segments.html:52
-#: app/templates/admin/admin_users_list.html:70
-msgid "Скинути"
-msgstr "Reset"
-
-#: app/camera_traps/templates/contributors.html:71
-#: app/camera_traps/templates/data_quality.html:96
-#: app/camera_traps/templates/manage_deployments.html:182
-#: app/camera_traps/templates/manage_deployments.html:208
-#: app/pam/templates/pam_yearly_trends.html:191
-msgid "Рік"
-msgstr "Year"
-
-#: app/camera_traps/templates/ct_base.html:13
-#: app/pam/templates/pam_base.html:13
-msgid "До розділів"
-msgstr "Back to sections"
-
-#: app/camera_traps/templates/ct_data_export.html:3
-#: app/camera_traps/templates/overview.html:115
-#: app/pam/templates/pam_data_export.html:3 app/pam/templates/pam_home.html:83
-msgid "Експорт даних"
-msgstr "Export data"
-
-#: app/camera_traps/templates/ct_data_export.html:24
-#: app/pam/templates/pam_data_export.html:15
-#: app/pam/templates/pam_overview.html:26
-#: app/pam/templates/pam_yearly_table.html:33
-msgid "Клас:"
-msgstr "Class:"
-
-#: app/camera_traps/templates/ct_data_export.html:25
-#: app/pam/templates/pam_data_export.html:16
-#: app/pam/templates/pam_overview.html:30
-#: app/pam/templates/pam_yearly_table.html:37
-msgid "Ряд:"
-msgstr "Order:"
-
-#: app/camera_traps/templates/ct_data_export.html:26
-#: app/pam/templates/pam_data_export.html:17
-#: app/pam/templates/pam_overview.html:34
-#: app/pam/templates/pam_yearly_table.html:41
-msgid "Родина:"
-msgstr "Family:"
-
-#: app/camera_traps/templates/ct_data_export.html:27
-#: app/pam/templates/pam_data_export.html:18
-#: app/pam/templates/pam_overview.html:38
-#: app/pam/templates/pam_yearly_table.html:45
-msgid "Рід:"
-msgstr "Genus:"
-
-#: app/camera_traps/templates/ct_data_export.html:29
-#: app/pam/templates/pam_data_export.html:20
-msgid "Види (оберіть один або декілька):"
-msgstr "Species (select one or more):"
-
-#: app/camera_traps/templates/ct_data_export.html:32
-#: app/pam/templates/pam_data_export.html:31
-msgid "Дата початку:"
-msgstr "Start date:"
-
-#: app/camera_traps/templates/ct_data_export.html:33
-#: app/pam/templates/pam_data_export.html:32
-msgid "Дата завершення:"
-msgstr "End date:"
-
-#: app/camera_traps/templates/ct_data_export.html:35
-#: app/pam/templates/pam_data_export.html:43
-msgid "Рівень агрегації:"
-msgstr "Aggregation level:"
-
-#: app/camera_traps/templates/ct_data_export.html:37
-#: app/pam/templates/pam_data_export.html:57
-msgid "За замовчуванням: RSNR"
-msgstr "By default: RSNR"
-
-#: app/camera_traps/templates/ct_data_export.html:87
-#: app/pam/templates/pam_data_export.html:60
-msgid "Підготувати дані"
-msgstr "Prepare data"
-
-#: app/camera_traps/templates/ct_data_export.html:88
-#: app/camera_traps/templates/data_quality.html:109
-#: app/pam/templates/pam_data_export.html:61
-msgid "Скинути фільтри"
-msgstr "Reset filters"
-
-#: app/camera_traps/templates/ct_data_export.html:95
-#: app/pam/templates/pam_data_export.html:68
-msgid "Завантажити повний CSV-файл"
-msgstr "Download full CSV file"
-
-#: app/camera_traps/templates/ct_data_export.html:173
-#: app/pam/templates/pam_data_export.html:139
-#: app/pam/templates/pam_yearly_table.html:163
-msgid "Всі класи"
-msgstr "All classes"
-
-#: app/camera_traps/templates/ct_data_export.html:174
-#: app/pam/templates/pam_data_export.html:140
-#: app/pam/templates/pam_yearly_table.html:164
-msgid "Всі ряди"
-msgstr "All orders"
-
-#: app/camera_traps/templates/ct_data_export.html:175
-#: app/pam/templates/pam_data_export.html:141
-#: app/pam/templates/pam_yearly_table.html:165
-msgid "Всі родини"
-msgstr "All families"
-
-#: app/camera_traps/templates/ct_data_export.html:176
-#: app/pam/templates/pam_data_export.html:142
-#: app/pam/templates/pam_yearly_table.html:166
-msgid "Всі роди"
-msgstr "All genera"
-
-#: app/camera_traps/templates/ct_data_export.html:177
-#: app/pam/templates/pam_data_export.html:143
-msgid "Всі види"
-msgstr "All species"
-
-#: app/camera_traps/templates/ct_data_export.html:291
-#: app/camera_traps/templates/ct_data_export.html:339
-#: app/pam/templates/pam_data_export.html:335
-msgid "Будь ласка, оберіть хоча б один таксон."
-msgstr "Please select at least one taxon."
-
-#: app/camera_traps/templates/ct_data_export.html:326
-#: app/pam/templates/pam_data_export.html:320
-msgid "Дані за вибраними критеріями не знайдено."
-msgstr "No data found for the selected criteria."
-
-#: app/camera_traps/templates/ct_data_export.html:332
-#: app/pam/templates/pam_data_export.html:326
-msgid "Помилка завантаження даних:"
-msgstr "Data loading error."
-
-#: app/camera_traps/templates/ct_location_coverage.html:3
-#: app/pam/templates/pam_location_coverage.html:3
-msgid "Календар покриття"
-msgstr "Coverage calendar"
-
-#: app/camera_traps/templates/ct_location_coverage.html:15
-#: app/pam/templates/pam_location_coverage.html:14
-msgid "До локацій"
-msgstr "Back to locations"
-
-#: app/camera_traps/templates/ct_location_coverage.html:20
-#: app/pam/templates/pam_location_coverage.html:19
-msgid "Усі роки"
-msgstr "All years"
-
-#: app/camera_traps/templates/ct_location_coverage.html:21
-#: app/pam/templates/pam_location_coverage.html:20
-msgid "Зведено за рік"
-msgstr "Aggregated by year"
-
-#: app/camera_traps/templates/ct_location_coverage.html:45
-#: app/pam/templates/pam_location_coverage.html:40
-msgid "Діапазон"
-msgstr "Range"
-
-#: app/camera_traps/templates/ct_location_coverage.html:52
-#: app/pam/templates/pam_location_coverage.html:47
-msgid "менше"
-msgstr "less"
-
-#: app/camera_traps/templates/ct_location_coverage.html:61
-#: app/pam/templates/pam_location_coverage.html:56
-msgid "Пн"
-msgstr "Mon"
-
-#: app/camera_traps/templates/ct_location_coverage.html:61
-#: app/pam/templates/pam_location_coverage.html:56
-msgid "Вт"
-msgstr "Tue"
-
-#: app/camera_traps/templates/ct_location_coverage.html:61
-#: app/pam/templates/pam_location_coverage.html:56
-msgid "Ср"
-msgstr "Wed"
-
-#: app/camera_traps/templates/ct_location_coverage.html:61
-#: app/pam/templates/pam_location_coverage.html:56
-msgid "Чт"
-msgstr "Thu"
-
-#: app/camera_traps/templates/ct_location_coverage.html:61
-#: app/pam/templates/pam_location_coverage.html:56
-msgid "Пт"
-msgstr "Fri"
-
-#: app/camera_traps/templates/ct_location_coverage.html:61
-#: app/pam/templates/pam_location_coverage.html:56
-msgid "Сб"
-msgstr "Sat"
-
-#: app/camera_traps/templates/ct_location_coverage.html:61
-#: app/pam/templates/pam_location_coverage.html:56
-msgid "Нд"
-msgstr "Sun"
-
-#: app/camera_traps/templates/ct_location_coverage.html:79
-#: app/pam/templates/pam_location_coverage.html:74
-msgid "р."
-msgstr "yr"
-
-#: app/camera_traps/templates/daily_activity.html:34
-#: app/camera_traps/templates/manage_deployments.html:116
-#: app/camera_traps/templates/manage_locations.html:30
-#: app/camera_traps/templates/species_dashboard.html:34
-#: app/pam/templates/manage_pam_locations.html:27
-#: app/pam/templates/pam_service_log.html:23
-msgid "Всі доступні мені"
-msgstr "All available for me"
-
-#: app/camera_traps/templates/dashboard.html:71
-#: app/pam/templates/pam_overview.html:84
-#: app/pam/templates/pam_species_detailed.html:80
-msgid "Загальна статистика"
-msgstr "General statistics"
-
-#: app/camera_traps/templates/dashboard.html:74
-#: app/pam/templates/pam_overview.html:344
-msgid "Локацій"
-msgstr "Locations"
-
-#: app/camera_traps/templates/dashboard.html:76
-#: app/pam/templates/pam_overview.html:343
-msgid "Видів"
-msgstr "Species"
-
-#: app/camera_traps/templates/dashboard.html:115
-#: app/pam/templates/pam_overview.html:93
-msgid "Карта локацій"
-msgstr "Map of locations"
-
-#: app/camera_traps/templates/dashboard.html:171
-#: app/pam/templates/pam_overview.html:176
-#: app/pam/templates/pam_overview.html:293
-#: app/pam/templates/pam_species_detailed.html:236
-msgid "-- Всі біотопи --"
-msgstr "-- All habitats --"
-
-#: app/camera_traps/templates/dashboard.html:206
-#: app/camera_traps/templates/data_quality.html:188
-#: app/camera_traps/templates/manage_deployments.html:367
-#: app/camera_traps/templates/manage_locations.html:354
-#: app/camera_traps/templates/service_log.html:158
-#: app/camera_traps/templates/upload.html:302
-#: app/camera_traps/templates/upload_fast.html:389
-#: app/pam/templates/manage_pam_locations.html:399
-#: app/pam/templates/pam_import.html:340
-#: app/pam/templates/pam_overview.html:385
-#: app/pam/templates/pam_service_log.html:156
-#: app/pam/templates/pam_species_detailed.html:379
-msgid "OSM"
-msgstr "OSM"
-
-#: app/camera_traps/templates/dashboard.html:206
-#: app/camera_traps/templates/data_quality.html:188
-#: app/camera_traps/templates/manage_deployments.html:367
-#: app/camera_traps/templates/manage_locations.html:354
-#: app/camera_traps/templates/service_log.html:158
-#: app/camera_traps/templates/upload.html:302
-#: app/camera_traps/templates/upload_fast.html:389
-#: app/pam/templates/manage_pam_locations.html:399
-#: app/pam/templates/pam_import.html:340
-#: app/pam/templates/pam_overview.html:385
-#: app/pam/templates/pam_service_log.html:156
-#: app/pam/templates/pam_species_detailed.html:379
-msgid "Супутник"
-msgstr "Satellite"
-
-#: app/camera_traps/templates/data_quality.html:96
-#: app/templates/admin/admin_user_form.html:91
-#: app/templates/admin/admin_users_list.html:49
-msgid "Установа"
-msgstr "Institution"
-
-#: app/camera_traps/templates/data_quality.html:245
-#: app/camera_traps/templates/upload.html:588
-#: app/pam/templates/pam_evaluation_results.html:380
-#: app/pam/templates/pam_import.html:598
-msgid "з"
-msgstr "of"
-
-#: app/camera_traps/templates/gallery.html:22
-#: app/camera_traps/templates/species_dashboard.html:19
-#: app/pam/templates/pam_species_dashboard.html:20
-#: app/pam/templates/pam_species_detailed.html:19
-#: app/pam/templates/pam_yearly_trends.html:19
-msgid "Виберіть вид:"
-msgstr "Select species:"
-
-#: app/camera_traps/templates/gallery.html:69
-#: app/pam/templates/pam_home.html:77
-msgid "Управління"
-msgstr "Management"
-
-#: app/camera_traps/templates/gallery.html:143
-#: app/camera_traps/templates/species_dashboard.html:106
-#: app/pam/templates/pam_species_dashboard.html:86
-#: app/pam/templates/pam_yearly_trends.html:77
-msgid "-- Пошук та вибір виду --"
-msgstr "-- Search and select a species --"
-
-#: app/camera_traps/templates/gallery.html:157
-#: app/camera_traps/templates/species_dashboard.html:147
-#: app/pam/templates/pam_species_dashboard.html:139
-#: app/pam/templates/pam_species_detailed.html:395
-#: app/pam/templates/pam_yearly_trends.html:102
-msgid "Будь ласка, виберіть вид."
-msgstr "Please select a species."
-
-#: app/camera_traps/templates/gallery.html:212
-#: app/camera_traps/templates/gallery.html:224
-#: app/camera_traps/templates/manage_deployments.html:136
-#: app/camera_traps/templates/photo_viewer.html:36
-#: app/pam/templates/pam_verification_interface.html:72
-msgid "Локація:"
-msgstr "Location:"
-
-#: app/camera_traps/templates/gallery.html:220
-#: app/camera_traps/templates/identification.html:83
-#: app/pam/templates/pam_verification_segments.html:21
-#: app/sdm/templates/sdm/coefficients.html:28 app/sdm/templates/sdm/map.html:34
-msgid "Вид:"
-msgstr "Species:"
-
-#: app/camera_traps/templates/gallery.html:238
-#: app/camera_traps/templates/photo_viewer.html:73
-#: app/camera_traps/templates/service_log.html:180
-#: app/camera_traps/templates/service_log.html:183
-#: app/camera_traps/templates/service_log.html:340
-#: app/pam/templates/pam_verification_segments.html:30
-msgid "Статус:"
-msgstr "Status:"
-
-#: app/camera_traps/templates/identification.html:13
-#: app/pam/templates/pam_species_dashboard.html:47
-#: app/pam/templates/pam_species_dashboard.html:92
-#: app/pam/templates/pam_yearly_table.html:96
-#: app/pam/templates/pam_yearly_table.html:153
-msgid "Всі доступні"
-msgstr "All available"
-
-#: app/camera_traps/templates/identification.html:155 app/utils/forms.py:22
-msgid "Надіслати"
-msgstr "Send"
-
-#: app/camera_traps/templates/identification.html:156
-#: app/pam/templates/pam_verification_interface.html:118
-msgid "Пропустити"
-msgstr "Skip"
-
-#: app/camera_traps/templates/identification.html:319
-#: app/camera_traps/templates/upload.html:30
-#: app/camera_traps/templates/upload_fast.html:92
-#: app/pam/templates/pam_import.html:40
-#: app/pam/templates/pam_verification_segments.html:267
-msgid "Локація"
-msgstr "Location"
-
-#: app/camera_traps/templates/identification.html:323
-#: app/camera_traps/templates/manage_deployments.html:628
-#: app/camera_traps/templates/manage_locations.html:591
-#: app/camera_traps/templates/service_log.html:350
-#: app/pam/templates/manage_pam_locations.html:642
-#: app/pam/templates/pam_service_log.html:320
-msgid "Помилка збереження:"
-msgstr "Save error:"
-
-#: app/camera_traps/templates/import_classification.html:25
-#: app/camera_traps/templates/manage_deployments.html:113
-#: app/camera_traps/templates/manage_locations.html:27
-#: app/camera_traps/templates/upload.html:36
-#: app/camera_traps/templates/upload_fast.html:94
-#: app/pam/templates/manage_pam_locations.html:24
-#: app/pam/templates/pam_import.html:23
-msgid "Установа:"
-msgstr "Institution:"
-
-#: app/camera_traps/templates/manage_deployments.html:302
-#: app/camera_traps/templates/manage_locations.html:136
-#: app/camera_traps/templates/manage_locations.html:524
-#: app/camera_traps/templates/manage_locations.html:790
-#: app/pam/templates/manage_pam_locations.html:139
-#: app/pam/templates/manage_pam_locations.html:582
-#: app/pam/templates/manage_pam_locations.html:844
-#: app/pam/templates/pam_import.html:101 app/pam/templates/pam_import.html:496
-msgid "Зберегти"
-msgstr "Save"
-
-#: app/camera_traps/templates/manage_deployments.html:304
-#: app/camera_traps/templates/manage_locations.html:137
-#: app/camera_traps/templates/manage_locations.html:214
-#: app/camera_traps/templates/upload.html:95
-#: app/camera_traps/templates/upload_fast.html:138
-#: app/pam/templates/manage_pam_locations.html:140
-#: app/pam/templates/manage_pam_locations.html:221
-#: app/pam/templates/pam_import.html:105
-#: app/templates/admin/admin_institution_form.html:62
-#: app/templates/admin/admin_role_form.html:71
-#: app/templates/admin/admin_user_form.html:197
-msgid "Скасувати"
-msgstr "Cancel"
-
-#: app/camera_traps/templates/manage_deployments.html:527
-#: app/camera_traps/templates/manage_locations.html:688
-#: app/pam/templates/manage_pam_locations.html:739
-msgid "Помилка завантаження."
-msgstr "Loading error."
-
-#: app/camera_traps/templates/manage_deployments.html:545
-#: app/camera_traps/templates/manage_deployments.html:616
-#: app/camera_traps/templates/manage_locations.html:523
-#: app/pam/templates/manage_pam_locations.html:581
-msgid "Редагування:"
-msgstr "Editing:"
-
-#: app/camera_traps/templates/manage_locations.html:17
-#: app/camera_traps/templates/manage_locations.html:537
-#: app/pam/templates/manage_pam_locations.html:16
-#: app/pam/templates/manage_pam_locations.html:597
-#: app/pam/templates/pam_import.html:52 app/pam/templates/pam_import.html:356
-#: app/pam/templates/pam_import.html:454
-msgid "Нова локація"
-msgstr "New location"
-
-#: app/camera_traps/templates/manage_locations.html:39
-#: app/pam/templates/manage_pam_locations.html:35
-msgid "Показати стан заповненості даних"
-msgstr "Show data completeness status"
-
-#: app/camera_traps/templates/manage_locations.html:40
-#: app/pam/templates/manage_pam_locations.html:36
-#: app/pam/templates/pam_evaluation_species_detail.html:123
-msgid "Дані"
-msgstr "Data"
-
-#: app/camera_traps/templates/manage_locations.html:42
-#: app/pam/templates/manage_pam_locations.html:38
-msgid "Показати статус обслуговування"
-msgstr "Show service status"
-
-#: app/camera_traps/templates/manage_locations.html:43
-#: app/pam/templates/manage_pam_locations.html:39
-msgid "Сервіс"
-msgstr "Service"
-
-#: app/camera_traps/templates/manage_locations.html:47
-#: app/pam/templates/manage_pam_locations.html:43
-msgid "Повна"
-msgstr "Complete"
-
-#: app/camera_traps/templates/manage_locations.html:48
-#: app/pam/templates/manage_pam_locations.html:44
-msgid "Без біотопу"
-msgstr "No habitat"
-
-#: app/camera_traps/templates/manage_locations.html:52
-#: app/pam/templates/manage_pam_locations.html:49
-msgid "OK"
-msgstr "OK"
-
-#: app/camera_traps/templates/manage_locations.html:53
-#: app/pam/templates/manage_pam_locations.html:50
-msgid "Увага"
-msgstr "Warning"
-
-#: app/camera_traps/templates/manage_locations.html:54
-#: app/pam/templates/manage_pam_locations.html:51
-msgid "Критично"
-msgstr "Critical"
-
-#: app/camera_traps/templates/manage_locations.html:55
-#: app/camera_traps/templates/service_log.html:76
-#: app/camera_traps/templates/service_log.html:258
-#: app/pam/templates/manage_pam_locations.html:52
-#: app/pam/templates/pam_service_log.html:93
-#: app/pam/templates/pam_service_log.html:256
-msgid "Невідомо"
-msgstr "Unknown"
-
-#: app/camera_traps/templates/manage_locations.html:85
-#: app/pam/templates/manage_pam_locations.html:82
-msgid "Виберіть локацію зі списку або на карті."
-msgstr "Select a location from the list or on the map."
-
-#: app/camera_traps/templates/manage_locations.html:106
-#: app/camera_traps/templates/upload.html:75
-#: app/camera_traps/templates/upload_fast.html:127
-#: app/pam/templates/manage_pam_locations.html:107
-#: app/pam/templates/pam_import.html:69
-msgid "Широта"
-msgstr "Latitude"
-
-#: app/camera_traps/templates/manage_locations.html:110
-#: app/camera_traps/templates/upload.html:81
-#: app/camera_traps/templates/upload_fast.html:131
-#: app/pam/templates/manage_pam_locations.html:111
-#: app/pam/templates/pam_import.html:73
-msgid "Довгота"
-msgstr "Longitude"
-
-#: app/camera_traps/templates/manage_locations.html:115
-#: app/pam/templates/manage_pam_locations.html:116
-msgid "Клацніть на карті або введіть координати вручну."
-msgstr "Click on the map or enter coordinates manually."
-
-#: app/camera_traps/templates/manage_locations.html:118
-#: app/pam/templates/manage_pam_locations.html:129
-#: app/pam/templates/pam_import.html:88
-msgid "Біотопи"
-msgstr "Habitats"
-
-#: app/camera_traps/templates/manage_locations.html:145
-#: app/camera_traps/templates/manage_locations.html:718
-#: app/pam/templates/manage_pam_locations.html:149
-#: app/pam/templates/manage_pam_locations.html:770
-msgid "Новий запис"
-msgstr "New entry"
-
-#: app/camera_traps/templates/manage_locations.html:148
-#: app/pam/templates/manage_pam_locations.html:152
-msgid "Виберіть локацію, щоб додати запис."
-msgstr "Select a location to add an entry."
-
-#: app/camera_traps/templates/manage_locations.html:155
-#: app/pam/templates/manage_pam_locations.html:159
-msgid "Дата і час"
-msgstr "Date and time"
-
-#: app/camera_traps/templates/manage_locations.html:159
-#: app/camera_traps/templates/service_log.html:44
-#: app/pam/templates/manage_pam_locations.html:163
-#: app/pam/templates/pam_service_log.html:46
-msgid "Результат візиту"
-msgstr "Visit results"
-
-#: app/camera_traps/templates/manage_locations.html:161
-#: app/camera_traps/templates/manage_locations.html:253
-#: app/camera_traps/templates/service_log.html:46
-#: app/pam/templates/manage_pam_locations.html:165
-#: app/pam/templates/manage_pam_locations.html:185
-#: app/pam/templates/manage_pam_locations.html:260
-#: app/pam/templates/pam_service_log.html:48
-#: app/pam/templates/pam_service_log.html:68
-msgid "-- Виберіть --"
-msgstr "-- Select --"
-
-#: app/camera_traps/templates/manage_locations.html:170
-#: app/camera_traps/templates/service_log.html:55
-#: app/pam/templates/pam_service_log.html:57
-msgid "Заміна елементів живлення"
-msgstr "Battery replacement"
-
-#: app/camera_traps/templates/manage_locations.html:172
-#: app/camera_traps/templates/service_log.html:57
-#: app/pam/templates/manage_pam_locations.html:176
-#: app/pam/templates/pam_service_log.html:59
-msgid "-- Без заміни --"
-msgstr "-- Without replacement --"
-
-#: app/camera_traps/templates/manage_locations.html:183
-#: app/camera_traps/templates/manage_locations.html:656
-#: app/camera_traps/templates/service_log.html:255
-#: app/camera_traps/templates/service_log.html:269
-#: app/pam/templates/manage_pam_locations.html:202
-#: app/pam/templates/manage_pam_locations.html:708
-#: app/pam/templates/pam_service_log.html:253
-msgid "Так"
-msgstr "Yes"
-
-#: app/camera_traps/templates/manage_locations.html:187
-#: app/camera_traps/templates/manage_locations.html:658
-#: app/camera_traps/templates/manage_locations.html:662
-#: app/camera_traps/templates/service_log.html:257
-#: app/camera_traps/templates/service_log.html:269
-#: app/pam/templates/manage_pam_locations.html:206
-#: app/pam/templates/manage_pam_locations.html:710
-#: app/pam/templates/pam_service_log.html:255
-msgid "Ні"
-msgstr "No"
-
-#: app/camera_traps/templates/manage_locations.html:191
-#: app/camera_traps/templates/manage_locations.html:659
-#: app/pam/templates/manage_pam_locations.html:210
-#: app/pam/templates/manage_pam_locations.html:711
-msgid "?"
-msgstr "?"
-
-#: app/camera_traps/templates/manage_locations.html:209
-#: app/camera_traps/templates/service_log.html:96
-#: app/pam/templates/manage_pam_locations.html:216
-#: app/pam/templates/pam_service_log.html:99
-msgid "Коментарі"
-msgstr "Comments"
-
-#: app/camera_traps/templates/manage_locations.html:213
-#: app/camera_traps/templates/manage_locations.html:719
-#: app/camera_traps/templates/service_log.html:99
-#: app/pam/templates/manage_pam_locations.html:220
-#: app/pam/templates/manage_pam_locations.html:771
-#: app/pam/templates/pam_service_log.html:102
-msgid "Зберегти запис"
-msgstr "Save record"
-
-#: app/camera_traps/templates/manage_locations.html:222
-#: app/pam/templates/manage_pam_locations.html:229
-msgid "Історія"
-msgstr "History"
-
-#: app/camera_traps/templates/manage_locations.html:224
-#: app/pam/templates/manage_pam_locations.html:231
-msgid "Немає даних."
-msgstr "No data."
-
-#: app/camera_traps/templates/manage_locations.html:250
-#: app/pam/templates/manage_pam_locations.html:257
-#: app/pam/templates/pam_import.html:435
-msgid "Виберіть біотопи..."
-msgstr "Select habitats"
-
-#: app/camera_traps/templates/manage_locations.html:251
-#: app/pam/templates/manage_pam_locations.html:258
-#: app/pam/templates/pam_import.html:434
-msgid "Виберіть установи..."
-msgstr "Select institutions..."
-
-#: app/camera_traps/templates/manage_locations.html:329
-#: app/camera_traps/templates/upload.html:267
-#: app/pam/templates/manage_pam_locations.html:374
-#: app/pam/templates/pam_import.html:305
-msgid "Національні природні парки"
-msgstr "National nature parks"
-
-#: app/camera_traps/templates/manage_locations.html:330
-#: app/camera_traps/templates/upload.html:268
-#: app/pam/templates/manage_pam_locations.html:375
-#: app/pam/templates/pam_import.html:306
-msgid "Біосферні заповідники"
-msgstr "Biosphere reserves"
-
-#: app/camera_traps/templates/manage_locations.html:331
-#: app/camera_traps/templates/upload.html:269
-#: app/pam/templates/manage_pam_locations.html:376
-#: app/pam/templates/pam_import.html:307
-msgid "Регіональні ландшафтні парки"
-msgstr "Regional landscape parks"
-
-#: app/camera_traps/templates/manage_locations.html:332
-#: app/camera_traps/templates/upload.html:270
-#: app/pam/templates/manage_pam_locations.html:377
-#: app/pam/templates/pam_import.html:308
-msgid "Заказники"
-msgstr "Nature reserves"
-
-#: app/camera_traps/templates/manage_locations.html:333
-#: app/camera_traps/templates/upload.html:271
-#: app/pam/templates/manage_pam_locations.html:378
-#: app/pam/templates/pam_import.html:309
-msgid "Природні заповідники"
-msgstr "Strict nature reserves"
-
-#: app/camera_traps/templates/manage_locations.html:334
-#: app/camera_traps/templates/upload.html:272
-#: app/pam/templates/manage_pam_locations.html:379
-#: app/pam/templates/pam_import.html:310
-msgid "Пам'ятки природи"
-msgstr "Natural monuments"
-
-#: app/camera_traps/templates/manage_locations.html:335
-#: app/camera_traps/templates/upload.html:273
-#: app/pam/templates/manage_pam_locations.html:380
-#: app/pam/templates/pam_import.html:311
-msgid "Заповідні урочища"
-msgstr "Nature sanctuaries"
-
-#: app/camera_traps/templates/manage_locations.html:365
-#: app/camera_traps/templates/upload.html:287
-#: app/pam/templates/manage_pam_locations.html:410
-#: app/pam/templates/pam_import.html:325
-msgid "Території ПЗФ"
-msgstr "Protected areas"
-
-#: app/camera_traps/templates/manage_locations.html:538
-#: app/pam/templates/manage_pam_locations.html:598
-msgid "Створити"
-msgstr "Create"
-
-#: app/camera_traps/templates/manage_locations.html:598
-#: app/pam/templates/manage_pam_locations.html:649
-msgid "Вкажіть координати: клацніть на карті або введіть вручну."
-msgstr "Enter coordinates: click on the map or type manually."
-
-#: app/camera_traps/templates/manage_locations.html:639
-#: app/camera_traps/templates/manage_locations.html:767
-#: app/camera_traps/templates/upload_fast.html:827
-#: app/pam/templates/manage_pam_locations.html:691
-#: app/pam/templates/manage_pam_locations.html:821
-#: app/pam/templates/pam_species_detailed.html:157
-#: app/sdm/templates/sdm/dashboard.html:183 app/sdm/templates/sdm/map.html:85
-msgid "Помилка:"
-msgstr "Error:"
-
-#: app/camera_traps/templates/manage_locations.html:679
-#: app/pam/templates/manage_pam_locations.html:730
-msgid "Бат.:"
-msgstr "Bat.:"
-
-#: app/camera_traps/templates/manage_locations.html:680
-#: app/pam/templates/manage_pam_locations.html:731
-msgid "SD:"
-msgstr "SD:"
-
-#: app/camera_traps/templates/manage_locations.html:695
-#: app/pam/templates/manage_pam_locations.html:746
-msgid "Редагування запису"
-msgstr "Edit entry"
-
-#: app/camera_traps/templates/manage_locations.html:706
-#: app/pam/templates/manage_pam_locations.html:757
-msgid "Зберегти зміни"
-msgstr "Save changes"
-
-#: app/camera_traps/templates/manage_locations.html:764
-#: app/camera_traps/templates/service_log.html:346
-#: app/pam/templates/manage_pam_locations.html:818
-#: app/pam/templates/pam_import.html:609
-#: app/pam/templates/pam_service_log.html:317
-#: app/pam/templates/pam_verification_upload.html:248
-msgid "Невідома помилка"
-msgstr "Unknown error"
-
-#: app/camera_traps/templates/overview.html:16
-#: app/pam/templates/pam_home.html:16
-msgid "Аналітика"
-msgstr "Analytics"
-
-#: app/camera_traps/templates/overview.html:83
-#: app/camera_traps/templates/upload.html:143
-#: app/camera_traps/templates/upload_fast.html:252
-#: app/pam/templates/pam_verification_upload.html:66
-msgid "Завантаження"
-msgstr "Upload"
-
-#: app/camera_traps/templates/photo_viewer.html:38
-#: app/templates/admin/admin_institution_form.html:18
-#: app/templates/admin/admin_role_form.html:18
-#: app/templates/admin/admin_user_form.html:18
-msgid "ID:"
-msgstr "ID:"
-
-#: app/camera_traps/templates/service_log.html:33
-#: app/pam/templates/pam_service_log.html:35
-msgid "Додати новий запис"
-msgstr "Add new record"
-
-#: app/camera_traps/templates/service_log.html:34
-#: app/pam/templates/pam_service_log.html:36
-msgid "Виберіть локацію на карті, щоб почати."
-msgstr "Select a location on the map to start."
-
-#: app/camera_traps/templates/service_log.html:40
-#: app/pam/templates/pam_service_log.html:42
-msgid "Дата та час візиту"
-msgstr "Date and time of visit"
-
-#: app/camera_traps/templates/service_log.html:105
-#: app/pam/templates/pam_service_log.html:107
-msgid "Історія обслуговування"
-msgstr "Service history"
-
-#: app/camera_traps/templates/service_log.html:106
-#: app/pam/templates/pam_service_log.html:108
-msgid "Немає даних для відображення."
-msgstr "No data to show"
-
-#: app/camera_traps/templates/service_log.html:175
-#: app/camera_traps/templates/service_log.html:340
-#: app/pam/templates/pam_service_log.html:194
-msgid "Останній візит:"
-msgstr "Last visit:"
-
-#: app/camera_traps/templates/service_log.html:226
-#: app/pam/templates/pam_service_log.html:231
-msgid "Новий запис для:"
-msgstr "New record for:"
-
-#: app/camera_traps/templates/service_log.html:268
-#: app/pam/templates/pam_service_log.html:266
-msgid "Батарейки:"
-msgstr "Batteries:"
-
-#: app/camera_traps/templates/service_log.html:278
-#: app/pam/templates/pam_service_log.html:276
-msgid "Помилка завантаження історії."
-msgstr "Error loading history."
-
-#: app/camera_traps/templates/service_log.html:288
-#: app/pam/templates/pam_import.html:478
-#: app/pam/templates/pam_service_log.html:284
-msgid "Збереження..."
-msgstr "Saving..."
-
-#: app/camera_traps/templates/species_dashboard.html:56
-#: app/pam/templates/pam_species_dashboard.html:29
-#: app/pam/templates/pam_yearly_trends.html:29
-msgid "Початковий рік:"
-msgstr "Start year:"
-
-#: app/camera_traps/templates/species_dashboard.html:65
-#: app/pam/templates/pam_species_dashboard.html:37
-#: app/pam/templates/pam_yearly_trends.html:38
-msgid "Кінцевий рік:"
-msgstr "End year:"
-
-#: app/camera_traps/templates/species_dashboard.html:74
-#: app/pam/templates/pam_species_dashboard.html:51
-msgid "Побудувати графіки"
-msgstr "Generate Charts"
-
-#: app/camera_traps/templates/species_dashboard.html:83
-#: app/pam/templates/pam_species_dashboard.html:60
-msgid "Будь ласка, виберіть вид та натисніть \"Побудувати графіки\" для аналізу."
-msgstr "Please select a species and click \"Generate Charts\" to analyze."
-
-#: app/camera_traps/templates/species_dashboard.html:175
-#: app/pam/templates/pam_species_dashboard.html:165
-#: app/pam/templates/pam_yearly_trends.html:125
-msgid "Завантаження даних..."
-msgstr "Loading data..."
-
-#: app/camera_traps/templates/species_dashboard.html:191
-#: app/pam/templates/pam_species_dashboard.html:184
-msgid "Сезонна активність (кількість детекцій)"
-msgstr "Seasonal Activity (number of detections)"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Січ"
-msgstr "Jan"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Лют"
-msgstr "Feb"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Бер"
-msgstr "Mar"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Кві"
-msgstr "Apr"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Тра"
-msgstr "May"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Чер"
-msgstr "Jun"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Лип"
-msgstr "Jul"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Сер"
-msgstr "Aug"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Вер"
-msgstr "Sep"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Жов"
-msgstr "Oct"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Лис"
-msgstr "Nov"
-
-#: app/camera_traps/templates/species_dashboard.html:211
-#: app/pam/templates/pam_species_dashboard.html:209
-msgid "Гру"
-msgstr "Dec"
-
-#: app/camera_traps/templates/species_dashboard.html:214
-#: app/camera_traps/templates/species_detailed.html:113
-#: app/camera_traps/templates/species_detailed.html:288
-#: app/pam/templates/pam_species_dashboard.html:212
-#: app/pam/templates/pam_species_detailed.html:664
-msgid "Кількість детекцій"
-msgstr "Number of detections"
-
-#: app/camera_traps/templates/species_dashboard.html:236
-#: app/pam/templates/pam_species_dashboard.html:225
-#: app/pam/templates/pam_yearly_trends.html:164
-#, python-format
-msgid "95%% Довірчий інтервал"
-msgstr "95% Confidence interval"
-
-#: app/camera_traps/templates/species_detailed.html:209
-#: app/pam/templates/pam_overview.html:393
-#: app/pam/templates/pam_species_detailed.html:471
-msgid "Детекцій:"
-msgstr "Detections:"
-
-#: app/camera_traps/templates/upload.html:112
-#: app/camera_traps/templates/upload_fast.html:151
-#: app/pam/templates/pam_import.html:139 app/pam/templates/pam_import.html:147
-msgid "Файли"
-msgstr "Files"
-
-#: app/camera_traps/templates/upload.html:119
-#: app/camera_traps/templates/upload_fast.html:158
-#: app/pam/templates/pam_import.html:154
-msgid "Папка"
-msgstr "Folder"
-
-#: app/camera_traps/templates/upload.html:126
-#: app/camera_traps/templates/upload.html:493
-#: app/camera_traps/templates/upload_fast.html:165
-#: app/camera_traps/templates/upload_fast.html:528
-#: app/camera_traps/templates/upload_fast.html:531
-#: app/camera_traps/templates/upload_fast.html:706
-#: app/pam/templates/pam_import.html:160 app/pam/templates/pam_import.html:533
-#: app/pam/templates/pam_import.html:543
-msgid "файлів"
-msgstr "files"
-
-#: app/camera_traps/templates/upload.html:127
-#: app/camera_traps/templates/upload_fast.html:166
-#: app/pam/templates/pam_import.html:162
-msgid "Очистити"
-msgstr "Clear"
-
-#: app/camera_traps/templates/upload.html:147
-#: app/camera_traps/templates/upload.html:534
-#: app/camera_traps/templates/upload_fast.html:254
-#: app/camera_traps/templates/upload_fast.html:760
-#: app/pam/templates/pam_verification_upload.html:70
-#: app/pam/templates/pam_verification_upload.html:258
-msgid "Завантажити та обробити"
-msgstr "Upload and Process"
-
-#: app/camera_traps/templates/upload_fast.html:810
-#: app/pam/templates/pam_import.html:624
-msgid "Готово!"
-msgstr "Done!"
-
-#: app/pam/templates/pam_evaluation_results.html:163
-#: app/sdm/templates/sdm/map.html:54
-msgid "Оновити"
-msgstr "Update"
-
-#: app/pam/templates/pam_import.html:213 app/templates/profile.html:139
-#: app/templates/profile.html:167
-msgid "Унікальних видів"
-msgstr "Unique species"
-
-#: app/pam/templates/pam_verification_segments.html:34
-#: app/pam/templates/pam_verification_segments.html:72
-#: app/pam/templates/pam_verification_segments.html:353
-#: app/sdm/templates/sdm/dashboard.html:103
-#: app/sdm/templates/sdm/dashboard.html:134
-msgid "Завершено"
-msgstr "Completed"
 
 #: app/routes/main.py:73
 msgid "Неправильний логін або пароль. Спробуйте ще раз."
@@ -1385,6 +250,10 @@ msgstr "Series processed"
 msgid "Усього визначень"
 msgstr "Total identifications"
 
+#: app/templates/profile.html:139 app/templates/profile.html:167
+msgid "Унікальних видів"
+msgstr "Unique species"
+
 #: app/templates/profile.html:143
 msgid "Топ види (за серіями)"
 msgstr "Top species (by series)"
@@ -1404,6 +273,16 @@ msgstr "Verifications"
 #: app/templates/profile.html:163
 msgid "Підтверджень"
 msgstr "Positive"
+
+#: app/templates/admin/admin_home.html:7
+#: app/templates/admin/admin_institution_form.html:7
+#: app/templates/admin/admin_institutions_list.html:7
+#: app/templates/admin/admin_role_form.html:7
+#: app/templates/admin/admin_roles_list.html:7
+#: app/templates/admin/admin_user_form.html:7
+#: app/templates/admin/admin_users_list.html:7
+msgid "Адмін-панель"
+msgstr "Admin panel"
 
 #: app/templates/admin/admin_home.html:10
 msgid "Панель керування"
@@ -1425,6 +304,13 @@ msgstr "Manage user accounts, change passwords and configure access rights."
 msgid "Переглянути"
 msgstr "View"
 
+#: app/templates/admin/admin_home.html:31
+#: app/templates/admin/admin_institution_form.html:8
+#: app/templates/admin/admin_institutions_list.html:8
+#: app/templates/admin/admin_users_list.html:86
+msgid "Установи"
+msgstr "Institutions"
+
 #: app/templates/admin/admin_home.html:33
 msgid "Додавання нових організацій та редагування їх ідентифікаційних кодів."
 msgstr "Add new organisations and edit their identification codes."
@@ -1439,6 +325,12 @@ msgstr "Roles"
 #: app/templates/admin/admin_home.html:46
 msgid "Глобальне налаштування системних ролей та їх видимості для менеджерів."
 msgstr "Global configuration of system roles and their visibility for managers."
+
+#: app/templates/admin/admin_institution_form.html:18
+#: app/templates/admin/admin_role_form.html:18
+#: app/templates/admin/admin_user_form.html:18
+msgid "ID:"
+msgstr "ID:"
 
 #: app/templates/admin/admin_institution_form.html:28
 msgid "Основна інформація"
@@ -1463,6 +355,12 @@ msgid ""
 msgstr ""
 "Used for system reference (e.g.: roztochya, fzs). Must be unique, Latin "
 "characters only, no spaces."
+
+#: app/templates/admin/admin_institution_form.html:62
+#: app/templates/admin/admin_role_form.html:71
+#: app/templates/admin/admin_user_form.html:197
+msgid "Скасувати"
+msgstr "Cancel"
 
 #: app/templates/admin/admin_institution_form.html:65
 #: app/templates/admin/admin_role_form.html:74
@@ -1505,6 +403,14 @@ msgid ""
 msgstr ""
 "Warning: This will remove it from user profiles. Data in the PAM module "
 "will not be affected."
+
+#: app/templates/admin/admin_institutions_list.html:49
+#: app/templates/admin/admin_roles_list.html:61
+#: app/templates/admin/admin_roles_list.html:66
+#: app/templates/admin/admin_users_list.html:124
+#: app/templates/admin/admin_users_list.html:129
+msgid "Видалити"
+msgstr "Delete"
 
 #: app/templates/admin/admin_institutions_list.html:57
 msgid "Установ не знайдено."
@@ -1627,6 +533,11 @@ msgstr ""
 "Select institutions and configure access rights. \"Access\" — can view "
 "and identify; \"Export\" — can download data."
 
+#: app/templates/admin/admin_user_form.html:91
+#: app/templates/admin/admin_users_list.html:49
+msgid "Установа"
+msgstr "Institution"
+
 #: app/templates/admin/admin_user_form.html:92
 msgid "Доступ"
 msgstr "Access"
@@ -1676,6 +587,10 @@ msgstr "all"
 msgid "Роль"
 msgstr "Role"
 
+#: app/templates/admin/admin_users_list.html:70
+msgid "Скинути"
+msgstr "Reset"
+
 #: app/templates/admin/admin_users_list.html:75
 msgid "Показано:"
 msgstr "Shown:"
@@ -1723,6 +638,10 @@ msgstr "Subject"
 #: app/utils/forms.py:20
 msgid "Повідомлення"
 msgstr "Message"
+
+#: app/utils/forms.py:22
+msgid "Надіслати"
+msgstr "Send"
 
 #: app/utils/forms.py:27
 msgid "Поточний пароль"
@@ -1852,3 +771,495 @@ msgstr "Change username"
 
 #~ msgid "Частково"
 #~ msgstr "Partial"
+
+#~ msgid "Помилка завантаження статистики."
+#~ msgstr "Error loading statistics."
+
+#~ msgid "-- Будь ласка, виберіть --"
+#~ msgstr "-- Please select --"
+
+#~ msgid "-- Всі види --"
+#~ msgstr "-- All species --"
+
+#~ msgid "Вкажіть назву локації."
+#~ msgstr "Enter the location name."
+
+#~ msgid "Немає даних про обслуговування"
+#~ msgstr "No maintenance data"
+
+#~ msgid "Статус"
+#~ msgstr "Status"
+
+#~ msgid "год"
+#~ msgstr "h"
+
+#~ msgid "Закрити"
+#~ msgstr "Close"
+
+#~ msgid "Помилка"
+#~ msgstr "Error"
+
+#~ msgid "Вид"
+#~ msgstr "Species"
+
+#~ msgid "Помилка завантаження даних."
+#~ msgstr "Data loading error."
+
+#~ msgid "Завантаження..."
+#~ msgstr "Loading..."
+
+#~ msgid "Застосувати"
+#~ msgstr "Apply"
+
+#~ msgid "Рік"
+#~ msgstr "Year"
+
+#~ msgid "До розділів"
+#~ msgstr "Back to sections"
+
+#~ msgid "Експорт даних"
+#~ msgstr "Export data"
+
+#~ msgid "Клас:"
+#~ msgstr "Class:"
+
+#~ msgid "Ряд:"
+#~ msgstr "Order:"
+
+#~ msgid "Родина:"
+#~ msgstr "Family:"
+
+#~ msgid "Рід:"
+#~ msgstr "Genus:"
+
+#~ msgid "Види (оберіть один або декілька):"
+#~ msgstr "Species (select one or more):"
+
+#~ msgid "Дата початку:"
+#~ msgstr "Start date:"
+
+#~ msgid "Дата завершення:"
+#~ msgstr "End date:"
+
+#~ msgid "Рівень агрегації:"
+#~ msgstr "Aggregation level:"
+
+#~ msgid "За замовчуванням: RSNR"
+#~ msgstr "By default: RSNR"
+
+#~ msgid "Підготувати дані"
+#~ msgstr "Prepare data"
+
+#~ msgid "Скинути фільтри"
+#~ msgstr "Reset filters"
+
+#~ msgid "Завантажити повний CSV-файл"
+#~ msgstr "Download full CSV file"
+
+#~ msgid "Всі класи"
+#~ msgstr "All classes"
+
+#~ msgid "Всі ряди"
+#~ msgstr "All orders"
+
+#~ msgid "Всі родини"
+#~ msgstr "All families"
+
+#~ msgid "Всі роди"
+#~ msgstr "All genera"
+
+#~ msgid "Всі види"
+#~ msgstr "All species"
+
+#~ msgid "Будь ласка, оберіть хоча б один таксон."
+#~ msgstr "Please select at least one taxon."
+
+#~ msgid "Дані за вибраними критеріями не знайдено."
+#~ msgstr "No data found for the selected criteria."
+
+#~ msgid "Помилка завантаження даних:"
+#~ msgstr "Data loading error."
+
+#~ msgid "Календар покриття"
+#~ msgstr "Coverage calendar"
+
+#~ msgid "До локацій"
+#~ msgstr "Back to locations"
+
+#~ msgid "Усі роки"
+#~ msgstr "All years"
+
+#~ msgid "Зведено за рік"
+#~ msgstr "Aggregated by year"
+
+#~ msgid "Діапазон"
+#~ msgstr "Range"
+
+#~ msgid "менше"
+#~ msgstr "less"
+
+#~ msgid "Пн"
+#~ msgstr "Mon"
+
+#~ msgid "Вт"
+#~ msgstr "Tue"
+
+#~ msgid "Ср"
+#~ msgstr "Wed"
+
+#~ msgid "Чт"
+#~ msgstr "Thu"
+
+#~ msgid "Пт"
+#~ msgstr "Fri"
+
+#~ msgid "Сб"
+#~ msgstr "Sat"
+
+#~ msgid "Нд"
+#~ msgstr "Sun"
+
+#~ msgid "р."
+#~ msgstr "yr"
+
+#~ msgid "Всі доступні мені"
+#~ msgstr "All available for me"
+
+#~ msgid "Загальна статистика"
+#~ msgstr "General statistics"
+
+#~ msgid "Локацій"
+#~ msgstr "Locations"
+
+#~ msgid "Видів"
+#~ msgstr "Species"
+
+#~ msgid "Карта локацій"
+#~ msgstr "Map of locations"
+
+#~ msgid "-- Всі біотопи --"
+#~ msgstr "-- All habitats --"
+
+#~ msgid "OSM"
+#~ msgstr "OSM"
+
+#~ msgid "Супутник"
+#~ msgstr "Satellite"
+
+#~ msgid "з"
+#~ msgstr "of"
+
+#~ msgid "Виберіть вид:"
+#~ msgstr "Select species:"
+
+#~ msgid "Управління"
+#~ msgstr "Management"
+
+#~ msgid "-- Пошук та вибір виду --"
+#~ msgstr "-- Search and select a species --"
+
+#~ msgid "Будь ласка, виберіть вид."
+#~ msgstr "Please select a species."
+
+#~ msgid "Локація:"
+#~ msgstr "Location:"
+
+#~ msgid "Вид:"
+#~ msgstr "Species:"
+
+#~ msgid "Статус:"
+#~ msgstr "Status:"
+
+#~ msgid "Всі доступні"
+#~ msgstr "All available"
+
+#~ msgid "Пропустити"
+#~ msgstr "Skip"
+
+#~ msgid "Локація"
+#~ msgstr "Location"
+
+#~ msgid "Помилка збереження:"
+#~ msgstr "Save error:"
+
+#~ msgid "Установа:"
+#~ msgstr "Institution:"
+
+#~ msgid "Зберегти"
+#~ msgstr "Save"
+
+#~ msgid "Помилка завантаження."
+#~ msgstr "Loading error."
+
+#~ msgid "Редагування:"
+#~ msgstr "Editing:"
+
+#~ msgid "Нова локація"
+#~ msgstr "New location"
+
+#~ msgid "Показати стан заповненості даних"
+#~ msgstr "Show data completeness status"
+
+#~ msgid "Дані"
+#~ msgstr "Data"
+
+#~ msgid "Показати статус обслуговування"
+#~ msgstr "Show service status"
+
+#~ msgid "Сервіс"
+#~ msgstr "Service"
+
+#~ msgid "Повна"
+#~ msgstr "Complete"
+
+#~ msgid "Без біотопу"
+#~ msgstr "No habitat"
+
+#~ msgid "OK"
+#~ msgstr "OK"
+
+#~ msgid "Увага"
+#~ msgstr "Warning"
+
+#~ msgid "Критично"
+#~ msgstr "Critical"
+
+#~ msgid "Невідомо"
+#~ msgstr "Unknown"
+
+#~ msgid "Виберіть локацію зі списку або на карті."
+#~ msgstr "Select a location from the list or on the map."
+
+#~ msgid "Широта"
+#~ msgstr "Latitude"
+
+#~ msgid "Довгота"
+#~ msgstr "Longitude"
+
+#~ msgid "Клацніть на карті або введіть координати вручну."
+#~ msgstr "Click on the map or enter coordinates manually."
+
+#~ msgid "Біотопи"
+#~ msgstr "Habitats"
+
+#~ msgid "Новий запис"
+#~ msgstr "New entry"
+
+#~ msgid "Виберіть локацію, щоб додати запис."
+#~ msgstr "Select a location to add an entry."
+
+#~ msgid "Дата і час"
+#~ msgstr "Date and time"
+
+#~ msgid "Результат візиту"
+#~ msgstr "Visit results"
+
+#~ msgid "-- Виберіть --"
+#~ msgstr "-- Select --"
+
+#~ msgid "Заміна елементів живлення"
+#~ msgstr "Battery replacement"
+
+#~ msgid "-- Без заміни --"
+#~ msgstr "-- Without replacement --"
+
+#~ msgid "Так"
+#~ msgstr "Yes"
+
+#~ msgid "Ні"
+#~ msgstr "No"
+
+#~ msgid "?"
+#~ msgstr "?"
+
+#~ msgid "Коментарі"
+#~ msgstr "Comments"
+
+#~ msgid "Зберегти запис"
+#~ msgstr "Save record"
+
+#~ msgid "Історія"
+#~ msgstr "History"
+
+#~ msgid "Немає даних."
+#~ msgstr "No data."
+
+#~ msgid "Виберіть біотопи..."
+#~ msgstr "Select habitats"
+
+#~ msgid "Виберіть установи..."
+#~ msgstr "Select institutions..."
+
+#~ msgid "Національні природні парки"
+#~ msgstr "National nature parks"
+
+#~ msgid "Біосферні заповідники"
+#~ msgstr "Biosphere reserves"
+
+#~ msgid "Регіональні ландшафтні парки"
+#~ msgstr "Regional landscape parks"
+
+#~ msgid "Заказники"
+#~ msgstr "Nature reserves"
+
+#~ msgid "Природні заповідники"
+#~ msgstr "Strict nature reserves"
+
+#~ msgid "Пам'ятки природи"
+#~ msgstr "Natural monuments"
+
+#~ msgid "Заповідні урочища"
+#~ msgstr "Nature sanctuaries"
+
+#~ msgid "Території ПЗФ"
+#~ msgstr "Protected areas"
+
+#~ msgid "Створити"
+#~ msgstr "Create"
+
+#~ msgid "Вкажіть координати: клацніть на карті або введіть вручну."
+#~ msgstr "Enter coordinates: click on the map or type manually."
+
+#~ msgid "Помилка:"
+#~ msgstr "Error:"
+
+#~ msgid "Бат.:"
+#~ msgstr "Bat.:"
+
+#~ msgid "SD:"
+#~ msgstr "SD:"
+
+#~ msgid "Редагування запису"
+#~ msgstr "Edit entry"
+
+#~ msgid "Зберегти зміни"
+#~ msgstr "Save changes"
+
+#~ msgid "Невідома помилка"
+#~ msgstr "Unknown error"
+
+#~ msgid "Аналітика"
+#~ msgstr "Analytics"
+
+#~ msgid "Завантаження"
+#~ msgstr "Upload"
+
+#~ msgid "Додати новий запис"
+#~ msgstr "Add new record"
+
+#~ msgid "Виберіть локацію на карті, щоб почати."
+#~ msgstr "Select a location on the map to start."
+
+#~ msgid "Дата та час візиту"
+#~ msgstr "Date and time of visit"
+
+#~ msgid "Історія обслуговування"
+#~ msgstr "Service history"
+
+#~ msgid "Немає даних для відображення."
+#~ msgstr "No data to show"
+
+#~ msgid "Останній візит:"
+#~ msgstr "Last visit:"
+
+#~ msgid "Новий запис для:"
+#~ msgstr "New record for:"
+
+#~ msgid "Батарейки:"
+#~ msgstr "Batteries:"
+
+#~ msgid "Помилка завантаження історії."
+#~ msgstr "Error loading history."
+
+#~ msgid "Збереження..."
+#~ msgstr "Saving..."
+
+#~ msgid "Початковий рік:"
+#~ msgstr "Start year:"
+
+#~ msgid "Кінцевий рік:"
+#~ msgstr "End year:"
+
+#~ msgid "Побудувати графіки"
+#~ msgstr "Generate Charts"
+
+#~ msgid ""
+#~ "Будь ласка, виберіть вид та натисніть"
+#~ " \"Побудувати графіки\" для аналізу."
+#~ msgstr "Please select a species and click \"Generate Charts\" to analyze."
+
+#~ msgid "Завантаження даних..."
+#~ msgstr "Loading data..."
+
+#~ msgid "Сезонна активність (кількість детекцій)"
+#~ msgstr "Seasonal Activity (number of detections)"
+
+#~ msgid "Січ"
+#~ msgstr "Jan"
+
+#~ msgid "Лют"
+#~ msgstr "Feb"
+
+#~ msgid "Бер"
+#~ msgstr "Mar"
+
+#~ msgid "Кві"
+#~ msgstr "Apr"
+
+#~ msgid "Тра"
+#~ msgstr "May"
+
+#~ msgid "Чер"
+#~ msgstr "Jun"
+
+#~ msgid "Лип"
+#~ msgstr "Jul"
+
+#~ msgid "Сер"
+#~ msgstr "Aug"
+
+#~ msgid "Вер"
+#~ msgstr "Sep"
+
+#~ msgid "Жов"
+#~ msgstr "Oct"
+
+#~ msgid "Лис"
+#~ msgstr "Nov"
+
+#~ msgid "Гру"
+#~ msgstr "Dec"
+
+#~ msgid "Кількість детекцій"
+#~ msgstr "Number of detections"
+
+#~ msgid "95%% Довірчий інтервал"
+#~ msgstr "95% Confidence interval"
+
+#~ msgid "Детекцій:"
+#~ msgstr "Detections:"
+
+#~ msgid "Файли"
+#~ msgstr "Files"
+
+#~ msgid "Папка"
+#~ msgstr "Folder"
+
+#~ msgid "файлів"
+#~ msgstr "files"
+
+#~ msgid "Очистити"
+#~ msgstr "Clear"
+
+#~ msgid "Завантажити та обробити"
+#~ msgstr "Upload and Process"
+
+#~ msgid "Готово!"
+#~ msgstr "Done!"
+
+#~ msgid "Оновити"
+#~ msgstr "Update"
+
+#~ msgid "Завершено"
+#~ msgstr "Completed"
+
