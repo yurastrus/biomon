@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container" style="margin-top: 20px; margin-bottom: 50px;">
-    
+
     <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
         <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a>
         &raquo; <a href="{{ url_for('admin.user_list', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Користувачі') }}</a>
@@ -10,7 +10,7 @@
     </div>
 
     <div class="dashboard-section" style="padding: 30px;">
-        
+
         <h2 class="section-title" style="text-align: left; border-bottom: none; margin-bottom: 30px;">
             {{ title }}
             {% if user %}
@@ -19,7 +19,7 @@
                 </span>
             {% endif %}
         </h2>
-        
+
         <form method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
@@ -27,11 +27,11 @@
 
                 <div class="stat-card" style="text-align: left;">
                     <h5 style="color: #0779e4; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _('Облікові дані') }}</h5>
-                    
+
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _('Логін (Username)') }} <span style="color:red;">*</span></label>
                         <input type="text" name="username" class="site-input"
-                               value="{{ form.username.data or (user.username if user else "") }}"
+                               value="{{ form.username.data or (user.username if user else '') }}"
                                required maxlength="20">
                     </div>
 
@@ -39,7 +39,23 @@
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">
                             {{ _('Пароль') }} {% if not user %}<span style="color:red;">*</span>{% endif %}
                         </label>
-                        <input type="password" name="password" class="site-input" {{ 'required' if not user else '' }}>
+                        <div style="position: relative;">
+                            <input type="password" name="password" id="password-input" class="site-input"
+                                   style="padding-right: 40px;"
+                                   {{ 'required' if not user else '' }}>
+                            <button type="button" id="pw-toggle"
+                                    title="{{ _('Показати/сховати пароль') }}"
+                                    style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#888;line-height:1;">
+                                <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg id="eye-closed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
                         {% if user %}
                             <small style="color: #666; display: block; margin-top: 4px;">{{ _('Лишіть порожнім, щоб не змінювати') }}</small>
                         {% endif %}
@@ -48,29 +64,29 @@
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _('Email') }}</label>
                         <input type="email" name="email" class="site-input"
-                               value="{{ form.email.data or (user.email or "" if user else "") }}">
+                               value="{{ form.email.data or (user.email or '' if user else '') }}">
                     </div>
 
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _('Телефон') }}</label>
                         <input type="text" name="phone" class="site-input"
-                               value="{{ form.phone.data or (user.phone or "" if user else "") }}">
+                               value="{{ form.phone.data or (user.phone or '' if user else '') }}">
                     </div>
                 </div>
 
                 <div class="stat-card" style="text-align: left;">
                     <h5 style="color: #0779e4; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _('Персональна інформація') }}</h5>
-                    
+
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _("Ім’я") }}</label>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _("Ім'я") }}</label>
                         <input type="text" name="first_name" class="site-input"
-                               value="{{ form.first_name.data or (user.first_name or "" if user else "") }}">
+                               value="{{ form.first_name.data or (user.first_name or '' if user else '') }}">
                     </div>
 
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">{{ _("Прізвище") }}</label>
                         <input type="text" name="last_name" class="site-input"
-                               value="{{ form.last_name.data or (user.last_name or "" if user else "") }}">
+                               value="{{ form.last_name.data or (user.last_name or '' if user else '') }}">
                     </div>
 
                     <div class="info-message" style="margin-top: 20px; text-align: left; padding: 15px;">
@@ -79,7 +95,7 @@
                 </div>
 
                 <div class="stat-card" style="text-align: left; grid-column: 1 / -1;">
-                    <h5 style="color: #28a745; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _("Прив’язка до установ") }}</h5>
+                    <h5 style="color: #28a745; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _("Прив'язка до установ") }}</h5>
                     <small style="color: #666; display: block; margin-bottom: 12px;">
                         {{ _("Відмітьте установи та налаштуйте права доступу. «Доступ» — може переглядати та ідентифікувати; «Експорт» — може завантажувати дані.") }}
                     </small>
@@ -94,29 +110,47 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for inst in institutions %}
-                                {% set is_assigned = user and inst in user.institutions %}
-                                {% set can_exp = inst.id in export_institution_ids %}
-                                <tr style="border-bottom: 1px solid #f0f0f0;">
-                                    <td style="padding: 9px 14px;">{{ inst.name_uk }}</td>
-                                    <td style="text-align: center; padding: 9px 14px;">
-                                        <input type="checkbox" name="institutions" value="{{ inst.id }}"
-                                               id="inst_{{ inst.id }}"
-                                               {% if is_assigned %}checked{% endif %}
-                                               onchange="syncExport(this)">
-                                    </td>
-                                    <td style="text-align: center; padding: 9px 14px;">
-                                        <input type="checkbox" name="can_export" value="{{ inst.id }}"
-                                               id="export_{{ inst.id }}"
-                                               {% if can_exp %}checked{% endif %}
-                                               {% if not is_assigned %}disabled{% endif %}>
-                                    </td>
-                                </tr>
+                                {% if inst_groups %}
+                                    {% for group in inst_groups %}
+                                    {# Ecoregion header row with select-all checkbox #}
+                                    <tr style="background: #eef4fb; border-bottom: 1px solid #d0dce8;">
+                                        <td colspan="3" style="padding: 7px 14px;">
+                                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; font-weight: 600; color: #2c5f8a;">
+                                                <input type="checkbox" class="eco-select-all"
+                                                       data-eco="{{ group.eco_key or '' }}"
+                                                       style="transform: scale(1.1); cursor: pointer;">
+                                                {{ group.eco_name }}
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    {# Institution rows #}
+                                    {% for inst in group.institutions %}
+                                    {% set is_assigned = inst.id|string in selected_inst_ids %}
+                                    {% set can_exp = inst.id|string in selected_export_ids %}
+                                    <tr style="border-bottom: 1px solid #f0f0f0;" data-eco="{{ group.eco_key or '' }}">
+                                        <td style="padding: 9px 14px 9px 32px;">
+                                            {{ inst.name_uk if g.lang_code != 'en' else (inst.name_en or inst.name_uk) }}
+                                        </td>
+                                        <td style="text-align: center; padding: 9px 14px;">
+                                            <input type="checkbox" name="institutions" value="{{ inst.id }}"
+                                                   id="inst_{{ inst.id }}"
+                                                   {% if is_assigned %}checked{% endif %}
+                                                   onchange="onInstChange(this)">
+                                        </td>
+                                        <td style="text-align: center; padding: 9px 14px;">
+                                            <input type="checkbox" name="can_export" value="{{ inst.id }}"
+                                                   id="export_{{ inst.id }}"
+                                                   {% if can_exp %}checked{% endif %}
+                                                   {% if not is_assigned %}disabled{% endif %}>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endfor %}
                                 {% else %}
                                 <tr>
                                     <td colspan="3" style="padding: 14px; color: #999; text-align: center;">{{ _("Немає доступних установ.") }}</td>
                                 </tr>
-                                {% endfor %}
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -155,12 +189,63 @@
                         }
                     }
 
+                    function updateEcoCheckbox(ecoKey) {
+                        var ecoSelector = document.querySelector('.eco-select-all[data-eco="' + ecoKey + '"]');
+                        if (!ecoSelector) return;
+                        var rows = document.querySelectorAll('tr[data-eco="' + ecoKey + '"]');
+                        var total = 0, checked = 0;
+                        rows.forEach(function(row) {
+                            var cb = row.querySelector('input[name="institutions"]');
+                            if (cb) { total++; if (cb.checked) checked++; }
+                        });
+                        if (total === 0) return;
+                        if (checked === total) {
+                            ecoSelector.checked = true;
+                            ecoSelector.indeterminate = false;
+                        } else if (checked === 0) {
+                            ecoSelector.checked = false;
+                            ecoSelector.indeterminate = false;
+                        } else {
+                            ecoSelector.checked = false;
+                            ecoSelector.indeterminate = true;
+                        }
+                    }
+
+                    function onInstChange(checkbox) {
+                        syncExport(checkbox);
+                        var ecoKey = checkbox.closest('tr').getAttribute('data-eco') || '';
+                        updateEcoCheckbox(ecoKey);
+                    }
+
                     document.addEventListener("DOMContentLoaded", function() {
+                        // Wire up role checkboxes to export state
                         var roles = document.getElementsByName("roles");
                         for (var i = 0; i < roles.length; i++) {
                             roles[i].addEventListener("change", updateAllExportCheckboxes);
                         }
                         updateAllExportCheckboxes();
+
+                        // Eco select-all: toggle every institution in the group
+                        document.querySelectorAll('.eco-select-all').forEach(function(ecoCb) {
+                            ecoCb.addEventListener('change', function() {
+                                var ecoKey = this.getAttribute('data-eco');
+                                var rows = document.querySelectorAll('tr[data-eco="' + ecoKey + '"]');
+                                rows.forEach(function(row) {
+                                    var accessCb = row.querySelector('input[name="institutions"]');
+                                    if (accessCb) {
+                                        accessCb.checked = ecoCb.checked;
+                                        syncExport(accessCb);
+                                    }
+                                });
+                                // Ensure the header checkbox is not indeterminate after explicit click
+                                ecoCb.indeterminate = false;
+                            });
+                        });
+
+                        // Set initial indeterminate state for ecoregion header checkboxes
+                        document.querySelectorAll('.eco-select-all').forEach(function(ecoCb) {
+                            updateEcoCheckbox(ecoCb.getAttribute('data-eco') || '');
+                        });
                     });
                     </script>
                 </div>
@@ -168,16 +253,16 @@
                 <div class="stat-card" style="text-align: left;">
                     <h5 style="color: #dc3545; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _('Призначення ролей') }}</h5>
                     <small style="color: #666; display: block; margin-bottom: 10px;">{{ _('Визначте рівень доступу') }}</small>
-                    
+
                     <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; padding: 10px; background: white;">
                         {% for role in roles %}
                             <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; padding: 4px;">
                                 <input type="checkbox" name="roles" value="{{ role.id }}"
                                        data-role-name="{{ role.name }}"
-                                       {% if user and role in user.roles %}checked{% endif %}
+                                       {% if role.id|string in selected_role_ids %}checked{% endif %}
                                        style="margin-right: 10px; transform: scale(1.1);">
                                 <span style="flex-grow: 1;">{{ role.name }}</span>
-                                
+
                                 {% if role.name == 'admin' %}
                                     <span class="badge badge-success" style="background-color: #dc3545;">Full</span>
                                 {% elif role.name == 'manager' %}
@@ -204,11 +289,21 @@
     </div>
 </div>
 
+<script>
+document.getElementById('pw-toggle').addEventListener('click', function() {
+    var input = document.getElementById('password-input');
+    var isText = input.type === 'text';
+    input.type = isText ? 'password' : 'text';
+    document.getElementById('eye-open').style.display  = isText ? '' : 'none';
+    document.getElementById('eye-closed').style.display = isText ? 'none' : '';
+});
+</script>
+
 <style>
     .site-input {
-        width: 100%; 
-        padding: 8px 12px; 
-        border: 1px solid #ccc; 
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
         border-radius: 4px;
         box-sizing: border-box;
         font-size: 14px;
@@ -218,7 +313,6 @@
         border-color: #0779e4;
         outline: none;
     }
-    /* Highlight selected options in multi-select */
     .site-input[multiple] option:checked {
         background-color: #0779e4 linear-gradient(0deg, #0779e4 0%, #0779e4 100%);
         color: white;

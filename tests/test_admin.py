@@ -698,5 +698,161 @@ class TestRoleService(AdminTestBase):
         self.assertFalse(RoleService.is_system_role(self.role_viewer))
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# ТЕСТИ ЗБЕРЕЖЕННЯ ФОРМИ ПРИ ПОМИЛЦІ ВАЛІДАЦІЇ (п.1)
+# ════════════════════════════════════════════════════════════════════════════
+
+class TestAddUserFormRerender(AdminTestBase):
+    """Re-render /add зберігає установи та ролі при помилці пароля.
+
+    Пароль вмисно невалідний (лише цифри, без літер) — форма має
+    повернутися з тим самим username, відміченими установами та ролями,
+    але поле пароля порожнє.
+    """
+
+    def _add_url(self):
+        return '/uk/admin/users/add'
+
+    def _post_bad_password(self, extra=None):
+        data = {
+            'username': 'rerender_user',
+            'password': '12345678',  # відхиляється: немає літер
+        }
+        if extra:
+            data.update(extra)
+        _login(self.client, self.admin.id)
+        return self.client.post(self._add_url(), data=data, follow_redirects=False)
+
+    def test_rerenders_on_bad_password(self):
+        resp = self._post_bad_password()
+        # Залишається на тій самій сторінці (200, не redirect)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_username_preserved_on_bad_password(self):
+        resp = self._post_bad_password()
+        self.assertIn(b'rerender_user', resp.data)
+
+    def test_institution_checkbox_preserved_on_bad_password(self):
+        resp = self._post_bad_password({'institutions': [str(self.inst_a.id)]})
+        # Чекбокс доступу до inst_a має бути відмічений
+        expected = f'name="institutions" value="{self.inst_a.id}"'.encode()
+        self.assertIn(expected, resp.data)
+        # Перевіряємо, що атрибут checked присутній у рядку відповідного чекбоксу
+        import re
+        pattern = (
+            rb'<input type="checkbox" name="institutions" value="' +
+            str(self.inst_a.id).encode() +
+            rb'"[^>]*checked'
+        )
+        self.assertRegex(resp.data, pattern)
+
+    def test_role_checkbox_preserved_on_bad_password(self):
+        resp = self._post_bad_password({'roles': [str(self.role_viewer.id)]})
+        import re
+        pattern = (
+            rb'<input type="checkbox" name="roles" value="' +
+            str(self.role_viewer.id).encode() +
+            rb'"[^>]*checked'
+        )
+        self.assertRegex(resp.data, pattern)
+
+    def test_password_field_empty_on_rerender(self):
+        resp = self._post_bad_password()
+        # PasswordField не рендерить value= у HTML — поле завжди порожнє
+        self.assertNotIn(b'value="12345678"', resp.data)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# ТЕСТИ ГРУПУВАННЯ ПО ЕКОРЕГІОНАХ (п.4)
+# ════════════════════════════════════════════════════════════════════════════
+
+class TestAddUserEcoregionGrouping(AdminTestBase):
+    """Форма /add відображає установи згрупованими по екорегіонах."""
+
+    def setUp(self):
+        super().setUp()
+        from app.extensions import db
+        from app.models import Institution
+        # Додаємо установи з екорегіонами
+        self.eco1_inst1 = Institution(
+            name_uk='Установа 1 (Карпати)',
+            name_en='Institute 1 (Carpathians)',
+            code='eco1_i1',
+            ecoregion_uk='Карпатський',
+            ecoregion_en='Carpathian',
+        )
+        self.eco1_inst2 = Institution(
+            name_uk='Установа 2 (Карпати)',
+            name_en='Institute 2 (Carpathians)',
+            code='eco1_i2',
+            ecoregion_uk='Карпатський',
+            ecoregion_en='Carpathian',
+        )
+        self.eco2_inst = Institution(
+            name_uk='Установа Поліська',
+            name_en='Polissia Institute',
+            code='eco2_i1',
+            ecoregion_uk='Поліський',
+            ecoregion_en='Polissia',
+        )
+        db.session.add_all([self.eco1_inst1, self.eco1_inst2, self.eco2_inst])
+        db.session.commit()
+
+    def test_ecoregion_header_present_in_html(self):
+        _login(self.client, self.admin.id)
+        resp = self.client.get('/uk/admin/users/add')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('Карпатський'.encode('utf-8'), resp.data)
+        self.assertIn('Поліський'.encode('utf-8'), resp.data)
+
+    def test_eco_select_all_checkbox_present(self):
+        _login(self.client, self.admin.id)
+        resp = self.client.get('/uk/admin/users/add')
+        self.assertIn(b'eco-select-all', resp.data)
+
+    def test_data_eco_attribute_on_inst_rows(self):
+        _login(self.client, self.admin.id)
+        resp = self.client.get('/uk/admin/users/add')
+        self.assertIn(b'data-eco="\xd0\x9a\xd0\xb0\xd1\x80\xd0\xbf\xd0\xb0\xd1\x82\xd1\x81\xd1\x8c\xd0\xba\xd0\xb8\xd0\xb9"', resp.data)
+
+    def test_build_inst_groups_helper(self):
+        """_build_inst_groups grouping logic — unit-level."""
+        from app.admin.routes import _build_inst_groups
+        from app.models import Institution
+        insts = [self.eco1_inst1, self.eco1_inst2, self.eco2_inst]
+        groups = _build_inst_groups(insts, 'uk')
+        self.assertEqual(len(groups), 2)
+        group_keys = [g['eco_key'] for g in groups]
+        self.assertIn('Карпатський', group_keys)
+        self.assertIn('Поліський', group_keys)
+        # Карпатська група має дві установи
+        carpathian = next(g for g in groups if g['eco_key'] == 'Карпатський')
+        self.assertEqual(len(carpathian['institutions']), 2)
+
+    def test_build_inst_groups_en_localization(self):
+        from app.admin.routes import _build_inst_groups
+        insts = [self.eco1_inst1, self.eco2_inst]
+        groups = _build_inst_groups(insts, 'en')
+        names = {g['eco_name'] for g in groups}
+        self.assertIn('Carpathian', names)
+        self.assertIn('Polissia', names)
+
+    def test_build_inst_groups_ungrouped_fallback(self):
+        from app.admin.routes import _build_inst_groups
+        from app.models import Institution
+        no_eco = Institution(name_uk='Тест', code='no_eco_inst')
+        groups = _build_inst_groups([no_eco], 'uk')
+        self.assertEqual(len(groups), 1)
+        self.assertIsNone(groups[0]['eco_key'])
+        self.assertEqual(groups[0]['eco_name'], 'Без екорегіону')
+
+    def test_build_inst_groups_ungrouped_fallback_en(self):
+        from app.admin.routes import _build_inst_groups
+        from app.models import Institution
+        no_eco = Institution(name_uk='Тест', code='no_eco_inst_en')
+        groups = _build_inst_groups([no_eco], 'en')
+        self.assertEqual(groups[0]['eco_name'], 'No ecoregion')
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

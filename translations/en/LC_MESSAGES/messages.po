@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-11 15:25+0300\n"
+"POT-Creation-Date: 2026-06-12 10:35+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -33,21 +33,22 @@ msgid "Пароль"
 msgstr "Password"
 
 #: app/admin/forms.py:32 app/admin/forms.py:51
-#: app/templates/admin/admin_user_form.html:49
+#: app/templates/admin/admin_user_form.html:65
 msgid "Email"
 msgstr "Email"
 
 #: app/admin/forms.py:33 app/admin/forms.py:52
-#: app/templates/admin/admin_user_form.html:55
+#: app/templates/admin/admin_user_form.html:71
 msgid "Телефон"
 msgstr "Phone"
 
 #: app/admin/forms.py:34 app/admin/forms.py:53
+#: app/templates/admin/admin_user_form.html:81
 msgid "Ім'я"
 msgstr "First name"
 
 #: app/admin/forms.py:35 app/admin/forms.py:54
-#: app/templates/admin/admin_user_form.html:71
+#: app/templates/admin/admin_user_form.html:87
 msgid "Прізвище"
 msgstr "Last name"
 
@@ -79,27 +80,31 @@ msgstr "System role name"
 msgid "Призначається"
 msgstr "Assignable"
 
-#: app/admin/routes.py:85 app/templates/admin/admin_users_list.html:15
+#: app/admin/routes.py:36
+msgid "Без екорегіону"
+msgstr "No ecoregion"
+
+#: app/admin/routes.py:122 app/templates/admin/admin_users_list.html:15
 msgid "Додати користувача"
 msgstr "Add user"
 
-#: app/admin/routes.py:142
+#: app/admin/routes.py:188
 msgid "Редагувати користувача"
 msgstr "Edit user"
 
-#: app/admin/routes.py:186
+#: app/admin/routes.py:232
 msgid "Редагувати установу"
 msgstr "Edit institution"
 
-#: app/admin/routes.py:186 app/templates/admin/admin_institutions_list.html:15
+#: app/admin/routes.py:232 app/templates/admin/admin_institutions_list.html:15
 msgid "Додати установу"
 msgstr "Add institution"
 
-#: app/admin/routes.py:253
+#: app/admin/routes.py:299
 msgid "Редагувати роль"
 msgstr "Edit role"
 
-#: app/admin/routes.py:253 app/templates/admin/admin_roles_list.html:15
+#: app/admin/routes.py:299 app/templates/admin/admin_roles_list.html:15
 msgid "Додати роль"
 msgstr "Add role"
 
@@ -358,13 +363,13 @@ msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:62
 #: app/templates/admin/admin_role_form.html:71
-#: app/templates/admin/admin_user_form.html:197
+#: app/templates/admin/admin_user_form.html:282
 msgid "Скасувати"
 msgstr "Cancel"
 
 #: app/templates/admin/admin_institution_form.html:65
 #: app/templates/admin/admin_role_form.html:74
-#: app/templates/admin/admin_user_form.html:200
+#: app/templates/admin/admin_user_form.html:285
 msgid "Зберегти дані"
 msgstr "Save data"
 
@@ -505,27 +510,27 @@ msgstr "Account credentials"
 msgid "Логін (Username)"
 msgstr "Login (Username)"
 
-#: app/templates/admin/admin_user_form.html:44
+#: app/templates/admin/admin_user_form.html:47
+msgid "Показати/сховати пароль"
+msgstr "Show/hide password"
+
+#: app/templates/admin/admin_user_form.html:60
 msgid "Лишіть порожнім, щоб не змінювати"
 msgstr "Leave blank to keep unchanged"
 
-#: app/templates/admin/admin_user_form.html:62
+#: app/templates/admin/admin_user_form.html:78
 msgid "Персональна інформація"
 msgstr "Personal information"
 
-#: app/templates/admin/admin_user_form.html:65
-msgid "Ім’я"
-msgstr "First name"
-
-#: app/templates/admin/admin_user_form.html:77
+#: app/templates/admin/admin_user_form.html:93
 msgid "Ці дані будуть відображатися в звітах та журналі верифікації."
 msgstr "This data will be displayed in reports and the verification log."
 
-#: app/templates/admin/admin_user_form.html:82
-msgid "Прив’язка до установ"
+#: app/templates/admin/admin_user_form.html:98
+msgid "Прив'язка до установ"
 msgstr "Institution assignment"
 
-#: app/templates/admin/admin_user_form.html:84
+#: app/templates/admin/admin_user_form.html:100
 msgid ""
 "Відмітьте установи та налаштуйте права доступу. «Доступ» — може "
 "переглядати та ідентифікувати; «Експорт» — може завантажувати дані."
@@ -533,36 +538,36 @@ msgstr ""
 "Select institutions and configure access rights. \"Access\" — can view "
 "and identify; \"Export\" — can download data."
 
-#: app/templates/admin/admin_user_form.html:91
+#: app/templates/admin/admin_user_form.html:107
 #: app/templates/admin/admin_users_list.html:49
 msgid "Установа"
 msgstr "Institution"
 
-#: app/templates/admin/admin_user_form.html:92
+#: app/templates/admin/admin_user_form.html:108
 msgid "Доступ"
 msgstr "Access"
 
-#: app/templates/admin/admin_user_form.html:93
+#: app/templates/admin/admin_user_form.html:109
 msgid "Експорт"
 msgstr "Export"
 
-#: app/templates/admin/admin_user_form.html:117
+#: app/templates/admin/admin_user_form.html:151
 msgid "Немає доступних установ."
 msgstr "No available institutions."
 
-#: app/templates/admin/admin_user_form.html:169
+#: app/templates/admin/admin_user_form.html:254
 msgid "Призначення ролей"
 msgstr "Role assignment"
 
-#: app/templates/admin/admin_user_form.html:170
+#: app/templates/admin/admin_user_form.html:255
 msgid "Визначте рівень доступу"
 msgstr "Set access level"
 
-#: app/templates/admin/admin_user_form.html:188
+#: app/templates/admin/admin_user_form.html:273
 msgid "Немає доступних ролей."
 msgstr "No available roles."
 
-#: app/templates/admin/admin_user_form.html:200
+#: app/templates/admin/admin_user_form.html:285
 msgid "Створити користувача"
 msgstr "Create a user"
 
@@ -1262,4 +1267,7 @@ msgstr "Change username"
 
 #~ msgid "Завершено"
 #~ msgstr "Completed"
+
+#~ msgid "Ім’я"
+#~ msgstr "First name"
 

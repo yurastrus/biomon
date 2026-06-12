@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from flask import render_template, g, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
@@ -8,6 +10,32 @@ from app.utils.decorators import role_required
 from app.admin.forms import UserCreateForm, UserEditForm, InstitutionForm, RoleForm
 from app.admin.services import UserService, InstitutionService, RoleService
 from . import admin_bp
+
+
+def _build_inst_groups(institutions, lang):
+    """Group Institution objects by ecoregion for the user form.
+
+    Returns list of dicts:
+      {'eco_key': str|None, 'eco_name': str, 'institutions': [...]}
+    eco_key is the Ukrainian ecoregion string (used as the stable key in JS).
+    """
+    eco_map = OrderedDict()
+    ungrouped = []
+
+    for inst in institutions:
+        if inst.ecoregion_uk:
+            if inst.ecoregion_uk not in eco_map:
+                display = inst.ecoregion_uk if lang != 'en' else (inst.ecoregion_en or inst.ecoregion_uk)
+                eco_map[inst.ecoregion_uk] = {'eco_key': inst.ecoregion_uk, 'eco_name': display, 'institutions': []}
+            eco_map[inst.ecoregion_uk]['institutions'].append(inst)
+        else:
+            ungrouped.append(inst)
+
+    groups = list(eco_map.values())
+    if ungrouped:
+        ungrouped_label = 'No ecoregion' if lang == 'en' else 'Без екорегіону'
+        groups.append({'eco_key': None, 'eco_name': ungrouped_label, 'institutions': ungrouped})
+    return groups
 
 
 # ===========================================================================
@@ -46,11 +74,18 @@ def add_user():
 
     form = UserCreateForm()
 
-    if form.validate_on_submit():
-        selected_inst_ids = request.form.getlist('institutions')
-        can_export_ids    = set(request.form.getlist('can_export'))
-        selected_role_ids = request.form.getlist('roles')
+    # Capture checkbox selections before validation so they survive a re-render on error.
+    # On GET, all sets are empty (no pre-selection).
+    if request.method == 'POST':
+        selected_inst_ids   = set(request.form.getlist('institutions'))
+        selected_export_ids = set(request.form.getlist('can_export'))
+        selected_role_ids   = set(request.form.getlist('roles'))
+    else:
+        selected_inst_ids   = set()
+        selected_export_ids = set()
+        selected_role_ids   = set()
 
+    if form.validate_on_submit():
         try:
             UserService.create_user(
                 creator=current_user,
@@ -60,9 +95,9 @@ def add_user():
                 phone=form.phone.data,
                 first_name=form.first_name.data,
                 last_name=form.last_name.data,
-                selected_inst_ids=selected_inst_ids,
-                can_export_ids=can_export_ids,
-                selected_role_ids=selected_role_ids,
+                selected_inst_ids=list(selected_inst_ids),
+                can_export_ids=selected_export_ids,
+                selected_role_ids=list(selected_role_ids),
             )
             db.session.commit()
             flash(f'Користувача {form.username.data} успішно створено!', 'success')
@@ -71,17 +106,20 @@ def add_user():
             db.session.rollback()
             flash(f'Помилка при збереженні: {str(e)}', 'danger')
 
-    # Surface validation errors via flash (template is not modified)
     if form.errors:
         for field_errors in form.errors.values():
             for err in field_errors:
                 flash(err, 'danger')
 
+    inst_groups = _build_inst_groups(available_institutions, g.lang_code)
+
     return render_template('admin_user_form.html',
                            form=form,
-                           institutions=available_institutions,
+                           inst_groups=inst_groups,
                            roles=available_roles,
-                           export_institution_ids=set(),
+                           selected_inst_ids=selected_inst_ids,
+                           selected_export_ids=selected_export_ids,
+                           selected_role_ids=selected_role_ids,
                            title=_('Додати користувача'))
 
 
@@ -101,11 +139,17 @@ def edit_user(user_id):
 
     form = UserEditForm(user_id=user.id)
 
-    if form.validate_on_submit():
-        selected_inst_ids = request.form.getlist('institutions')
-        can_export_ids    = set(request.form.getlist('can_export'))
-        selected_role_ids = request.form.getlist('roles')
+    # On POST preserve what was submitted; on GET seed from the saved user data.
+    if request.method == 'POST':
+        selected_inst_ids   = set(request.form.getlist('institutions'))
+        selected_export_ids = set(request.form.getlist('can_export'))
+        selected_role_ids   = set(request.form.getlist('roles'))
+    else:
+        selected_inst_ids   = {str(inst.id) for inst in user.institutions}
+        selected_export_ids = {str(link.institution_id) for link in user.institution_links if link.can_export}
+        selected_role_ids   = {str(role.id) for role in user.roles}
 
+    if form.validate_on_submit():
         try:
             UserService.update_user(
                 user=user,
@@ -116,9 +160,9 @@ def edit_user(user_id):
                 first_name=form.first_name.data,
                 last_name=form.last_name.data,
                 new_password=form.password.data,
-                selected_inst_ids=selected_inst_ids,
-                can_export_ids=can_export_ids,
-                selected_role_ids=selected_role_ids,
+                selected_inst_ids=list(selected_inst_ids),
+                can_export_ids=selected_export_ids,
+                selected_role_ids=list(selected_role_ids),
             )
             db.session.commit()
             flash(f'Дані користувача {user.username} успішно оновлено!', 'success')
@@ -132,13 +176,16 @@ def edit_user(user_id):
             for err in field_errors:
                 flash(err, 'danger')
 
-    export_institution_ids = {link.institution_id for link in user.institution_links if link.can_export}
+    inst_groups = _build_inst_groups(available_institutions, g.lang_code)
+
     return render_template('admin_user_form.html',
                            form=form,
                            user=user,
-                           institutions=available_institutions,
+                           inst_groups=inst_groups,
                            roles=available_roles,
-                           export_institution_ids=export_institution_ids,
+                           selected_inst_ids=selected_inst_ids,
+                           selected_export_ids=selected_export_ids,
+                           selected_role_ids=selected_role_ids,
                            title=_('Редагувати користувача'))
 
 
