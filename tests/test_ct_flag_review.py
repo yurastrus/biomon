@@ -176,3 +176,60 @@ def test_flag_then_appears_in_admin_flagged_list(auth_client, db_session,
     assert note in resp_list.get_data(as_text=True), (
         "flag_note не знайдено на сторінці /admin/flagged"
     )
+
+
+def test_flagged_list_has_identify_link(auth_client, db_session,
+                                        ct_route_session, make_ct_observation):
+    """
+    Сторінка /admin/flagged має містити посилання «Визначити» для кожної
+    зафлагованої серії, що веде на /identify?start_obs_id=<id>.
+    """
+    obs = make_ct_observation()
+    obs.flagged = True
+    obs.flag_note = 'перевірка кнопки'
+    ct_route_session.commit()
+
+    cl = auth_client(role='admin')
+    resp = cl.get('/uk/camera-traps/admin/flagged')
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+
+    # Кнопка «Визначити» присутня
+    assert 'Визначити' in html, "Кнопка «Визначити» не знайдена на сторінці /admin/flagged"
+
+    # Посилання веде на /identify з правильним start_obs_id
+    expected_url = f'/uk/camera-traps/identify?start_obs_id={obs.id}'
+    assert expected_url in html, (
+        f"Посилання {expected_url!r} не знайдено на сторінці /admin/flagged. "
+        f"Фрагмент HTML: {html[html.find('Визначити')-200:html.find('Визначити')+100]!r}"
+    )
+
+
+def test_next_observation_api_accepts_start_obs_id(auth_client, db_session,
+                                                    ct_route_session,
+                                                    make_ct_location,
+                                                    make_ct_observation,
+                                                    make_ct_photo):
+    """
+    GET /api/next-observation-for-identification?start_obs_id=<id>
+    повертає 200 і observation_id == переданому id.
+    Локація публічна (visibility_level=0), тому доступна ct_verifier без установи.
+    """
+    loc = make_ct_location(visibility_level=0)
+    obs = make_ct_observation(location=loc)
+    make_ct_photo(observation=obs)
+
+    with patch('app.camera_traps.routes.get_ct_session', return_value=ct_route_session), \
+         patch('app.camera_traps.routes.close_ct_session'):
+        cl = auth_client(role='ct_verifier')
+        resp = cl.get(
+            f'/uk/camera-traps/api/next-observation-for-identification'
+            f'?start_obs_id={obs.id}'
+        )
+    assert resp.status_code == 200, (
+        f"Очікується 200, отримано {resp.status_code}: {resp.get_data(as_text=True)}"
+    )
+    data = resp.get_json()
+    assert data['observation_id'] == obs.id, (
+        f"Очікується observation_id={obs.id}, отримано {data.get('observation_id')}"
+    )
