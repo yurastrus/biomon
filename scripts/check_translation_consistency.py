@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """
 check_translation_consistency.py
-Діагностика узгодженості англійських перекладів по всіх доменах biomon.
-Тільки читає .po файли — нічого не змінює.
+Діагностика та синхронізація англійських перекладів по всіх доменах biomon.
 
 Використання:
     python scripts/check_translation_consistency.py [--out FILEPATH]
+        Генерує Markdown-звіт (до stdout або у файл).
 
-Якщо --out не задано — виводить у stdout.
+    python scripts/check_translation_consistency.py --apply-level1 [--changes-out FILEPATH]
+        Застосовує рекомендовані EN до всіх Level-1 груп у .po файлах
+        і перекомпіловує відповідні .mo.
+        --changes-out  шлях до .md файлу зі списком змін (за замовч. stdout)
+
+    python scripts/check_translation_consistency.py --level2-xlsx PATH
+        Експортує Level-2 групи в Excel для ручної чистки.
 """
 
 import sys
@@ -418,9 +424,246 @@ def format_report(
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
+# ─── Режим A: застосувати Level-1 ────────────────────────────────────────────
+
+def apply_level1(level1: list, dry_run: bool = False) -> list[dict]:
+    """
+    Для кожної Level-1 групи записати рекомендований EN у всі домени,
+    де поточний msgstr відрізняється.
+
+    Повертає список змін: [{domain, msgid, old_msgstr, new_msgstr}].
+    Якщо dry_run=True — нічого не пише у файли.
+    """
+    # Babel write_po / read_po
+    from babel.messages.pofile import read_po, write_po  # noqa: E402
+    from io import open as io_open, BytesIO
+
+    changes = []
+
+    # Збираємо які домени потрібно переписати і що саме міняємо
+    # domain -> {msgid -> new_msgstr}
+    domain_patches: dict[str, dict[str, str]] = defaultdict(dict)
+
+    for g in level1:
+        msgid = g["msgids"][0]
+        non_empty = [e["msgstr"] for e in g["entries"] if e["msgstr"].strip()]
+        if not non_empty:
+            continue
+        suggested, _reason = best_translation(non_empty)
+
+        for e in g["entries"]:
+            if e["msgstr"] != suggested:
+                domain_patches[e["domain"]][msgid] = suggested
+                changes.append({
+                    "domain": e["domain"],
+                    "msgid": msgid,
+                    "old_msgstr": e["msgstr"],
+                    "new_msgstr": suggested,
+                })
+
+    if dry_run or not changes:
+        return changes
+
+    # Застосовуємо патчі домен за доменом
+    for domain, patches in domain_patches.items():
+        po_path = DOMAINS[domain]
+        if not os.path.exists(po_path):
+            print(f"[ПРОПУСК] {domain}: файл не знайдено: {po_path}", file=sys.stderr)
+            continue
+
+        # Зчитуємо каталог
+        with io_open(po_path, "rb") as f:
+            catalog = read_po(f)
+
+        # Застосовуємо зміни
+        patched_count = 0
+        for msg in catalog:
+            if not msg.id:
+                continue
+            msgid_str = str(msg.id) if not isinstance(msg.id, tuple) else str(msg.id[0])
+            if msgid_str in patches:
+                new_val = patches[msgid_str]
+                if isinstance(msg.string, dict):
+                    # plural — оновлюємо всі форми однаково (нетипово для EN, але безпечно)
+                    msg.string = {k: new_val for k in msg.string}
+                else:
+                    msg.string = new_val
+                patched_count += 1
+
+        print(f"[ПАТЧ] {domain}: {patched_count} записів оновлено → {po_path}", file=sys.stderr)
+
+        # Записуємо .po (sort_output=False — зберігаємо оригінальний порядок)
+        with open(po_path, "wb") as f:
+            write_po(f, catalog, sort_output=False)
+
+        # Перекомпілюємо .mo через pybabel
+        import subprocess
+        translations_dir = os.path.dirname(os.path.dirname(os.path.dirname(po_path)))
+        cmd = [
+            os.path.join(BIOMON_ROOT, "venv", "bin", "pybabel"),
+            "compile",
+            "-d", translations_dir,
+            "-l", "en",
+            "-D", domain,
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"[ПОМИЛКА компіляції] {domain}: {result.stderr}", file=sys.stderr)
+        else:
+            print(f"[OK] {domain}: .mo скомпільовано", file=sys.stderr)
+
+    return changes
+
+
+def format_changes_report(changes: list[dict], level1_count: int) -> str:
+    """Формує Markdown-звіт про застосовані зміни Level-1."""
+    lines = []
+    a = lines.append
+
+    a("# Застосовані зміни Level-1 — biomon EN translations")
+    a("")
+    a(f"Дата: 2026-06-16")
+    a("")
+
+    domains_touched = sorted(set(c["domain"] for c in changes))
+    a("## Підсумок")
+    a("")
+    a(f"- Груп Level-1 оброблено: **{level1_count}**")
+    a(f"- Фактично змінено записів: **{len(changes)}**")
+    a(f"- Торкнуті домени: {', '.join(domains_touched) if domains_touched else 'жодного'}")
+    a("")
+
+    if not changes:
+        a("*Змін не внесено (вже узгоджено або нема Level-1 груп).*")
+    else:
+        a("## Деталі змін")
+        a("")
+        a("| Домен | Українська фраза (msgid) | Старий EN | Новий EN |")
+        a("|---|---|---|---|")
+        for c in sorted(changes, key=lambda x: (x["domain"], x["msgid"])):
+            msgid_safe = c["msgid"].replace("|", "\\|").replace("\n", " ")[:120]
+            old_safe = c["old_msgstr"].replace("|", "\\|").replace("\n", " ")[:120]
+            new_safe = c["new_msgstr"].replace("|", "\\|").replace("\n", " ")[:120]
+            a(f"| {c['domain']} | {msgid_safe} | {old_safe} | {new_safe} |")
+    a("")
+
+    return "\n".join(lines)
+
+
+# ─── Режим B: Level-2 → Excel ─────────────────────────────────────────────────
+
+def export_level2_xlsx(level2: list, output_path: str):
+    """Експортує Level-2 групи у .xlsx для ручної чистки."""
+    import pandas as pd
+
+    rows = []
+    for g in level2:
+        msgids_str = "\n".join(g["msgids"])
+
+        seen_strs: dict[str, list[str]] = {}
+        for e in g["entries"]:
+            key = e["msgstr"] or "*(порожньо)*"
+            if key not in seen_strs:
+                seen_strs[key] = []
+            seen_strs[key].append(e["domain"])
+        variants_parts = []
+        for msgstr_val, domains in seen_strs.items():
+            variants_parts.append(f'{msgstr_val} ({", ".join(sorted(set(domains)))})')
+        variants_str = "\n".join(variants_parts)
+
+        non_empty = [e["msgstr"] for e in g["entries"] if e["msgstr"].strip()]
+        if non_empty:
+            suggested, reason = best_translation(non_empty)
+        else:
+            suggested, reason = "*(нема перекладу)*", "всі порожні"
+
+        gtype = {"norm": "нормалізація", "sm": "SequenceMatcher"}.get(g.get("type", ""), g.get("type", ""))
+
+        rows.append({
+            "Українські фрази (нормалізована група)": msgids_str,
+            "Англ. варіанти (з доменами)": variants_str,
+            "К-сть варіантів": len(seen_strs),
+            "Запропонований єдиний EN": suggested,
+            "Примітка": gtype,
+        })
+
+    df = pd.DataFrame(rows)
+
+    with pd.ExcelWriter(output_path, engine="xlsxwriter") as writer:
+        df.to_excel(writer, index=False, sheet_name="Level2")
+
+        workbook = writer.book
+        worksheet = writer.sheets["Level2"]
+
+        # Формати
+        header_fmt = workbook.add_format({
+            "bold": True,
+            "bg_color": "#D7E4BC",
+            "border": 1,
+            "text_wrap": True,
+            "valign": "vcenter",
+        })
+        cell_fmt = workbook.add_format({
+            "text_wrap": True,
+            "valign": "top",
+            "border": 1,
+        })
+        num_fmt = workbook.add_format({
+            "border": 1,
+            "valign": "vcenter",
+            "align": "center",
+        })
+
+        # Заголовки з форматом
+        for col_num, col_name in enumerate(df.columns):
+            worksheet.write(0, col_num, col_name, header_fmt)
+
+        # Заморозити перший рядок
+        worksheet.freeze_panes(1, 0)
+
+        # Ширини колонок (підбір вручну)
+        col_widths = [55, 55, 12, 45, 18]
+        for i, width in enumerate(col_widths):
+            worksheet.set_column(i, i, width)
+
+        # Висота рядків і форматування клітинок
+        for row_idx in range(len(df)):
+            # Рядок трохи вищий для читабельності
+            worksheet.set_row(row_idx + 1, 60)
+            for col_idx, col_name in enumerate(df.columns):
+                val = df.iloc[row_idx][col_name]
+                if col_name == "К-сть варіантів":
+                    worksheet.write(row_idx + 1, col_idx, val, num_fmt)
+                else:
+                    worksheet.write(row_idx + 1, col_idx, str(val) if val is not None else "", cell_fmt)
+
+        # Автофільтр
+        worksheet.autofilter(0, 0, len(df), len(df.columns) - 1)
+
+    print(f"[OK] Level-2 Excel збережено: {output_path} ({len(df)} рядків)", file=sys.stderr)
+
+
+# ─── Main ─────────────────────────────────────────────────────────────────────
+
 def main():
-    parser = argparse.ArgumentParser(description="Перевірка узгодженості англійських перекладів biomon")
+    parser = argparse.ArgumentParser(description="Перевірка та синхронізація англійських перекладів biomon")
     parser.add_argument("--out", help="Шлях до вихідного .md файлу (за замовчуванням — stdout)")
+    parser.add_argument(
+        "--apply-level1",
+        action="store_true",
+        dest="apply_level1",
+        help="Застосувати рекомендовані EN Level-1 до .po і перекомпілювати .mo",
+    )
+    parser.add_argument(
+        "--changes-out",
+        dest="changes_out",
+        help="Куди зберегти .md зі списком змін Level-1 (за замовч. stdout)",
+    )
+    parser.add_argument(
+        "--level2-xlsx",
+        dest="level2_xlsx",
+        help="Шлях для збереження Level-2 Excel (.xlsx)",
+    )
     args = parser.parse_args()
 
     domain_meta = {}
@@ -445,6 +688,25 @@ def main():
           f"Fuzzy: {len(fuzzy_entries)} | Порожніх: {len(empty_entries)} | "
           f"Obsolete: {total_obsolete}", file=sys.stderr)
 
+    # ── Режим A: застосувати Level-1 ──
+    if args.apply_level1:
+        print("\n[Режим] --apply-level1: застосовую рекомендовані EN...", file=sys.stderr)
+        changes = apply_level1(level1)
+        report = format_changes_report(changes, len(level1))
+        if args.changes_out:
+            with open(args.changes_out, "w", encoding="utf-8") as f:
+                f.write(report)
+            print(f"[Готово] Звіт змін збережено: {args.changes_out}", file=sys.stderr)
+        else:
+            print(report)
+        return
+
+    # ── Режим B: Level-2 → xlsx ──
+    if args.level2_xlsx:
+        export_level2_xlsx(level2, args.level2_xlsx)
+        return
+
+    # ── Стандартний режим: звіт ──
     report = format_report(domain_meta, level1, level2, fuzzy_entries, empty_entries, all_entries)
 
     if args.out:
