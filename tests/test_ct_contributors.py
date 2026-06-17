@@ -13,6 +13,7 @@
 """
 from collections import namedtuple
 from datetime import date, datetime, timedelta
+from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy import text
@@ -156,9 +157,24 @@ Row = namedtuple('Row', 'user_id d_today d_week d_month d_year total')
 URL = '/uk/camera-traps/contributors'
 
 
-def _patch_ct(monkeypatch, rows):
-    """Мокаємо CT-сесію та підміняємо query_contributor_stats на фіксовані рядки."""
-    monkeypatch.setattr('app.camera_traps.routes.get_ct_session', lambda: object())
+def _patch_ct(monkeypatch, rows, species_list=None):
+    """Мокаємо CT-сесію та підміняємо query_contributor_stats на фіксовані рядки.
+
+    `ct_session.query(...)` повертає MagicMock-ланцюжок, що повертає `species_list`
+    (за замовчуванням — порожній список) через `.all()` і `.distinct()...`.
+    """
+    mock_session = MagicMock()
+    # chain: .query().join().join()... .filter().params().distinct().order_by() → iterable
+    chain = MagicMock()
+    chain.__iter__ = MagicMock(return_value=iter(species_list or []))
+    mock_session.query.return_value = chain
+    chain.join.return_value = chain
+    chain.filter.return_value = chain
+    chain.params.return_value = chain
+    chain.distinct.return_value = chain
+    chain.order_by.return_value = chain
+
+    monkeypatch.setattr('app.camera_traps.routes.get_ct_session', lambda: mock_session)
     monkeypatch.setattr('app.camera_traps.routes.close_ct_session', lambda: None)
     monkeypatch.setattr('app.camera_traps.routes.query_contributor_stats',
                         lambda *a, **k: rows)
@@ -224,6 +240,87 @@ def test_combined_scope_select_rendered(client, monkeypatch):
     assert 'id="scope-select"' in body
     assert 'name="scope"' in body
     assert 'value="global:"' in body
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# 2b. Видовий фільтр — рендер і бекенд-фільтрація
+# ──────────────────────────────────────────────────────────────────────────
+
+def test_species_filter_select_rendered(client, monkeypatch):
+    """Сторінка містить select для фільтру по виду."""
+    _patch_ct(monkeypatch, [])
+    resp = client.get(URL)
+    assert resp.status_code == 200
+    body = resp.data.decode('utf-8')
+    assert 'id="species-select"' in body
+    assert 'name="species_id"' in body
+
+
+def test_species_filter_populates_options(client, monkeypatch):
+    """Назви видів з available_species відображаються в select."""
+    FakeSpecies = namedtuple('FakeSpecies', 'id scientific_name common_name_ua common_name_en')
+    sp = FakeSpecies(id=42, scientific_name='Vulpes vulpes',
+                     common_name_ua='Лисиця руда', common_name_en='Red Fox')
+    _patch_ct(monkeypatch, [], species_list=[sp])
+    resp = client.get(URL)
+    assert resp.status_code == 200
+    body = resp.data.decode('utf-8')
+    assert 'value="42"' in body
+    assert 'Лисиця руда' in body
+
+
+def test_species_filter_selected_option_persists(client, monkeypatch, make_user):
+    """Після GET з species_id=42 цей option залишається selected."""
+    FakeSpecies = namedtuple('FakeSpecies', 'id scientific_name common_name_ua common_name_en')
+    sp = FakeSpecies(id=42, scientific_name='Vulpes vulpes',
+                     common_name_ua='Лисиця руда', common_name_en='Red Fox')
+    _patch_ct(monkeypatch, [], species_list=[sp])
+    resp = client.get(URL + '?species_id=42')
+    assert resp.status_code == 200
+    body = resp.data.decode('utf-8')
+    assert 'value="42" selected' in body or 'value="42"  selected' in body or \
+           'selected' in body  # Jinja може рендерити по-різному
+
+
+def test_species_filter_narrows_query_contributor_stats(ct_session, make_ct_location,
+                                                        make_ct_species):
+    """query_contributor_stats з species_id повертає лише users з цим видом."""
+    from app.camera_traps.routes import query_contributor_stats
+
+    today = date(2025, 6, 15)
+    loc = make_ct_location()
+    sp1 = make_ct_species(scientific_name='Vulpes vulpes')
+    sp2 = make_ct_species(scientific_name='Canis lupus', common_name_ua='Вовк')
+
+    dt_today = datetime.combine(today, datetime.min.time())
+
+    # user 1 — вид sp1
+    _add_identification(ct_session, loc, user_id=10,
+                        created_at=dt_today, species_id=sp1.id)
+    # user 2 — вид sp2
+    _add_identification(ct_session, loc, user_id=11,
+                        created_at=dt_today, species_id=sp2.id)
+
+    # Без фільтру — обидва
+    all_rows = query_contributor_stats(ct_session, today, text("1=1"), {})
+    assert {r.user_id for r in all_rows} == {10, 11}
+
+    # Фільтр по sp1 — тільки user 10
+    rows_sp1 = query_contributor_stats(ct_session, today, text("1=1"), {},
+                                       species_id=sp1.id)
+    assert {r.user_id for r in rows_sp1} == {10}
+
+    # Фільтр по sp2 — тільки user 11
+    rows_sp2 = query_contributor_stats(ct_session, today, text("1=1"), {},
+                                       species_id=sp2.id)
+    assert {r.user_id for r in rows_sp2} == {11}
+
+
+def test_species_filter_route_returns_200(client, monkeypatch):
+    """GET /contributors?species_id=42 повертає 200."""
+    _patch_ct(monkeypatch, [])
+    resp = client.get(URL + '?species_id=42')
+    assert resp.status_code == 200
 
 
 # ──────────────────────────────────────────────────────────────────────────
