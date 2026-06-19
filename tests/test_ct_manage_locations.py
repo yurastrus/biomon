@@ -49,6 +49,10 @@ def _make_location(id=1, name='Тест ліс', lat=49.85, lon=23.65,
     loc.description = description
     loc.biotopes = [MagicMock(id=bid) for bid in biotope_ids]
     loc.stats = None
+    # Data-validity flag (model columns); JSON-serialisable values so the
+    # locations|tojson block in manage_locations renders.
+    loc.is_valid = True
+    loc.invalid_note = None
     return loc
 
 
