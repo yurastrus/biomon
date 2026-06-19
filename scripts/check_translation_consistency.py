@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 check_translation_consistency.py
-Діагностика та синхронізація англійських перекладів по всіх доменах biomon.
+Diagnose and synchronize English translations across all biomon domains.
 
-Використання:
+Usage:
     python scripts/check_translation_consistency.py [--out FILEPATH]
-        Генерує Markdown-звіт (до stdout або у файл).
+        Generate a Markdown report (to stdout or a file).
 
     python scripts/check_translation_consistency.py --apply-level1 [--changes-out FILEPATH]
-        Застосовує рекомендовані EN до всіх Level-1 груп у .po файлах
-        і перекомпіловує відповідні .mo.
-        --changes-out  шлях до .md файлу зі списком змін (за замовч. stdout)
+        Apply the recommended EN to all Level-1 groups in the .po files
+        and recompile the matching .mo files.
+        --changes-out  path to a .md file with the list of changes (default: stdout)
 
     python scripts/check_translation_consistency.py --level2-xlsx PATH
-        Експортує Level-2 групи в Excel для ручної чистки.
+        Export Level-2 groups to Excel for manual cleanup.
 """
 
 import sys
@@ -24,7 +25,7 @@ import difflib
 from collections import defaultdict
 from io import open as io_open
 
-# Babel у venv
+# Babel from venv
 BIOMON_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VENV_SITE = os.path.join(BIOMON_ROOT, "venv", "lib")
 for entry in os.listdir(VENV_SITE):
@@ -34,7 +35,7 @@ for entry in os.listdir(VENV_SITE):
 
 from babel.messages.pofile import read_po  # noqa: E402
 
-# ─── Конфігурація доменів ────────────────────────────────────────────────────
+# ─── Domain configuration ────────────────────────────────────────────────────
 
 DOMAINS = {
     "messages": os.path.join(BIOMON_ROOT, "translations", "en", "LC_MESSAGES", "messages.po"),
@@ -45,13 +46,13 @@ DOMAINS = {
 
 FUZZY_MATCH_THRESHOLD = 0.88
 
-# ─── Допоміжні функції ───────────────────────────────────────────────────────
+# ─── Helper functions ───────────────────────────────────────────────────
 
 _TRAIL_PUNCT = re.compile(r"[.,:;!?……]+$")
 _MULTI_SPACE = re.compile(r"\s+")
 
 def normalize(text: str) -> str:
-    """casefold + strip + прибрати кінцеву пунктуацію + згорнути пробіли."""
+    """casefold + strip + remove trailing punctuation + collapse whitespace."""
     t = text.casefold().strip()
     t = _TRAIL_PUNCT.sub("", t)
     t = _MULTI_SPACE.sub(" ", t)
@@ -59,7 +60,7 @@ def normalize(text: str) -> str:
 
 
 def msgstr_value(msgstr) -> str:
-    """Витягти рядок зі str або dict (plural-форми)."""
+    """Extract a string from a str or dict (plural forms)."""
     if isinstance(msgstr, dict):
         return " | ".join(str(v) for v in msgstr.values())
     return str(msgstr) if msgstr else ""
@@ -67,26 +68,26 @@ def msgstr_value(msgstr) -> str:
 
 def best_translation(translations: list[str]) -> tuple[str, str]:
     """
-    Повернути (найкращий переклад, пояснення).
-    Більшість → беремо той; нема більшості → найкоротший (зазвичай стисліший).
+    Return (best translation, explanation).
+    Majority → use it; no majority → shortest (usually the most concise).
     """
     from collections import Counter
     c = Counter(translations)
     top_val, top_count = c.most_common(1)[0]
     total = len(translations)
     if top_count > total / 2:
-        return top_val, "більшість"
-    # Нема більшості — найкоротший непорожній
+        return top_val, "majority"
+    # No majority — shortest non-empty
     non_empty = [t for t in translations if t.strip()]
     if not non_empty:
-        return translations[0], "єдиний варіант"
+        return translations[0], "only variant"
     shortest = min(non_empty, key=len)
-    return shortest, "нема більшості → найстисліший варіант"
+    return shortest, "no majority → most concise variant"
 
-# ─── Зчитування .po ──────────────────────────────────────────────────────────
+# ─── Reading .po ──────────────────────────────────────────────────────────
 
 def _count_obsolete_raw(path: str) -> int:
-    """Рахує obsolete-рядки (#~ msgid ...) безпосередньо у файлі."""
+    """Count obsolete lines (#~ msgid ...) directly in the file."""
     count = 0
     try:
         with open(path, "r", encoding="utf-8", errors="replace") as f:
@@ -100,11 +101,11 @@ def _count_obsolete_raw(path: str) -> int:
 
 def load_domain(domain: str, path: str):
     """
-    Повертає dict з ключами:
+    Return a dict with keys:
       entries       : list[dict]  — {msgid, msgstr, domain, fuzzy, obsolete}
-      missing       : bool        — файл не знайдено
-      error         : str | None  — помилка парсингу
-      obsolete_count: int         — кількість obsolete (#~) записів у файлі
+      missing       : bool        — file not found
+      error         : str | None  — parse error
+      obsolete_count: int         — number of obsolete (#~) entries in the file
     """
     if not os.path.exists(path):
         return {"entries": [], "missing": True, "error": None, "obsolete_count": 0}
@@ -116,38 +117,38 @@ def load_domain(domain: str, path: str):
 
     entries = []
     for msg in catalog:
-        if not msg.id:  # заголовок каталогу
+        if not msg.id:  # catalog header
             continue
         msgid = str(msg.id) if not isinstance(msg.id, tuple) else str(msg.id[0])
         msgstr = msgstr_value(msg.string)
-        fuzzy = msg.fuzzy  # babel Message має власний .fuzzy bool
+        fuzzy = msg.fuzzy  # babel Message has its own .fuzzy bool
         entries.append({
             "msgid": msgid,
             "msgstr": msgstr,
             "domain": domain,
             "fuzzy": fuzzy,
-            "obsolete": False,  # babel не передає obsolete через read_po catalog
+            "obsolete": False,  # babel does not expose obsolete via the read_po catalog
         })
 
     obsolete_count = _count_obsolete_raw(path)
     return {"entries": entries, "missing": False, "error": None, "obsolete_count": obsolete_count}
 
-# ─── Аналіз ──────────────────────────────────────────────────────────────────
+# ─── Analysis ──────────────────────────────────────────────────────────────
 
 def analyze(all_entries: list[dict]):
     """
-    Повертає:
-      level1  : list[dict]  — точні дублі msgid з різними msgstr
-      level2  : list[dict]  — подібні (за нормалізацією або SequenceMatcher)
+    Return:
+      level1  : list[dict]  — exact msgid duplicates with different msgstr
+      level2  : list[dict]  — similar (by normalization or SequenceMatcher)
       fuzzy   : list[dict]
       empty   : list[dict]
     """
     fuzzy_entries = [e for e in all_entries if e["fuzzy"]]
-    # Активні (не fuzzy для основного аналізу; obsolete не приходять через babel)
+    # Active (non-fuzzy for the main analysis; obsolete do not come through babel)
     active = [e for e in all_entries if not e["fuzzy"]]
     empty_entries = [e for e in active if not e["msgstr"].strip()]
 
-    # ── Рівень 1: точний msgid ──
+    # ── Level 1: exact msgid ──
     by_msgid: dict[str, list[dict]] = defaultdict(list)
     for e in active:
         by_msgid[e["msgid"]].append(e)
@@ -165,12 +166,12 @@ def analyze(all_entries: list[dict]):
                 "type": "exact",
             })
 
-    # ── Рівень 2: нормалізований або SequenceMatcher ──
-    # Спочатку збираємо унікальні msgid (ті, що вже є в level1 — їх не дублюємо)
+    # ── Level 2: normalized or SequenceMatcher ──
+    # First collect unique msgids (those already in level1 — we do not duplicate them)
     level1_msgids = set(g["msgids"][0] for g in level1)
     unique_msgids = list(by_msgid.keys())
 
-    # Нормалізований збіг
+    # Normalized match
     norm_to_msgids: dict[str, list[str]] = defaultdict(list)
     for mid in unique_msgids:
         norm_to_msgids[normalize(mid)].append(mid)
@@ -185,7 +186,7 @@ def analyze(all_entries: list[dict]):
             all_entries_group.extend(by_msgid[mid])
         unique_msgstrs = set(e["msgstr"] for e in all_entries_group)
         if len(unique_msgstrs) <= 1 and all(m not in level1_msgids for m in mids):
-            # Однаковий переклад — не розбіжність
+            # Same translation — not a discrepancy
             pass
         group = {
             "msgids": mids,
@@ -197,10 +198,10 @@ def analyze(all_entries: list[dict]):
         level2.append(group)
         processed_norms.add(norm_key)
 
-    # SequenceMatcher для решти
+    # SequenceMatcher for the rest
     remaining = [mid for mid in unique_msgids if normalize(mid) not in processed_norms or
                  len(norm_to_msgids[normalize(mid)]) == 1]
-    # Групуємо через SM
+    # Group via SM
     sm_groups = []
     used = set()
     for i, mid_a in enumerate(remaining):
@@ -229,26 +230,26 @@ def analyze(all_entries: list[dict]):
 
     level2.extend(sm_groups)
 
-    # Фільтруємо level2: залишаємо лише ті, де є реальні розбіжності msgstr
-    # або де різні msgid зі схожим текстом (може бути однаковий переклад — теж цікаво)
+    # Filter level2: keep only groups with real msgstr discrepancies
+    # or with different msgids that have similar text (same translation is also of interest)
     level2_filtered = []
     for g in level2:
-        # Не дублюємо level1
+        # Do not duplicate level1
         if all(m in level1_msgids for m in g["msgids"]):
             continue
-        # Тільки якщо є хоча б 2 домени або різні msgstr
+        # Only if there are at least 2 domains or different msgstrs
         domains_in_group = set(e["domain"] for e in g["entries"])
         unique_msgstrs = set(e["msgstr"] for e in g["entries"] if e["msgstr"].strip())
         if len(unique_msgstrs) > 1 or len(g["msgids"]) > 1:
             level2_filtered.append(g)
 
-    # Сортування: більше розбіжностей вгорі
+    # Sorting: more discrepancies on top
     level1.sort(key=lambda g: len(g["unique_msgstrs"]), reverse=True)
     level2_filtered.sort(key=lambda g: (len(g["unique_msgstrs"]), len(g["msgids"])), reverse=True)
 
     return level1, level2_filtered, fuzzy_entries, empty_entries
 
-# ─── Генерація звіту ─────────────────────────────────────────────────────────
+# ─── Report generation ─────────────────────────────────────────────────────
 
 def format_report(
     domain_meta: dict,
@@ -265,36 +266,36 @@ def format_report(
     total_unique_phrases = len(set(e["msgid"] for e in all_entries))
     total_obsolete = sum(v.get("obsolete_count", 0) for v in domain_meta.values())
 
-    a("# Звіт про узгодженість англійських перекладів — biomon")
+    a("# English translation consistency report — biomon")
     a("")
-    a(f"Дата: 2026-06-16")
+    a(f"Date: 2026-06-16")
     a("")
-    a("## Підсумок")
+    a("## Summary")
     a("")
-    a("| Метрика | Значення |")
+    a("| Metric | Value |")
     a("|---|---|")
-    a(f"| Неузгоджених груп Рівня 1 (точні дублі msgid з різними EN) | **{len(level1)}** |")
-    a(f"| Неузгоджених/схожих груп Рівня 2 (нормалізовані/SM збіги) | **{len(level2)}** |")
-    a(f"| Унікальних українських фраз (активних) | {total_unique_phrases} |")
-    a(f"| Охоплені домени | {', '.join(covered_domains)} |")
-    a(f"| Fuzzy записів (потребують перевірки) | {len(fuzzy_entries)} |")
-    a(f"| Порожніх перекладів (активних, не fuzzy) | {len(empty_entries)} |")
-    a(f"| Obsolete записів (#~) | {total_obsolete} |")
+    a(f"| Inconsistent Level-1 groups (exact msgid duplicates with different EN) | **{len(level1)}** |")
+    a(f"| Inconsistent/similar Level-2 groups (normalized/SM matches) | **{len(level2)}** |")
+    a(f"| Unique Ukrainian phrases (active) | {total_unique_phrases} |")
+    a(f"| Covered domains | {', '.join(covered_domains)} |")
+    a(f"| Fuzzy entries (need review) | {len(fuzzy_entries)} |")
+    a(f"| Empty translations (active, non-fuzzy) | {len(empty_entries)} |")
+    a(f"| Obsolete entries (#~) | {total_obsolete} |")
     a("")
 
-    # Статус доменів
-    a("### Статус доменів")
+    # Domain status
+    a("### Domain status")
     a("")
-    a("| Домен | Файл | Статус | Активних | Obsolete (#~) |")
+    a("| Domain | File | Status | Active | Obsolete (#~) |")
     a("|---|---|---|---|---|")
     for domain, path in DOMAINS.items():
         meta = domain_meta[domain]
         if meta["missing"]:
-            status = "ВІДСУТНІЙ"
+            status = "MISSING"
             count = "—"
             obs = "—"
         elif meta["error"]:
-            status = f"ПОМИЛКА: {meta['error'][:60]}"
+            status = f"ERROR: {meta['error'][:60]}"
             count = "—"
             obs = "—"
         else:
@@ -305,22 +306,22 @@ def format_report(
         a(f"| {domain} | `{rel_path}` | {status} | {count} | {obs} |")
     a("")
 
-    # ─── Рівень 1 ───
+    # ─── Level 1 ───
     a("---")
     a("")
-    a("## Рівень 1 — Точні дублі msgid з різними англійськими перекладами")
+    a("## Level 1 — Exact msgid duplicates with different English translations")
     a("")
     if not level1:
-        a("*Розбіжностей не знайдено.*")
+        a("*No discrepancies found.*")
     else:
-        a("| Українська фраза | Англ. варіанти (домен) | К-сть варіантів | Запропонований єдиний EN | Примітка |")
+        a("| Ukrainian phrase | EN variants (domain) | Variant count | Suggested single EN | Note |")
         a("|---|---|---|---|---|")
         for g in level1:
             msgid = g["msgids"][0]
             variants = []
             seen_strs = {}
             for e in g["entries"]:
-                key = e["msgstr"] or "*(порожньо)*"
+                key = e["msgstr"] or "*(empty)*"
                 if key not in seen_strs:
                     seen_strs[key] = []
                 seen_strs[key].append(e["domain"])
@@ -332,29 +333,29 @@ def format_report(
             if non_empty:
                 suggested, reason = best_translation(non_empty)
             else:
-                suggested, reason = "*(нема перекладу)*", "всі порожні"
+                suggested, reason = "*(no translation)*", "all empty"
 
-            # Екранування pipe у таблиці
+            # Escape pipe in the table
             msgid_safe = msgid.replace("|", "\\|")
             suggested_safe = suggested.replace("|", "\\|")
             a(f"| {msgid_safe} | {variants_str} | {len(seen_strs)} | {suggested_safe} | {reason} |")
     a("")
 
-    # ─── Рівень 2 ───
+    # ─── Level 2 ───
     a("---")
     a("")
-    a("## Рівень 2 — Схожі msgid (нормалізовані збіги / SequenceMatcher ≥ 0.88)")
+    a("## Level 2 — Similar msgids (normalized matches / SequenceMatcher ≥ 0.88)")
     a("")
     if not level2:
-        a("*Схожих груп не знайдено.*")
+        a("*No similar groups found.*")
     else:
-        a("| Українські фрази | Англ. варіанти (домен) | К-сть варіантів | Запропонований єдиний EN | Примітка |")
+        a("| Ukrainian phrases | EN variants (domain) | Variant count | Suggested single EN | Note |")
         a("|---|---|---|---|---|")
         for g in level2:
             msgids_str = "<br>".join(m.replace("|", "\\|") for m in g["msgids"])
             seen_strs = {}
             for e in g["entries"]:
-                key = e["msgstr"] or "*(порожньо)*"
+                key = e["msgstr"] or "*(empty)*"
                 if key not in seen_strs:
                     seen_strs[key] = []
                 seen_strs[key].append(e["domain"])
@@ -367,9 +368,9 @@ def format_report(
             if non_empty:
                 suggested, reason = best_translation(non_empty)
             else:
-                suggested, reason = "*(нема перекладу)*", "всі порожні"
+                suggested, reason = "*(no translation)*", "all empty"
 
-            gtype = {"norm": "нормалізація", "sm": "SequenceMatcher"}.get(g.get("type", ""), g.get("type", ""))
+            gtype = {"norm": "normalization", "sm": "SequenceMatcher"}.get(g.get("type", ""), g.get("type", ""))
             suggested_safe = suggested.replace("|", "\\|")
             a(f"| {msgids_str} | {variants_str} | {len(seen_strs)} | {suggested_safe} | {gtype} |")
     a("")
@@ -377,12 +378,12 @@ def format_report(
     # ─── Fuzzy ───
     a("---")
     a("")
-    a("## Fuzzy записи (потребують перевірки перекладача)")
+    a("## Fuzzy entries (need translator review)")
     a("")
     if not fuzzy_entries:
-        a("*Fuzzy записів не знайдено.*")
+        a("*No fuzzy entries found.*")
     else:
-        a("| Домен | Українська фраза | Поточний EN (fuzzy) |")
+        a("| Domain | Ukrainian phrase | Current EN (fuzzy) |")
         a("|---|---|---|")
         for e in fuzzy_entries:
             mid = e["msgid"].replace("|", "\\|").replace("\n", " ")[:120]
@@ -390,15 +391,15 @@ def format_report(
             a(f"| {e['domain']} | {mid} | {mstr} |")
     a("")
 
-    # ─── Порожні ───
+    # ─── Empty ───
     a("---")
     a("")
-    a("## Порожні переклади (активні, не fuzzy)")
+    a("## Empty translations (active, non-fuzzy)")
     a("")
     if not empty_entries:
-        a("*Порожніх перекладів не знайдено.*")
+        a("*No empty translations found.*")
     else:
-        a("| Домен | Українська фраза |")
+        a("| Domain | Ukrainian phrase |")
         a("|---|---|")
         for e in empty_entries:
             mid = e["msgid"].replace("|", "\\|").replace("\n", " ")[:150]
@@ -408,11 +409,11 @@ def format_report(
     # ─── Obsolete ───
     a("---")
     a("")
-    a("## Obsolete записи (#~)")
+    a("## Obsolete entries (#~)")
     a("")
-    a(f"*Babel read_po не повертає obsolete записи через catalog — вони підраховані безпосередньо з файлів.*")
+    a(f"*Babel read_po does not return obsolete entries via the catalog — they are counted directly from the files.*")
     a("")
-    a("| Домен | Кількість obsolete |")
+    a("| Domain | Obsolete count |")
     a("|---|---|")
     for domain in DOMAINS:
         meta = domain_meta[domain]
@@ -424,15 +425,15 @@ def format_report(
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
-# ─── Режим A: застосувати Level-1 ────────────────────────────────────────────
+# ─── Mode A: apply Level-1 ────────────────────────────────────────────
 
 def apply_level1(level1: list, dry_run: bool = False) -> list[dict]:
     """
-    Для кожної Level-1 групи записати рекомендований EN у всі домени,
-    де поточний msgstr відрізняється.
+    For each Level-1 group, write the recommended EN into every domain
+    whose current msgstr differs.
 
-    Повертає список змін: [{domain, msgid, old_msgstr, new_msgstr}].
-    Якщо dry_run=True — нічого не пише у файли.
+    Returns the list of changes: [{domain, msgid, old_msgstr, new_msgstr}].
+    If dry_run=True — nothing is written to files.
     """
     # Babel write_po / read_po
     from babel.messages.pofile import read_po, write_po  # noqa: E402
@@ -440,7 +441,7 @@ def apply_level1(level1: list, dry_run: bool = False) -> list[dict]:
 
     changes = []
 
-    # Збираємо які домени потрібно переписати і що саме міняємо
+    # Collect which domains need rewriting and exactly what to change
     # domain -> {msgid -> new_msgstr}
     domain_patches: dict[str, dict[str, str]] = defaultdict(dict)
 
@@ -464,18 +465,18 @@ def apply_level1(level1: list, dry_run: bool = False) -> list[dict]:
     if dry_run or not changes:
         return changes
 
-    # Застосовуємо патчі домен за доменом
+    # Apply patches domain by domain
     for domain, patches in domain_patches.items():
         po_path = DOMAINS[domain]
         if not os.path.exists(po_path):
-            print(f"[ПРОПУСК] {domain}: файл не знайдено: {po_path}", file=sys.stderr)
+            print(f"[SKIP] {domain}: file not found: {po_path}", file=sys.stderr)
             continue
 
-        # Зчитуємо каталог
+        # Read the catalog
         with io_open(po_path, "rb") as f:
             catalog = read_po(f)
 
-        # Застосовуємо зміни
+        # Apply changes
         patched_count = 0
         for msg in catalog:
             if not msg.id:
@@ -484,19 +485,19 @@ def apply_level1(level1: list, dry_run: bool = False) -> list[dict]:
             if msgid_str in patches:
                 new_val = patches[msgid_str]
                 if isinstance(msg.string, dict):
-                    # plural — оновлюємо всі форми однаково (нетипово для EN, але безпечно)
+                    # plural — update all forms identically (atypical for EN, but safe)
                     msg.string = {k: new_val for k in msg.string}
                 else:
                     msg.string = new_val
                 patched_count += 1
 
-        print(f"[ПАТЧ] {domain}: {patched_count} записів оновлено → {po_path}", file=sys.stderr)
+        print(f"[PATCH] {domain}: {patched_count} entries updated → {po_path}", file=sys.stderr)
 
-        # Записуємо .po (sort_output=False — зберігаємо оригінальний порядок)
+        # Write .po (sort_output=False — keep the original order)
         with open(po_path, "wb") as f:
             write_po(f, catalog, sort_output=False)
 
-        # Перекомпілюємо .mo через pybabel
+        # Recompile .mo via pybabel
         import subprocess
         translations_dir = os.path.dirname(os.path.dirname(os.path.dirname(po_path)))
         cmd = [
@@ -508,37 +509,37 @@ def apply_level1(level1: list, dry_run: bool = False) -> list[dict]:
         ]
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
-            print(f"[ПОМИЛКА компіляції] {domain}: {result.stderr}", file=sys.stderr)
+            print(f"[COMPILE ERROR] {domain}: {result.stderr}", file=sys.stderr)
         else:
-            print(f"[OK] {domain}: .mo скомпільовано", file=sys.stderr)
+            print(f"[OK] {domain}: .mo compiled", file=sys.stderr)
 
     return changes
 
 
 def format_changes_report(changes: list[dict], level1_count: int) -> str:
-    """Формує Markdown-звіт про застосовані зміни Level-1."""
+    """Build a Markdown report of the applied Level-1 changes."""
     lines = []
     a = lines.append
 
-    a("# Застосовані зміни Level-1 — biomon EN translations")
+    a("# Applied Level-1 changes — biomon EN translations")
     a("")
-    a(f"Дата: 2026-06-16")
+    a(f"Date: 2026-06-16")
     a("")
 
     domains_touched = sorted(set(c["domain"] for c in changes))
-    a("## Підсумок")
+    a("## Summary")
     a("")
-    a(f"- Груп Level-1 оброблено: **{level1_count}**")
-    a(f"- Фактично змінено записів: **{len(changes)}**")
-    a(f"- Торкнуті домени: {', '.join(domains_touched) if domains_touched else 'жодного'}")
+    a(f"- Level-1 groups processed: **{level1_count}**")
+    a(f"- Entries actually changed: **{len(changes)}**")
+    a(f"- Domains touched: {', '.join(domains_touched) if domains_touched else 'none'}")
     a("")
 
     if not changes:
-        a("*Змін не внесено (вже узгоджено або нема Level-1 груп).*")
+        a("*No changes made (already consistent or no Level-1 groups).*")
     else:
-        a("## Деталі змін")
+        a("## Change details")
         a("")
-        a("| Домен | Українська фраза (msgid) | Старий EN | Новий EN |")
+        a("| Domain | Ukrainian phrase (msgid) | Old EN | New EN |")
         a("|---|---|---|---|")
         for c in sorted(changes, key=lambda x: (x["domain"], x["msgid"])):
             msgid_safe = c["msgid"].replace("|", "\\|").replace("\n", " ")[:120]
@@ -550,10 +551,10 @@ def format_changes_report(changes: list[dict], level1_count: int) -> str:
     return "\n".join(lines)
 
 
-# ─── Режим B: Level-2 → Excel ─────────────────────────────────────────────────
+# ─── Mode B: Level-2 → Excel ─────────────────────────────────────────────────
 
 def export_level2_xlsx(level2: list, output_path: str):
-    """Експортує Level-2 групи у .xlsx для ручної чистки."""
+    """Export Level-2 groups to .xlsx for manual cleanup."""
     import pandas as pd
 
     rows = []
@@ -562,7 +563,7 @@ def export_level2_xlsx(level2: list, output_path: str):
 
         seen_strs: dict[str, list[str]] = {}
         for e in g["entries"]:
-            key = e["msgstr"] or "*(порожньо)*"
+            key = e["msgstr"] or "*(empty)*"
             if key not in seen_strs:
                 seen_strs[key] = []
             seen_strs[key].append(e["domain"])
@@ -575,16 +576,16 @@ def export_level2_xlsx(level2: list, output_path: str):
         if non_empty:
             suggested, reason = best_translation(non_empty)
         else:
-            suggested, reason = "*(нема перекладу)*", "всі порожні"
+            suggested, reason = "*(no translation)*", "all empty"
 
-        gtype = {"norm": "нормалізація", "sm": "SequenceMatcher"}.get(g.get("type", ""), g.get("type", ""))
+        gtype = {"norm": "normalization", "sm": "SequenceMatcher"}.get(g.get("type", ""), g.get("type", ""))
 
         rows.append({
-            "Українські фрази (нормалізована група)": msgids_str,
-            "Англ. варіанти (з доменами)": variants_str,
-            "К-сть варіантів": len(seen_strs),
-            "Запропонований єдиний EN": suggested,
-            "Примітка": gtype,
+            "Ukrainian phrases (normalized group)": msgids_str,
+            "EN variants (with domains)": variants_str,
+            "Variant count": len(seen_strs),
+            "Suggested single EN": suggested,
+            "Note": gtype,
         })
 
     df = pd.DataFrame(rows)
@@ -595,7 +596,7 @@ def export_level2_xlsx(level2: list, output_path: str):
         workbook = writer.book
         worksheet = writer.sheets["Level2"]
 
-        # Формати
+        # Formats
         header_fmt = workbook.add_format({
             "bold": True,
             "bg_color": "#D7E4BC",
@@ -614,55 +615,55 @@ def export_level2_xlsx(level2: list, output_path: str):
             "align": "center",
         })
 
-        # Заголовки з форматом
+        # Headers with format
         for col_num, col_name in enumerate(df.columns):
             worksheet.write(0, col_num, col_name, header_fmt)
 
-        # Заморозити перший рядок
+        # Freeze the first row
         worksheet.freeze_panes(1, 0)
 
-        # Ширини колонок (підбір вручну)
+        # Column widths (hand-tuned)
         col_widths = [55, 55, 12, 45, 18]
         for i, width in enumerate(col_widths):
             worksheet.set_column(i, i, width)
 
-        # Висота рядків і форматування клітинок
+        # Row height and cell formatting
         for row_idx in range(len(df)):
-            # Рядок трохи вищий для читабельності
+            # Slightly taller rows for readability
             worksheet.set_row(row_idx + 1, 60)
             for col_idx, col_name in enumerate(df.columns):
                 val = df.iloc[row_idx][col_name]
-                if col_name == "К-сть варіантів":
+                if col_name == "Variant count":
                     worksheet.write(row_idx + 1, col_idx, val, num_fmt)
                 else:
                     worksheet.write(row_idx + 1, col_idx, str(val) if val is not None else "", cell_fmt)
 
-        # Автофільтр
+        # Autofilter
         worksheet.autofilter(0, 0, len(df), len(df.columns) - 1)
 
-    print(f"[OK] Level-2 Excel збережено: {output_path} ({len(df)} рядків)", file=sys.stderr)
+    print(f"[OK] Level-2 Excel saved: {output_path} ({len(df)} rows)", file=sys.stderr)
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="Перевірка та синхронізація англійських перекладів biomon")
-    parser.add_argument("--out", help="Шлях до вихідного .md файлу (за замовчуванням — stdout)")
+    parser = argparse.ArgumentParser(description="Check and synchronize biomon English translations")
+    parser.add_argument("--out", help="Path to the output .md file (default: stdout)")
     parser.add_argument(
         "--apply-level1",
         action="store_true",
         dest="apply_level1",
-        help="Застосувати рекомендовані EN Level-1 до .po і перекомпілювати .mo",
+        help="Apply the recommended EN Level-1 to .po and recompile .mo",
     )
     parser.add_argument(
         "--changes-out",
         dest="changes_out",
-        help="Куди зберегти .md зі списком змін Level-1 (за замовч. stdout)",
+        help="Where to save the .md with the Level-1 change list (default: stdout)",
     )
     parser.add_argument(
         "--level2-xlsx",
         dest="level2_xlsx",
-        help="Шлях для збереження Level-2 Excel (.xlsx)",
+        help="Path to save the Level-2 Excel (.xlsx)",
     )
     args = parser.parse_args()
 
@@ -673,46 +674,46 @@ def main():
         result = load_domain(domain, path)
         domain_meta[domain] = result
         if result["missing"]:
-            print(f"[ПОПЕРЕДЖЕННЯ] Домен '{domain}': файл не знайдено: {path}", file=sys.stderr)
+            print(f"[WARNING] Domain '{domain}': file not found: {path}", file=sys.stderr)
         elif result["error"]:
-            print(f"[ПОМИЛКА] Домен '{domain}': {result['error']}", file=sys.stderr)
+            print(f"[ERROR] Domain '{domain}': {result['error']}", file=sys.stderr)
         else:
             all_entries.extend(result["entries"])
-            print(f"[OK] {domain}: {len(result['entries'])} активних записів, "
+            print(f"[OK] {domain}: {len(result['entries'])} active entries, "
                   f"{result['obsolete_count']} obsolete", file=sys.stderr)
 
     level1, level2, fuzzy_entries, empty_entries = analyze(all_entries)
     total_obsolete = sum(v.get("obsolete_count", 0) for v in domain_meta.values())
 
-    print(f"\n[Аналіз] Рівень 1: {len(level1)} груп | Рівень 2: {len(level2)} груп | "
-          f"Fuzzy: {len(fuzzy_entries)} | Порожніх: {len(empty_entries)} | "
+    print(f"\n[Analysis] Level 1: {len(level1)} groups | Level 2: {len(level2)} groups | "
+          f"Fuzzy: {len(fuzzy_entries)} | Empty: {len(empty_entries)} | "
           f"Obsolete: {total_obsolete}", file=sys.stderr)
 
-    # ── Режим A: застосувати Level-1 ──
+    # ── Mode A: apply Level-1 ──
     if args.apply_level1:
-        print("\n[Режим] --apply-level1: застосовую рекомендовані EN...", file=sys.stderr)
+        print("\n[Mode] --apply-level1: applying recommended EN...", file=sys.stderr)
         changes = apply_level1(level1)
         report = format_changes_report(changes, len(level1))
         if args.changes_out:
             with open(args.changes_out, "w", encoding="utf-8") as f:
                 f.write(report)
-            print(f"[Готово] Звіт змін збережено: {args.changes_out}", file=sys.stderr)
+            print(f"[Done] Change report saved: {args.changes_out}", file=sys.stderr)
         else:
             print(report)
         return
 
-    # ── Режим B: Level-2 → xlsx ──
+    # ── Mode B: Level-2 → xlsx ──
     if args.level2_xlsx:
         export_level2_xlsx(level2, args.level2_xlsx)
         return
 
-    # ── Стандартний режим: звіт ──
+    # ── Standard mode: report ──
     report = format_report(domain_meta, level1, level2, fuzzy_entries, empty_entries, all_entries)
 
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(report)
-        print(f"[Готово] Звіт збережено: {args.out}", file=sys.stderr)
+        print(f"[Done] Report saved: {args.out}", file=sys.stderr)
     else:
         print(report)
 

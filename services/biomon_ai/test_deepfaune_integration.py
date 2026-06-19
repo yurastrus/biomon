@@ -1,29 +1,30 @@
-"""Інтеграційні тести DeepFauneAdapter — справжня модель на справжніх фото.
+# SPDX-License-Identifier: AGPL-3.0-only
+"""Integration tests for DeepFauneAdapter — the real model on real photos.
 
-ЗАПУСК (з biomon-ai-venv, який має torch+ultralytics):
+RUNNING (from biomon-ai-venv, which has torch+ultralytics):
     /c/Users/IuriiStrus/repositories/biomon-ai-venv/Scripts/python \
         -m services.biomon_ai.test_deepfaune_integration
 
-Або з кореня біомону:
+Or from the biomon root:
     DEEPFAUNE_PATH=C:/Users/IuriiStrus/repositories/deepfaune-src-1.4.1-08112025 \
     /c/Users/IuriiStrus/repositories/biomon-ai-venv/Scripts/python -m unittest \
         services.biomon_ai.test_deepfaune_integration -v
 
-Що покривають:
-  • Адаптер коректно імпортує DeepFaune і завантажує моделі.
-  • Прогнози на еталонних фото з testdata/ збігаються з очікуваннями.
-  • DeepFaune перевпорядковує файли за EXIF date → input_order ≠ output_order.
-    Адаптер має повернути результат у ВХІДНОМУ порядку.
-  • Confidence > threshold → prediction_label валідне; інакше 'undefined'.
-  • Спецкласи empty/human/vehicle працюють і human_count відображається.
+What they cover:
+  • The adapter correctly imports DeepFaune and loads the models.
+  • Predictions on reference photos from testdata/ match expectations.
+  • DeepFaune reorders files by EXIF date → input_order ≠ output_order.
+    The adapter must return the result in the INPUT order.
+  • Confidence > threshold → prediction_label is valid; otherwise 'undefined'.
+  • Special classes empty/human/vehicle work and human_count is reported.
 
-Тести SKIP-ються якщо немає DeepFaune.
+Tests are SKIPped if DeepFaune is not available.
 """
 
 import os
 import unittest
 
-# Шлях до DeepFaune. За замовчуванням — локальна dev-копія.
+# Path to DeepFaune. Defaults to a local dev copy.
 DEEPFAUNE_PATH = os.environ.get(
     'DEEPFAUNE_PATH',
     'C:/Users/IuriiStrus/repositories/deepfaune-src-1.4.1-08112025'
@@ -32,12 +33,12 @@ TESTDATA_DIR = os.path.join(DEEPFAUNE_PATH, 'testdata')
 
 
 def _testdata_available() -> bool:
-    """Чи доступні DeepFaune і його testdata?"""
+    """Are DeepFaune and its testdata available?"""
     if not os.path.isdir(TESTDATA_DIR):
         return False
     if not os.path.exists(os.path.join(DEEPFAUNE_PATH, 'predictTools.py')):
         return False
-    # Перевіряємо наявність хоча б одних ваг
+    # Check that at least one set of weights is present
     for w in [
         'deepfaune-yolov8s_960.pt',
         'deepfaune-vit_large_patch14_dinov2.lvd142m.v4.pt',
@@ -56,13 +57,13 @@ _AVAILABLE = _testdata_available()
 
 @unittest.skipUnless(
     _AVAILABLE,
-    f'DeepFaune не знайдено в {DEEPFAUNE_PATH} або torch не встановлено '
-    '(потрібен biomon-ai-venv).'
+    f'DeepFaune not found at {DEEPFAUNE_PATH} or torch is not installed '
+    '(biomon-ai-venv required).'
 )
 class TestDeepFauneAdapter(unittest.TestCase):
-    """Прогони з реальною моделлю. Модель завантажується один раз на клас
-    (cls.adapter) — це довго (~10-30 сек), тому розкидаємо запити в один
-    адаптер для всіх тестів."""
+    """Runs with the real model. The model is loaded once per class
+    (cls.adapter) — this is slow (~10-30 sec), so we spread requests across
+    a single adapter for all tests."""
 
     @classmethod
     def setUpClass(cls):
@@ -85,7 +86,7 @@ class TestDeepFauneAdapter(unittest.TestCase):
         self.assertFalse(cfg['birdclassification'])
         self.assertIn('classifier', cfg)
 
-    # ── Каноничні прогнози ────────────────────────────────────────────
+    # ── Canonical predictions ─────────────────────────────────────────
 
     def test_roe_deer(self):
         results = self.adapter.predict_observation([self._path('roedeer11.JPG')])
@@ -113,7 +114,7 @@ class TestDeepFauneAdapter(unittest.TestCase):
         results = self.adapter.predict_observation([self._path('wolf1.JPG')])
         self.assertEqual(results[0].prediction_label, 'wolf')
 
-    # ── Спецкласи ─────────────────────────────────────────────────────
+    # ── Special classes ───────────────────────────────────────────────
 
     def test_empty(self):
         results = self.adapter.predict_observation([self._path('empty1.JPG')])
@@ -132,10 +133,10 @@ class TestDeepFauneAdapter(unittest.TestCase):
         results = self.adapter.predict_observation([self._path('vehicle.JPG')])
         self.assertEqual(results[0].prediction_label, 'vehicle')
 
-    # ── Серія з декількох фото одного виду ────────────────────────────
+    # ── Series of several photos of the same species ──────────────────
 
     def test_sequence_of_same_species(self):
-        """3 фото козулі в одній серії → всі мають однаковий sequence-aware prediction."""
+        """3 roe deer photos in one series → all get the same sequence-aware prediction."""
         paths = [
             self._path('roedeer11.JPG'),
             self._path('roedeer12.JPG'),
@@ -146,35 +147,35 @@ class TestDeepFauneAdapter(unittest.TestCase):
         for r in results:
             self.assertEqual(r.prediction_label, 'roe deer')
 
-    # ── Перевірка PORYADKU виходу (input order != EXIF order) ─────────
+    # ── Output ORDER check (input order != EXIF order) ────────────────
 
     def test_output_preserves_input_order(self):
-        """DeepFaune внутрішньо сортує за EXIF date — адаптер має повернути
-        результат у вхідному порядку, не у датах."""
-        # roedeer11 датована 2021, wildboar11 — 2019: за EXIF DeepFaune
-        # поверне wildboar першим. Якщо input нав'язує інший порядок,
-        # адаптер повинен його дотримуватись.
+        """DeepFaune internally sorts by EXIF date — the adapter must return
+        the result in the input order, not by date."""
+        # roedeer11 is dated 2021, wildboar11 — 2019: by EXIF DeepFaune would
+        # return wildboar first. If the input imposes a different order, the
+        # adapter must respect it.
         input_paths = [
             self._path('roedeer11.JPG'),    # 2021
             self._path('wildboar11.JPG'),   # 2019
-            self._path('fox1.JPG'),         # без EXIF
+            self._path('fox1.JPG'),         # no EXIF
         ]
         results = self.adapter.predict_observation(input_paths)
-        # Перевіряємо що photo_path кожного результату відповідає input
+        # Check that each result's photo_path matches the input
         for input_p, result in zip(input_paths, results):
             self.assertEqual(
                 result.photo_path, input_p,
                 f'Output order mismatch: input={input_p}, got photo_path={result.photo_path}'
             )
-        # І прогнози правильні
+        # And the predictions are correct
         self.assertEqual(results[0].prediction_label, 'roe deer')
         self.assertEqual(results[1].prediction_label, 'wild boar')
         self.assertEqual(results[2].prediction_label, 'fox')
 
-    # ── Mixed observation (різні види разом) — теж має правильно мапати ─
+    # ── Mixed observation (different species together) — must also map right ─
 
     def test_mixed_species(self):
-        """Фото різних видів в одному батчі — кожне має свій правильний клас."""
+        """Photos of different species in one batch — each gets its correct class."""
         input_paths = [
             self._path('roedeer11.JPG'),
             self._path('fox1.JPG'),
@@ -183,19 +184,19 @@ class TestDeepFauneAdapter(unittest.TestCase):
         ]
         results = self.adapter.predict_observation(input_paths)
         labels = [r.prediction_label for r in results]
-        # Порядок: roe deer, fox, badger, empty (у вхідному порядку)
+        # Order: roe deer, fox, badger, empty (in input order)
         self.assertEqual(labels, ['roe deer', 'fox', 'badger', 'empty'])
 
-    # ── Порожній/edge ─────────────────────────────────────────────────
+    # ── Empty/edge ────────────────────────────────────────────────────
 
     def test_empty_input(self):
         results = self.adapter.predict_observation([])
         self.assertEqual(results, [])
 
-    # ── Інтеграція з species_map ──────────────────────────────────────
+    # ── Integration with species_map ──────────────────────────────────
 
     def test_predictions_map_to_species_ids(self):
-        """Перевіряємо що сирі labels від DeepFaune мапаються у species_id."""
+        """Check that raw labels from DeepFaune map to species_id."""
         from services.biomon_ai.species_map import map_deepfaune_label
 
         results = self.adapter.predict_observation([
@@ -212,7 +213,7 @@ class TestDeepFauneAdapter(unittest.TestCase):
 
 if __name__ == '__main__':
     if not _AVAILABLE:
-        print(f'SKIP: DeepFaune не знайдено в {DEEPFAUNE_PATH}')
-        print('Або torch не встановлено в активному venv.')
-        print('Має запускатись з biomon-ai-venv.')
+        print(f'SKIP: DeepFaune not found at {DEEPFAUNE_PATH}')
+        print('Or torch is not installed in the active venv.')
+        print('Must be run from biomon-ai-venv.')
     unittest.main(verbosity=2)

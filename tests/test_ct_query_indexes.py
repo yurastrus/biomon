@@ -1,11 +1,11 @@
 """
-Idea 2 (#17): індекси photos.status та identifications.user_id.
+Idea 2 (#17): indexes on photos.status and identifications.user_id.
 
-На проді обидва індекси вже існували — тут гарантуємо, що вони
-ЗАДЕКЛАРОВАНІ в моделі (shared-ct), тож create_all на нових/dev/тест
-інсталяціях їх теж створює, і метадані відповідають реальній БД.
+Both indexes already existed in prod — here we guarantee they are
+DECLARED in the model (shared-ct), so create_all on new/dev/test
+installations creates them too, and the metadata matches the real DB.
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_ct_query_indexes.py -v
 """
 from sqlalchemy import create_engine, inspect
@@ -24,12 +24,12 @@ def test_index_declared_in_identification_model():
 
 
 def test_create_all_materializes_indexes_on_fresh_db():
-    """create_all на чистій SQLite фізично створює обидва індекси
-    (саме цей сценарій раніше їх не давав — вони були лише на проді)."""
+    """create_all on a clean SQLite physically creates both indexes
+    (this is exactly the scenario that previously failed to — they were prod-only)."""
     from app.camera_traps.models import Photo, Identification
 
     engine = create_engine('sqlite:///:memory:')
-    # Лише дві потрібні таблиці (без PG-only типів у решті моделей)
+    # Only the two needed tables (avoids PG-only types in the other models)
     Photo.__table__.create(bind=engine, checkfirst=True)
     Identification.__table__.create(bind=engine, checkfirst=True)
 
@@ -43,7 +43,7 @@ def test_create_all_materializes_indexes_on_fresh_db():
 
 
 def test_index_columns_are_correct():
-    """Індекси на правильних колонках (status / user_id)."""
+    """Indexes are on the correct columns (status / user_id)."""
     from app.camera_traps.models import Photo, Identification
     photo_ix = {i.name: [c.name for c in i.columns]
                 for i in Photo.__table__.indexes}

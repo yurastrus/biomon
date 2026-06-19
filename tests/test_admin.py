@@ -1,13 +1,13 @@
 """
-Інтеграційні тести для адмін-маршрутів.
+Integration tests for the admin routes.
 
-Перевіряє:
-  - Доступ (хто може, хто не може зайти на маршрут)
-  - CRUD-операції: користувачі, установи, ролі
-  - Бізнес-правила: менеджер бачить тільки своїх, не може видалити адміна тощо
-  - Валідацію WTForms (дублікат username, коротке ім'я тощо)
+Checks:
+  - Access (who can and can't reach a route)
+  - CRUD operations: users, institutions, roles
+  - Business rules: a manager sees only their own users, can't delete an admin, etc.
+  - WTForms validation (duplicate username, too-short name, etc.)
 
-Запуск:
+Run:
     C:/Users/IuriiStrus/repositories/biomon/venv/Scripts/python.exe \
         -m unittest tests.test_admin -v
 """
@@ -15,20 +15,20 @@ import os
 import unittest
 from unittest.mock import patch, MagicMock
 
-# ── інструмент для входу в Flask-Login через сесію ──────────────────────────
+# ── helper to log into Flask-Login via the session ──────────────────────────
 def _login(client, user_id):
-    """Встановлює Flask-Login сесію для user_id без HTTP-запиту."""
+    """Set the Flask-Login session for user_id without an HTTP request."""
     with client.session_transaction() as sess:
         sess['_user_id'] = str(user_id)
         sess['_fresh']   = True
 
 
-# ── базовий клас із спільним setUp ──────────────────────────────────────────
+# ── base class with shared setUp ─────────────────────────────────────────────
 class AdminTestBase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Створюємо app один раз для всього класу."""
+        """Create the app once for the whole class."""
         os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
         cls._ct_patcher = patch(
             'app.camera_traps.database.create_engine',
@@ -45,7 +45,7 @@ class AdminTestBase(unittest.TestCase):
         os.environ.pop('DATABASE_URL', None)
 
     def setUp(self):
-        """Перед кожним тестом — чиста БД з базовим набором даних."""
+        """Before each test - clean DB with the base data set."""
         self.ctx = self.app.app_context()
         self.ctx.push()
 
@@ -65,18 +65,18 @@ class AdminTestBase(unittest.TestCase):
     # ── helpers ──────────────────────────────────────────────────────────────
 
     def _seed(self):
-        """Створює мінімальний набір ролей, установ та користувачів."""
+        """Create a minimal set of roles, institutions and users."""
         from app.extensions import db, bcrypt
         from app.models import User, Role, Institution, UserInstitution
 
-        # Ролі
+        # Roles
         self.role_admin   = Role(name='admin')
         self.role_manager = Role(name='manager')
         self.role_viewer  = Role(name='viewer')
         db.session.add_all([self.role_admin, self.role_manager, self.role_viewer])
         db.session.flush()
 
-        # Установи
+        # Institutions
         self.inst_a = Institution(name_uk='Заповідник А', name_en='Reserve A', code='res_a')
         self.inst_b = Institution(name_uk='Заповідник Б', name_en='Reserve B', code='res_b')
         db.session.add_all([self.inst_a, self.inst_b])
@@ -84,12 +84,12 @@ class AdminTestBase(unittest.TestCase):
 
         pw = bcrypt.generate_password_hash('testpass').decode('utf-8')
 
-        # Адмін
+        # Admin
         self.admin = User(username='admin_user', password_hash=pw)
         self.admin.roles.append(self.role_admin)
         db.session.add(self.admin)
 
-        # Менеджер — прив'язаний до inst_a
+        # Manager - bound to inst_a
         self.manager = User(username='manager_user', password_hash=pw)
         self.manager.roles.append(self.role_manager)
         self.manager.institution_links.append(
@@ -97,7 +97,7 @@ class AdminTestBase(unittest.TestCase):
         )
         db.session.add(self.manager)
 
-        # Звичайний користувач, якого менеджер створив
+        # Regular user created by the manager
         self.regular = User(username='regular_user', password_hash=pw)
         self.regular.roles.append(self.role_viewer)
         self.regular.institution_links.append(
@@ -106,13 +106,13 @@ class AdminTestBase(unittest.TestCase):
         db.session.add(self.regular)
         db.session.flush()
 
-        # Встановлюємо created_by_id ПІСЛЯ flush (щоб мати ID)
+        # Set created_by_id AFTER flush (so we have the ID)
         self.regular.created_by_id = self.manager.id
 
         db.session.commit()
 
     def _post(self, url, data, user_id):
-        """Логін + POST на url."""
+        """Login + POST to url."""
         _login(self.client, user_id)
         return self.client.post(url, data=data, follow_redirects=True)
 
@@ -122,11 +122,11 @@ class AdminTestBase(unittest.TestCase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ ДОСТУПУ
+# ACCESS TESTS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestAdminAccess(AdminTestBase):
-    """Хто має право заходити на адмін-маршрути."""
+    """Who is allowed to reach the admin routes."""
 
     def test_anonymous_redirected_from_user_list(self):
         resp = self.client.get('/uk/admin/users', follow_redirects=True)
@@ -165,11 +165,11 @@ class TestAdminAccess(AdminTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ USER LIST
+# USER LIST TESTS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestUserList(AdminTestBase):
-    """Фільтрація у списку користувачів."""
+    """Filtering in the user list."""
 
     def test_admin_sees_all_users(self):
         resp = self._get('/uk/admin/users', self.admin.id)
@@ -184,11 +184,11 @@ class TestUserList(AdminTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ СТВОРЕННЯ КОРИСТУВАЧА
+# USER CREATION TESTS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestAddUser(AdminTestBase):
-    """add_user: success, дублікат username, валідація."""
+    """add_user: success, duplicate username, validation."""
 
     def _add_url(self):
         return '/uk/admin/users/add'
@@ -220,16 +220,16 @@ class TestAddUser(AdminTestBase):
     def test_duplicate_username_rejected(self):
         from app.models import User
         resp = self._post(self._add_url(), self._valid_data('regular_user'), self.admin.id)
-        # Повинен залишитись рівно один regular_user (нового не створено)
+        # Exactly one regular_user should remain (no new one created)
         count = User.query.filter_by(username='regular_user').count()
         self.assertEqual(count, 1)
-        # Відповідь має містити flash-помилку або форму (не redirect 302)
+        # Response should contain a flash error or the form (not a 302 redirect)
         self.assertEqual(resp.status_code, 200)
 
     def test_short_username_rejected(self):
         from app.models import User
         resp = self._post(self._add_url(), {
-            'username': 'ab',  # < 3 символи
+            'username': 'ab',  # < 3 chars
             'password': 'securepass123',
         }, self.admin.id)
         self.assertIsNone(User.query.filter_by(username='ab').first())
@@ -238,7 +238,7 @@ class TestAddUser(AdminTestBase):
         from app.models import User
         resp = self._post(self._add_url(), {
             'username': 'validname',
-            'password': '123',  # відхиляється: < 8 символів і без літери
+            'password': '123',  # rejected: < 8 chars and no letter
         }, self.admin.id)
         self.assertIsNone(User.query.filter_by(username='validname').first())
 
@@ -281,7 +281,7 @@ class TestAddUser(AdminTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ РЕДАГУВАННЯ КОРИСТУВАЧА
+# USER EDIT TESTS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestEditUser(AdminTestBase):
@@ -317,16 +317,16 @@ class TestEditUser(AdminTestBase):
             'username': 'admin_user',
             'email': 'hacked@example.com',
         }, self.manager.id)
-        # Переконуємося, що email адміна не змінився
+        # Make sure the admin's email did not change
         u = User.query.get(self.admin.id)
         self.assertNotEqual(u.email, 'hacked@example.com')
 
     def test_manager_cannot_edit_user_from_other_institution(self):
-        """Менеджер inst_a не може редагувати user лише з inst_b."""
+        """A manager of inst_a cannot edit a user that's only in inst_b."""
         from app.extensions import db
         from app.models import User, UserInstitution
 
-        # Переводимо regular_user до inst_b (прибираємо inst_a)
+        # Move regular_user to inst_b (remove inst_a)
         self.regular.institution_links = [
             UserInstitution(institution_id=self.inst_b.id, can_export=False)
         ]
@@ -363,25 +363,25 @@ class TestEditUser(AdminTestBase):
     def test_duplicate_username_on_edit_rejected(self):
         from app.models import User
         self._post(self._edit_url(self.regular.id), {
-            'username': 'admin_user',  # вже зайнятий
+            'username': 'admin_user',  # already taken
         }, self.admin.id)
         u = User.query.get(self.regular.id)
-        # username не змінився
+        # username did not change
         self.assertEqual(u.username, 'regular_user')
 
     def test_edit_preserves_hidden_roles(self):
         """
-        Менеджер не може бачити роль 'admin', тому при редагуванні
-        ця роль не повинна зникнути з іншого користувача.
+        A manager can't see the 'admin' role, so editing
+        should not drop that role from another user.
         """
         from app.extensions import db
         from app.models import User, UserInstitution
 
-        # Робимо 'regular_user' адміном і переміщуємо до inst_a
+        # Make 'regular_user' an admin and move them to inst_a
         self.regular.roles.append(self.role_admin)
         db.session.commit()
 
-        # Менеджер редагує — надсилає порожній список ролей (не бачить admin)
+        # Manager edits - sends an empty role list (doesn't see admin)
         self._post(self._edit_url(self.regular.id), {
             'username': 'regular_user',
             'roles': [],
@@ -389,12 +389,12 @@ class TestEditUser(AdminTestBase):
 
         u = User.query.get(self.regular.id)
         role_names = {r.name for r in u.roles}
-        # Роль admin повинна залишитись (менеджер її не бачив і не міг прибрати)
+        # The admin role should remain (manager didn't see it and couldn't remove it)
         self.assertIn('admin', role_names)
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ ВИДАЛЕННЯ КОРИСТУВАЧА
+# USER DELETION TESTS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestDeleteUser(AdminTestBase):
@@ -421,7 +421,7 @@ class TestDeleteUser(AdminTestBase):
     def test_manager_cannot_delete_user_not_created_by_him(self):
         from app.extensions import db
         from app.models import User
-        # Відв'язуємо created_by_id від менеджера
+        # Detach created_by_id from the manager
         self.regular.created_by_id = self.admin.id
         db.session.commit()
 
@@ -441,11 +441,11 @@ class TestDeleteUser(AdminTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ CRUD УСТАНОВ
+# INSTITUTION CRUD TESTS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestInstitutionCRUD(AdminTestBase):
-    """Установи: тільки admin."""
+    """Institutions: admin only."""
 
     def test_admin_can_create_institution(self):
         from app.models import Institution
@@ -461,7 +461,7 @@ class TestInstitutionCRUD(AdminTestBase):
         self._post('/uk/admin/institutions/add', {
             'name_uk': 'Дублікат',
             'name_en': '',
-            'code': 'res_a',  # вже існує
+            'code': 'res_a',  # already exists
         }, self.admin.id)
         count = Institution.query.filter_by(code='res_a').count()
         self.assertEqual(count, 1)
@@ -491,12 +491,12 @@ class TestInstitutionCRUD(AdminTestBase):
         self.assertIsNone(Institution.query.get(self.inst_b.id))
 
     def test_edit_own_code_not_duplicate(self):
-        """Можна зберегти установу з тим самим кодом (не вважається дублікатом)."""
+        """An institution can be saved with its own code (not treated as a duplicate)."""
         from app.models import Institution
         self._post(f'/uk/admin/institutions/edit/{self.inst_a.id}', {
             'name_uk': 'Інша назва',
             'name_en': '',
-            'code': 'res_a',  # той самий код — OK
+            'code': 'res_a',  # same code - OK
         }, self.admin.id)
         inst = Institution.query.get(self.inst_a.id)
         self.assertEqual(inst.name_uk, 'Інша назва')
@@ -504,11 +504,11 @@ class TestInstitutionCRUD(AdminTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ CRUD РОЛЕЙ
+# ROLE CRUD TESTS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestRoleCRUD(AdminTestBase):
-    """Ролі: тільки admin."""
+    """Roles: admin only."""
 
     def test_admin_can_create_role(self):
         from app.models import Role
@@ -521,7 +521,7 @@ class TestRoleCRUD(AdminTestBase):
     def test_duplicate_role_name_rejected(self):
         from app.models import Role
         self._post('/uk/admin/roles/add', {
-            'name': 'viewer',  # вже існує
+            'name': 'viewer',  # already exists
             'assignable_by': '',
         }, self.admin.id)
         count = Role.query.filter_by(name='viewer').count()
@@ -580,11 +580,11 @@ class TestRoleCRUD(AdminTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ СЕРВІСНОГО ШАРУ (одиничні, без HTTP)
+# SERVICE LAYER TESTS (unit, no HTTP)
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestUserService(AdminTestBase):
-    """Юніт-тести для UserService (без HTTP)."""
+    """Unit tests for UserService (no HTTP)."""
 
     def _make_user(self, role_names):
         from unittest.mock import MagicMock
@@ -643,10 +643,10 @@ class TestUserService(AdminTestBase):
 
     def test_get_available_roles_for_manager_excludes_admin_role(self):
         from app.admin.services import UserService
-        # Роль admin має assignable_by == None за нашою схемою; менеджер бачить
-        # тільки ролі з assignable_by IS NULL або 'manager'.
-        # У нашому seed admin/manager не мають обмеження — перевіряємо загальну логіку:
-        # менеджер не повинен отримати ролі з assignable_by='admin'
+        # The admin role has assignable_by == None in our schema; a manager sees
+        # only roles with assignable_by IS NULL or 'manager'.
+        # In our seed admin/manager have no restriction — check the general logic:
+        # a manager must not get roles with assignable_by='admin'
         from app.extensions import db
         from app.models import Role
         restricted = Role(name='restricted_role', assignable_by='admin')
@@ -659,7 +659,7 @@ class TestUserService(AdminTestBase):
 
 
 class TestInstitutionService(AdminTestBase):
-    """Юніт-тести для InstitutionService."""
+    """Unit tests for InstitutionService."""
 
     def test_is_code_unique_for_new_code(self):
         from app.admin.services import InstitutionService
@@ -675,7 +675,7 @@ class TestInstitutionService(AdminTestBase):
 
 
 class TestRoleService(AdminTestBase):
-    """Юніт-тести для RoleService."""
+    """Unit tests for RoleService."""
 
     def test_is_name_unique_for_new_name(self):
         from app.admin.services import RoleService
@@ -699,15 +699,15 @@ class TestRoleService(AdminTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ ЗБЕРЕЖЕННЯ ФОРМИ ПРИ ПОМИЛЦІ ВАЛІДАЦІЇ (п.1)
+# FORM PRESERVATION ON VALIDATION ERROR TESTS (item 1)
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestAddUserFormRerender(AdminTestBase):
-    """Re-render /add зберігає установи та ролі при помилці пароля.
+    """Re-rendering /add preserves institutions and roles on a password error.
 
-    Пароль вмисно невалідний (лише цифри, без літер) — форма має
-    повернутися з тим самим username, відміченими установами та ролями,
-    але поле пароля порожнє.
+    The password is intentionally invalid (digits only, no letters) — the form
+    must come back with the same username, checked institutions and roles,
+    but with an empty password field.
     """
 
     def _add_url(self):
@@ -716,7 +716,7 @@ class TestAddUserFormRerender(AdminTestBase):
     def _post_bad_password(self, extra=None):
         data = {
             'username': 'rerender_user',
-            'password': '12345678',  # відхиляється: немає літер
+            'password': '12345678',  # rejected: no letters
         }
         if extra:
             data.update(extra)
@@ -725,7 +725,7 @@ class TestAddUserFormRerender(AdminTestBase):
 
     def test_rerenders_on_bad_password(self):
         resp = self._post_bad_password()
-        # Залишається на тій самій сторінці (200, не redirect)
+        # Stays on the same page (200, not a redirect)
         self.assertEqual(resp.status_code, 200)
 
     def test_username_preserved_on_bad_password(self):
@@ -734,10 +734,10 @@ class TestAddUserFormRerender(AdminTestBase):
 
     def test_institution_checkbox_preserved_on_bad_password(self):
         resp = self._post_bad_password({'institutions': [str(self.inst_a.id)]})
-        # Чекбокс доступу до inst_a має бути відмічений
+        # The inst_a access checkbox must be checked
         expected = f'name="institutions" value="{self.inst_a.id}"'.encode()
         self.assertIn(expected, resp.data)
-        # Перевіряємо, що атрибут checked присутній у рядку відповідного чекбоксу
+        # Verify the checked attribute is present on the matching checkbox line
         import re
         pattern = (
             rb'<input type="checkbox" name="institutions" value="' +
@@ -758,22 +758,22 @@ class TestAddUserFormRerender(AdminTestBase):
 
     def test_password_field_empty_on_rerender(self):
         resp = self._post_bad_password()
-        # PasswordField не рендерить value= у HTML — поле завжди порожнє
+        # PasswordField does not render value= in HTML — the field is always empty
         self.assertNotIn(b'value="12345678"', resp.data)
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ТЕСТИ ГРУПУВАННЯ ПО ЕКОРЕГІОНАХ (п.4)
+# ECOREGION GROUPING TESTS (item 4)
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestAddUserEcoregionGrouping(AdminTestBase):
-    """Форма /add відображає установи згрупованими по екорегіонах."""
+    """The /add form displays institutions grouped by ecoregion."""
 
     def setUp(self):
         super().setUp()
         from app.extensions import db
         from app.models import Institution
-        # Додаємо установи з екорегіонами
+        # Add institutions with ecoregions
         self.eco1_inst1 = Institution(
             name_uk='Установа 1 (Карпати)',
             name_en='Institute 1 (Carpathians)',
@@ -825,7 +825,7 @@ class TestAddUserEcoregionGrouping(AdminTestBase):
         group_keys = [g['eco_key'] for g in groups]
         self.assertIn('Карпатський', group_keys)
         self.assertIn('Поліський', group_keys)
-        # Карпатська група має дві установи
+        # The Carpathian group has two institutions
         carpathian = next(g for g in groups if g['eco_key'] == 'Карпатський')
         self.assertEqual(len(carpathian['institutions']), 2)
 

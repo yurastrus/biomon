@@ -1,22 +1,22 @@
 """
-Тести для шляху /upload-fast (швидке завантаження великих наборів).
+Tests for the /upload-fast path (fast upload of large sets).
 
-Покриває:
-  1. Доступ до сторінки /upload-fast (manager+ only)
-  2. Роут /api/finalize-batch-async — стани, ідемпотентність
-  3. Роут /api/batch/<id>/uploaded-files
+Cover:
+  1. Access to the /upload-fast page (manager+ only)
+  2. /api/finalize-batch-async route — states, idempotency
+  3. /api/batch/<id>/uploaded-files route
   4. fast_upload.recover_stale_grouping_batches (smoke)
-  5. INTEGRATION (опційно, потребує реальної ct_db у Postgres):
-     group_batch_into_series_sql — коректність меж серій, ідемпотентність,
-     повторне групування після часткового apply.
+  5. INTEGRATION (optional, requires a real ct_db in Postgres):
+     group_batch_into_series_sql — series-boundary correctness, idempotency,
+     re-grouping after a partial apply.
 
-Інтеграційний блок пропускається, якщо в env немає
-CT_TEST_DATABASE_URI або вона починається з 'sqlite' (вікно-функції +
-make_interval — Postgres-only).
+The integration block is skipped when the env has no
+CT_TEST_DATABASE_URI or it starts with 'sqlite' (window functions +
+make_interval are Postgres-only).
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_camera_traps_upload_fast.py -v
-    # Інтеграційні (повільні):
+    # Integration (slow):
     CT_TEST_DATABASE_URI=postgresql://... venv/Scripts/python -m pytest \
         tests/test_camera_traps_upload_fast.py -v -m integration
 """
@@ -32,7 +32,7 @@ import pytest
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# 1. ACCESS TESTS (за патерном test_ct_pages_access)
+# 1. ACCESS TESTS (following the test_ct_pages_access pattern)
 # ═════════════════════════════════════════════════════════════════════════════
 
 def _login(client, user_id):
@@ -141,7 +141,7 @@ class TestUploadFastPageAccess(UploadFastAccessBase):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# 2. /api/finalize-batch-async — переходи статусів + ідемпотентність
+# 2. /api/finalize-batch-async — status transitions + idempotency
 # ═════════════════════════════════════════════════════════════════════════════
 
 class TestFinalizeAsyncRoute(UploadFastAccessBase):
@@ -149,9 +149,9 @@ class TestFinalizeAsyncRoute(UploadFastAccessBase):
     URL = '/uk/camera-traps/api/finalize-batch-async'
 
     def _post(self, payload, user_id, batch_status='uploading'):
-        """Емулюємо POST з заданим станом batchʼа в DB-шарі."""
+        """Emulate a POST with a given batch state at the DB layer."""
         _login(self.client, user_id)
-        # Мок ORM-сесії — повертає UploadBatch з потрібним status.
+        # Mock ORM session — returns an UploadBatch with the desired status.
         batch_mock = MagicMock()
         batch_mock.status = batch_status
         batch_mock.id = payload.get('batch_id', 'x')
@@ -180,7 +180,7 @@ class TestFinalizeAsyncRoute(UploadFastAccessBase):
         self.assertTrue(resp.get_json()['success'])
 
     def test_failed_batch_can_retry_202(self):
-        """Дозволяємо retry з 'failed' (ідемпотентність)."""
+        """Allow retry from 'failed' (idempotency)."""
         resp = self._post({'batch_id': str(uuid.uuid4())},
                           self.manager.id, batch_status='failed')
         self.assertEqual(resp.status_code, 202)
@@ -191,7 +191,7 @@ class TestFinalizeAsyncRoute(UploadFastAccessBase):
         self.assertEqual(resp.status_code, 409)
 
     def test_grouping_batch_rejected_409(self):
-        """'grouping' — таск уже працює, повторний finalize не дозволяємо."""
+        """'grouping' — a task is already running, do not allow a repeat finalize."""
         resp = self._post({'batch_id': str(uuid.uuid4())},
                           self.manager.id, batch_status='grouping')
         self.assertEqual(resp.status_code, 409)
@@ -200,7 +200,7 @@ class TestFinalizeAsyncRoute(UploadFastAccessBase):
         _login(self.client, self.viewer.id)
         resp = self.client.post(self.URL, json={'batch_id': 'x'},
                                 content_type='application/json')
-        # role_required перенаправляє на dashboard
+        # role_required redirects to the dashboard
         self.assertIn(resp.status_code, (302, 403))
 
 
@@ -244,7 +244,7 @@ class TestUploadedFilesRoute(UploadFastAccessBase):
 # ═════════════════════════════════════════════════════════════════════════════
 
 def test_recover_stale_is_safe_with_engine_error(monkeypatch):
-    """Якщо engine падає — recover не валить імпорт; повертає 0."""
+    """If the engine fails, recover does not break the import; returns 0."""
     from app.camera_traps import fast_upload
 
     def boom(*a, **kw):
@@ -252,7 +252,7 @@ def test_recover_stale_is_safe_with_engine_error(monkeypatch):
 
     monkeypatch.setattr(fast_upload, 'get_ct_engine', boom)
 
-    # Викликаємо в app-контексті (current_app потрібен для логера)
+    # Call within an app context (current_app is needed for the logger)
     os.environ.setdefault('DATABASE_URL', 'sqlite:///:memory:')
     with patch('app.camera_traps.database.create_engine', return_value=MagicMock()):
         from app import create_app
@@ -263,7 +263,7 @@ def test_recover_stale_is_safe_with_engine_error(monkeypatch):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# 5. INTEGRATION: group_batch_into_series_sql на реальній Postgres ct_db
+# 5. INTEGRATION: group_batch_into_series_sql on a real Postgres ct_db
 # ═════════════════════════════════════════════════════════════════════════════
 
 CT_TEST_URI = os.environ.get('CT_TEST_DATABASE_URI', '')
@@ -278,11 +278,11 @@ INTEGRATION_AVAILABLE = (
                     reason="CT_TEST_DATABASE_URI not set (Postgres required)")
 class TestGroupSqlIntegration:
     """
-    Тести самого SQL-групувача. Потребують справжньої Postgres ct_db.
-    Створюють тимчасові таблиці, ганяють синтетичні дані, прибирають по собі.
+    Tests for the SQL grouper itself. Require a real Postgres ct_db.
+    Create temporary tables, run synthetic data through them, and clean up after.
 
-    Семантика серії: photos у межах SERIES_TIME_WINDOW секунд від попереднього
-    належать одній серії.
+    Series semantics: photos within SERIES_TIME_WINDOW seconds of the previous one
+    belong to the same series.
     """
 
     @pytest.fixture(autouse=True)
@@ -290,12 +290,12 @@ class TestGroupSqlIntegration:
         from sqlalchemy import create_engine
         from app.camera_traps import database as ct_db_mod, fast_upload as fu
 
-        # Тимчасовий schema, щоб не зачепити прод-таблиці навіть випадково
+        # Temporary schema, so we never touch prod tables even by accident
         engine = create_engine(CT_TEST_URI)
         self.engine = engine
         self.schema = f"test_fast_{uuid.uuid4().hex[:8]}"
 
-        # Створюємо мінімальний набір таблиць для тесту (підмножина моделей)
+        # Create a minimal set of tables for the test (a subset of the models)
         with engine.begin() as conn:
             from sqlalchemy import text
             conn.execute(text(f"CREATE SCHEMA {self.schema}"))
@@ -345,13 +345,13 @@ class TestGroupSqlIntegration:
                     is_favorite BOOLEAN DEFAULT FALSE
                 )"""))
 
-        # Підміняємо engine fast_upload-у — щоб він працював у нашій schema
+        # Swap fast_upload's engine so it operates in our schema
         scoped_engine = create_engine(
             CT_TEST_URI,
             connect_args={'options': f'-csearch_path={self.schema},public'})
         monkeypatch.setattr(fu, 'get_ct_engine', lambda: scoped_engine)
 
-        # Мінімальний Flask-context із потрібним конфігом
+        # Minimal Flask context with the required config
         from flask import Flask
         flask_app = Flask(__name__)
         flask_app.config['CAMERA_TRAP_CONFIG'] = {'SERIES_TIME_WINDOW': 60}
@@ -368,8 +368,8 @@ class TestGroupSqlIntegration:
         scoped_engine.dispose()
 
     def _seed(self, captured_times):
-        """Створює locations/upload_batch/photos з заданими timestamps.
-        Повертає batch_id."""
+        """Create locations/upload_batch/photos with the given timestamps.
+        Returns batch_id."""
         from sqlalchemy import text
         batch_id = str(uuid.uuid4())
         with self.engine.begin() as conn:
@@ -404,7 +404,7 @@ class TestGroupSqlIntegration:
             """), {"b": batch_id}).scalar()
 
     def test_single_series_within_window(self):
-        """5 фото з кроком 10 с — одна серія."""
+        """5 photos at 10 s steps — a single series."""
         from app.camera_traps.fast_upload import group_batch_into_series_sql
         base = datetime(2026, 1, 1, 12, 0)
         bid = self._seed([base + timedelta(seconds=10 * i) for i in range(5)])
@@ -413,11 +413,11 @@ class TestGroupSqlIntegration:
         assert self._series_count(bid) == 1
 
     def test_two_series_split_at_gap(self):
-        """3+3 фото з гепом >60с — дві серії."""
+        """3+3 photos with a gap >60s — two series."""
         from app.camera_traps.fast_upload import group_batch_into_series_sql
         base = datetime(2026, 1, 1, 12, 0)
         times = [base + timedelta(seconds=10 * i) for i in range(3)]
-        # після 3-го — стрибок на 5 хв
+        # after the 3rd — a jump of 5 min
         times += [base + timedelta(minutes=5, seconds=10 * i) for i in range(3)]
         bid = self._seed(times)
         n = group_batch_into_series_sql(bid)
@@ -425,8 +425,8 @@ class TestGroupSqlIntegration:
         assert self._series_count(bid) == 2
 
     def test_exact_window_boundary(self):
-        """Фото рівно на межі SERIES_TIME_WINDOW (60с) — у тій самій серії
-        (різниця == window не перевищує його). Документує очікувану семантику."""
+        """A photo exactly at the SERIES_TIME_WINDOW boundary (60s) — same series
+        (diff == window does not exceed it). Documents the expected semantics."""
         from app.camera_traps.fast_upload import group_batch_into_series_sql
         base = datetime(2026, 1, 1, 12, 0)
         bid = self._seed([base, base + timedelta(seconds=60)])
@@ -434,7 +434,7 @@ class TestGroupSqlIntegration:
         assert self._series_count(bid) == 1
 
     def test_idempotent_completed(self):
-        """Повторний виклик на completed — no-op."""
+        """Repeat call on a completed batch — no-op."""
         from app.camera_traps.fast_upload import group_batch_into_series_sql
         from sqlalchemy import text
         base = datetime(2026, 1, 1, 12, 0)
@@ -444,19 +444,19 @@ class TestGroupSqlIntegration:
             conn.execute(text(
                 f"UPDATE {self.schema}.upload_batches SET status='completed' "
                 f"WHERE id=:b"), {"b": bid})
-        # Другий виклик
+        # Second call
         n = group_batch_into_series_sql(bid)
         assert n == 0  # short-circuit
 
     def test_recovery_from_partial(self):
-        """Якщо лишилися partial Observations попередньої спроби —
-        вони чистяться і групування виконується заново коректно."""
+        """If partial Observations remain from a previous attempt —
+        they are cleaned up and grouping runs again correctly."""
         from app.camera_traps.fast_upload import group_batch_into_series_sql
         base = datetime(2026, 1, 1, 12, 0)
         bid = self._seed([base + timedelta(seconds=10 * i) for i in range(4)])
         group_batch_into_series_sql(bid)
         first_count = self._series_count(bid)
-        # Емулюємо «застрягання»: батч у failed, ми хочемо перегрупувати
+        # Emulate a "stuck" state: batch in failed, we want to re-group
         from sqlalchemy import text
         with self.engine.begin() as conn:
             conn.execute(text(
@@ -468,9 +468,9 @@ class TestGroupSqlIntegration:
 
     def test_processed_files_atomic_under_parallel(self):
         """
-        Чотири паралельні UPDATE...RETURNING повинні дати чотири
-        РІЗНІ значення processed_files (1,2,3,4) — інакше атомарність
-        зламана. Перевіряє pure-SQL шлях, який тепер живе в
+        Four parallel UPDATE...RETURNING must yield four
+        DISTINCT processed_files values (1,2,3,4) — otherwise atomicity
+        is broken. Checks the pure-SQL path that now lives in
         process_single_photo (utils.py).
         """
         import threading
@@ -506,16 +506,16 @@ class TestGroupSqlIntegration:
         for t in threads: t.start()
         for t in threads: t.join()
 
-        # Усі значення мають бути унікальні (1,2,3,4 у якомусь порядку)
+        # All values must be unique (1,2,3,4 in some order)
         assert sorted(results) == [1, 2, 3, 4], \
             f"Atomicity broken, got duplicates: {results}"
 
     def test_advisory_lock_serializes_duplicate_inserts(self):
         """
-        Чотири паралельні INSERT того самого фото (один (batch, filename,
-        captured_at)) під advisory-lock повинні дати рівно 1 успіх,
-        3 IntegrityError. Це і є те, що ламалось у production-логах:
-        4 «не вдалося» з 918 при 4-паралельному JS.
+        Four parallel INSERTs of the same photo (single (batch, filename,
+        captured_at)) under an advisory lock must yield exactly 1 success,
+        3 IntegrityError. This is exactly what was breaking in the production logs:
+        4 "failed" out of 918 with 4-way parallel JS.
         """
         import threading
         import hashlib
@@ -589,11 +589,11 @@ class TestGroupSqlIntegration:
 
     @pytest.mark.slow
     def test_10000_photos_grouping_perf(self):
-        """10 000 фото — SQL-групувач має впоратись за десяток секунд.
+        """10,000 photos — the SQL grouper must handle it in about ten seconds.
 
-        Seed через одиничний bulk INSERT (`generate_series`), а не через
-        Python-цикл — щоб мережева латентність на seed-фазі не
-        спотворювала вимір самого групування.
+        Seed via a single bulk INSERT (`generate_series`) rather than a
+        Python loop, so that network latency in the seed phase does not
+        distort the measurement of the grouping itself.
         """
         import time
         from sqlalchemy import text
@@ -610,7 +610,7 @@ class TestGroupSqlIntegration:
                 f"(id, location_id, uploaded_by_id, total_files, status) "
                 f"VALUES(:b, :l, 1, 10000, 'uploading')"),
                 {"b": batch_id, "l": loc})
-            # 10k фото в одній довгій серії (крок 5с — менше за window 60с)
+            # 10k photos in one long series (5s step — less than the 60s window)
             conn.execute(text(f"""
                 INSERT INTO {self.schema}.photos
                     (upload_batch_id, original_filename, system_filename,
@@ -628,6 +628,6 @@ class TestGroupSqlIntegration:
         n = group_batch_into_series_sql(batch_id)
         elapsed = time.time() - t0
         assert n == 10000
-        # Поріг свідомо щедрий — мережева латентність через тунель
-        # додає секунди, але локально на сервері це <2с.
+        # The threshold is deliberately generous — network latency over the tunnel
+        # adds seconds, but locally on the server this is <2s.
         assert elapsed < 15.0, f"SQL grouping too slow: {elapsed:.2f}s"

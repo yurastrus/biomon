@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Add a recording duration column to the recordings table (PAM coverage #37).
 
@@ -42,7 +43,7 @@ def main():
                 print(f"  > {stmt}")
                 conn.execute(text(ddl))
         print()
-        print("Готово.")
+        print("Done.")
 
 
 if __name__ == '__main__':

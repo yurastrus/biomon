@@ -1,7 +1,7 @@
 """
-Smoke-тести `app.pam.pam_linking_utils`.
+Smoke tests for `app.pam.pam_linking_utils`.
 
-Без реальної PAM-БД: підмінюємо `get_pam_db_connection` на mock.
+No real PAM DB: `get_pam_db_connection` is replaced with a mock.
 """
 import pytest
 from unittest.mock import MagicMock, patch
@@ -15,12 +15,12 @@ def test_module_imports():
 
 
 def _empty_conn():
-    """Mock-conn: будь-який .execute → пустий fetchall."""
+    """Mock conn: any .execute -> empty fetchall."""
     conn = MagicMock()
     result = MagicMock()
     result.fetchall.return_value = []
     conn.execute.return_value = result
-    # begin() як context manager
+    # begin() as a context manager
     conn.begin.return_value.__enter__ = lambda self: self
     conn.begin.return_value.__exit__ = lambda self, *a: None
     return conn
@@ -37,7 +37,7 @@ def test_link_returns_message_when_no_segments(app):
 
 
 def test_link_full_resync_truncates(app):
-    """При full_resync=True перед запитом має викликатися TRUNCATE."""
+    """With full_resync=True, TRUNCATE must be called before the query."""
     conn = _empty_conn()
     with app.app_context():
         with patch('app.pam.pam_linking_utils.get_pam_db_connection',

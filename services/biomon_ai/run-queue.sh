@@ -1,8 +1,8 @@
 #!/bin/bash
-# Cron-обгортка для опрацювання адмін-черги ai_run_queue.
-# Запускається кожні 2-3 хвилини (див. DEPLOY.md §10).
-# Якщо черга порожня — миттєво виходить.
-# Цільове розташування на сервері: /opt/biomon-ai/run-queue.sh
+# Cron wrapper for processing the admin queue ai_run_queue.
+# Runs every 2-3 minutes (see DEPLOY.md §10).
+# Exits immediately if the queue is empty.
+# Target location on the server: /opt/biomon-ai/run-queue.sh
 
 set -e
 
@@ -16,7 +16,7 @@ set -a
 source .env
 set +a
 
-# Обмеження CPU-потоків + найнижчий пріоритет (див. run-batch.sh §коментар).
+# Limit CPU threads + lowest priority (see the comment in run-batch.sh).
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-2}"
 export MKL_NUM_THREADS="${MKL_NUM_THREADS:-2}"
 export TORCH_NUM_THREADS="${TORCH_NUM_THREADS:-2}"

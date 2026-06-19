@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Import deployments from the ARD Excel file into ct_db.
 
@@ -65,17 +66,17 @@ def build_park_institution_map():
         else:
             missing_codes.add(code)
     if missing_codes:
-        print(f"УВАГА: у БД немає установ з кодами: {sorted(missing_codes)}")
+        print(f"WARNING: no institutions in the DB with codes: {sorted(missing_codes)}")
     return result
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Імпорт деплойментів з Екселю')
-    parser.add_argument('--file', default=DEFAULT_XLSX, help='шлях до .xlsx')
-    parser.add_argument('--dry-run', action='store_true', help='без запису в БД')
+    parser = argparse.ArgumentParser(description='Import deployments from Excel')
+    parser.add_argument('--file', default=DEFAULT_XLSX, help='path to the .xlsx')
+    parser.add_argument('--dry-run', action='store_true', help='do not write to the DB')
     parser.add_argument('--create-locations', action='store_true',
-                        help='створювати локації для деплойментів без наявної точки')
-    parser.add_argument('--sheets', nargs='*', help='конкретні листи (за замовч. усі дані)')
+                        help='create locations for deployments without an existing point')
+    parser.add_argument('--sheets', nargs='*', help='specific sheets (default: all data)')
     args = parser.parse_args()
 
     xlsx = args.file if os.path.isabs(args.file) else os.path.join(os.getcwd(), args.file)

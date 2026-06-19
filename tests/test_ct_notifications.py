@@ -1,10 +1,10 @@
 """
-Smoke-тести `app.camera_traps.notifications`.
+Smoke tests for `app.camera_traps.notifications`.
 
-Покриваємо тільки безпечні гілки (без mail-сервера):
-  • Імпорт модуля не падає
-  • `send_identification_reminders()` без ролі ct_verifier → (0, 0)
-  • Те саме коли роль є, але без користувачів з email
+Cover only safe branches (no mail server):
+  • Importing the module does not fail
+  • `send_identification_reminders()` without ct_verifier role → (0, 0)
+  • Same when the role exists but there are no users with email
 """
 import pytest
 from unittest.mock import MagicMock, patch

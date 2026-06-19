@@ -1,9 +1,9 @@
-"""Тести імпорту зовнішньої класифікації DeepFaune (app/camera_traps/classification_import).
+"""Tests for the external DeepFaune classification import (app/camera_traps/classification_import).
 
-Покривають чисту (без БД) логіку, яка найризикованіша:
-  • parse_deepfaune_csv — basename, парс дати, нормалізація, валідація колонок;
-  • _aggregate_series — правило тварина > людина > empty, макс score;
-  • _match — ключ (filename, captured_at до секунди), unmatched з обох боків.
+Cover the pure (no-DB) logic, which is the riskiest:
+  • parse_deepfaune_csv — basename, date parsing, normalization, column validation;
+  • _aggregate_series — animal > human > empty rule, max score;
+  • _match — key (filename, captured_at to the second), unmatched on both sides.
 """
 from datetime import datetime
 
@@ -32,7 +32,7 @@ def test_parse_basic_row():
     assert errors == []
     assert len(rows) == 1
     r = rows[0]
-    assert r['original_filename'] == 'IMG_0013.JPG'          # basename з Windows-шляху
+    assert r['original_filename'] == 'IMG_0013.JPG'          # basename from a Windows path
     assert r['captured_at'] == datetime(2025, 7, 15, 12, 32, 56)
     assert r['base_label'] == 'roe deer'                      # lower-case
     assert r['base_score'] == pytest.approx(0.91)
@@ -48,13 +48,13 @@ def test_parse_missing_columns():
 
 
 def test_parse_without_count_column():
-    # Інший експорт DeepFaune — без колонки `count` (лише humancount).
+    # A different DeepFaune export — no `count` column (only humancount).
     header = 'filename,date,seqnum,predictionbase,scorebase,prediction,score,top1,humancount'
     line = r'D:\x\0114\IMG_0433.JPG,2025:08:12 20:09:45,1,moose,0.99,moose,0.99,moose,0'
     rows, errors = parse_deepfaune_csv(header + '\n' + line + '\n')
     assert errors == []
     assert len(rows) == 1
-    assert rows[0]['animal_count'] is None        # колонки нема → None
+    assert rows[0]['animal_count'] is None        # column absent → None
     assert rows[0]['base_label'] == 'moose'
 
 
@@ -66,7 +66,7 @@ def test_parse_bad_date_is_reported_not_fatal():
         r'C:\a\IMG_2.JPG,2025:07:15 12:00:00,1,fox,0.8,fox,0.8,fox,1,0',
     )
     rows, errors = parse_deepfaune_csv(csv_text)
-    assert len(rows) == 1                       # лише валідний рядок
+    assert len(rows) == 1                       # only the valid row
     assert rows[0]['original_filename'] == 'IMG_2.JPG'
     assert len(errors) == 1 and 'некоректна дата' in errors[0]
 
@@ -98,7 +98,7 @@ def test_aggregate_all_empty():
 
 
 def test_aggregate_undefined_counts_as_animal():
-    # 'undefined' = тварина є, але класифікатор не впевнений → тваринний tier
+    # 'undefined' = an animal is present but the classifier is unsure → animal tier
     label, _ = _aggregate_series([('empty', 1.0), ('undefined', 0.4)])
     assert label == 'undefined'
 
@@ -123,13 +123,13 @@ def test_match_by_filename_and_second():
     row, pid, obs = matched[0]
     assert (pid, obs) == (101, 9001)
     assert len(csv_unmatched) == 1 and csv_unmatched[0]['original_filename'] == 'IMG_9999.JPG'
-    # IMG_0002 у БД, але нема в CSV
+    # IMG_0002 is in the DB but not in the CSV
     assert ('img_0002.jpg', dt) in db_without
 
 
 def test_dedupe_matched_collapses_same_photo_id():
     dt = datetime(2025, 7, 15, 12, 0, 0)
-    # два CSV-рядки зматчились на ОДНЕ фото (pid=101) — напр. burst з тією ж секундою
+    # two CSV rows matched the SAME photo (pid=101) — e.g. a burst within the same second
     matched = [
         (_row('IMG_0001.JPG', dt, base='empty', score=1.0), 101, 9001),
         (_row('IMG_0001.JPG', dt, base='fox', score=0.8), 101, 9001),
@@ -139,7 +139,7 @@ def test_dedupe_matched_collapses_same_photo_id():
     assert n_dup == 1
     pids = sorted(item[1] for item in unique)
     assert pids == [101, 102]
-    # перемагає останній рядок (fox)
+    # the last row wins (fox)
     won = next(item for item in unique if item[1] == 101)
     assert won[0]['base_label'] == 'fox'
 
@@ -150,4 +150,4 @@ def test_match_distinguishes_same_name_different_time():
     index = {('img_0001.jpg', dt_2021): (1, 1), ('img_0001.jpg', dt_2025): (2, 2)}
     matched, _, _ = _match([_row('IMG_0001.JPG', dt_2025)], index)
     assert len(matched) == 1
-    assert matched[0][1] == 2  # саме фото 2025-го
+    assert matched[0][1] == 2  # the 2025 photo specifically

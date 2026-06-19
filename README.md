@@ -109,7 +109,7 @@ pip install -r requirements.txt
 
 ### 3. Configure environment variables
 
-Copy the block below into a `.env` file in the project root. There is no `.env.example` in the repository yet — fill in values for your environment.
+Copy [`.env.example`](.env.example) to `.env` in the project root and fill in values for your environment. The same variables are listed below for reference.
 
 ```dotenv
 # ── Required ──────────────────────────────────────────────────────────────────
@@ -349,3 +349,18 @@ git commit -m "chore(biomon): update shared-ct submodule"
 ```
 
 For more detail on each module's own models, routes, and database schema, see the README inside the respective submodule directory.
+
+## License: GNU AGPL-3.0
+
+Copyright (C) 2025–2026 Iurii Strus.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the **GNU Affero General Public License, version 3** as published
+by the Free Software Foundation. See the [LICENSE](LICENSE) file for the full
+text (`SPDX-License-Identifier: AGPL-3.0-only`).
+
+biomon is a network application: if you run a modified version on a server and
+let users interact with it over a network, you must also make the complete
+corresponding source code of your modified version available to those users
+(AGPL §13). The bundled modules `app/camera_traps` (shared-ct) and `app/pam`
+(shared-pam) are separate AGPL-3.0 repositories included as Git submodules.

@@ -1,18 +1,18 @@
 """
-Тести для cleanup_old_photos після оптимізації (2026-05-25):
-семантика збережена — лише швидкість + надійність.
+Tests for cleanup_old_photos after the optimization (2026-05-25):
+semantics preserved — only speed + reliability changed.
 
-Покриває:
-  1. is_favorite=TRUE — фото НІКОЛИ не видаляється
-  2. species_id=-2 ("Інше") — серія НІКОЛИ не архівується
-  3. observation.status='archived' лише коли всі фото archived/favorite
-  4. Файли видаляються ПІСЛЯ commit-у (status='archived' + файлу немає)
-  5. CLEANUP_DAYS — поріг віку працює (стара серія архівується, свіжа ні)
-  6. raw + thumbnail обидва видаляються
-  7. chunked-commit: при 100 серіях commit вiдбувається ≥ 2 рази
-  8. Партіальна стійкість: помилка os.remove не валить весь прогон
+Cover:
+  1. is_favorite=TRUE — a photo is NEVER deleted
+  2. species_id=-2 ("Other") — a series is NEVER archived
+  3. observation.status='archived' only when all photos are archived/favorite
+  4. Files are deleted AFTER commit (status='archived' + file gone)
+  5. CLEANUP_DAYS — the age threshold works (old series archived, fresh one not)
+  6. raw + thumbnail both deleted
+  7. chunked commit: with 100 series, commit happens >= 2 times
+  8. Partial resilience: an os.remove error does not break the whole run
 
-Запуск (потрібна реальна Postgres):
+Run (a real Postgres is required):
     CT_TEST_DATABASE_URI=postgresql://... \
         venv/Scripts/python -m pytest tests/test_cleanup_old_photos.py -v -m integration
 """
@@ -117,13 +117,13 @@ class TestCleanupOldPhotos:
                     created_at TIMESTAMP DEFAULT NOW(),
                     UNIQUE(photo_id, user_id)
                 )"""))
-            # Створюємо species з id=-2 = "Інше"
+            # Create species with id=-2 = "Other"
             conn.execute(text(f"""
                 INSERT INTO {self.schema}.species (id, scientific_name, category)
                 VALUES (-2, 'Other', 'unknown')
             """))
 
-        # Підмінюємо session для background_tasks
+        # Swap the session for background_tasks
         from sqlalchemy.orm import sessionmaker, scoped_session
         scoped_engine = create_engine(
             CT_TEST_URI,
@@ -131,11 +131,11 @@ class TestCleanupOldPhotos:
         Session = scoped_session(sessionmaker(bind=scoped_engine))
         monkeypatch.setattr(db_mod, 'get_ct_session', lambda: Session())
         monkeypatch.setattr(db_mod, 'close_ct_session', lambda: Session.remove())
-        # background_tasks імпортує get/close_ct_session напряму — підмінити там теж
+        # background_tasks imports get/close_ct_session directly — patch it there too
         monkeypatch.setattr(bt, 'get_ct_session', lambda: Session())
         monkeypatch.setattr(bt, 'close_ct_session', lambda: Session.remove())
 
-        # Створюємо тимчасові директорії raw + thumbnails
+        # Create temporary raw + thumbnails directories
         self.upload_root = str(tmp_path)
         self.raw_dir = os.path.join(self.upload_root, 'pending_photos', 'raw')
         self.thumb_dir = os.path.join(self.upload_root, 'pending_photos', 'thumbnails')
@@ -147,12 +147,12 @@ class TestCleanupOldPhotos:
         flask_app = Flask(__name__)
         flask_app.config['CAMERA_TRAP_CONFIG'] = {
             'UPLOAD_PATH': self.upload_root,
-            'CLEANUP_DAYS': 0,  # одразу — щоб тестам не чекати
+            'CLEANUP_DAYS': 0,  # immediate — so tests don't have to wait
         }
         self.ctx = flask_app.app_context()
         self.ctx.push()
 
-        # Зберігаємо для cleanup
+        # Save for cleanup
         self._Session = Session
         self._scoped_engine = scoped_engine
 
@@ -210,7 +210,7 @@ class TestCleanupOldPhotos:
         from sqlalchemy import text
         with self.engine.begin() as c:
             c.execute(text(f"SET search_path TO {self.schema}, public"))
-            # Створюємо species якщо немає
+            # Create species if it doesn't exist
             c.execute(text(f"""
                 INSERT INTO {self.schema}.species (id, scientific_name, category)
                 VALUES (:id, 'Sp' || :id, 'mammal')
@@ -242,7 +242,7 @@ class TestCleanupOldPhotos:
     # ────────── Tests ──────────
 
     def test_basic_archive_removes_both_files(self):
-        """Базовий сценарій: фото та обидва файли видаляються, БД → archived."""
+        """Basic scenario: the photo and both files are deleted, DB → archived."""
         from app.camera_traps.background_tasks import cleanup_old_photos
         loc = self._mk_location()
         obs = self._mk_obs(loc)
@@ -255,16 +255,16 @@ class TestCleanupOldPhotos:
         assert result['observations_archived'] == 1
         assert self._photo_status(pid) == 'archived'
         assert self._obs_status(obs) == 'archived'
-        # Файли видалено (raw + thumb)
+        # Files deleted (raw + thumb)
         assert not os.path.exists(os.path.join(self.raw_dir, fn))
         assert not os.path.exists(os.path.join(self.thumb_dir, fn))
 
     def test_favorite_photo_untouched_within_archived_series(self):
-        """is_favorite=TRUE — фото та обидва його файли лишаються незмінні,
-        навіть якщо серія в цілому йде в archived (бо інші її фото архівовано
-        і всі рештки = архівоване ∪ favorite).
-        Семантика: favorite-фото — це «зразок для збереження»; серія, дані
-        якої вже оброблено, переходить в archived, але фото-зразок цілий.
+        """is_favorite=TRUE — the photo and both its files stay untouched,
+        even if the series as a whole goes to archived (because its other photos
+        are archived and everything remaining = archived ∪ favorite).
+        Semantics: a favorite photo is a "sample to keep"; a series whose data
+        is already processed moves to archived, but the sample photo stays intact.
         """
         from app.camera_traps.background_tasks import cleanup_old_photos
         loc = self._mk_location()
@@ -275,24 +275,24 @@ class TestCleanupOldPhotos:
         self._mk_identification(pid_normal, species_id=1)
 
         cleanup_old_photos()
-        # FAVORITE-фото — повністю недоторкане: статус 'completed', файли цілі
+        # FAVORITE photo — completely untouched: status 'completed', files intact
         assert self._photo_status(pid_fav) == 'completed'
         assert os.path.exists(os.path.join(self.raw_dir, fn_fav))
         assert os.path.exists(os.path.join(self.thumb_dir, fn_fav))
-        # Звичайне — архівоване, файли видалено
+        # Normal photo — archived, files deleted
         assert self._photo_status(pid_normal) == 'archived'
         assert not os.path.exists(os.path.join(self.raw_dir, fn_normal))
         assert not os.path.exists(os.path.join(self.thumb_dir, fn_normal))
-        # Сама серія перейшла в archived (всі рештки = archived ∪ favorite)
+        # The series itself moved to archived (everything remaining = archived ∪ favorite)
         assert self._obs_status(obs) == 'archived'
 
     def test_species_other_never_archived(self):
-        """species_id=-2 (категорія 'Інше') — серія не архівується взагалі."""
+        """species_id=-2 (the 'Other' category) — the series is never archived."""
         from app.camera_traps.background_tasks import cleanup_old_photos
         loc = self._mk_location()
         obs = self._mk_obs(loc)
         pid, fn = self._mk_photo(obs)
-        self._mk_identification(pid, species_id=-2)  # "Інше"
+        self._mk_identification(pid, species_id=-2)  # "Other"
 
         result = cleanup_old_photos()
         assert result['photos_deleted'] == 0
@@ -300,7 +300,7 @@ class TestCleanupOldPhotos:
         assert os.path.exists(os.path.join(self.raw_dir, fn))
 
     def test_observation_archived_only_when_all_photos_archived(self):
-        """observation.status='archived' лише коли усі фото archived/favorite."""
+        """observation.status='archived' only when all photos are archived/favorite."""
         from app.camera_traps.background_tasks import cleanup_old_photos
         loc = self._mk_location()
         obs = self._mk_obs(loc)
@@ -310,16 +310,16 @@ class TestCleanupOldPhotos:
         self._mk_identification(pid_b, species_id=1)
 
         cleanup_old_photos()
-        # Обидва архівовані → серія теж
+        # Both archived → the series too
         assert self._photo_status(pid_a) == 'archived'
         assert self._photo_status(pid_b) == 'archived'
         assert self._obs_status(obs) == 'archived'
 
     def test_threshold_skips_recent_observations(self):
-        """Свіжі ідентифікації (молодші CLEANUP_DAYS) — не архівуються."""
+        """Fresh identifications (younger than CLEANUP_DAYS) — not archived."""
         from flask import current_app
         from app.camera_traps.background_tasks import cleanup_old_photos
-        # Виставляємо поріг 7 днів — свіжіша ідентифікація не повинна потрапити
+        # Set a 7-day threshold — a fresher identification should not be picked up
         current_app.config['CAMERA_TRAP_CONFIG']['CLEANUP_DAYS'] = 7
 
         loc = self._mk_location()
@@ -335,10 +335,10 @@ class TestCleanupOldPhotos:
         assert self._photo_status(pid_new) == 'completed'
 
     def test_chunked_commit_with_many_observations(self):
-        """≥ CHUNK_OBS_SIZE серій → ≥ 2 commit-и; усі фото архівуються."""
+        """>= CHUNK_OBS_SIZE series → >= 2 commits; all photos get archived."""
         from app.camera_traps.background_tasks import cleanup_old_photos
         loc = self._mk_location()
-        # 120 серій по одному фото = ≥ 2 чанки (CHUNK_OBS_SIZE=50)
+        # 120 series with one photo each = >= 2 chunks (CHUNK_OBS_SIZE=50)
         pids = []
         for i in range(120):
             obs = self._mk_obs(loc)
@@ -350,13 +350,13 @@ class TestCleanupOldPhotos:
         assert result['success'] is True
         assert result['photos_deleted'] == 120
         assert result['observations_archived'] == 120
-        # Усі фото справді архівовані
+        # All photos really archived
         for pid in pids:
             assert self._photo_status(pid) == 'archived'
 
     def test_os_remove_failure_does_not_break_db_state(self):
-        """Якщо os.remove падає (mock), БД має правильний archived-стан,
-        а файл стає orphan-сиротою (підбере новий cleanup-модуль)."""
+        """If os.remove fails (mock), the DB has the correct archived state,
+        and the file becomes an orphan (a separate cleanup module will pick it up)."""
         from app.camera_traps.background_tasks import cleanup_old_photos
         loc = self._mk_location()
         obs = self._mk_obs(loc)
@@ -373,25 +373,25 @@ class TestCleanupOldPhotos:
                    side_effect=flaky_remove):
             result = cleanup_old_photos()
 
-        # БД — у правильному стані (commit пройшов до видалення файлів)
+        # DB is in the correct state (commit happened before file deletion)
         assert result['success'] is True
         assert self._photo_status(pid) == 'archived'
         assert self._obs_status(obs) == 'archived'
-        # Файли лишились на диску — стануть orphan-сиротами
+        # Files remain on disk — they become orphans
         assert os.path.exists(os.path.join(self.raw_dir, fn))
         assert os.path.exists(os.path.join(self.thumb_dir, fn))
 
     def test_returns_partial_counts_on_failure(self):
-        """При збої вертає кількість УСПІШНО архівованих, не загальну."""
+        """On failure it returns the count of SUCCESSFULLY archived, not the total."""
         from app.camera_traps.background_tasks import cleanup_old_photos
         loc = self._mk_location()
-        # 60 серій → 2 чанки
+        # 60 series → 2 chunks
         for i in range(60):
             obs = self._mk_obs(loc)
             pid, _ = self._mk_photo(obs)
             self._mk_identification(pid, species_id=1)
 
-        # Імітуємо помилку у session.commit на ДРУГОМУ виклику
+        # Simulate an error in session.commit on the SECOND call
         from app.camera_traps import background_tasks as bt
         original_session_factory = bt.get_ct_session
         call_count = {'commits': 0}
@@ -406,8 +406,8 @@ class TestCleanupOldPhotos:
         with patch.object(bt, 'get_ct_session', return_value=session):
             result = cleanup_old_photos()
 
-        # Перший чанк (50 серій) пройшов commit → у counts
-        # Другий упав → не у counts. Результат: 50.
+        # First chunk (50 series) committed → counted
+        # Second one failed → not counted. Result: 50.
         assert result['success'] is False
         assert result['photos_deleted'] == 50
         assert result['observations_archived'] == 50

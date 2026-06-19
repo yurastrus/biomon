@@ -1,21 +1,22 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
-Backfill ai_predictions.was_correct для вже завершених серій (Idea 4).
+Backfill ai_predictions.was_correct for already-completed series (Idea 4).
 
-Запуск з кореня проекту (ПІСЛЯ scripts.init_ai_was_correct):
+Run from the project root (AFTER scripts.init_ai_was_correct):
     venv/Scripts/python -m scripts.backfill_was_correct          # Windows
     venv/bin/python -m scripts.backfill_was_correct              # Linux
 
-Що робить:
-    Для кожної observation зі status='completed' визначає консенсусний вид
-    (той самий алгоритм, що check_consensus_for_observation: максимум голосів
-    серед distinct (user_id, species_id)) і виставляє was_correct усім
-    повʼязаним ai_predictions:
+What it does:
+    For each observation with status='completed', it determines the consensus
+    species (the same algorithm as check_consensus_for_observation: the maximum
+    number of votes among distinct (user_id, species_id)) and sets was_correct
+    on all related ai_predictions:
         prediction_species_id == winner  -> True
         prediction_species_id != winner  -> False
-        prediction_species_id IS NULL     -> None (AI не визначив вид)
+        prediction_species_id IS NULL     -> None (AI did not identify a species)
 
-    Ідемпотентний: повторний запуск дає той самий результат.
-    Станом на 2026-06: ~14 completed-серій з AI, ~139 прогнозів.
+    Idempotent: re-running produces the same result.
+    As of 2026-06: ~14 completed series with AI, ~139 predictions.
 """
 
 from sqlalchemy import func

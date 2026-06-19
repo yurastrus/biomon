@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Add the was_correct column to ai_predictions (Idea 4).
 
@@ -41,7 +42,7 @@ def main():
                 print(f"  > {stmt}")
                 conn.execute(text(ddl))
         print()
-        print("Готово.")
+        print("Done.")
 
 
 if __name__ == '__main__':

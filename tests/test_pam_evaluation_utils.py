@@ -1,7 +1,7 @@
 """
-Тести допоміжних функцій модуля pam_evaluation_utils.
+Tests for helper functions in the pam_evaluation_utils module.
 
-Покриваємо легкі функції без БД:
+Covers lightweight functions without a DB:
   - convert_numpy_types
   - find_optimal_threshold
 """

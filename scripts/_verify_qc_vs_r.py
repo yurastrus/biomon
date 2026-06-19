@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 # -*- coding: utf-8 -*-
 """Verify the data-quality page backend against the R script
 01_Camera_trap_location_analysis.qmd.
@@ -98,7 +99,7 @@ def build_r_reference():
         for c in ('latitude','longitude'):
             if c in df.columns:
                 canon[c] = pd.to_numeric(df[c], errors='coerce')
-        # дати
+        # dates
         for c in ('start_date','end_date'):
             if c in df.columns:
                 canon[c] = pd.to_datetime(df[c], errors='coerce')
@@ -223,7 +224,7 @@ def main():
     print(f'records from DB: {len(db_records)}')
     d_counts = db_records_counts(db_records)
 
-    print('\n=== ПОРІВНЯННЯ (Issue / Normal / Missing) ===')
+    print('\n=== COMPARISON (Issue / Normal / Missing) ===')
     print(f'{"qc field":40} {"R-Issue":>7} {"DB-Issue":>8}  {"R-Norm":>7} {"DB-Norm":>7}  {"R-Miss":>7} {"DB-Miss":>7}  match')
     print('-' * 110)
     total_mismatch = 0

@@ -1,11 +1,11 @@
 """
-Idea 3: storage/batch health-метрики у CT адмін-панелі.
+Idea 3: storage/batch health metrics in the CT admin panel.
 
-admin_panel() підтягує get_cleanup_statistics() + get_batch_statistics()
-і передає їх у admin.html новою секцією «Сховище та батчі».
-Перевіряємо: рендер чисел, graceful-degradation при помилці, доступ.
+admin_panel() pulls in get_cleanup_statistics() + get_batch_statistics()
+and passes them to admin.html in a new "Сховище та батчі" section.
+We verify: number rendering, graceful degradation on error, access.
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_ct_admin_storage_stats.py -v
 """
 from unittest.mock import patch
@@ -49,7 +49,7 @@ def test_storage_section_renders_numbers(auth_client):
     assert '280' in html          # estimated_size_mb
     assert '13' in html           # orphaned_photos
     assert '5.5' in html          # oldest batch age
-    assert 'completed' in html    # batches_by_status ключ
+    assert 'completed' in html    # batches_by_status key
 
 
 def test_storage_section_handles_missing_oldest_batch(auth_client):
@@ -59,13 +59,13 @@ def test_storage_section_handles_missing_oldest_batch(auth_client):
     with p1, p2:
         resp = cl.get(URL)
     assert resp.status_code == 200
-    # Немає незавершених батчів → прочерк, не падіння шаблону
+    # No pending batches -> dash, not a template crash
     assert 'Вік найстарішого незавершеного батчу' in resp.get_data(as_text=True)
 
 
 def test_admin_panel_survives_stats_exception(auth_client):
-    """get_cleanup_statistics кидає виняток → сторінка все одно 200,
-    секція показує дефолтні нулі (як ai_stats fallback)."""
+    """get_cleanup_statistics raises an exception -> page still returns 200,
+    section shows default zeros (like the ai_stats fallback)."""
     cl = auth_client(role='admin')
     p1, p2 = _patch_stats(cleanup_exc=Exception('boom'), batch={})
     with p1, p2:
@@ -75,7 +75,7 @@ def test_admin_panel_survives_stats_exception(auth_client):
 
 
 def test_storage_section_requires_admin(auth_client):
-    """Не-admin (manager) не має доступу до CT адмін-панелі (CT → 302)."""
+    """Non-admin (manager) has no access to the CT admin panel (CT -> 302)."""
     cl = auth_client(role='manager')
     resp = cl.get(URL)
     assert resp.status_code in (302, 403)

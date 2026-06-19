@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Add async analytics status columns to calculation_log (ct_db):
 status / started_at / error_message.
@@ -44,7 +45,7 @@ def main():
                 print(f"  > {stmt[:90]}{'...' if len(stmt) > 90 else ''}")
                 conn.execute(text(ddl))
         print()
-        print("Готово.")
+        print("Done.")
 
 
 if __name__ == '__main__':

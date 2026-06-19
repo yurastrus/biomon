@@ -1,4 +1,4 @@
-# файли які ігнорурються
+# Ignored files
 venv/
 __pycache__/
 *.pyc
@@ -14,7 +14,7 @@ ideas.md
 security_audit_*.md
 app.db
 *.db
-# Локальний ARD-Ексель для імпорту деплойментів (заміняється вручну, не версіонуємо)
+# Local ARD spreadsheet for deployment import (replaced manually, not versioned)
 CT_LocationARD_Dataset.xlsx
-# Робочі нотатки/handoff для відкладених задач (не версіонуємо)
+# Working notes / handoff for deferred tasks (not versioned)
 auto_habitat/

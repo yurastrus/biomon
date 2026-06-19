@@ -1,20 +1,21 @@
-"""Абстракція над AI-класифікатором.
+# SPDX-License-Identifier: AGPL-3.0-only
+"""Abstraction over the AI classifier.
 
-Worker не знає, який саме класифікатор працює (DeepFaune, MegaDetector,
-кастомна модель). Він дзвонить методом `predict_observation()` і отримує
-список `PhotoPrediction`. Усі деталі моделі ховаються в адаптері.
+The worker does not know which classifier is running (DeepFaune, MegaDetector,
+a custom model). It calls `predict_observation()` and gets back a list of
+`PhotoPrediction`. All model details are hidden inside the adapter.
 
-ЯК ДОДАТИ НОВУ МОДЕЛЬ:
-    1. Створити клас, що наслідує IClassifier.
-    2. Реалізувати `name`, `version`, `config`, `predict_observation()`.
-    3. Якщо нова модель видає інші labels — оновити `species_map.py`.
-    4. У worker.py змінити імпорт або зробити вибір adapter'а через
-       конфіг (`AI_RUNNER.MODEL_NAME`).
+HOW TO ADD A NEW MODEL:
+    1. Create a class that inherits from IClassifier.
+    2. Implement `name`, `version`, `config`, `predict_observation()`.
+    3. If the new model emits different labels — update `species_map.py`.
+    4. In worker.py change the import or select the adapter via
+       config (`AI_RUNNER.MODEL_NAME`).
 
-Існуючі адаптери:
-    StubAdapter      — не використовує модель, повертає фіксовані прогнози.
-                       Для unit-тестів і dev-машин без torch.
-    DeepFauneAdapter — буде в Кроці 8. Обгортка над PredictorImage.
+Existing adapters:
+    StubAdapter      — does not use a model, returns fixed predictions.
+                       For unit tests and dev machines without torch.
+    DeepFauneAdapter — comes in Step 8. A wrapper over PredictorImage.
 """
 
 from abc import ABC, abstractmethod
@@ -23,101 +24,101 @@ from typing import List, Optional
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Структура одного прогнозу (про одне фото)
+# Structure of a single prediction (for one photo)
 # ─────────────────────────────────────────────────────────────────────
 
 @dataclass
 class PhotoPrediction:
-    """Прогноз AI для одного фото. Worker мапить це на запис у ai_predictions.
+    """AI prediction for a single photo. The worker maps it onto an ai_predictions row.
 
-    Усі поля Optional, бо:
-      - Якщо модель не зробила висновок (score < threshold), prediction_label
-        буде None, але top1_label усе одно заповнений.
-      - Якщо обробка фото впала (зіпсований JPEG, OOM) — заповнюється
-        лише `error`, інші поля None.
+    All fields are Optional, because:
+      - If the model did not reach a conclusion (score < threshold), prediction_label
+        will be None, but top1_label is still filled in.
+      - If processing the photo failed (corrupt JPEG, OOM) — only `error`
+        is filled in, the other fields are None.
     """
-    photo_path: str                              # абсолютний шлях, по якому worker знаходить photo_id
+    photo_path: str                              # absolute path the worker uses to find photo_id
 
-    # Sequence-aware прогноз (модель агрегує по серії)
-    prediction_label: Optional[str] = None       # 'roe deer', 'empty', тощо. None якщо < threshold
+    # Sequence-aware prediction (model aggregates over the series)
+    prediction_label: Optional[str] = None       # 'roe deer', 'empty', etc. None if < threshold
     prediction_score: Optional[float] = None     # 0..1
 
-    # Per-photo (без агрегації по серії)
+    # Per-photo (no aggregation over the series)
     base_label:       Optional[str] = None
     base_score:       Optional[float] = None
 
-    # Завжди заповнений top-1 клас, незалежно від threshold
+    # Always-filled top-1 class, regardless of threshold
     top1_label:       Optional[str] = None
     top1_score:       Optional[float] = None
 
-    # Допоміжні поля від детектора
+    # Auxiliary fields from the detector
     animal_count:     Optional[int] = None
     human_count:      Optional[int] = None
-    bbox:             Optional[dict] = None      # буде записаний у JSONB
+    bbox:             Optional[dict] = None      # will be written to JSONB
 
-    # Якщо обробка цього фото впала — інші поля None, error заповнено
+    # If processing this photo failed — other fields None, error filled in
     error:            Optional[str] = None
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Абстрактний інтерфейс класифікатора
+# Abstract classifier interface
 # ─────────────────────────────────────────────────────────────────────
 
 class IClassifier(ABC):
-    """Базовий клас для адаптерів AI-моделей."""
+    """Base class for AI model adapters."""
 
     @property
     @abstractmethod
     def name(self) -> str:
-        """Назва моделі, напр. 'DeepFaune'. Йде в `ai_models.name`."""
+        """Model name, e.g. 'DeepFaune'. Goes into `ai_models.name`."""
 
     @property
     @abstractmethod
     def version(self) -> str:
-        """Версія моделі, напр. '1.4.1'. Йде в `ai_models.version`."""
+        """Model version, e.g. '1.4.1'. Goes into `ai_models.version`."""
 
     @property
     def config(self) -> dict:
-        """Метадані конфігурації (threshold, detector тощо).
-        Йде в `ai_models.config_json`. Можна override.
+        """Configuration metadata (threshold, detector, etc.).
+        Goes into `ai_models.config_json`. Can be overridden.
         """
         return {}
 
     @abstractmethod
     def predict_observation(self, photo_paths: List[str]) -> List[PhotoPrediction]:
-        """Прогноз для однієї observation (= однієї послідовності фото).
+        """Prediction for a single observation (= a single photo sequence).
 
         Args:
-            photo_paths: список абсолютних шляхів до фото В ХРОНОЛОГІЧНОМУ
-                         ПОРЯДКУ. Worker передає всі фото однієї observation.
+            photo_paths: list of absolute photo paths IN CHRONOLOGICAL
+                         ORDER. The worker passes all photos of one observation.
 
         Returns:
-            Список PhotoPrediction довжиною len(photo_paths), у тому ж порядку.
-            Кожен елемент — або заповнений прогноз, або PhotoPrediction(error=...)
-            якщо саме це фото не вдалося обробити.
+            A list of PhotoPrediction of length len(photo_paths), in the same order.
+            Each element is either a filled-in prediction, or PhotoPrediction(error=...)
+            if that particular photo could not be processed.
 
         Raises:
-            Якщо вся observation не вдалася (модель крашнула, OOM) — підіймає
-            виняток. Worker зловить і запише observation як failed.
+            If the whole observation failed (model crashed, OOM) — raises an
+            exception. The worker catches it and records the observation as failed.
         """
 
 
 # ─────────────────────────────────────────────────────────────────────
-# StubAdapter: фейкові прогнози для тестів без torch
+# StubAdapter: fake predictions for tests without torch
 # ─────────────────────────────────────────────────────────────────────
 
 class StubAdapter(IClassifier):
-    """Адаптер-заглушка. Повертає однаковий прогноз для всіх фото в observation.
+    """Stub adapter. Returns the same prediction for all photos in an observation.
 
-    Призначення:
-        • Unit-тести worker'а на dev-машині без torch/DeepFaune.
-        • Smoke-тест на сервері перед інсталяцією моделі.
-        • Перевірка що БД-запис коректний.
+    Purpose:
+        • Unit tests of the worker on a dev machine without torch/DeepFaune.
+        • Smoke test on the server before installing the model.
+        • Checking that the DB record is correct.
 
-    Приклад:
+    Example:
         adapter = StubAdapter(label='roe deer', score=0.92)
         predictions = adapter.predict_observation(['/path/a.jpg', '/path/b.jpg'])
-        # обидва PhotoPrediction матимуть prediction_label='roe deer', score=0.92
+        # both PhotoPrediction will have prediction_label='roe deer', score=0.92
     """
 
     def __init__(
@@ -147,7 +148,7 @@ class StubAdapter(IClassifier):
         return {
             'fixed_label': self._label,
             'fixed_score': self._score,
-            'note': 'Тестовий заглушковий адаптер. Не для продакшну.',
+            'note': 'Test stub adapter. Not for production.',
         }
 
     def predict_observation(self, photo_paths: List[str]) -> List[PhotoPrediction]:

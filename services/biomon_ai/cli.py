@@ -1,31 +1,32 @@
-"""Точка входу для AI-worker'а.
+# SPDX-License-Identifier: AGPL-3.0-only
+"""Entry point for the AI worker.
 
-ПРИКЛАДИ ЗАПУСКУ
-    # Тести на dev-машині (.env поряд):
+USAGE EXAMPLES
+    # Tests on a dev machine (.env next to it):
     venv/Scripts/python -m services.biomon_ai.cli --help
     venv/Scripts/python -m services.biomon_ai.cli --batch=5 --adapter=stub -v
 
-    # Прод-сервер з окремим venv:
+    # Production server with a separate venv:
     /opt/biomon-ai/venv/bin/python -m biomon_ai.cli --batch=100
 
-    # Нічний cron:
+    # Nightly cron:
     0 2 * * * /opt/biomon-ai/run-batch.sh
 
-    # Реакція на адмін-кнопку (один запит з ai_run_queue):
+    # Reacting to the admin button (one request from ai_run_queue):
     /opt/biomon-ai/venv/bin/python -m biomon_ai.cli --from-queue
 
-КОНФІГУРАЦІЯ (з env або .env поряд з cli.py):
-    CT_DATABASE_URL              — обов'язково, підключення до ct_db
-    CAMERA_TRAP_UPLOAD_PATH      — обов'язково, де лежать фото
-    AI_RUNNER_THRESHOLD          — поріг впевненості (default 0.8)
-    AI_RUNNER_MAX_PER_RUN        — fallback для --batch якщо не вказано
-    AI_RUNNER_MODEL_NAME         — назва моделі (default 'DeepFaune')
-    AI_RUNNER_MODEL_VERSION      — версія моделі (default '1.4.1')
+CONFIGURATION (from env or .env next to cli.py):
+    CT_DATABASE_URL              — required, connection to ct_db
+    CAMERA_TRAP_UPLOAD_PATH      — required, where the photos are stored
+    AI_RUNNER_THRESHOLD          — confidence threshold (default 0.8)
+    AI_RUNNER_MAX_PER_RUN        — fallback for --batch if not specified
+    AI_RUNNER_MODEL_NAME         — model name (default 'DeepFaune')
+    AI_RUNNER_MODEL_VERSION      — model version (default '1.4.1')
 
 EXIT CODES:
-    0  — успіх (включно з "немає роботи")
-    1  — некоректний виклик / відсутня конфігурація
-    2  — критична помилка під час обробки (логи зверху)
+    0  — success (including "no work")
+    1  — invalid invocation / missing configuration
+    2  — critical error during processing (logs above)
 """
 
 from __future__ import annotations
@@ -35,12 +36,12 @@ import logging
 import os
 import sys
 
-# .env завантажуємо опційно: на сервері конфіг приходить з systemd EnvironmentFile
+# Load .env optionally: on the server config comes from a systemd EnvironmentFile
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    pass  # dotenv не встановлено — це нормально на проді з systemd
+    pass  # dotenv not installed — this is fine in production with systemd
 
 from .adapter import IClassifier, StubAdapter
 from .worker import process_batch_tracked, run_from_queue
@@ -50,18 +51,18 @@ logger = logging.getLogger('biomon_ai')
 
 
 def build_adapter(name: str, threshold: float) -> IClassifier:
-    """Створює інстанс адаптера за іменем."""
+    """Create an adapter instance by name."""
     if name == 'stub':
         return StubAdapter()
     elif name == 'deepfaune':
-        # Імпорт всередині — щоб stub-режим працював на dev-машині без torch
+        # Import inside — so stub mode works on a dev machine without torch
         try:
-            from .deepfaune_adapter import DeepFauneAdapter  # noqa: реалізується у Кроці 8
+            from .deepfaune_adapter import DeepFauneAdapter  # noqa: implemented in Step 8
         except ImportError as e:
             raise RuntimeError(
-                f"DeepFauneAdapter недоступний: {e}. "
-                "Перевірте що torch+ultralytics встановлені та DeepFaune склонована "
-                "(див. services/biomon_ai/DEPLOY.md)."
+                f"DeepFauneAdapter unavailable: {e}. "
+                "Check that torch+ultralytics are installed and DeepFaune is cloned "
+                "(see services/biomon_ai/DEPLOY.md)."
             ) from e
         return DeepFauneAdapter(threshold=threshold)
     else:
@@ -71,7 +72,7 @@ def build_adapter(name: str, threshold: float) -> IClassifier:
 def parse_args(argv=None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
         prog='biomon_ai',
-        description='AI-класифікатор фотографій з фотопасток',
+        description='AI classifier for camera-trap photos',
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
@@ -80,34 +81,34 @@ def parse_args(argv=None) -> argparse.Namespace:
         '--batch',
         type=int,
         metavar='N',
-        help='Обробити N найстаріших pending observation (нічний cron)',
+        help='Process the N oldest pending observations (nightly cron)',
     )
     mode.add_argument(
         '--from-queue',
         action='store_true',
-        help='Взяти один pending запит з ai_run_queue (адмін-кнопка)',
+        help='Take one pending request from ai_run_queue (admin button)',
     )
 
     p.add_argument(
         '--adapter',
         choices=['stub', 'deepfaune'],
         default='deepfaune',
-        help="Який класифікатор використати. 'stub' — для тестів без моделі. "
+        help="Which classifier to use. 'stub' — for tests without a model. "
              "Default: deepfaune.",
     )
     p.add_argument(
         '--upload-path',
-        help='Override CAMERA_TRAP_UPLOAD_PATH (де лежать фото)',
+        help='Override CAMERA_TRAP_UPLOAD_PATH (where the photos are stored)',
     )
     p.add_argument(
         '--threshold',
         type=float,
-        help='Override AI_RUNNER_THRESHOLD (поріг впевненості)',
+        help='Override AI_RUNNER_THRESHOLD (confidence threshold)',
     )
     p.add_argument(
         '-v', '--verbose',
         action='store_true',
-        help='DEBUG логи',
+        help='DEBUG logs',
     )
 
     return p.parse_args(argv)
@@ -122,17 +123,17 @@ def main(argv=None) -> int:
         datefmt='%H:%M:%S',
     )
 
-    # ── Конфігурація ──────────────────────────────────────────────────
+    # ── Configuration ─────────────────────────────────────────────────
     upload_path = args.upload_path or os.environ.get('CAMERA_TRAP_UPLOAD_PATH')
     if not upload_path:
         print(
-            'ERROR: потрібен --upload-path або env CAMERA_TRAP_UPLOAD_PATH',
+            'ERROR: --upload-path or env CAMERA_TRAP_UPLOAD_PATH is required',
             file=sys.stderr,
         )
         return 1
 
     if not os.environ.get('CT_DATABASE_URL'):
-        print('ERROR: env CT_DATABASE_URL не визначено', file=sys.stderr)
+        print('ERROR: env CT_DATABASE_URL is not defined', file=sys.stderr)
         return 1
 
     threshold = (
@@ -141,10 +142,10 @@ def main(argv=None) -> int:
         else float(os.environ.get('AI_RUNNER_THRESHOLD', '0.8'))
     )
 
-    # ── Early-exit: НЕ вантажимо модель якщо нема роботи ──────────────
-    # DeepFaune ViT займає ~30 сек + 2 GB RAM при завантаженні. Перевіримо
-    # ДО build_adapter() чи є взагалі що обробляти. Економимо CPU/RAM при
-    # частих cron-тіках з порожньою чергою (особливо */3 хв для queue).
+    # ── Early-exit: do NOT load the model if there is no work ─────────
+    # DeepFaune ViT takes ~30 s + 2 GB RAM to load. Check BEFORE
+    # build_adapter() whether there is anything to process at all. Saves CPU/RAM
+    # on frequent cron ticks with an empty queue (especially */3 min for the queue).
     from .db import (
         count_pending_observations,
         has_pending_queue_request,
@@ -172,7 +173,7 @@ def main(argv=None) -> int:
             return 0
         logger.info(f'{pending} pending observations. Loading model for batch={args.batch}...')
 
-    # ── Адаптер (важка операція — лише коли точно є робота) ───────────
+    # ── Adapter (heavy operation — only when there is definitely work) ─
     try:
         adapter = build_adapter(args.adapter, threshold)
     except RuntimeError as e:
@@ -184,7 +185,7 @@ def main(argv=None) -> int:
         f"upload_path={upload_path} | threshold={threshold}"
     )
 
-    # ── Виконання ──────────────────────────────────────────────────────
+    # ── Execution ──────────────────────────────────────────────────────
     try:
         if args.from_queue:
             result = run_from_queue(adapter, upload_path)
@@ -193,8 +194,8 @@ def main(argv=None) -> int:
             else:
                 logger.info(f'Queue request done. Processed: {result}')
         else:
-            # --batch=N: записуємо в ai_run_queue з requested_by=0 (cron/system),
-            # щоб видно було в адмін-сторінці поряд з ручними запитами
+            # --batch=N: write to ai_run_queue with requested_by=0 (cron/system),
+            # so it is visible on the admin page alongside manual requests
             processed = process_batch_tracked(
                 adapter=adapter,
                 upload_path=upload_path,

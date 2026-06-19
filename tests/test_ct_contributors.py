@@ -1,14 +1,14 @@
 """
-Тести сторінки «Всі учасники» (camera_traps.contributors).
+Tests for the "All contributors" page (camera_traps.contributors).
 
-Покриває:
-  - query_contributor_stats — ковзні вікна (сьогодні/тиждень/місяць/рік/усього)
-    на реальних даних in-memory ct_session; метрика = distinct observation_id;
-  - маршрут /contributors — код 200 для анонімного/залогіненого;
-  - видимість імен: manager+ бачить повне ім'я, решта — нікнейм;
-  - порожній результат → info-message.
+Covers:
+  - query_contributor_stats - sliding windows (today/week/month/year/total)
+    on real in-memory ct_session data; metric = distinct observation_id;
+  - /contributors route - status 200 for anonymous/logged-in;
+  - name visibility: manager+ sees the full name, others see the nickname;
+  - empty result -> info message.
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_ct_contributors.py -v
 """
 from collections import namedtuple
@@ -20,16 +20,16 @@ from sqlalchemy import text
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# 1. query_contributor_stats — логіка ковзних вікон на реальних даних
+# 1. query_contributor_stats - sliding-window logic on real data
 # ──────────────────────────────────────────────────────────────────────────
 
 def _add_identification(ct_session, location, user_id, created_at, species_id=None,
                         captured_at=None):
     """
-    Створює Observation + Photo + Identification одного користувача.
-    `created_at` — час ВИЗНАЧЕННЯ (за ним рахуються ковзні вікна);
-    `captured_at` — час зйомки фото (за замовчуванням давня фіксована дата,
-    щоб підтвердити, що вікна НЕ залежать від часу зйомки).
+    Creates Observation + Photo + Identification for a single user.
+    `created_at` is the IDENTIFICATION time (sliding windows are counted by it);
+    `captured_at` is the photo capture time (defaults to an old fixed date,
+    to confirm that windows do NOT depend on the capture time).
     """
     from app.camera_traps.models import Observation, Photo, Identification
 
@@ -64,24 +64,24 @@ def _add_identification(ct_session, location, user_id, created_at, species_id=No
 @pytest.fixture
 def seeded_contributors(ct_session, make_ct_location):
     """
-    Один користувач (id=1) з 5 визначеннями, зробленими на різних відстанях
-    від `today` (за created_at), та другий користувач (id=2) з одним визначенням
-    сьогодні. Повертає (today, location).
+    One user (id=1) with 5 identifications made at various distances from
+    `today` (by created_at), and a second user (id=2) with one identification
+    today. Returns (today, location).
     """
     today = date(2025, 6, 15)
     loc = make_ct_location()
 
     def dt(days_ago):
-        # Час ВИЗНАЧЕННЯ (created_at) — за ним рахуються вікна.
+        # Identification time (created_at) - windows are counted by it.
         return datetime.combine(today, datetime.min.time()) - timedelta(days=days_ago) \
             + timedelta(hours=12)
 
     # user 1
-    _add_identification(ct_session, loc, 1, dt(0))    # сьогодні
-    _add_identification(ct_session, loc, 1, dt(3))    # у межах тижня
-    _add_identification(ct_session, loc, 1, dt(20))   # у межах місяця
-    _add_identification(ct_session, loc, 1, dt(100))  # у межах року
-    _add_identification(ct_session, loc, 1, dt(500))  # лише total
+    _add_identification(ct_session, loc, 1, dt(0))    # today
+    _add_identification(ct_session, loc, 1, dt(3))    # within the week
+    _add_identification(ct_session, loc, 1, dt(20))   # within the month
+    _add_identification(ct_session, loc, 1, dt(100))  # within the year
+    _add_identification(ct_session, loc, 1, dt(500))  # total only
     # user 2
     _add_identification(ct_session, loc, 2, dt(0))
 
@@ -110,7 +110,7 @@ def test_grouping_and_ordering_by_total_desc(ct_session, seeded_contributors):
     today, _ = seeded_contributors
     rows = _run_stats(ct_session, today)
 
-    # Дві групи користувачів, відсортовані за total desc.
+    # Two user groups, sorted by total desc.
     assert [r.user_id for r in rows] == [1, 2]
     assert rows[0].total == 5
     assert rows[1].total == 1
@@ -118,12 +118,12 @@ def test_grouping_and_ordering_by_total_desc(ct_session, seeded_contributors):
 
 
 def test_windows_use_determination_time_not_capture_time(ct_session, make_ct_location):
-    """Вікна рахуються за created_at (час визначення), НЕ за captured_at (час зйомки)."""
+    """Windows are counted by created_at (identification time), NOT by captured_at (capture time)."""
     from app.camera_traps.routes import query_contributor_stats
     today = date(2025, 6, 15)
     loc = make_ct_location()
 
-    # Фото зняте СЬОГОДНІ, але визначене рік тому → не має потрапити в d_today/d_week.
+    # Photo captured TODAY but identified a year ago -> must not land in d_today/d_week.
     _add_identification(
         ct_session, loc, user_id=7,
         created_at=datetime(2024, 1, 1, 12, 0),
@@ -149,7 +149,7 @@ def test_location_filter_excludes_other_locations(ct_session, seeded_contributor
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# 2. Маршрут /contributors — доступ та видимість імен
+# 2. /contributors route - access and name visibility
 # ──────────────────────────────────────────────────────────────────────────
 
 Row = namedtuple('Row', 'user_id d_today d_week d_month d_year total')
@@ -158,10 +158,10 @@ URL = '/uk/camera-traps/contributors'
 
 
 def _patch_ct(monkeypatch, rows, species_list=None):
-    """Мокаємо CT-сесію та підміняємо query_contributor_stats на фіксовані рядки.
+    """Mock the CT session and replace query_contributor_stats with fixed rows.
 
-    `ct_session.query(...)` повертає MagicMock-ланцюжок, що повертає `species_list`
-    (за замовчуванням — порожній список) через `.all()` і `.distinct()...`.
+    `ct_session.query(...)` returns a MagicMock chain that yields `species_list`
+    (an empty list by default) via `.all()` and `.distinct()...`.
     """
     mock_session = MagicMock()
     # chain: .query().join().join()... .filter().params().distinct().order_by() → iterable
@@ -233,7 +233,7 @@ def test_empty_results_show_info_message(client, monkeypatch):
 
 
 def test_combined_scope_select_rendered(client, monkeypatch):
-    """Комбінований select зі scope-опціями присутній на сторінці."""
+    """The combined select with scope options is present on the page."""
     _patch_ct(monkeypatch, [])
     resp = client.get(URL)
     body = resp.data.decode('utf-8')
@@ -243,11 +243,11 @@ def test_combined_scope_select_rendered(client, monkeypatch):
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# 2b. Видовий фільтр — рендер і бекенд-фільтрація
+# 2b. Species filter - rendering and backend filtering
 # ──────────────────────────────────────────────────────────────────────────
 
 def test_species_filter_select_rendered(client, monkeypatch):
-    """Сторінка містить select для фільтру по виду."""
+    """The page contains a select for filtering by species."""
     _patch_ct(monkeypatch, [])
     resp = client.get(URL)
     assert resp.status_code == 200
@@ -257,7 +257,7 @@ def test_species_filter_select_rendered(client, monkeypatch):
 
 
 def test_species_filter_populates_options(client, monkeypatch):
-    """Назви видів з available_species відображаються в select."""
+    """Species names from available_species are displayed in the select."""
     FakeSpecies = namedtuple('FakeSpecies', 'id scientific_name common_name_ua common_name_en')
     sp = FakeSpecies(id=42, scientific_name='Vulpes vulpes',
                      common_name_ua='Лисиця руда', common_name_en='Red Fox')
@@ -270,7 +270,7 @@ def test_species_filter_populates_options(client, monkeypatch):
 
 
 def test_species_filter_selected_option_persists(client, monkeypatch, make_user):
-    """Після GET з species_id=42 цей option залишається selected."""
+    """After a GET with species_id=42 that option stays selected."""
     FakeSpecies = namedtuple('FakeSpecies', 'id scientific_name common_name_ua common_name_en')
     sp = FakeSpecies(id=42, scientific_name='Vulpes vulpes',
                      common_name_ua='Лисиця руда', common_name_en='Red Fox')
@@ -279,12 +279,12 @@ def test_species_filter_selected_option_persists(client, monkeypatch, make_user)
     assert resp.status_code == 200
     body = resp.data.decode('utf-8')
     assert 'value="42" selected' in body or 'value="42"  selected' in body or \
-           'selected' in body  # Jinja може рендерити по-різному
+           'selected' in body  # Jinja may render it differently
 
 
 def test_species_filter_narrows_query_contributor_stats(ct_session, make_ct_location,
                                                         make_ct_species):
-    """query_contributor_stats з species_id повертає лише users з цим видом."""
+    """query_contributor_stats with species_id returns only users with that species."""
     from app.camera_traps.routes import query_contributor_stats
 
     today = date(2025, 6, 15)
@@ -294,37 +294,37 @@ def test_species_filter_narrows_query_contributor_stats(ct_session, make_ct_loca
 
     dt_today = datetime.combine(today, datetime.min.time())
 
-    # user 1 — вид sp1
+    # user 1 - species sp1
     _add_identification(ct_session, loc, user_id=10,
                         created_at=dt_today, species_id=sp1.id)
-    # user 2 — вид sp2
+    # user 2 - species sp2
     _add_identification(ct_session, loc, user_id=11,
                         created_at=dt_today, species_id=sp2.id)
 
-    # Без фільтру — обидва
+    # No filter - both
     all_rows = query_contributor_stats(ct_session, today, text("1=1"), {})
     assert {r.user_id for r in all_rows} == {10, 11}
 
-    # Фільтр по sp1 — тільки user 10
+    # Filter by sp1 - only user 10
     rows_sp1 = query_contributor_stats(ct_session, today, text("1=1"), {},
                                        species_id=sp1.id)
     assert {r.user_id for r in rows_sp1} == {10}
 
-    # Фільтр по sp2 — тільки user 11
+    # Filter by sp2 - only user 11
     rows_sp2 = query_contributor_stats(ct_session, today, text("1=1"), {},
                                        species_id=sp2.id)
     assert {r.user_id for r in rows_sp2} == {11}
 
 
 def test_species_filter_route_returns_200(client, monkeypatch):
-    """GET /contributors?species_id=42 повертає 200."""
+    """GET /contributors?species_id=42 returns 200."""
     _patch_ct(monkeypatch, [])
     resp = client.get(URL + '?species_id=42')
     assert resp.status_code == 200
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# 3. resolve_scope — розбір комбінованого фільтру
+# 3. resolve_scope - parsing the combined filter
 # ──────────────────────────────────────────────────────────────────────────
 
 Inst = namedtuple('Inst', 'id ecoregion_uk')
@@ -364,7 +364,7 @@ def test_resolve_scope_ecoregion_expands_to_institutions(fake_institutions):
 
 def test_resolve_scope_ecoregion_no_access_returns_empty_sentinel(fake_institutions):
     from app.camera_traps.routes import resolve_scope
-    # Екорегіон, якого немає серед доступних установ → гарантовано порожній результат.
+    # An ecoregion not among the accessible institutions -> guaranteed empty result.
     scope, ids = resolve_scope('ecoregion:Степ', fake_institutions)
     assert scope == 'ecoregion:Степ'
     assert ids == [-1]

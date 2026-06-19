@@ -1,12 +1,12 @@
 """
-Тести моделі Deployment та логіки інтервального матчингу спостережень.
+Tests for the Deployment model and interval-based observation matching.
 
-Перевіряють:
-  - створення деплойменту й зв'язок з Location;
-  - дефолти (history_unknown=False);
-  - is_usable() з правилом «NULL = придатний»;
-  - запит спостережень по перекриттю дат деплойменту;
-  - правило «найгірший сценарій» при перекритті двох деплойментів.
+Cover:
+  - creating a deployment and its link to Location;
+  - defaults (history_unknown=False);
+  - is_usable() with the "NULL = usable" rule;
+  - querying observations by overlap with deployment dates;
+  - the "worst case" rule when two deployments overlap.
 """
 from datetime import date, datetime
 
@@ -24,7 +24,7 @@ def test_create_deployment_and_location_link(make_ct_location, make_ct_deploymen
     assert dep.location_id == loc.id
     assert dep.location is loc
     assert dep in loc.deployments
-    # camera_id зберігається як рядок (провідні нулі)
+    # camera_id is stored as a string (leading zeros)
     assert dep.camera_id == '1002'
 
 
@@ -39,7 +39,7 @@ def test_history_unknown_defaults_false(make_ct_deployment):
 
 
 def test_is_usable_null_treated_as_usable(make_ct_deployment):
-    dep = make_ct_deployment()  # qc_data_not_usable не заданий → NULL
+    dep = make_ct_deployment()  # qc_data_not_usable not set → NULL
     assert dep.qc_data_not_usable is None
     assert dep.is_usable() is True
 
@@ -72,10 +72,10 @@ def test_observations_within_deployment_interval(ct_session, make_ct_location,
 
 
 def test_n_days_calc_column_present(ct_session, make_ct_deployment):
-    """Generated-колонка існує й не ламає вставку (значення — Postgres-only)."""
+    """Generated column exists and does not break inserts (value is Postgres-only)."""
     dep = make_ct_deployment(start_date=date(2025, 7, 1), end_date=date(2025, 9, 5))
     fetched = ct_session.query(Deployment).get(dep.id)
-    assert hasattr(fetched, 'n_days_calc')  # колонка присутня в моделі/БД
+    assert hasattr(fetched, 'n_days_calc')  # column present in model/DB
 
 
 def test_count_photos_within_interval(ct_session, make_ct_location, make_ct_deployment,
@@ -97,7 +97,7 @@ def test_count_photos_within_interval(ct_session, make_ct_location, make_ct_depl
 
 def test_count_photos_open_interval(ct_session, make_ct_location, make_ct_deployment,
                                     make_ct_observation, make_ct_photo):
-    """Без дат деплоймент рахує всі згруповані фото локації."""
+    """With no dates, the deployment counts all grouped photos of the location."""
     loc = make_ct_location()
     dep = make_ct_deployment(location=loc, start_date=None, end_date=None)
     obs = make_ct_observation(location=loc)
@@ -107,7 +107,7 @@ def test_count_photos_open_interval(ct_session, make_ct_location, make_ct_deploy
 
 
 def test_apply_deployment_fields_coercion():
-    """Хелпер застосування полів коректно приводить типи (без БД)."""
+    """The field-applying helper coerces types correctly (no DB)."""
     from datetime import date, time
     from app.camera_traps.routes import _apply_deployment_fields
     dep = Deployment(location_id=1, name='orig')
@@ -115,7 +115,7 @@ def test_apply_deployment_fields_coercion():
         'name': '  D1  ', 'study_year': '2025', 'n_photos': 42,
         'camera_id': '0405', 'start_date': '2025-07-01', 'start_time': '10:14',
         'qc_data_not_usable': True, 'qc_comment': '  note  ',
-        'study_design': '',  # порожнє -> None
+        'study_design': '',  # empty -> None
     })
     assert dep.name == 'D1'
     assert dep.study_year == 2025
@@ -143,7 +143,7 @@ def test_apply_deployment_fields_bad_date_raises():
 
 
 def test_worst_case_on_overlap(ct_session, make_ct_location, make_ct_deployment):
-    """Кадр, що потрапляє у два деплойменти, де один непридатний → виключити."""
+    """A frame falling into two deployments, one of them unusable → exclude."""
     loc = make_ct_location()
     make_ct_deployment(location=loc, name='good',
                        start_date=date(2025, 7, 1), end_date=date(2025, 9, 10),
@@ -152,7 +152,7 @@ def test_worst_case_on_overlap(ct_session, make_ct_location, make_ct_deployment)
                        start_date=date(2025, 9, 5), end_date=date(2025, 12, 1),
                        qc_data_not_usable=True)
 
-    capture = date(2025, 9, 7)  # у зоні перекриття
+    capture = date(2025, 9, 7)  # in the overlap zone
     overlapping = ct_session.query(Deployment).filter(
         Deployment.location_id == loc.id,
         Deployment.start_date <= capture,
@@ -160,6 +160,6 @@ def test_worst_case_on_overlap(ct_session, make_ct_location, make_ct_deployment)
     ).all()
     assert len(overlapping) == 2
 
-    # Правило «найгірший сценарій»: придатний лише якщо ЖОДЕН не виключає
+    # "Worst case" rule: usable only if NONE of them excludes it
     usable = all(d.is_usable() for d in overlapping)
     assert usable is False

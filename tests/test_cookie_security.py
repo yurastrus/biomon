@@ -1,9 +1,9 @@
 """
-SEC Phase 3 (#25): сесійні куки лише по HTTPS у Production.
+SEC Phase 3 (#25): session cookies over HTTPS only in Production.
 
 ProductionConfig: SESSION_COOKIE_SECURE / REMEMBER_COOKIE_SECURE = True,
-SAMESITE='Lax', HTTPONLY=True. Dev/base лишаються SECURE=False, щоб локальна
-робота по HTTP не ламалась.
+SAMESITE='Lax', HTTPONLY=True. Dev/base stay SECURE=False so that local
+work over HTTP doesn't break.
 """
 from config import Config, DevelopmentConfig, ProductionConfig
 
@@ -25,7 +25,7 @@ def test_production_httponly_true():
 
 
 def test_development_session_cookie_not_secure():
-    """Dev має лишатися SECURE=False — інакше зламає локальні HTTP-сесії."""
+    """Dev must stay SECURE=False, otherwise it breaks local HTTP sessions."""
     assert DevelopmentConfig.SESSION_COOKIE_SECURE is False
 
 

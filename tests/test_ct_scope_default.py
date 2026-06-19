@@ -1,16 +1,16 @@
 """
-Юніт-тести resolve_scope() — дефолтний scope фільтра «Установа / Екорегіон» (#49).
+Unit tests for resolve_scope() — the default scope of the "Institution / Ecoregion" filter (#49).
 
-Перевіряє:
-  - порожній scope без дефолта → 'global:' (жодна установа не вибрана);
-  - CT_DEFAULT_SCOPE='ecoregion:Розточчя' застосовується, ЛИШЕ якщо екорегіон
-    доступний користувачу; інакше тихий відкат на 'global:';
-  - дефолт-установа застосовується;
-  - явний scope з URL завжди має пріоритет над дефолтом;
-  - стара поведінка явного екорегіону без установ ([-1]) збережена.
+Checks:
+  - empty scope without a default → 'global:' (no institution selected);
+  - CT_DEFAULT_SCOPE='ecoregion:Розточчя' is applied ONLY if the ecoregion
+    is available to the user; otherwise a silent fallback to 'global:';
+  - a default institution is applied;
+  - an explicit scope from the URL always takes priority over the default;
+  - the old behavior of an explicit ecoregion without institutions ([-1]) is preserved.
 
-resolve_scope — чиста функція (без app-контексту): використовує лише
-i.id та i.ecoregion_uk, тож підставляємо легкі SimpleNamespace-обʼєкти.
+resolve_scope is a pure function (no app context): it uses only
+i.id and i.ecoregion_uk, so we pass lightweight SimpleNamespace objects.
 """
 import types
 
@@ -21,7 +21,7 @@ def _inst(id_, eco):
     return types.SimpleNamespace(id=id_, ecoregion_uk=eco)
 
 
-# Доступні установи: дві в Розточчі (1,2), одна в Карпатах (3)
+# Available institutions: two in Roztochya (1,2), one in the Carpathians (3)
 ROZ = [_inst(1, 'Розточчя'), _inst(2, 'Розточчя'), _inst(3, 'Карпати')]
 
 
@@ -44,8 +44,8 @@ def test_default_ecoregion_applies_when_available():
 
 
 def test_default_ecoregion_falls_back_to_global_when_unavailable():
-    """Користувач без установ Розточчя: дефолт ігнорується, повертаємось на «усі»
-    (а НЕ на порожній [-1], щоб не показати порожню сторінку)."""
+    """A user without Roztochya institutions: the default is ignored, we fall back to "all"
+    (and NOT to an empty [-1], so as not to show an empty page)."""
     only_carpathians = [_inst(3, 'Карпати')]
     scope, ids = resolve_scope('', only_carpathians,
                                default_scope='ecoregion:Розточчя')
@@ -67,8 +67,8 @@ def test_explicit_scope_overrides_default():
 
 
 def test_explicit_ecoregion_without_match_keeps_sentinel():
-    """Явний (не дефолтний) екорегіон без установ → [-1] — стара поведінка
-    збережена (порожній результат, бо користувач свідомо обрав цей фільтр)."""
+    """An explicit (non-default) ecoregion without institutions → [-1] — the old behavior
+    is preserved (empty result, since the user deliberately chose this filter)."""
     scope, ids = resolve_scope('ecoregion:Степ', ROZ)
     assert scope == 'ecoregion:Степ'
     assert ids == [-1]

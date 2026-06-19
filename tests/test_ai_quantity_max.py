@@ -1,9 +1,9 @@
 """
-#35: get_observation_ai_prediction() повертає кількість особин для серії як
-MAX(animal_count) у межах переможної моделі (а не з одного «переможного» фото).
+#35: get_observation_ai_prediction() returns the per-series individual count as
+MAX(animal_count) within the winning model (not from a single "winning" photo).
 
-AIPrediction використовує ARRAY/JSONB і відсутній у SQLite-фікстурі ct_session,
-тож мокаємо сесію: перший query() — вибір переможного рядка, другий — MAX.
+AIPrediction uses ARRAY/JSONB and is absent from the SQLite ct_session fixture,
+so we mock the session: the first query() picks the winning row, the second MAX.
 """
 from types import SimpleNamespace
 from unittest.mock import patch, MagicMock
@@ -36,8 +36,8 @@ def test_returns_max_animal_count_across_series():
     with patch('app.camera_traps.ai_runner.get_ct_session', return_value=sess):
         from app.camera_traps.ai_runner import get_observation_ai_prediction
         result = get_observation_ai_prediction(123)
-    assert result['animal_count'] == 2      # фото [1,1,2] → 2
-    assert result['species_id'] == 42       # вибір виду не змінився
+    assert result['animal_count'] == 2      # photos [1,1,2] → 2
+    assert result['species_id'] == 42       # species choice unchanged
     assert result['score'] == 0.9
 
 
@@ -46,7 +46,7 @@ def test_all_null_counts_fall_back_to_row():
     with patch('app.camera_traps.ai_runner.get_ct_session', return_value=sess):
         from app.camera_traps.ai_runner import get_observation_ai_prediction
         result = get_observation_ai_prediction(123)
-    assert result['animal_count'] == 1      # усі NULL → поточна поведінка
+    assert result['animal_count'] == 1      # all NULL → current behavior
 
 
 def test_no_prediction_returns_none():

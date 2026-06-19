@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 import json
 
 from flask import render_template, session, redirect, url_for, current_app, request, g, jsonify, flash
@@ -128,12 +129,12 @@ def profile(lang_code):
         from app.camera_traps.utils import get_user_ct_stats
         ct_stats = get_user_ct_stats(current_user.id, lang=lang_code)
     except Exception as e:
-        current_app.logger.warning(f"profile: CT-статистика недоступна: {e}")
+        current_app.logger.warning(f"profile: CT stats unavailable: {e}")
     try:
         from app.pam.utils import get_user_pam_stats
         pam_stats = get_user_pam_stats(current_user.id)
     except Exception as e:
-        current_app.logger.warning(f"profile: PAM-статистика недоступна: {e}")
+        current_app.logger.warning(f"profile: PAM stats unavailable: {e}")
 
     if not username_form.new_username.data:
         username_form.new_username.data = current_user.username
@@ -154,14 +155,14 @@ def csp_report():
     Rate-limited to guard against bot spam. CSRF exempt because browsers do not
     include CSRF tokens in auto-generated reports.
     """
-    # Браузери надсилають з Content-Type: application/csp-report (legacy)
-    # або application/reports+json (modern, через report-to header).
-    # force=True ігнорує Content-Type check; silent=True ловить malformed.
+    # Browsers send with Content-Type: application/csp-report (legacy)
+    # or application/reports+json (modern, via report-to header).
+    # force=True ignores the Content-Type check; silent=True catches malformed input.
     report = request.get_json(force=True, silent=True) or {}
 
-    # Truncate щоб уникнути ушкодження логу від великих payload-ів
+    # Truncate to avoid log pollution from large payloads
     payload = json.dumps(report, ensure_ascii=False)[:2000]
     current_app.logger.warning(f"CSP violation: {payload}")
 
-    # 204 No Content — стандарт для CSP report endpoints, не споживає bandwidth
+    # 204 No Content — standard for CSP report endpoints, consumes no bandwidth
     return '', 204

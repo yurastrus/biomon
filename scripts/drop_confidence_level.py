@@ -1,21 +1,22 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
-Видаляє мертву колонку identifications.confidence_level з ct_db (#46).
+Drops the dead identifications.confidence_level column from ct_db (#46).
 
-Колонка була повністю порожня (форма ідентифікації її не заповнювала —
-архітектурний залишок, виявлено діагностикою #41).
+The column was completely empty (the identification form never populated it —
+an architectural leftover, found by diagnostics #41).
 
-Запуск з кореня проекту:
+Run from the project root:
     venv/Scripts/python -m scripts.drop_confidence_level          # Windows
     venv/bin/python -m scripts.drop_confidence_level              # Linux
 
-БЕЗПЕКА: скрипт ПОВТОРНО перевіряє, що колонка порожня (COUNT(confidence_level)=0),
-і ПЕРЕРИВАЄТЬСЯ без змін, якщо знайде хоч одне непорожнє значення. DROP і
-перевірка — в одній транзакції.
+SAFETY: the script re-checks that the column is empty (COUNT(confidence_level)=0)
+and ABORTS without changes if it finds any non-empty value. The DROP and the
+check are in a single transaction.
 
-УВАГА: НЕ плутати з pam_db.segments.confidence_level (інша БД, активно
-використовується). Тут — ЛИШЕ ct_db.identifications.confidence_level.
-Застосувати на проді РАЗОМ із деплоєм коду (модель уже без цієї колонки) +
-координація /var/www/myproject.
+WARNING: do NOT confuse this with pam_db.segments.confidence_level (a different
+DB, actively used). This is ONLY ct_db.identifications.confidence_level.
+Apply on prod TOGETHER with the code deploy (the model no longer has this
+column) + coordinate /var/www/myproject.
 """
 
 import sys
@@ -35,14 +36,14 @@ def main():
                 "SELECT COUNT(confidence_level) FROM identifications")).scalar()
             total = conn.execute(text(
                 "SELECT COUNT(*) FROM identifications")).scalar()
-            print(f"confidence_level non-null: {nn} з {total}")
+            print(f"confidence_level non-null: {nn} of {total}")
             if nn and nn > 0:
-                print("ПЕРЕРВАНО: колонка НЕ порожня — нічого не видалено.")
+                print("ABORTED: the column is NOT empty — nothing was dropped.")
                 sys.exit(1)
             print("  > ALTER TABLE identifications DROP COLUMN IF EXISTS confidence_level")
             conn.execute(text(
                 "ALTER TABLE identifications DROP COLUMN IF EXISTS confidence_level"))
-        print("Готово: confidence_level видалено.")
+        print("Done: confidence_level dropped.")
 
 
 if __name__ == '__main__':

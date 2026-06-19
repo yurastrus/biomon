@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """READ-ONLY: counts matches per location for a split-CSV
 (filename + captured_at to the second). Writes nothing. Validates the
 matching key and timezone assumptions against real data; also resolves
@@ -12,7 +13,9 @@ from collections import Counter
 from pathlib import Path
 import psycopg2
 
-CSV_PATH = sys.argv[1] if len(sys.argv) > 1 else r'C:\Users\IuriiStrus\Desktop\split\0805.csv'
+if len(sys.argv) < 2:
+    sys.exit("Usage: python scripts/_validate_import_match.py <path_to_csv>")
+CSV_PATH = sys.argv[1]
 
 env = {}
 for line in Path('.env').read_text(encoding='utf-8').splitlines():
@@ -53,7 +56,7 @@ for fn, sec, loc_id, lname in cur.fetchall():
 
 print('  matches per location (top 5):')
 if not per_loc:
-    print('    !!! 0 matches — перевір припущення про час/назви')
+    print('    !!! 0 matches — check the assumptions about time/names')
 for loc_id, n in per_loc.most_common(5):
     pct = 100.0 * n / len(keys) if keys else 0
     print(f'    location_id={loc_id:5}  matches={n:6} ({pct:5.1f}%)  {loc_name[loc_id]}')

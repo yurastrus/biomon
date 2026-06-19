@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 from flask_login import UserMixin
 from datetime import datetime
 from app.extensions import db
@@ -50,7 +51,7 @@ class User(db.Model, UserMixin):
 
     @property
     def export_institutions(self):
-        """Установи, з яких користувач має право експортувати дані."""
+        """Institutions the user is allowed to export data from."""
         return [link.institution for link in self.institution_links if link.can_export]
 
     @property
@@ -94,7 +95,7 @@ class User(db.Model, UserMixin):
         return False
     
     def is_local_admin(self):
-        """Перевіряє, чи є користувач адміном установи (менеджером)."""
+        """Return True if the user is an institution admin (manager)."""
         return self.has_role('manager')
     
     def __repr__(self):

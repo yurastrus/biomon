@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 from flask_babel import Babel
 
 from flask_sqlalchemy import SQLAlchemy

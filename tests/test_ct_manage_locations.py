@@ -1,22 +1,22 @@
 """
-Інтеграційні тести для управління локаціями фотопасток (camera traps).
+Integration tests for camera trap location management.
 
-Покриває:
-  - manage_locations (GET)            — доступ, контент, фільтрація за установами
-  - service_log (GET)                 — редирект на manage_locations
-  - api_get_locations_with_status     — доступ (manager+), фільтрація, JSON-поля
-  - api_get_service_history           — доступ (manager+), перевірка установи
-  - api_create_service_visit          — доступ, валідація, перевірка установи
-  - api_update_service_visit          — доступ, захист власності + установа
-  - api_create_location_admin         — manager+ з установою, адмін без обмежень
-  - update_location                   — manager+ з установою, адмін без обмежень
+Covers:
+  - manage_locations (GET)            - access, content, filtering by institution
+  - service_log (GET)                 - redirect to manage_locations
+  - api_get_locations_with_status     - access (manager+), filtering, JSON fields
+  - api_get_service_history           - access (manager+), institution check
+  - api_create_service_visit          - access, validation, institution check
+  - api_update_service_visit          - access, ownership + institution guard
+  - api_create_location_admin         - manager+ with institution, admin unrestricted
+  - update_location                   - manager+ with institution, admin unrestricted
 
-Ключові особливості:
-  - CT використовує SQLAlchemy ORM (get_ct_session / close_ct_session)
-  - CT role_required повертає 302 (redirect), а не 403
-  - Фільтрація за установами: менеджер бачить тільки свої установи
+Key points:
+  - CT uses SQLAlchemy ORM (get_ct_session / close_ct_session)
+  - CT role_required returns 302 (redirect), not 403
+  - Institution filtering: a manager sees only their own institutions
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_ct_manage_locations -v
 """
 
@@ -29,7 +29,7 @@ from unittest.mock import patch, MagicMock
 # ── helpers ────────────────────────────────────────────────────────────────
 
 def _login(client, user_id):
-    """Встановлює Flask-Login сесію без HTTP-запиту."""
+    """Sets up a Flask-Login session without an HTTP request."""
     with client.session_transaction() as sess:
         sess['_user_id'] = str(user_id)
         sess['_fresh'] = True
@@ -38,8 +38,8 @@ def _login(client, user_id):
 def _make_location(id=1, name='Тест ліс', lat=49.85, lon=23.65,
                    description='Короткий опис', biotope_ids=()):
     """
-    Mock-об'єкт Location.
-    loc.stats = None — уникає TypeError (MagicMock > int) у api_get_locations_with_status.
+    Mock Location object.
+    loc.stats = None avoids TypeError (MagicMock > int) in api_get_locations_with_status.
     """
     loc = MagicMock()
     loc.id = id
@@ -56,7 +56,7 @@ def _make_visit(id=1, location_id=1, user_id=1, visit_purpose_id=1,
                 battery_type_id=None, is_camera_operational=None,
                 sd_card_changed=False, photos_on_card=None, comments=None,
                 visit_dt=None):
-    """Mock-об'єкт ServiceVisit."""
+    """Mock ServiceVisit object."""
     v = MagicMock()
     v.id = id
     v.location_id = location_id
@@ -75,11 +75,11 @@ def _make_visit(id=1, location_id=1, user_id=1, visit_purpose_id=1,
 
 def _make_manage_session(locations=(), biotopes=(), battery_types=(), visit_purposes=()):
     """
-    Mock ct_session для manage_locations:
-    4 послідовних query() для Location, Biotope, BatteryType, VisitPurpose.
-    Підтримує два паттерни для Location:
-      - адмін:    .query(Location).order_by(...).all()
-      - менеджер: .query(Location).join(...).filter(...).order_by(...).distinct().all()
+    Mock ct_session for manage_locations:
+    4 sequential query() calls for Location, Biotope, BatteryType, VisitPurpose.
+    Supports both Location patterns:
+      - admin:   .query(Location).order_by(...).all()
+      - manager: .query(Location).join(...).filter(...).order_by(...).distinct().all()
     """
     mock_session = MagicMock()
     results = [
@@ -95,7 +95,7 @@ def _make_manage_session(locations=(), biotopes=(), battery_types=(), visit_purp
         idx = call_idx[0]
         call_idx[0] += 1
         lst = results[idx] if idx < len(results) else []
-        # Підтримуємо обидва ланцюжки
+        # Support both chains
         q.order_by.return_value.all.return_value = lst
         q.join.return_value.filter.return_value.order_by.return_value.distinct.return_value.all.return_value = lst
         return q
@@ -106,9 +106,9 @@ def _make_manage_session(locations=(), biotopes=(), battery_types=(), visit_purp
 
 def _make_status_session(locations=()):
     """
-    Mock ct_session для api_get_locations_with_status.
-    Підтримує обидва ланцюжки отримання локацій (адмін/менеджер).
-    Для кожної локації: ServiceVisit query повертає None (немає візитів).
+    Mock ct_session for api_get_locations_with_status.
+    Supports both location-fetching chains (admin/manager).
+    For each location: the ServiceVisit query returns None (no visits).
     """
     mock_session = MagicMock()
     call_idx = [0]
@@ -129,12 +129,12 @@ def _make_status_session(locations=()):
 
 def _make_history_session(visits=(), has_access=True):
     """
-    Mock ct_session для api_get_service_history.
-    has_access: чи повертати (1,) з execute() для перевірки установи.
+    Mock ct_session for api_get_service_history.
+    has_access: whether execute() returns (1,) for the institution check.
     """
     mock_session = MagicMock()
 
-    # execute() для перевірки доступу за установою
+    # execute() for the institution access check
     access_result = MagicMock()
     access_result.fetchone.return_value = (1,) if has_access else None
     mock_session.execute.return_value = access_result
@@ -149,8 +149,8 @@ def _make_history_session(visits=(), has_access=True):
 
 def _make_create_visit_session(has_access=True):
     """
-    Mock ct_session для api_create_service_visit.
-    has_access: чи пройде перевірка установи.
+    Mock ct_session for api_create_service_visit.
+    has_access: whether the institution check passes.
     """
     mock_session = MagicMock()
     access_result = MagicMock()
@@ -161,9 +161,9 @@ def _make_create_visit_session(has_access=True):
 
 def _make_update_visit_session(visit_mock, has_access=True):
     """
-    Mock ct_session для api_update_service_visit:
-    .query(ServiceVisit).get(visit_id) → visit_mock або None.
-    execute() → перевірка установи.
+    Mock ct_session for api_update_service_visit:
+    .query(ServiceVisit).get(visit_id) -> visit_mock or None.
+    execute() -> institution check.
     """
     mock_session = MagicMock()
     mock_session.query.return_value.get.return_value = visit_mock
@@ -174,7 +174,7 @@ def _make_update_visit_session(visit_mock, has_access=True):
 
 
 def _make_create_location_session():
-    """Mock ct_session для api_create_location_admin."""
+    """Mock ct_session for api_create_location_admin."""
     mock_session = MagicMock()
     mock_session.flush.side_effect = lambda: None
     mock_session.query.return_value.filter.return_value.all.return_value = []
@@ -182,7 +182,7 @@ def _make_create_location_session():
 
 
 def _make_update_location_session(location=None, has_access=True):
-    """Mock ct_session для update_location."""
+    """Mock ct_session for update_location."""
     mock_session = MagicMock()
     access_result = MagicMock()
     access_result.fetchone.return_value = (1,) if has_access else None
@@ -192,7 +192,7 @@ def _make_update_location_session(location=None, has_access=True):
         location = _make_location(1, 'Стара назва')
     q = MagicMock()
     q.get.return_value = location
-    q.filter.return_value.all.return_value = []  # для Biotope
+    q.filter.return_value.all.return_value = []  # for Biotope
     mock_session.query.return_value = q
     return mock_session
 
@@ -254,7 +254,7 @@ class CtManageLocationsBase(unittest.TestCase):
         self.admin.roles.append(self.role_admin)
         db.session.add(self.admin)
 
-        # Менеджер з установою А
+        # Manager with institution A
         self.manager = User(username='manager_user', password_hash=pw)
         self.manager.roles.append(self.role_manager)
         self.manager.institution_links.append(
@@ -262,7 +262,7 @@ class CtManageLocationsBase(unittest.TestCase):
         )
         db.session.add(self.manager)
 
-        # Другий менеджер з установою Б
+        # Second manager with institution B
         self.manager2 = User(username='manager_user2', password_hash=pw)
         self.manager2.roles.append(self.role_manager)
         self.manager2.institution_links.append(
@@ -270,7 +270,7 @@ class CtManageLocationsBase(unittest.TestCase):
         )
         db.session.add(self.manager2)
 
-        # Менеджер без установ
+        # Manager without institutions
         self.manager_no_inst = User(username='manager_no_inst', password_hash=pw)
         self.manager_no_inst.roles.append(self.role_manager)
         db.session.add(self.manager_no_inst)
@@ -305,13 +305,13 @@ class CtManageLocationsBase(unittest.TestCase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 1. MANAGE LOCATIONS — ДОСТУП
+# 1. MANAGE LOCATIONS — ACCESS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestManageLocationsAccess(CtManageLocationsBase):
     """
-    GET /camera-traps/manage-locations — перевірка ролей.
-    CT role_required повертає 302 для недостатніх прав (не 403).
+    GET /camera-traps/manage-locations — role check.
+    CT role_required returns 302 for insufficient permissions (not 403).
     """
 
     URL = '/uk/camera-traps/manage-locations'
@@ -333,7 +333,7 @@ class TestManageLocationsAccess(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 200)
 
     def test_manager_without_institution_can_access(self):
-        """Менеджер без установ бачить порожній список, але має доступ до сторінки."""
+        """A manager without institutions sees an empty list but can access the page."""
         resp = self._get(self.URL, user_id=self.manager_no_inst.id,
                          session=_make_manage_session())
         self.assertEqual(resp.status_code, 200)
@@ -345,11 +345,11 @@ class TestManageLocationsAccess(CtManageLocationsBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 2. MANAGE LOCATIONS — КОНТЕНТ
+# 2. MANAGE LOCATIONS — CONTENT
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestManageLocationsContent(CtManageLocationsBase):
-    """HTML: локації, кнопки, права на редагування."""
+    """HTML: locations, buttons, edit permissions."""
 
     URL = '/uk/camera-traps/manage-locations'
 
@@ -371,7 +371,7 @@ class TestManageLocationsContent(CtManageLocationsBase):
         self.assertIn('Серпневий бір'.encode(), resp.data)
 
     def test_new_location_button_shown_for_manager_with_institution(self):
-        """Менеджер із установою має право редагувати → кнопка видима."""
+        """A manager with an institution can edit -> button is visible."""
         resp = self._get(self.URL, user_id=self.manager.id,
                          session=_make_manage_session())
         self.assertIn(b'new-location-btn', resp.data)
@@ -382,7 +382,7 @@ class TestManageLocationsContent(CtManageLocationsBase):
         self.assertIn(b'new-location-btn', resp.data)
 
     def test_new_location_button_hidden_for_manager_without_institution(self):
-        """Менеджер без установ — can_edit=False → кнопка прихована."""
+        """Manager without institutions - can_edit=False -> button is hidden."""
         resp = self._get(self.URL, user_id=self.manager_no_inst.id,
                          session=_make_manage_session())
         self.assertNotIn(b'new-location-btn', resp.data)
@@ -393,7 +393,7 @@ class TestManageLocationsContent(CtManageLocationsBase):
         self.assertIn(b'edit-form', resp.data)
 
     def test_institution_dropdown_present_in_create_form(self):
-        """Форма створення містить поле вибору установи."""
+        """The create form includes an institution selector."""
         resp = self._get(self.URL, user_id=self.manager.id,
                          session=_make_manage_session())
         self.assertIn(b'institution-select', resp.data)
@@ -404,7 +404,7 @@ class TestManageLocationsContent(CtManageLocationsBase):
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestServiceLogRedirect(CtManageLocationsBase):
-    """/service-log → /manage-locations для всіх авторизованих manager+."""
+    """/service-log → /manage-locations for all authenticated manager+ users."""
 
     URL = '/uk/camera-traps/service-log'
 
@@ -433,11 +433,11 @@ class TestServiceLogRedirect(CtManageLocationsBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 4. API LOCATIONS-WITH-STATUS — ДОСТУП І ВІДПОВІДЬ
+# 4. API LOCATIONS-WITH-STATUS — ACCESS AND RESPONSE
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestCtLocationsWithStatus(CtManageLocationsBase):
-    """GET /camera-traps/api/locations-with-status — тепер вимагає manager+."""
+    """GET /camera-traps/api/locations-with-status — now requires manager+."""
 
     URL = '/uk/camera-traps/api/locations-with-status'
 
@@ -446,7 +446,7 @@ class TestCtLocationsWithStatus(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 302)
 
     def test_viewer_is_redirected(self):
-        """Тепер @role_required('manager') — viewer отримує redirect."""
+        """Now @role_required('manager') — viewer gets a redirect."""
         session = _make_status_session()
         resp = self._get(self.URL, user_id=self.viewer.id, session=session)
         self.assertEqual(resp.status_code, 302)
@@ -461,7 +461,7 @@ class TestCtLocationsWithStatus(CtManageLocationsBase):
         self.assertEqual(len(data), 1)
 
     def test_manager_without_institution_returns_empty_list(self):
-        """Менеджер без установ → негайно повертає []."""
+        """Manager without institutions → immediately returns []."""
         resp = self._get(self.URL, user_id=self.manager_no_inst.id,
                          session=MagicMock())
         self.assertEqual(resp.status_code, 200)
@@ -480,7 +480,7 @@ class TestCtLocationsWithStatus(CtManageLocationsBase):
         item = resp.get_json()[0]
         for key in ('id', 'name', 'latitude', 'longitude', 'status',
                     'last_visit_date', 'days_since_visit', 'status_reason'):
-            self.assertIn(key, item, f"Відсутній ключ: {key}")
+            self.assertIn(key, item, f"Missing key: {key}")
 
     def test_location_without_visits_has_unknown_status(self):
         locs = [_make_location(10, 'Молодий сосняк')]
@@ -491,7 +491,7 @@ class TestCtLocationsWithStatus(CtManageLocationsBase):
         self.assertEqual(item['last_visit_date'], '---')
 
     def test_status_ok_for_recent_visit(self):
-        """Останній візит < 180 днів тому → статус 'ok'."""
+        """Last visit < 180 days ago → status 'ok'."""
         locs = [_make_location(1, 'Свіжа локація')]
         session = MagicMock()
         call_idx = [0]
@@ -518,11 +518,11 @@ class TestCtLocationsWithStatus(CtManageLocationsBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 5. API SERVICE HISTORY — ДОСТУП І СТРУКТУРА
+# 5. API SERVICE HISTORY — ACCESS AND STRUCTURE
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestCtServiceHistoryAccess(CtManageLocationsBase):
-    """GET /camera-traps/api/location/<id>/service-history — тепер manager+."""
+    """GET /camera-traps/api/location/<id>/service-history — now manager+."""
 
     def _url(self, location_id=1):
         return f'/uk/camera-traps/api/location/{location_id}/service-history'
@@ -532,7 +532,7 @@ class TestCtServiceHistoryAccess(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 302)
 
     def test_viewer_is_redirected(self):
-        """Тепер @role_required('manager') — viewer отримує redirect."""
+        """Now @role_required('manager') — viewer gets a redirect."""
         session = _make_history_session()
         resp = self._get(self._url(), user_id=self.viewer.id, session=session)
         self.assertEqual(resp.status_code, 302)
@@ -544,7 +544,7 @@ class TestCtServiceHistoryAccess(CtManageLocationsBase):
         self.assertIsInstance(resp.get_json(), list)
 
     def test_manager_without_access_to_location_gets_403(self):
-        """Менеджер, у якого немає доступу до цієї локації → 403."""
+        """A manager without access to this location → 403."""
         session = _make_history_session(has_access=False)
         resp = self._get(self._url(location_id=999), user_id=self.manager.id, session=session)
         self.assertEqual(resp.status_code, 403)
@@ -555,7 +555,7 @@ class TestCtServiceHistoryAccess(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_bypasses_institution_check(self):
-        """Адмін не проходить перевірку установи — execute() не викликається."""
+        """Admin skips the institution check — execute() is not called."""
         session = _make_history_session()
         resp = self._get(self._url(), user_id=self.admin.id, session=session)
         self.assertEqual(resp.status_code, 200)
@@ -580,7 +580,7 @@ class TestCtServiceHistoryAccess(CtManageLocationsBase):
                     'visit_purpose_id', 'user', 'is_operational', 'battery_info',
                     'battery_type_id', 'sd_card_changed', 'photos_on_card',
                     'comments', 'is_own'):
-            self.assertIn(key, item, f"Відсутній ключ: {key}")
+            self.assertIn(key, item, f"Missing key: {key}")
 
     def test_is_own_true_for_owner(self):
         visit = _make_visit(id=1, user_id=self.manager.id)
@@ -618,7 +618,7 @@ class TestCtServiceHistoryAccess(CtManageLocationsBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 6. API CREATE SERVICE VISIT — ДОСТУП, УСТАНОВА, ВАЛІДАЦІЯ
+# 6. API CREATE SERVICE VISIT — ACCESS, INSTITUTION, VALIDATION
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestCtCreateServiceVisit(CtManageLocationsBase):
@@ -655,7 +655,7 @@ class TestCtCreateServiceVisit(CtManageLocationsBase):
         self.assertTrue(resp.get_json()['success'])
 
     def test_manager_without_location_access_gets_403(self):
-        """Менеджер без доступу до локації → 403."""
+        """Manager without access to the location → 403."""
         session = _make_create_visit_session(has_access=False)
         resp = self._post(self.URL, self._valid_payload(),
                           user_id=self.manager.id, session=session)
@@ -668,7 +668,7 @@ class TestCtCreateServiceVisit(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_creates_without_institution_check(self):
-        """Адмін не проходить перевірку установи."""
+        """Admin skips the institution check."""
         session = _make_create_visit_session()
         resp = self._post(self.URL, self._valid_payload(),
                           user_id=self.admin.id, session=session)
@@ -721,7 +721,7 @@ class TestCtCreateServiceVisit(CtManageLocationsBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 7. API UPDATE SERVICE VISIT — ВЛАСНІСТЬ + УСТАНОВА
+# 7. API UPDATE SERVICE VISIT — OWNERSHIP + INSTITUTION
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestCtUpdateServiceVisit(CtManageLocationsBase):

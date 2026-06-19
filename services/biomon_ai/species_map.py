@@ -1,27 +1,29 @@
-"""Мапінг сирих labels від DeepFaune → biomon Species.id.
+# SPDX-License-Identifier: AGPL-3.0-only
+"""Mapping of raw DeepFaune labels → biomon Species.id.
 
-ДОВІДКА:
-    DeepFaune класифікатор повертає одне з ~38 ім'ям виду англійською
-    (`'roe deer'`, `'fox'`, `'wild boar'`, ...) або одне з 8 під-класів
-    птахів (`'bird corvid'`, `'bird raptor'`, ... — ПРОБІЛ, не дефіс;
-    див. predictTools.py:72) або одне зі спецкласів
+REFERENCE:
+    The DeepFaune classifier returns one of ~38 English species names
+    (`'roe deer'`, `'fox'`, `'wild boar'`, ...), or one of 8 bird
+    sub-classes (`'bird corvid'`, `'bird raptor'`, ... — SPACE, not a
+    hyphen; see predictTools.py:72), or one of the special classes
     `'empty'` / `'human'` / `'vehicle'` / `'undefined'`.
-    Коли DeepFaune визначив що це птах, але sub-classifier нижче
-    threshold, повертається `'bird undefined'` (predictTools.py:73).
+    When DeepFaune decides it is a bird but the sub-classifier is below
+    threshold, it returns `'bird undefined'` (predictTools.py:73).
 
-ПРАВИЛА:
-    - Якщо вид є у вашому Species (id > 0) — мапаємо на нього.
-    - Якщо вид не водиться в Карпатах / поки нема в БД — None (NULL у БД).
-      Сирий label все одно зберігається в `ai_predictions.prediction_label`,
-      тому при додаванні виду в Species потім можна back-fill через UPDATE.
-    - `empty` / `human` / `vehicle` — мапаємо на спецкласи -1 / -5 / -3.
-    - Підкласи птахів — мапаємо на спец-Species (-9, -12..-18).
-    - `undefined` (DeepFaune видає коли score < threshold) — None.
+RULES:
+    - If the species exists in your Species (id > 0) — map to it.
+    - If the species is not found in the Carpathians / not yet in the DB
+      — None (NULL in the DB). The raw label is still stored in
+      `ai_predictions.prediction_label`, so once the species is added to
+      Species you can back-fill via UPDATE.
+    - `empty` / `human` / `vehicle` — map to special classes -1 / -5 / -3.
+    - Bird sub-classes — map to special Species (-9, -12..-18).
+    - `undefined` (DeepFaune returns it when score < threshold) — None.
 
-ОНОВЛЕННЯ:
-    Якщо в Species додасться новий вид (наприклад, видра/Lutra lutra) —
-    допишіть рядок у DEEPFAUNE_TO_SPECIES_ID нижче, і нові прогнози
-    почнуть мапитись. Старі прогнози можна back-fill одноразовим SQL:
+UPDATING:
+    If a new species is added to Species (e.g. otter/Lutra lutra) — add a
+    row to DEEPFAUNE_TO_SPECIES_ID below and new predictions will start
+    mapping. Old predictions can be back-filled with a one-off SQL:
         UPDATE ai_predictions
         SET prediction_species_id = <species_id>
         WHERE prediction_label = '<deepfaune_label>'
@@ -31,91 +33,93 @@
 from typing import Optional
 
 
-# DeepFaune label (англійський, як видає класифікатор) → Species.id в ct_db.
-# None означає "сирий label зберігаємо, але мапінга на біомон-вид нема".
+# DeepFaune label (English, as emitted by the classifier) → Species.id in ct_db.
+# None means "store the raw label, but there is no mapping to a biomon species".
 DEEPFAUNE_TO_SPECIES_ID: dict[str, Optional[int]] = {
-    # ── Ссавці які є в Species ─────────────────────────────────────
-    'roe deer':       4,    # Capreolus capreolus — Козуля
-    'red deer':       5,    # Cervus elaphus — Олень благородний
-    'wild boar':      3,    # Sus scrofa — Кабан
-    'fox':            10,   # Vulpes vulpes — Лисиця
-    'wolf':           9,    # Canis lupus — Вовк
-    'lynx':           37,   # Lynx lynx — Рись
-    'bear':           36,   # Ursus arctos — Ведмідь бурий
-    'badger':         11,   # Meles meles — Борсук
-    'moose':          6,    # Alces alces — Лось
-    'bison':          38,   # Bos bonasus — Зубр
-    'squirrel':       2,    # Sciurus vulgaris — Білка
-    'raccoon dog':    26,   # Nyctereutes procyonoides — Єнотовидна собака
-    'dog':            8,    # Canis familiaris — Собака свійський
-    'cat':            7,    # Felis silvestris — Кіт лісовий
-                            # (DeepFaune не розрізняє домашнього/лісового,
-                            # для Карпат майже завжди це лісовий)
+    # ── Mammals present in Species ─────────────────────────────────
+    'roe deer':       4,    # Capreolus capreolus — roe deer
+    'red deer':       5,    # Cervus elaphus — red deer
+    'wild boar':      3,    # Sus scrofa — wild boar
+    'fox':            10,   # Vulpes vulpes — red fox
+    'wolf':           9,    # Canis lupus — wolf
+    'lynx':           37,   # Lynx lynx — lynx
+    'bear':           36,   # Ursus arctos — brown bear
+    'badger':         11,   # Meles meles — badger
+    'moose':          6,    # Alces alces — moose
+    'bison':          38,   # Bos bonasus — bison
+    'squirrel':       2,    # Sciurus vulgaris — squirrel
+    'raccoon dog':    26,   # Nyctereutes procyonoides — raccoon dog
+    'dog':            8,    # Canis familiaris — domestic dog
+    'cat':            7,    # Felis silvestris — wildcat
+                            # (DeepFaune does not distinguish domestic/wild,
+                            # in the Carpathians it is almost always wild)
 
-    # ── Узагальнені класи DeepFaune → найближчий вид у Species ─────
-    'lagomorph':      1,    # Lepus europaeus (у нас лише заєць сірий)
-    'micromammal':   -8,    # → "Дрібний гризун" (спецклас в Species)
+    # ── Generalized DeepFaune classes → nearest species in Species ─
+    'lagomorph':      1,    # Lepus europaeus (we only have the brown hare)
+    'micromammal':   -8,    # → "small rodent" (special class in Species)
 
-    # ── Спецкласи DeepFaune ────────────────────────────────────────
-    'empty':         -1,    # Пусто
-    'human':         -5,    # Людина
-    'vehicle':       -3,    # Автомобіль
+    # ── DeepFaune special classes ──────────────────────────────────
+    'empty':         -1,    # empty
+    'human':         -5,    # human
+    'vehicle':       -3,    # vehicle
 
-    # ── Види яких немає в Carpathians / в Species ──────────────────
-    # Лишаємо як NULL — сирий label все одно зберігається в prediction_label
-    'ibex':              None,  # альпійський козел, високогір'я
-    'beaver':            None,  # бобер — є в Україні, але не в Species
-    'golden jackal':     None,  # шакал золотистий — рідкісний
-    'chamois':           None,  # сарна, високогір'я
-    'goat':              None,  # домашня коза
-    'fallow deer':       None,  # лань — не в Карпатах
-    'equid':             None,  # рід коней — рідко
-    'genet':             None,  # генета — не в Карпатах
-    'wolverine':         None,  # росомаха — не в Карпатах
-    'hedgehog':          None,  # їжак — є в Україні, але не в Species
-    'otter':             None,  # видра — є в Україні, але не в Species
-    'marmot':            None,  # бабак — високогір'я
-    'mouflon':           None,  # муфлон — рідко
-    'sheep':             None,  # домашня вівця
-    'mustelid':          None,  # узагальнений клас куньих (у нас 2 види
-                                # підкатегорії: куниця, тхір, не визначимо)
+    # ── Species not found in the Carpathians / in Species ──────────
+    # Left as NULL — the raw label is still stored in prediction_label
+    'ibex':              None,  # alpine ibex, highlands
+    'beaver':            None,  # beaver — present in Ukraine, but not in Species
+    'golden jackal':     None,  # golden jackal — rare
+    'chamois':           None,  # chamois, highlands
+    'goat':              None,  # domestic goat
+    'fallow deer':       None,  # fallow deer — not in the Carpathians
+    'equid':             None,  # horse genus — rare
+    'genet':             None,  # genet — not in the Carpathians
+    'wolverine':         None,  # wolverine — not in the Carpathians
+    'hedgehog':          None,  # hedgehog — present in Ukraine, but not in Species
+    'otter':             None,  # otter — present in Ukraine, but not in Species
+    'marmot':            None,  # marmot — highlands
+    'mouflon':           None,  # mouflon — rare
+    'sheep':             None,  # domestic sheep
+    'mustelid':          None,  # generalized mustelid class (we have 2 species
+                                # in this subcategory: marten, polecat — not resolvable)
     'porcupine':         None,
     'nutria':            None,
     'muskrat':           None,
     'raccoon':           None,
     'reindeer':          None,
 
-    # ── Свійські, є в Species як спец-id ──────────────────────────
-    'cow':              -10,    # Корова
-    'sheep':            -11,    # Вівця
+    # ── Domestic, present in Species as special ids ────────────────
+    'cow':              -10,    # cow
+    'sheep':            -11,    # sheep
 
-    # ── Птахи: 8 під-класів DeepFaune + fallback ──────────────────
-    # Формат labels — "bird <subclass>" через ПРОБІЛ (див. predictTools.py:72).
-    'bird':              -18,   # legacy, на випадок birdclassification=False
-    'bird anseriform':   -12,   # Гусеподібні
-    'bird columbiform':  -13,   # Голубоподібні
-    'bird corvid':       -14,   # Воронові
-    'bird galliform':    -15,   # Куроподібні
-    'bird piciform':     -16,   # Дятлоподібні
-    'bird raptor':       -17,   # Хижі птахи
-    'bird otherbird':    -18,   # Інший птах
-    'bird passerine':    -9,    # Дрібні горобині (small passerine)
-    'bird undefined':    -18,   # Птах, sub-classifier < threshold → "Інший птах"
+    # ── Birds: 8 DeepFaune sub-classes + fallback ──────────────────
+    # Label format — "bird <subclass>" with a SPACE (see predictTools.py:72).
+    'bird':              -18,   # legacy, in case birdclassification=False
+    'bird anseriform':   -12,   # Anseriformes (waterfowl)
+    'bird columbiform':  -13,   # Columbiformes (pigeons/doves)
+    'bird corvid':       -14,   # corvids
+    'bird galliform':    -15,   # Galliformes (gamebirds)
+    'bird piciform':     -16,   # Piciformes (woodpeckers)
+    'bird raptor':       -17,   # birds of prey
+    'bird otherbird':    -18,   # other bird
+    'bird passerine':    -9,    # small passerines
+    'bird undefined':    -18,   # bird, sub-classifier < threshold → "other bird"
 
-    # ── DeepFaune видає коли score < threshold ─────────────────────
+    # ── DeepFaune returns this when score < threshold ──────────────
     'undefined':         None,
 }
 
 
 def refresh_label_map(session) -> int:
-    """Підтягує мапінг із таблиці ai_label_map (ЄДИНЕ джерело правди) і
-    мерджить його ПОВЕРХ вшитих дефолтів `DEEPFAUNE_TO_SPECIES_ID`.
+    """Load the mapping from the ai_label_map table (the SINGLE source of
+    truth) and merge it ON TOP of the built-in `DEEPFAUNE_TO_SPECIES_ID`
+    defaults.
 
-    Вшитий словник лишається fallback-сідом: якщо таблиці нема / вона
-    порожня / БД недоступна — нічого не змінюємо і worker працює як раніше.
-    Викликати один раз на старті прогону (потрібна жива SQLAlchemy-сесія).
+    The built-in dict stays as a fallback seed: if the table is missing /
+    empty / the DB is unavailable — nothing changes and the worker runs as
+    before. Call once at the start of a run (a live SQLAlchemy session is
+    required).
 
-    Повертає к-сть підтягнутих рядків (0 = використано лише вшитий fallback).
+    Returns the number of rows loaded (0 = only the built-in fallback used).
     """
     try:
         from sqlalchemy import text
@@ -131,14 +135,14 @@ def refresh_label_map(session) -> int:
 
 
 def map_deepfaune_label(label: Optional[str]) -> Optional[int]:
-    """Повертає Species.id або None.
+    """Return Species.id or None.
 
-    None означає одне з двох:
-      • для відомих labels — вид не мапається (відсутній у Species).
-      • для невідомих/невизначених labels — захист від нових версій
-        DeepFaune, які можуть видати label, якого ми не передбачили.
-    У обох випадках сирий label все одно зберігається в БД, тож
-    нічого не втрачаємо.
+    None means one of two things:
+      • for known labels — the species does not map (absent from Species).
+      • for unknown/undefined labels — protection against new DeepFaune
+        versions that may emit a label we did not anticipate.
+    In both cases the raw label is still stored in the DB, so we lose
+    nothing.
     """
     if not label:
         return None

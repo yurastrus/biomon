@@ -1,10 +1,10 @@
 """
-Idea 5 (#21): дашборд калібрування AI (точність по видах).
+Idea 5 (#21): AI calibration dashboard (accuracy per species).
 
-Route /admin/ai/accuracy на основі ai_predictions.was_correct (Idea 4).
-БД не потрібна — мокаємо ct-engine.
+Route /admin/ai/accuracy based on ai_predictions.was_correct (Idea 4).
+No DB needed - we mock the ct-engine.
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_ct_ai_calibration.py -v
 """
 from unittest.mock import MagicMock, patch
@@ -46,7 +46,7 @@ def test_renders_with_accuracy(auth_client):
 
 def test_null_mean_score_renders_dash(auth_client):
     cl = auth_client(role='admin')
-    row = _row(total=3, correct=3, mean_score_wrong=None)  # усі вгадані → wrong None
+    row = _row(total=3, correct=3, mean_score_wrong=None)  # all correct -> wrong None
     with patch('app.camera_traps.database.get_ct_engine',
                return_value=_engine_with_rows([row])):
         resp = cl.get(URL)
@@ -65,7 +65,7 @@ def test_empty_state(auth_client):
 
 
 def test_survives_db_error(auth_client):
-    """Падіння БД не валить сторінку — показує порожній стан."""
+    """A DB failure doesn't crash the page - it shows the empty state."""
     cl = auth_client(role='admin')
     with patch('app.camera_traps.database.get_ct_engine',
                side_effect=Exception('no db')):

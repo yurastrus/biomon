@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Prepare ct_db for the fast-upload route (/upload-fast).
 
@@ -50,7 +51,7 @@ def main():
                 conn.execute(text(ddl))
 
         print()
-        print("Готово.")
+        print("Done.")
 
 
 if __name__ == '__main__':

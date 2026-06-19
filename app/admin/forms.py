@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """WTForms classes for the admin panel.
 
 Responsible for: field requirements, length limits, email format validation,

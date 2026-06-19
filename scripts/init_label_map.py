@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """Idempotent migration: ai_label_map table (DeepFaune label → species_id).
 
 Creates the ai_label_map table and seeds it from the embedded dictionary

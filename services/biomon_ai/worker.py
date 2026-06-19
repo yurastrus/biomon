@@ -1,13 +1,14 @@
-"""Основна логіка worker'а: бере pending observation з ct_db, прогоняє через
-adapter, зберігає прогнози. Не залежить від Flask.
+# SPDX-License-Identifier: AGPL-3.0-only
+"""Core worker logic: takes a pending observation from ct_db, runs it through
+the adapter, saves the predictions. Does not depend on Flask.
 
-Два режими роботи:
-    run_batch()      — бере N найстаріших pending observation і обробляє.
-                       Використовується нічним cron'ом.
-    run_from_queue() — бере один запит з `ai_run_queue` (адмін-кнопка)
-                       і обробляє вказану в ньому кількість.
+Two modes of operation:
+    run_batch()      — takes the N oldest pending observations and processes
+                       them. Used by the nightly cron.
+    run_from_queue() — takes one request from `ai_run_queue` (admin button)
+                       and processes the count specified in it.
 
-Викликається з CLI (`cli.py`).
+Called from the CLI (`cli.py`).
 """
 
 from __future__ import annotations
@@ -38,22 +39,22 @@ def _resolve_photo_paths(
     upload_path: str,
     photos: list[tuple[int, str]],
 ) -> tuple[list[str], dict[str, int]]:
-    """Будує абсолютні шляхи для списку фото observation'у.
+    """Build absolute paths for an observation's photo list.
 
-    Шукаємо файли в такому порядку:
-      1. pending_photos/raw/<filename>         — оригінал (якщо завантажений)
-      2. pending_photos/thumbnails/<filename>  — мініатюра (~800x800px)
+    Files are looked up in this order:
+      1. pending_photos/raw/<filename>         — original (if uploaded)
+      2. pending_photos/thumbnails/<filename>  — thumbnail (~800x800px)
 
-    Той самий fallback-патерн що в `routes.serve_raw_photo` — у біомоні
-    частина серій завантажуються БЕЗ raw-файлів, тільки мініатюри.
-    Для AI це теж достатньо: DeepFaune yolov8s працює з 960px, класифікатор
-    нарізає 182px crop — на 800px мініатюрі результат лише трохи гірший
-    через дотрімування resize до 960px.
+    The same fallback pattern as in `routes.serve_raw_photo` — in biomon
+    some series are uploaded WITHOUT raw files, only thumbnails. That is
+    enough for AI too: DeepFaune yolov8s works at 960px, the classifier
+    crops a 182px region — on an 800px thumbnail the result is only slightly
+    worse due to the upscale to 960px.
 
     Returns:
         (paths_in_order, path_to_photo_id):
-          paths_in_order — хронологічно впорядковані шляхи для adapter'а
-          path_to_photo_id — словник для зворотного мапінгу при збереженні
+          paths_in_order — chronologically ordered paths for the adapter
+          path_to_photo_id — dict for reverse mapping when saving
     """
     raw_dir   = os.path.join(upload_path, 'pending_photos', 'raw')
     thumb_dir = os.path.join(upload_path, 'pending_photos', 'thumbnails')
@@ -87,43 +88,45 @@ def process_batch(
     database_url: Optional[str] = None,
     on_progress=None,
 ) -> int:
-    """Обробляє до `max_observations` pending observation. Повертає кількість
-    фактично оброблених (тих, для яких щось записано в ai_predictions).
+    """Process up to `max_observations` pending observations. Returns the
+    number actually processed (those for which something was written to
+    ai_predictions).
 
-    Errors per-observation не зривають весь прогін: впала одна — пропускаємо
-    і йдемо до наступної, але exception вище НЕ підіймаємо (для cron-сумісності).
-    Тільки якщо щось крашить рівень БД-сесії — підіймаємо.
+    Per-observation errors do not abort the whole run: if one fails we skip
+    it and move to the next, but an exception is NOT re-raised upward (for
+    cron compatibility). Only if something crashes at the DB-session level
+    do we re-raise.
 
     Args:
-        on_progress: опційний callback `f(processed_count)` що викликається
-            ПІСЛЯ КОЖНОЇ успішно збереженої observation. Призначення —
-            оновлювати `ai_run_queue.processed_count` під час прогону,
-            щоб UI бачив прогрес (і якщо процес помре, не втратили
-            фактичний результат).
+        on_progress: optional callback `f(processed_count)` called AFTER EACH
+            successfully saved observation. Purpose — to update
+            `ai_run_queue.processed_count` during the run so the UI sees
+            progress (and if the process dies, the actual result is not lost).
     """
     engine = make_engine(database_url)
     session = make_session(engine)
 
     try:
-        # 1. Реєструємо/знаходимо активну модель
+        # 1. Register/find the active model
         model_id = get_or_create_model(
             session,
             name=adapter.name,
             version=adapter.version,
             config=adapter.config,
         )
-        session.commit()  # модель має бути в БД до записів прогнозів
+        session.commit()  # the model must be in the DB before prediction records
 
-        # 1b. Підтягуємо мапінг labels із БД (ai_label_map — єдине джерело
-        #     правди). Якщо таблиці нема/порожня — лишається вшитий fallback.
+        # 1b. Load the label map from the DB (ai_label_map — the single source
+        #     of truth). If the table is missing/empty — the built-in fallback
+        #     remains.
         n_map = refresh_label_map(session)
         if n_map:
-            logger.info(f"Label map: завантажено {n_map} рядків з ai_label_map")
+            logger.info(f"Label map: loaded {n_map} rows from ai_label_map")
 
-        # 2. Беремо pending observations. SQL обмежений 10× max_observations,
-        # бо у проді багато "сирітських" observations (status='pending',
-        # photos.status='pending', але файлу нема — cleanup залишив запис без файлу).
-        # У Python ітеруємо до max_observations УСПІШНО оброблених.
+        # 2. Take pending observations. The SQL is capped at 10× max_observations
+        # because in prod there are many "orphan" observations (status='pending',
+        # photos.status='pending', but no file — cleanup left a record without a file).
+        # In Python we iterate until max_observations are SUCCESSFULLY processed.
         sql_limit = max(max_observations * 10, 50)
         observations = pick_pending_observations(
             session,
@@ -173,12 +176,12 @@ def process_batch(
                     f"Observation {obs.observation_id}: saved {saved} prediction(s)"
                 )
 
-                # Callback з фактичним count — для оновлення progress у UI
+                # Callback with the actual count — to update progress in the UI
                 if on_progress is not None:
                     try:
                         on_progress(processed)
                     except Exception as e:
-                        # Не зривати batch через помилку звітування про прогрес
+                        # Don't abort the batch over a progress-reporting error
                         logger.warning(f"on_progress callback failed: {e}")
 
             except Exception as e:
@@ -186,7 +189,7 @@ def process_batch(
                 logger.exception(
                     f"Observation {obs.observation_id} failed: {e}"
                 )
-                # Йдемо далі — інші observation не повинні постраждати
+                # Move on — other observations should not be affected
 
         return processed
 
@@ -201,18 +204,18 @@ def process_batch_tracked(
     requested_by: int = 0,
     database_url: Optional[str] = None,
 ) -> int:
-    """Як process_batch, але автоматично створює запис у ai_run_queue для
-    відстеження прогресу. Використовується для cron-запусків (`cli --batch=N`),
-    щоб усі прогони — і ручні через адмін-кнопку, і нічні автоматичні —
-    були видні в одній таблиці.
+    """Like process_batch, but automatically creates an ai_run_queue record
+    to track progress. Used for cron runs (`cli --batch=N`) so that all runs
+    — both manual via the admin button and the nightly automatic ones — are
+    visible in one table.
 
     Args:
-        requested_by: id користувача-ініціатора. За замовчуванням 0 — маркер
-                      "system/cron" (у БД немає юзера з id=0).
+        requested_by: id of the initiating user. Defaults to 0 — the
+                      "system/cron" marker (there is no user with id=0 in the DB).
     """
     engine = make_engine(database_url)
 
-    # 1. Створюємо queue-запис із статусом 'running'
+    # 1. Create a queue record with status 'running'
     session = make_session(engine)
     try:
         row = AIRunQueue(
@@ -233,7 +236,7 @@ def process_batch_tracked(
         f"n={max_observations}, requested_by={requested_by}"
     )
 
-    # 2. Callback для оновлення processed_count у real-time
+    # 2. Callback to update processed_count in real time
     def _update_progress(count: int):
         with engine.connect() as conn:
             conn.execute(
@@ -242,7 +245,7 @@ def process_batch_tracked(
             )
             conn.commit()
 
-    # 3. Виконуємо batch і фіналізуємо запис
+    # 3. Run the batch and finalize the record
     try:
         processed = process_batch(
             adapter=adapter,
@@ -253,7 +256,7 @@ def process_batch_tracked(
         )
         with engine.connect() as conn:
             if processed == 0:
-                # Нічого не оброблено — порожній крон-запис видаляємо з БД
+                # Nothing processed — delete the empty cron record from the DB
                 conn.execute(
                     text("DELETE FROM ai_run_queue WHERE id=:i"),
                     {'i': queue_id},
@@ -291,15 +294,15 @@ def run_from_queue(
     upload_path: str,
     database_url: Optional[str] = None,
 ) -> Optional[int]:
-    """Обробляє один запит з `ai_run_queue` (від адмін-кнопки).
+    """Process one request from `ai_run_queue` (from the admin button).
 
     Returns:
-        Кількість оброблених observation, або None якщо черга порожня.
+        The number of observations processed, or None if the queue is empty.
     """
     engine = make_engine(database_url)
     session = make_session(engine)
 
-    # 1. Беремо один pending запит (FOR UPDATE SKIP LOCKED)
+    # 1. Take one pending request (FOR UPDATE SKIP LOCKED)
     request = pick_queue_request(session)
     if request is None:
         session.close()
@@ -310,16 +313,16 @@ def run_from_queue(
     n_obs = request.n_observations
     requested_by = request.requested_by
 
-    # Фіксуємо status='running' відразу, щоб інший worker не взяв
+    # Commit status='running' immediately so another worker won't grab it
     session.commit()
     logger.info(
         f"Picked queue request id={queue_id} (n={n_obs}, requested_by={requested_by})"
     )
 
-    # Callback що оновлює processed_count у ai_run_queue через окреме
-    # коротке з'єднання (не конфліктує з основною сесією batch'у).
-    # Виконується після кожної observation — UI бачить прогрес у real-time
-    # і навіть якщо процес помре, в БД лишиться актуальний counter.
+    # Callback that updates processed_count in ai_run_queue via a separate
+    # short connection (does not conflict with the batch's main session).
+    # Runs after each observation — the UI sees progress in real time and
+    # even if the process dies, the DB keeps the up-to-date counter.
     def _report_progress(count: int):
         with engine.connect() as conn:
             conn.execute(
@@ -328,7 +331,7 @@ def run_from_queue(
             )
             conn.commit()
 
-    # 2. Обробляємо. Errors всередині process_batch ловляться per-observation
+    # 2. Process. Errors inside process_batch are caught per-observation
     try:
         processed = process_batch(
             adapter=adapter,
@@ -337,7 +340,7 @@ def run_from_queue(
             database_url=database_url,
             on_progress=_report_progress,
         )
-        # Перезагружаємо request після process_batch (у іншій сесії все commit'нулось)
+        # Reload the request after process_batch (everything committed in another session)
         request = session.get(type(request), queue_id)
         finish_queue_request(session, request, processed_count=processed)
         session.commit()
@@ -345,7 +348,7 @@ def run_from_queue(
         return processed
     except Exception as e:
         session.rollback()
-        # Перезавантажуємо і маркуємо як failed
+        # Reload and mark as failed
         request = session.get(type(request), queue_id)
         finish_queue_request(session, request, processed_count=0, error=str(e))
         session.commit()

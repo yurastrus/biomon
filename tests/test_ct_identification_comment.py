@@ -1,12 +1,12 @@
 """
-#47: вільний коментар у формі ідентифікації (≤200 символів).
+#47: free-text comment in the identification form (<=200 chars).
 
-Перевіряє submit_identification:
-  - коментар зберігається в Identification.comment;
-  - >200 символів — обрізається до 200 (бек-захист);
-  - порожній / лише пробіли / відсутній → None.
+Tests submit_identification:
+  - comment is saved to Identification.comment;
+  - >200 chars is truncated to 200 (backend guard);
+  - empty / whitespace-only / missing -> None.
 
-consensus-логіку мокаємо (тут тестуємо лише збереження коментаря).
+Consensus logic is mocked (we only test comment storage here).
 """
 from unittest.mock import patch
 
@@ -25,7 +25,7 @@ def ct_route_session(ct_session):
 
 def _submit(cl, obs_id, species_id, comment=...):
     payload = {'observation_id': obs_id, 'species_id': species_id, 'quantity': 1}
-    if comment is not ...:                     # ... = ключ взагалі відсутній
+    if comment is not ...:                     # ... = key omitted entirely
         payload['comment'] = comment
     return cl.post(URL, json=payload)
 
@@ -78,6 +78,6 @@ def test_missing_comment_is_none(auth_client, db_session, ct_route_session,
     sp = make_ct_species()
     photo = make_ct_photo()
     cl = auth_client(role='ct_verifier')
-    resp = _submit(cl, photo.observation_id, sp.id)   # ключ comment відсутній
+    resp = _submit(cl, photo.observation_id, sp.id)   # comment key missing
     assert resp.status_code == 201
     assert _saved(ct_route_session, photo.id).comment is None

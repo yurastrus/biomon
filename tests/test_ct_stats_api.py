@@ -1,15 +1,15 @@
 """
-Тести для stats/API ендпоінтів модуля camera_traps.
+Tests for the stats/API endpoints of the camera_traps module.
 
-Покриває:
-  - GET /api/stats/top-species      — структура відповіді
-  - GET /api/stats/locations        — структура відповіді
-  - GET /api/stats/distribution-map — валідація параметрів + структура
-  - GET /api/stats/daily-activity   — валідація параметрів + структура
-  - GET /api/stats/comparison       — валідація + контроль доступу
-  - GET /api/gallery/photos         — валідація параметрів + 404 при відсутності фото
+Covers:
+  - GET /api/stats/top-species      — response structure
+  - GET /api/stats/locations        — response structure
+  - GET /api/stats/distribution-map — parameter validation + structure
+  - GET /api/stats/daily-activity   — parameter validation + structure
+  - GET /api/stats/comparison       — validation + access control
+  - GET /api/gallery/photos         — parameter validation + 404 when no photos
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_ct_stats_api -v
 """
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 from flask import request, session, g, current_app
 from flask_babel import gettext, ngettext, refresh
 import datetime

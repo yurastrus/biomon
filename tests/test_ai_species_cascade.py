@@ -1,13 +1,13 @@
-"""Тести каскадного фільтра scope → AI на сторінці /identify.
+"""Tests for the scope → AI cascade filter on the /identify page.
 
-Покриває:
-  1. `get_species_with_ai_predictions` (ai_runner.py) — нові scope-параметри
-     додають правильний WHERE-клоз і повертають порожньо для заборонених
-     scopes у non-admin юзера.
-  2. `/api/identify/ai-species` (routes.py) — рольовий доступ, парсинг
-     параметрів, проксування у helper-функцію, обмеження для non-admin.
+Covers:
+  1. `get_species_with_ai_predictions` (ai_runner.py) — new scope params
+     add the correct WHERE clause and return empty for scopes a non-admin
+     user is not allowed to access.
+  2. `/api/identify/ai-species` (routes.py) — role-based access, param
+     parsing, proxying to the helper function, restrictions for non-admin.
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_ai_species_cascade.py -v
 """
 
@@ -27,21 +27,21 @@ def _login(client, user_id):
 
 
 # ════════════════════════════════════════════════════════════════════════
-# 1. UNIT: get_species_with_ai_predictions — scope-параметри
+# 1. UNIT: get_species_with_ai_predictions — scope params
 # ════════════════════════════════════════════════════════════════════════
 
 
 class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
-    """Перевіряємо, що нові аргументи правильно впливають на SQL і params.
+    """Verify the new arguments correctly affect the SQL and params.
 
-    Підхід: мокаємо `get_ct_session()` так, щоб session.execute(...)
-    повертав заданий список рядків, а query(AIModel).filter_by().first()
-    повертав фейкову активну модель. Потім дивимось, який саме SQL
-    і параметри пішли в session.execute.
+    Approach: mock `get_ct_session()` so that session.execute(...)
+    returns a given list of rows, and query(AIModel).filter_by().first()
+    returns a fake active model. Then inspect exactly which SQL
+    and params were passed to session.execute.
     """
 
     def _row(self, sp_id, ua, en, sci, count):
-        """Будує об'єкт-рядок з атрибутами, як у SQLAlchemy Row."""
+        """Build a row object with attributes like a SQLAlchemy Row."""
         r = MagicMock()
         r.id = sp_id
         r.common_name_ua = ua
@@ -51,19 +51,19 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
         return r
 
     def _make_mock_session(self, rows=(), eco_inst_ids=None):
-        """Будує session.
+        """Build a session.
 
-        eco_inst_ids=None → одинарний execute (немає eco-resolution).
-        eco_inst_ids=[…]  → два execute: спершу eco-запит, потім головний.
+        eco_inst_ids=None → a single execute (no eco resolution).
+        eco_inst_ids=[…]  → two executes: first the eco query, then the main one.
         """
         sess = MagicMock()
 
-        # active model: будь-який запит .query(...).filter_by(...).first()
+        # active model: any .query(...).filter_by(...).first() query
         active = MagicMock(id=42)
         sess.query.return_value.filter_by.return_value.first.return_value = active
 
         main_result = MagicMock()
-        # Якщо в rows кортежі — конвертуємо у row-mock.
+        # If rows are tuples — convert them to row mocks.
         row_objs = []
         for row in rows:
             if isinstance(row, tuple):
@@ -95,9 +95,9 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
             )
         self.assertEqual(result, [])
 
-        # Перший і єдиний execute — головний SQL без scope.
-        # (side_effect повертає eco_result першим, але без scope_eco
-        # ми його не використовуємо; sess.execute викликався 1 раз.)
+        # The first and only execute is the main SQL without scope.
+        # (side_effect returns eco_result first, but without scope_eco
+        # we don't use it; sess.execute was called once.)
         self.assertEqual(sess.execute.call_count, 1)
         sql_arg = str(sess.execute.call_args.args[0])
         self.assertNotIn('li_sc.institution_id', sql_arg)
@@ -115,7 +115,7 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['id'], 4)
-        self.assertIn('(7)', result[0]['text'])  # лічильник у дужках
+        self.assertIn('(7)', result[0]['text'])  # count in parentheses
 
         self.assertEqual(sess.execute.call_count, 1)
         sql_arg = str(sess.execute.call_args.args[0])
@@ -124,7 +124,7 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
         self.assertEqual(params_arg.get('scope_inst_id'), 99)
 
     def test_scope_institution_unauthorized_returns_empty(self):
-        """Non-admin без доступу до institution → [] без походу в SQL."""
+        """Non-admin without access to the institution → [] without hitting SQL."""
         from app.camera_traps.ai_runner import get_species_with_ai_predictions
 
         sess = self._make_mock_session(rows=[])
@@ -135,7 +135,7 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
             )
 
         self.assertEqual(result, [])
-        # Жодних execute не повинно бути — short-circuit до SQL.
+        # There should be no execute — short-circuit before SQL.
         sess.execute.assert_not_called()
 
     def test_scope_institution_authorized_member_passes(self):
@@ -154,11 +154,11 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
         self.assertEqual(params_arg.get('scope_inst_id'), 20)
 
     def test_scope_ecoregion_filters_to_user_institutions(self):
-        """Non-admin: eco_inst_ids ∩ user_inst_ids — лише такі залишаються."""
+        """Non-admin: eco_inst_ids ∩ user_inst_ids — only those remain."""
         from app.camera_traps.ai_runner import get_species_with_ai_predictions
 
-        # БД повертає для eco-екорегіону інституції [10, 20, 30]
-        # юзер має тільки [10, 99] → перетин = [10].
+        # The DB returns institutions [10, 20, 30] for the ecoregion;
+        # the user only has [10, 99] → intersection = [10].
         rows = [(4, 'Козуля', 'Roe Deer', 'Capreolus capreolus', 2)]
         sess = self._make_mock_session(rows=rows, eco_inst_ids=[10, 20, 30])
 
@@ -169,7 +169,7 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
             )
 
         self.assertEqual(len(result), 1)
-        # Два execute: спершу eco-resolution, потім головний.
+        # Two executes: first eco resolution, then the main one.
         self.assertEqual(sess.execute.call_count, 2)
         main_call = sess.execute.call_args_list[1]
         params_arg = main_call.args[1]
@@ -185,7 +185,7 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
                 scope_ecoregion='Полісся',
             )
         self.assertEqual(result, [])
-        # Eco-resolution стався, але головного SQL — ні.
+        # Eco resolution happened, but the main SQL did not.
         self.assertEqual(sess.execute.call_count, 1)
 
     def test_scope_ecoregion_admin_uses_all_institutions(self):
@@ -204,9 +204,9 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
         self.assertEqual(set(params_arg.get('scope_inst_ids')), {10, 20, 30})
 
     def test_no_model_returns_empty(self):
-        # Тепер запит не залежить від АКТИВНОЇ моделі (бере найвищий
-        # accuracy_rank на серію), тож короткий вихід — коли в БД нема
-        # ЖОДНОЇ моделі: sess.query(AIModel.id).first() → None.
+        # The query no longer depends on the ACTIVE model (it takes the highest
+        # accuracy_rank per series), so the short-circuit happens only when the
+        # DB has NO model at all: sess.query(AIModel.id).first() → None.
         from app.camera_traps.ai_runner import get_species_with_ai_predictions
 
         sess = MagicMock()
@@ -325,11 +325,11 @@ class TestIdentifyAiSpeciesEndpoint(unittest.TestCase):
 
     @contextlib.contextmanager
     def _patched(self, ai_available=True, items_return=None, raise_exc=None):
-        """Патчимо ai_runner-функції у точці виклику (всередині routes).
+        """Patch ai_runner functions at the call site (inside routes).
 
-        Помічаємо: у роуті стоїть `from .ai_runner import ...` — отже
-        патчимо безпосередньо `app.camera_traps.ai_runner.<name>`,
-        бо локальний імпорт читає атрибут модуля під час кожного виклику.
+        Note: the route uses `from .ai_runner import ...` — so we patch
+        `app.camera_traps.ai_runner.<name>` directly, because the local
+        import reads the module attribute on every call.
         """
         sess = MagicMock()
         with contextlib.ExitStack() as stack:

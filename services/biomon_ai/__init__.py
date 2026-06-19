@@ -1,15 +1,16 @@
-"""biomon_ai — фоновий AI-класифікатор фотографій з фотопасток.
+# SPDX-License-Identifier: AGPL-3.0-only
+"""biomon_ai — background AI classifier for camera-trap photos.
 
-Модуль живе в окремому процесі з власним venv (torch + ultralytics) і
-спілкується з біомоном виключно через таблиці ai_models / ai_predictions /
-ai_run_queue у ct_db. Flask-додаток нічого з цього модуля не імпортує.
+The module runs in a separate process with its own venv (torch + ultralytics)
+and communicates with biomon exclusively through the ai_models / ai_predictions /
+ai_run_queue tables in ct_db. The Flask app does not import anything from this module.
 
-Структура:
-    adapter.py      Абстрактний IClassifier + DeepFauneAdapter обгортка
-    species_map.py  Мапінг DeepFaune-label → biomon Species.id
-    db.py           Окремий SQLAlchemy engine до ct_db, функції доступу
-    worker.py       Основна логіка: bерути pending observation → прогнати → зберегти
-    cli.py          Точка входу: `python -m biomon_ai.cli --batch=N`
+Structure:
+    adapter.py      Abstract IClassifier + DeepFauneAdapter wrapper
+    species_map.py  Mapping of DeepFaune label → biomon Species.id
+    db.py           Separate SQLAlchemy engine to ct_db, access functions
+    worker.py       Core logic: take a pending observation → run it → store the result
+    cli.py          Entry point: `python -m biomon_ai.cli --batch=N`
 
-Дивись DEPLOY.md для інструкцій з розгортання на сервері.
+See DEPLOY.md for server deployment instructions.
 """

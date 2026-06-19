@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Add "flag for re-review" columns to observations (Idea 6).
 
@@ -44,7 +45,7 @@ def main():
                 print(f"  > {stmt}")
                 conn.execute(text(ddl))
         print()
-        print("Готово.")
+        print("Done.")
 
 
 if __name__ == '__main__':

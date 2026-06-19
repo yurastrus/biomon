@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 # /app/utils/forms.py
 
 from flask_wtf import FlaskForm

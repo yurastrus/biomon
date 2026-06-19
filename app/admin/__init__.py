@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 from flask import Blueprint, g
 
 admin_bp = Blueprint(

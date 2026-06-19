@@ -1,17 +1,17 @@
 """
-Тести доступу до основних сторінок модуля camera_traps.
+Access tests for the main pages of the camera_traps module.
 
-Покриває:
-  - GET /dashboard                   — публічна (анонімний + всі ролі)
-  - GET /analysis/species-dashboard  — публічна
-  - GET /analysis/species-detailed   — публічна
-  - GET /analysis/comparison         — публічна
-  - GET /analysis/daily-activity     — публічна
-  - GET /gallery                     — публічна
-  - GET /upload                      — тільки manager+ (redirect для решти)
-  - GET /identify                    — тільки ct_verifier+ (redirect для решти)
+Covers:
+  - GET /dashboard                   — public (anonymous + all roles)
+  - GET /analysis/species-dashboard  — public
+  - GET /analysis/species-detailed   — public
+  - GET /analysis/comparison         — public
+  - GET /analysis/daily-activity     — public
+  - GET /gallery                     — public
+  - GET /upload                      — manager+ only (redirect for the rest)
+  - GET /identify                    — ct_verifier+ only (redirect for the rest)
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_ct_pages_access -v
 """
 
@@ -22,11 +22,11 @@ from unittest.mock import patch, MagicMock
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Допоміжні функції
+# Helper functions
 # ═══════════════════════════════════════════════════════════════════════════
 
 def _login(client, user_id):
-    """Встановлює Flask-Login сесію без HTTP-запиту."""
+    """Set up a Flask-Login session without an HTTP request."""
     with client.session_transaction() as sess:
         sess['_user_id'] = str(user_id)
         sess['_fresh'] = True
@@ -34,11 +34,11 @@ def _login(client, user_id):
 
 def _generic_session():
     """
-    Mock ct_session: будь-який ORM-ланцюжок повертає [], scalar() → 0.
+    Mock ct_session: any ORM chain returns [], scalar() → 0.
 
-    Реалізація через само-рекурсивний mock q: кожен метод (join, filter, ...)
-    повертає той самий об'єкт q, тому .all() та .scalar() завжди досяжні
-    незалежно від довжини ланцюжка.
+    Implemented via a self-recursive mock q: each method (join, filter, ...)
+    returns the same q object, so .all() and .scalar() are always reachable
+    regardless of chain length.
     """
     q = MagicMock()
     for method in ('join', 'outerjoin', 'filter', 'order_by', 'group_by',
@@ -59,7 +59,7 @@ def _generic_session():
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Базовий клас
+# Base class
 # ═══════════════════════════════════════════════════════════════════════════
 
 class PageAccessBase(unittest.TestCase):
@@ -136,7 +136,7 @@ class PageAccessBase(unittest.TestCase):
         db.session.commit()
 
     def _get(self, url, user_id=None, extra_patches=()):
-        """GET-запит з замоканою CT-сесією та додатковими патчами."""
+        """GET request with a mocked CT session and extra patches."""
         if user_id:
             _login(self.client, user_id)
         with contextlib.ExitStack() as stack:
@@ -201,20 +201,20 @@ class TestSpeciesDashboardAccess(PageAccessBase):
         self.assertEqual(self._get('/en/camera-traps/analysis/species-dashboard').status_code, 200)
 
     def test_manager_sees_all_option_not_institution_default(self):
-        """#49: НЕ-адмін бачить опцію «усі» ПЕРШОЮ — жодна установа не вибрана
-        за замовчуванням (раніше global-опція рендерилась лише для адміна, тож
-        браузер авто-вибирав першу установу)."""
+        """#49: a NON-admin sees the "all" option FIRST — no institution is
+        selected by default (previously the global option was rendered only for
+        admins, so the browser auto-selected the first institution)."""
         resp = self._get(self.URL, self.manager.id)
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b'value="global:"', resp.data)
         self.assertIn('Всі доступні мені'.encode(), resp.data)
-        # «усі» має передувати першій установі → саме вона є браузерним дефолтом
+        # "all" must precede the first institution → it becomes the browser default
         self.assertIn(b'value="institution:', resp.data)
         self.assertLess(resp.data.find(b'value="global:"'),
                         resp.data.find(b'value="institution:'))
 
     def test_admin_still_has_all_data_option(self):
-        """#49 не зламав адмінський варіант: «Всі дані» лишається першою опцією."""
+        """#49 did not break the admin variant: "Всі дані" stays the first option."""
         resp = self._get(self.URL, self.admin.id)
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b'value="global:"', resp.data)
@@ -260,7 +260,7 @@ class TestComparisonAccess(PageAccessBase):
         self.assertEqual(self._get(self.URL, self.admin.id).status_code, 200)
 
     def test_admin_sees_institution_in_page(self):
-        """Адмін бачить всі установи в фільтрі сторінки порівняння."""
+        """Admin sees all institutions in the comparison page filter."""
         resp = self._get(self.URL, self.admin.id)
         self.assertEqual(resp.status_code, 200)
         self.assertIn('Заповідник А'.encode(), resp.data)
@@ -322,7 +322,7 @@ class TestGalleryAccess(PageAccessBase):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 7. UPLOAD — тільки manager+
+# 7. UPLOAD — manager+ only
 # ═══════════════════════════════════════════════════════════════════════════
 
 class TestUploadAccess(PageAccessBase):
@@ -330,15 +330,15 @@ class TestUploadAccess(PageAccessBase):
     URL = '/uk/camera-traps/upload'
 
     def test_anonymous_redirects(self):
-        """Незалогінений користувач отримує редирект (не 200)."""
+        """An unauthenticated user gets a redirect (not 200)."""
         self.assertEqual(self._get(self.URL).status_code, 302)
 
     def test_viewer_redirects(self):
-        """Viewer не має права — редирект на dashboard."""
+        """Viewer is not allowed — redirect to dashboard."""
         self.assertEqual(self._get(self.URL, self.viewer.id).status_code, 302)
 
     def test_ct_verifier_redirects(self):
-        """ct_verifier нижче manager у ієрархії — редирект."""
+        """ct_verifier is below manager in the hierarchy — redirect."""
         self.assertEqual(self._get(self.URL, self.ct_verifier.id).status_code, 302)
 
     def test_manager_gets_200(self):
@@ -349,7 +349,7 @@ class TestUploadAccess(PageAccessBase):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 8. IDENTIFY — тільки ct_verifier+
+# 8. IDENTIFY — ct_verifier+ only
 # ═══════════════════════════════════════════════════════════════════════════
 
 class TestIdentifyAccess(PageAccessBase):
@@ -357,19 +357,19 @@ class TestIdentifyAccess(PageAccessBase):
     URL = '/uk/camera-traps/identify'
 
     def _ranking_patches(self):
-        # Обидва рейтинги (види + теги) мокаємо, щоб не ходити в реальну CT-БД.
+        # Mock both rankings (species + tags) to avoid hitting the real CT DB.
         return [
             patch('app.camera_traps.routes.get_species_ranking', return_value={}),
             patch('app.camera_traps.routes.get_behavior_ranking', return_value={}),
         ]
 
     def test_anonymous_redirects(self):
-        """Незалогінений користувач отримує редирект."""
+        """An unauthenticated user gets a redirect."""
         resp = self._get(self.URL, extra_patches=self._ranking_patches())
         self.assertEqual(resp.status_code, 302)
 
     def test_viewer_redirects(self):
-        """Viewer нижче ct_verifier — редирект."""
+        """Viewer is below ct_verifier — redirect."""
         resp = self._get(self.URL, self.viewer.id, self._ranking_patches())
         self.assertEqual(resp.status_code, 302)
 
@@ -378,7 +378,7 @@ class TestIdentifyAccess(PageAccessBase):
         self.assertEqual(resp.status_code, 200)
 
     def test_manager_gets_200(self):
-        """manager вище ct_verifier — доступ є."""
+        """manager is above ct_verifier — access granted."""
         resp = self._get(self.URL, self.manager.id, self._ranking_patches())
         self.assertEqual(resp.status_code, 200)
 
@@ -388,7 +388,7 @@ class TestIdentifyAccess(PageAccessBase):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 9. MANAGE DEPLOYMENTS — тільки manager+
+# 9. MANAGE DEPLOYMENTS — manager+ only
 # ═══════════════════════════════════════════════════════════════════════════
 
 class TestManageDeploymentsAccess(PageAccessBase):
@@ -412,7 +412,7 @@ class TestManageDeploymentsAccess(PageAccessBase):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 10. DEPLOYMENT CREATE / DELETE API — тільки manager+
+# 10. DEPLOYMENT CREATE / DELETE API — manager+ only
 # ═══════════════════════════════════════════════════════════════════════════
 
 class TestDeploymentApiAccess(PageAccessBase):
@@ -435,7 +435,7 @@ class TestDeploymentApiAccess(PageAccessBase):
             self._post('/uk/camera-traps/api/deployment/create', self.viewer.id).status_code, 302)
 
     def test_create_manager_missing_location_400(self):
-        # manager має доступ за роллю; без location_id -> 400
+        # manager has access by role; without location_id -> 400
         self.assertEqual(
             self._post('/uk/camera-traps/api/deployment/create', self.manager.id).status_code, 400)
 
@@ -448,7 +448,7 @@ class TestDeploymentApiAccess(PageAccessBase):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 11. DEPLOYMENT EXPORT — тільки manager+
+# 11. DEPLOYMENT EXPORT — manager+ only
 # ═══════════════════════════════════════════════════════════════════════════
 
 class TestDeploymentExportAccess(PageAccessBase):
@@ -473,7 +473,7 @@ class TestDeploymentExportAccess(PageAccessBase):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 12. DATA QUALITY — тільки manager+
+# 12. DATA QUALITY — manager+ only
 # ═══════════════════════════════════════════════════════════════════════════
 
 class TestDataQualityAccess(PageAccessBase):

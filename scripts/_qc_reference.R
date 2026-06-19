@@ -1,11 +1,11 @@
-# Точна репродукція ключової QC-логіки qmd-скрипта (з тригран-NA),
-# тільки base-R, без tidyverse/sf. Видає summary "Issue/Normal/Missing" по полях.
+# Exact reproduction of the qmd script's core QC logic (with three-valued NA),
+# base-R only, no tidyverse/sf. Prints an "Issue/Normal/Missing" summary per field.
 
 files <- list.files("/tmp/r_data", pattern = "\\.csv$", full.names = TRUE)
 dfs <- lapply(files, function(f) {
   read.csv(f, stringsAsFactors = FALSE, na.strings = c("NA","","NaN"," "))
 })
-# узгоджуємо колонки (різні листи мають різні набори)
+# reconcile columns (different sheets have different sets)
 all_cols <- unique(unlist(lapply(dfs, colnames)))
 for (i in seq_along(dfs)) {
   miss <- setdiff(all_cols, colnames(dfs[[i]]))
@@ -44,7 +44,7 @@ d$end_date   <- as.Date(d$end_date)
 d$n_days_working <- as.numeric(d$end_date - d$start_date)
 d$qc_no_GPS_coordinates <- is.na(d$latitude) | is.na(d$longitude)
 
-# Похідні (як в qmd, R-OR з NA-пропагацією)
+# Derived fields (as in qmd, R-OR with NA propagation)
 d$qc_data_not_usable <- d$qc_data_not_usable |
                         d$qc_no_GPS_coordinates |
                         d$qc_feeding_location |

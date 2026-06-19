@@ -1,8 +1,8 @@
 """
-Smoke-тести моделей camera_traps: Species, Location, Observation, Photo, Identification.
+Smoke tests for camera_traps models: Species, Location, Observation, Photo, Identification.
 
-Виконуються на ізольованому SQLite in-memory engine з фікстури `ct_session`.
-ARRAY/JSONB-моделі (AIPrediction, LocationMergeLog) — поза цим baseline.
+Run on an isolated SQLite in-memory engine from the `ct_session` fixture.
+ARRAY/JSONB models (AIPrediction, LocationMergeLog) are out of scope for this baseline.
 """
 import pytest
 from datetime import datetime

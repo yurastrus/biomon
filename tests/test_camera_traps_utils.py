@@ -1,10 +1,10 @@
 """
-Тести допоміжних функцій модуля camera_traps.
+Tests for camera_traps helper functions.
 
-Покриває:
-  - extract_datetime_from_exif: валідний / невалідний потік
-  - mark_observation_complete: status переходить у 'completed'
-  - check_consensus_for_observation: 3 голоси однакові → completed
+Cover:
+  - extract_datetime_from_exif: valid / invalid stream
+  - mark_observation_complete: status moves to 'completed'
+  - check_consensus_for_observation: 3 identical votes → completed
 """
 import io
 import pytest
@@ -32,7 +32,7 @@ def test_extract_datetime_from_exif_with_mocked_tags(monkeypatch):
     assert result == datetime(2025, 3, 15, 14, 23, 45)
 
 
-# ── Idea 1: sanity-guard на неправдоподібні EXIF-дати ─────────────────────
+# ── Idea 1: sanity guard against implausible EXIF dates ─────────────────────
 
 def _mock_exif_date(monkeypatch, date_str):
     monkeypatch.setattr('app.camera_traps.utils.exifread.process_file',
@@ -40,14 +40,14 @@ def _mock_exif_date(monkeypatch, date_str):
 
 
 def test_extract_datetime_pre_2010_treated_as_missing(app, monkeypatch):
-    """Скинутий годинник камери (2000 рік) → None → placeholder-шлях."""
+    """Reset camera clock (year 2000) → None → placeholder path."""
     _mock_exif_date(monkeypatch, '2000:01:01 12:00:00')
     with app.app_context():
         assert extract_datetime_from_exif(io.BytesIO(b'fake')) is None
 
 
 def test_extract_datetime_far_future_treated_as_missing(app, monkeypatch):
-    """Дата в майбутньому (> +24 год) → None."""
+    """A future date (> +24 h) → None."""
     future = datetime.now() + timedelta(days=3)
     _mock_exif_date(monkeypatch, future.strftime('%Y:%m:%d %H:%M:%S'))
     with app.app_context():
@@ -55,7 +55,7 @@ def test_extract_datetime_far_future_treated_as_missing(app, monkeypatch):
 
 
 def test_extract_datetime_near_future_within_drift_is_valid(monkeypatch):
-    """Невеликий дрейф годинника вперед (+1 год) — допустимий."""
+    """A small forward clock drift (+1 h) — acceptable."""
     near = datetime.now() + timedelta(hours=1)
     _mock_exif_date(monkeypatch, near.strftime('%Y:%m:%d %H:%M:%S'))
     result = extract_datetime_from_exif(io.BytesIO(b'fake'))
@@ -64,7 +64,7 @@ def test_extract_datetime_near_future_within_drift_is_valid(monkeypatch):
 
 
 def test_extract_datetime_min_boundary_is_valid(monkeypatch):
-    """Рівно 2010-01-01 00:00:00 — ще валідна (межа не строга)."""
+    """Exactly 2010-01-01 00:00:00 — still valid (boundary is inclusive)."""
     _mock_exif_date(monkeypatch, '2010:01:01 00:00:00')
     assert extract_datetime_from_exif(io.BytesIO(b'fake')) == datetime(2010, 1, 1)
 

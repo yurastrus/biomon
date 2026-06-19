@@ -1,11 +1,13 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
-Додає установи (парки) Полісся + Бойківщина, яких бракує в таблиці institutions,
-щоб деплойменти цих парків з ARD-Екселю можна було прив'язати під час імпорту.
+Adds the Polissia + Boikivshchyna institutions (parks) missing from the
+institutions table, so deployments of these parks from the ARD Excel can be
+linked during import.
 
-Запуск з кореня проекту:
+Run from the project root:
     venv/Scripts/python -m scripts.add_missing_institutions
 
-Ідемпотентний: установа з наявним `code` пропускається.
+Idempotent: an institution with an existing `code` is skipped.
 """
 from app import create_app
 from app.extensions import db
@@ -28,7 +30,7 @@ def main():
         created, skipped = 0, 0
         for code, en, uk, eco_en, eco_uk in MISSING:
             if Institution.query.filter_by(code=code).first():
-                print(f"  skip  {code} (вже існує)")
+                print(f"  skip  {code} (already exists)")
                 skipped += 1
                 continue
             db.session.add(Institution(name_uk=uk, name_en=en, code=code,
@@ -36,7 +38,7 @@ def main():
             print(f"  +     {code}  {en}")
             created += 1
         db.session.commit()
-        print(f"\nСтворено: {created}, пропущено: {skipped}")
+        print(f"\nCreated: {created}, skipped: {skipped}")
 
 
 if __name__ == '__main__':

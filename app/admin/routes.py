@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 from collections import OrderedDict
 
 from flask import render_template, g, request, redirect, url_for, flash

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """Business logic for the admin module, separated from the HTTP layer.
 
 Each service contains pure functions/methods with no knowledge of request/response.

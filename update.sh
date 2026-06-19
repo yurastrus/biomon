@@ -1,40 +1,40 @@
 #!/bin/bash
-# update.sh — оновлення biomon на сервері.
-# Запускати з /var/www/biomon:
+# update.sh — update biomon on the server.
+# Run from the deployment directory (e.g. /var/www/biomon):
 #   ./update.sh
 
-set -e  # зупинитись при будь-якій помилці
+set -e  # stop on any error
 
-echo "--- Починаю оновлення biomon ---"
+echo "--- Starting biomon update ---"
 
-# 1. Оновлюємо головний проект
+# 1. Update the main project
 git fetch origin
 git reset --hard origin/master
 
-# 2. Оновлюємо всі підмодулі (ПАМ, Фотопастки, SDM)
+# 2. Update all submodules (PAM, camera traps, SDM)
 git submodule update --init --recursive --force
 
-# 3. Встановлюємо/оновлюємо Python-залежності (якщо змінились)
+# 3. Install/update Python dependencies (if changed)
 venv/bin/pip install -q -r requirements.txt
 
-# 4. Застосовуємо SDM-міграції (idempotent — якщо вже на head, нічого не робить)
-venv/bin/flask sdm migrate --apply || echo "[!] SDM migrate повернув помилку — перевір вручну"
+# 4. Apply SDM migrations (idempotent — does nothing if already at head)
+venv/bin/flask sdm migrate --apply || echo "[!] SDM migrate returned an error — check manually"
 
-# 5. Очищуємо кеш Python
+# 5. Clear the Python cache
 find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
-# 6. Перезавантажуємо gunicorn (biomon)
+# 6. Restart gunicorn (biomon)
 sudo systemctl restart biomon
 
-# 7. Перезавантажуємо SDM worker (якщо вже встановлений)
+# 7. Restart the SDM worker (if installed)
 if systemctl list-unit-files sdm-worker.service &>/dev/null; then
     sudo systemctl restart sdm-worker
-    echo "[v] sdm-worker перезапущено"
+    echo "[v] sdm-worker restarted"
 else
-    echo "[i] sdm-worker ще не встановлений — пропускаємо"
+    echo "[i] sdm-worker not installed yet — skipping"
 fi
 
-echo "--- Оновлення завершено ---"
+echo "--- Update complete ---"
 echo ""
 sudo systemctl status biomon --no-pager -l
 echo ""

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """Flask CLI commands for administrative tasks.
 
 Registration: called from app/__init__.py via register_commands(app).
@@ -22,9 +23,9 @@ def register_commands(app):
             0 9 * * 1 cd /var/www/biomon && venv/bin/flask send-id-reminders >> /var/log/biomon_reminders.log 2>&1
         """
         from app.camera_traps.notifications import send_identification_reminders
-        click.echo("Перевіряю непроідентифіковані серії та надсилаю нагадування...")
+        click.echo("Checking unidentified series and sending reminders...")
         sent, skipped = send_identification_reminders()
-        click.echo(f"Готово: надіслано {sent} листів, {skipped} користувачів пропущено (немає серій).")
+        click.echo(f"Done: {sent} emails sent, {skipped} users skipped (no series).")
 
     # ──────────────────────────────────────────────────────────────
     # SDM CLI commands (flask sdm check / build-grid / ...)
@@ -46,7 +47,7 @@ def register_commands(app):
     except ImportError as e:
         # Don't crash the entire app if shared-sdm is not available yet.
         app.logger.warning(
-            "SDM CLI не зареєстровано (%s). "
-            "Перевірте, що shared-sdm знаходиться поруч з biomon.",
+            "SDM CLI not registered (%s). "
+            "Check that shared-sdm is located next to biomon.",
             e,
         )

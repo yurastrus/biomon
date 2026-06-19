@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Create the deployments table in ct_db (camera trap placement at a location over a period).
 
@@ -91,7 +92,7 @@ def main():
                 print(f"  > {stmt[:80]}{'...' if len(stmt) > 80 else ''}")
                 conn.execute(text(ddl))
         print()
-        print("Готово.")
+        print("Done.")
 
 
 if __name__ == '__main__':

@@ -1,18 +1,18 @@
 """
-Shared pytest fixtures для biomon.
+Shared pytest fixtures for biomon.
 
-Призначення:
-  Базова інфраструктура для нових pytest-тестів (CT + PAM модулі).
-  Існуючі unittest.TestCase-тести не торкаємо — pytest їх запускає як є.
+Purpose:
+  Base infrastructure for new pytest tests (CT + PAM modules).
+  Existing unittest.TestCase tests are untouched - pytest runs them as-is.
 
-Як працює ізоляція БД:
-  - SQLALCHEMY_DATABASE_URI → sqlite:///:memory: (через env var DATABASE_URL)
-  - CT engine (`app.camera_traps.database.create_engine`) — патчиться через MagicMock,
-    бо CT моделі прив'язані до власної БД (ct_db) і не повинні
-    зачіпати prod під час тестів.
-  - PAM_DB / GEODATA — теж мокаються при потребі (через `mock_pam_conn` фікстуру).
+How DB isolation works:
+  - SQLALCHEMY_DATABASE_URI -> sqlite:///:memory: (via env var DATABASE_URL)
+  - CT engine (`app.camera_traps.database.create_engine`) is patched via MagicMock,
+    because CT models are bound to their own DB (ct_db) and must not
+    touch prod during tests.
+  - PAM_DB / GEODATA are also mocked when needed (via the `mock_pam_conn` fixture).
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest -v
 """
 import os
@@ -21,14 +21,14 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 
-# ── env-vars мають бути встановлені ДО імпорту app ───────────────────────────
+# ── env vars must be set BEFORE importing app ────────────────────────────────
 os.environ.setdefault('DATABASE_URL', 'sqlite:///:memory:')
 os.environ.setdefault('SECRET_KEY', 'test-secret')
 
 
 @pytest.fixture(scope='session')
 def _ct_engine_patch():
-    """Підміняємо CT-engine на MagicMock на весь тест-сесій рівень."""
+    """Replace the CT engine with a MagicMock for the whole test session."""
     patcher = patch(
         'app.camera_traps.database.create_engine',
         return_value=MagicMock(),
@@ -40,7 +40,7 @@ def _ct_engine_patch():
 
 @pytest.fixture(scope='session')
 def app(_ct_engine_patch):
-    """Flask-додаток у режимі testing з SQLite in-memory."""
+    """Flask app in testing mode with SQLite in-memory."""
     from app import create_app
     flask_app = create_app('testing')
     flask_app.config['GEOSERVER_URL'] = 'http://test-geoserver'
@@ -51,8 +51,8 @@ def app(_ct_engine_patch):
 @pytest.fixture(scope='function')
 def db_session(app):
     """
-    Чистий рівень БД на кожен тест: create_all → yield → drop_all.
-    Тести, що чіпляють тільки head/models — використовують цю фікстуру.
+    Clean DB per test: create_all -> yield -> drop_all.
+    Tests that touch only head/models use this fixture.
     """
     from app.extensions import db
     with app.app_context():
@@ -66,7 +66,7 @@ def db_session(app):
 
 @pytest.fixture(scope='function')
 def client(app, db_session):
-    """Flask test client з підготовленою БД."""
+    """Flask test client with a prepared DB."""
     return app.test_client()
 
 
@@ -74,7 +74,7 @@ def client(app, db_session):
 
 @pytest.fixture
 def make_role(db_session):
-    """Створює (або повертає існуючу) Role з заданим іменем."""
+    """Create (or return an existing) Role with the given name."""
     from app.models import Role
     created = []
 
@@ -92,7 +92,7 @@ def make_role(db_session):
 
 @pytest.fixture
 def make_user(db_session, make_role):
-    """Створює User з ролями. Пароль за замовчуванням = 'pass'."""
+    """Create a User with roles. Default password = 'pass'."""
     from app.extensions import bcrypt
     from app.models import User
 
@@ -110,8 +110,8 @@ def make_user(db_session, make_role):
 @pytest.fixture
 def auth_client(app, db_session, make_user):
     """
-    Фабрика залогінених test-клієнтів.
-    Використання: `c = auth_client(role='admin')` → клієнт з admin-сесією.
+    Factory for logged-in test clients.
+    Usage: `c = auth_client(role='admin')` -> client with an admin session.
     """
     def _login(role='admin', username=None):
         username = username or f'test_{role}'
@@ -127,9 +127,9 @@ def auth_client(app, db_session, make_user):
 @pytest.fixture
 def ct_session():
     """
-    SQLite in-memory session з підмножиною CT-таблиць (без ARRAY/JSONB).
-    Створюємо лише таблиці, що не використовують PG-only типи —
-    цього достатньо для model smoke-тестів.
+    SQLite in-memory session with a subset of CT tables (no ARRAY/JSONB).
+    Only tables that don't use PG-only types are created -
+    that's enough for model smoke tests.
     """
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
@@ -261,8 +261,8 @@ def make_ct_photo(ct_session, make_ct_observation):
 @pytest.fixture
 def mock_pam_conn():
     """
-    Контекст-менеджер для патчингу `get_pam_db_connection` у двох місцях.
-    Будь-який .execute(...) повертає 'порожній' result.
+    Context manager for patching `get_pam_db_connection` in two places.
+    Any .execute(...) returns an 'empty' result.
     """
     @contextlib.contextmanager
     def _ctx():

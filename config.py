@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -26,7 +27,7 @@ class Config:
     # Google Earth Engine for SDM predictors (DEM, land cover, NDVI, …).
     # Service-account key (JSON) — shared with myproject.
     GEE_SERVICE_ACCOUNT_KEY = os.environ.get('GEE_SERVICE_ACCOUNT_KEY')
-    GEE_PROJECT_ID = os.environ.get('GEE_PROJECT_ID', 'yurastrus')
+    GEE_PROJECT_ID = os.environ.get('GEE_PROJECT_ID')
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -109,7 +110,7 @@ class Config:
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
 
     # Public site URL (used in email links)
-    SITE_URL = os.environ.get('SITE_URL', 'http://91.99.138.240:82')
+    SITE_URL = os.environ.get('SITE_URL', 'http://localhost:5000')
 
     LANGUAGES = {'en': 'English', 'uk': 'Українська'}
     BABEL_DEFAULT_LOCALE = 'uk'
@@ -132,7 +133,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    GEOSERVER_URL = os.environ.get('GEOSERVER_URL') or 'http://91.99.138.240:8080/geoserver'
+    GEOSERVER_URL = os.environ.get('GEOSERVER_URL') or 'http://localhost:8080/geoserver'
     CAMERA_TRAP_CONFIG = Config.CAMERA_TRAP_CONFIG.copy()
     CAMERA_TRAP_CONFIG.update({
         'UPLOAD_PATH': os.path.join(basedir, 'camera_trap_data')

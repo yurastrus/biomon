@@ -1,16 +1,16 @@
 """
-Smoke-тест для всіх PAM-сторінок.
+Smoke test for all PAM pages.
 
-Призначення:
-  • Регресійна мережа на період рефакторингу стилів (Кроки 0–10).
-  • Кожна публічна PAM-сторінка має повертати 200 OK для admin-користувача.
-  • Тести ловлять TemplateNotFound, TemplateSyntaxError, BuildError тощо.
+Purpose:
+  - Regression net during the style refactor (Steps 0-10).
+  - Every public PAM page must return 200 OK for an admin user.
+  - Tests catch TemplateNotFound, TemplateSyntaxError, BuildError, etc.
 
-ВАЖЛИВО: тести використовують замоковану PAM-БД. Сторінки, що
-вимагають реальних SELECT-результатів, мокаються мінімально —
-аби виявити САМЕ помилки рендерингу шаблону, а не БД-логіки.
+IMPORTANT: tests use a mocked PAM DB. Pages that require real SELECT
+results are mocked minimally -- so we surface template rendering
+errors specifically, not DB-logic errors.
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_pam_pages_smoke.py -v
 """
 
@@ -22,12 +22,12 @@ os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Перелік сторінок PAM-модуля для smoke-тесту
+# List of PAM module pages for the smoke test
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# Кожен запис: (url_path, expected_template_name, route_function_name).
-# expected_template_name — підстрока, яку шукаємо в response.data, щоб
-# переконатись, що рендерився саме той шаблон (а не редірект чи помилка).
+# Each entry: (url_path, expected_template_name, route_function_name).
+# expected_template_name -- a substring we look for in response.data to
+# confirm the right template rendered (not a redirect or an error).
 
 PAM_PAGES = [
     # url,                                       template_marker,                  route
@@ -48,7 +48,7 @@ PAM_PAGES = [
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Базовий клас для smoke-тестів
+# Base class for smoke tests
 # ══════════════════════════════════════════════════════════════════════════════
 
 class _PamSmokeBase(unittest.TestCase):
@@ -84,11 +84,11 @@ class _PamSmokeBase(unittest.TestCase):
         self.ctx.pop()
 
     def _seed(self):
-        """Створюємо тестового адміна з усіма PAM-ролями."""
+        """Create a test admin with all PAM roles."""
         from app.extensions import db, bcrypt
         from app.models import User, Role
 
-        # Усі ролі, які можуть знадобитись для PAM-сторінок
+        # All roles that may be needed for PAM pages
         role_names = ['admin', 'manager', 'pam_verifier',
                       'roztochya_user', 'fzs_user', 'volunteer_user', 'analyst']
         roles = {n: Role(name=n) for n in role_names}
@@ -97,7 +97,7 @@ class _PamSmokeBase(unittest.TestCase):
 
         pw = bcrypt.generate_password_hash('pass').decode()
         self.admin = User(username='smoke_admin', password_hash=pw)
-        # Admin отримує всі ролі — щоб уникнути 403 на будь-якій сторінці
+        # Admin gets every role -- to avoid 403 on any page
         for r in roles.values():
             self.admin.roles.append(r)
         db.session.add(self.admin)
@@ -110,9 +110,8 @@ class _PamSmokeBase(unittest.TestCase):
 
     def _mock_pam_db_connection(self):
         """
-        Створює фейкове PAM-з'єднання, яке для будь-якого запиту
-        повертає порожні результати. Цього достатньо щоб шаблон
-        рендерився без БД-помилок.
+        Create a fake PAM connection that returns empty results for any
+        query. That is enough for the template to render without DB errors.
         """
         conn = MagicMock()
 
@@ -127,23 +126,23 @@ class _PamSmokeBase(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Тести: кожна сторінка → 200 (або відомі редіректи)
+# Tests: each page -> 200 (or known redirects)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPamPagesSmoke(_PamSmokeBase):
     """
-    Для кожної сторінки PAM перевіряємо, що admin отримує 200 OK.
-    Якщо сторінка падає 500 (TemplateSyntaxError тощо) — тест падає
-    з зрозумілим повідомленням.
+    For each PAM page we verify that admin gets 200 OK.
+    If a page fails with 500 (TemplateSyntaxError, etc.) -- the test fails
+    with a clear message.
 
-    302 від login_required не повинно бути — admin залогінений.
-    302 від role_required теж не має бути — admin має всі ролі.
+    No 302 from login_required -- admin is logged in.
+    No 302 from role_required either -- admin has every role.
     """
 
     def _get_with_mocked_db(self, url):
-        """GET сторінку з замоковим PAM-з'єднанням."""
+        """GET a page with a mocked PAM connection."""
         conn = self._mock_pam_db_connection()
-        # Patch усі можливі точки входу PAM-БД
+        # Patch all possible PAM DB entry points
         patches = [
             patch('app.pam.utils.get_pam_db_connection', return_value=conn),
             patch('app.pam.routes.get_pam_db_connection', return_value=conn,
@@ -164,7 +163,7 @@ class TestPamPagesSmoke(_PamSmokeBase):
                     pass
 
     def test_all_pages_dont_500(self):
-        """Жодна PAM-сторінка не повинна повертати 5xx."""
+        """No PAM page should return 5xx."""
         self._login(self.admin.id)
         failures = []
         for url, marker, route in PAM_PAGES:
@@ -180,12 +179,12 @@ class TestPamPagesSmoke(_PamSmokeBase):
                         f"{url} → {resp.status_code}\n    body: {body}"
                     )
         if failures:
-            self.fail("PAM-сторінки впали:\n  " + "\n  ".join(failures))
+            self.fail("PAM pages failed:\n  " + "\n  ".join(failures))
 
     def test_all_pages_return_200_or_known_redirect(self):
         """
-        Кожна сторінка має повертати 200. Допустимі винятки:
-        302 (редірект, напр. на pam_home при помилці БД).
+        Each page must return 200. Allowed exceptions:
+        302 (redirect, e.g. to pam_home on a DB error).
         """
         self._login(self.admin.id)
         results = []
@@ -193,13 +192,13 @@ class TestPamPagesSmoke(_PamSmokeBase):
             with self.subTest(url=url):
                 resp = self._get_with_mocked_db(url)
                 results.append((url, resp.status_code))
-                # 200 — норм
-                # 302 — допустимо (редірект на хаб при помилці БД)
+                # 200 -- fine
+                # 302 -- acceptable (redirect to hub on a DB error)
                 self.assertIn(
                     resp.status_code, (200, 302),
                     f"{url} → {resp.status_code} (expected 200 or 302)"
                 )
-        # Звіт у логи для зручності
+        # Report to the logs for convenience
         ok_count = sum(1 for _, s in results if s == 200)
         print(f"\nSmoke summary: {ok_count}/{len(results)} pages returned 200 OK")
         for url, status in results:
@@ -208,12 +207,12 @@ class TestPamPagesSmoke(_PamSmokeBase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Тести специфічних шаблонів — перевіряємо, що рендериться правильний
-# (захист від ситуації, коли шаблон тихо мовчить через flash+redirect)
+# Tests for specific templates -- verify the correct one renders
+# (guard against the case where a template silently fails via flash+redirect)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPamHomePage(_PamSmokeBase):
-    """pam_home — найважливіша сторінка, окрема перевірка."""
+    """pam_home -- the most important page, checked separately."""
 
     def test_renders_module_hub(self):
         self._login(self.admin.id)
@@ -224,35 +223,35 @@ class TestPamHomePage(_PamSmokeBase):
         self.assertIn('hub-card', html)
 
     def test_renders_all_three_sections(self):
-        """Аналітика / Верифікація / Управління — всі мають бути."""
+        """Analytics / Verification / Management -- all must be present."""
         self._login(self.admin.id)
         resp = self.client.get('/uk/pam')
         html = resp.get_data(as_text=True)
-        # Перевіряємо за маркерами — український або англійський текст
+        # Check by markers -- Ukrainian or English text
         self.assertTrue(
             'Аналітика' in html or 'Analytics' in html,
-            'Аналітика section missing'
+            'Analytics section missing'
         )
         self.assertTrue(
             'Верифікація' in html or 'Verification' in html,
-            'Верифікація section missing'
+            'Verification section missing'
         )
         self.assertTrue(
             'Управління' in html or 'Management' in html,
-            'Управління section missing'
+            'Management section missing'
         )
 
     def test_uses_pam_base_template(self):
-        """pam_home має наслідувати pam_base.html — перевіряємо за
-        підключеним pam_style.css."""
+        """pam_home must inherit from pam_base.html -- checked via the
+        included pam_style.css."""
         self._login(self.admin.id)
         resp = self.client.get('/uk/pam')
         html = resp.get_data(as_text=True)
         self.assertIn('pam_style.css', html,
-                      'pam_home.html має підключати pam_style.css через pam_base.html')
+                      'pam_home.html must include pam_style.css via pam_base.html')
 
     def test_back_link_absent_on_hub(self):
-        """На самому хабі не має бути back-link (це сам хаб)."""
+        """The hub itself must not have a back-link (this is the hub)."""
         self._login(self.admin.id)
         resp = self.client.get('/uk/pam')
         html = resp.get_data(as_text=True)
@@ -260,7 +259,7 @@ class TestPamHomePage(_PamSmokeBase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Тести структури pam_base.html
+# Tests for pam_base.html structure
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPamBaseTemplate(unittest.TestCase):

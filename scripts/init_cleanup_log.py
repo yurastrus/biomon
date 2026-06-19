@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Create the cleanup_log table in ct_db (dry-run/execute orphan-cleanup journal).
 
@@ -58,7 +59,7 @@ def main():
                 print(f"  > {stmt[:80]}{'...' if len(stmt) > 80 else ''}")
                 conn.execute(text(ddl))
         print()
-        print("Готово.")
+        print("Done.")
 
 
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """Idempotent migration: AI detector level lookup table + ai_models.level_id.
 
 Creates ai_model_levels, seeds the 4 known levels (DF, MDS, DF+MDS, MDR),

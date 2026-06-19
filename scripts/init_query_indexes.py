@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Create indexes for common ct_db queries (dashboard, cleanup, contributor).
 
@@ -65,7 +66,7 @@ def main():
                 conn.execute(text(ddl))
 
         print()
-        print("Готово.")
+        print("Done.")
 
 
 if __name__ == '__main__':

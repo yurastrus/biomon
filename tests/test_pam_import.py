@@ -1,19 +1,19 @@
 """
-Тести для системи імпорту PAM (app/pam/pam_import_utils.py + routes).
+Tests for the PAM import system (app/pam/pam_import_utils.py + routes).
 
-Структура:
-  1. TestBirdNETIsEmptyContent     — виявлення порожніх файлів
-  2. TestBirdNETParseCSV           — парсинг CSV (поточний та старий формат)
-  3. TestBirdNETParseDateTime      — парсинг дати/часу з імені файлу
-  4. TestPAMProcessorFileHandling  — обробка файлів (без БД)
-  5. TestPAMProcessorDatabase      — взаємодія з БД (mock engine)
-  6. TestPAMProcessorIdempotency   — повторний імпорт
-  7. TestPAMImportPage             — GET /<lang>/pam/import (доступ, шаблон)
-  8. TestPAMImportAPI              — POST /<lang>/api/pam/import (валідація, логіка)
+Structure:
+  1. TestBirdNETIsEmptyContent     — detecting empty files
+  2. TestBirdNETParseCSV           — CSV parsing (current and legacy format)
+  3. TestBirdNETParseDateTime      — parsing date/time from the file name
+  4. TestPAMProcessorFileHandling  — file handling (without a DB)
+  5. TestPAMProcessorDatabase      — DB interaction (mock engine)
+  6. TestPAMProcessorIdempotency   — repeated import
+  7. TestPAMImportPage             — GET /<lang>/pam/import (access, template)
+  8. TestPAMImportAPI              — POST /<lang>/api/pam/import (validation, logic)
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_pam_import -v
-    або:
+    or:
     venv/Scripts/python -m pytest tests/test_pam_import.py -v
 """
 
@@ -334,7 +334,7 @@ class TestBirdNETParseDateTime(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 4. PAMImportProcessor — обробка файлів (без БД)
+# 4. PAMImportProcessor — file handling (without a DB)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPAMProcessorFileHandling(unittest.TestCase):
@@ -375,12 +375,12 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
         self.assertEqual(stats['files_failed'], 0)
 
     def test_default_duration_is_5(self):
-        """#37: тривалість за замовчуванням — 5 хв."""
+        """#37: default duration is 5 min."""
         proc = self._make_processor()
         self.assertEqual(proc.duration_minutes, 5)
 
     def test_duration_minutes_passed_to_recording_insert(self):
-        """#37: задана тривалість потрапляє у INSERT recordings (param 'dur')."""
+        """#37: the given duration ends up in INSERT recordings (param 'dur')."""
         from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
         mock_conn = _make_processor_conn()
         proc = PAMImportProcessor(_make_engine(mock_conn), location_id=1,
@@ -388,7 +388,7 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
         proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID, 'rec.csv')])
         rec_calls = [c for c in mock_conn.execute.call_args_list
                      if 'INSERT INTO recordings' in str(c.args[0])]
-        self.assertTrue(rec_calls, "немає виклику INSERT INTO recordings")
+        self.assertTrue(rec_calls, "no INSERT INTO recordings call")
         self.assertEqual(rec_calls[0].args[1]['dur'], 10)
 
     def test_mixed_empty_and_valid(self):
@@ -432,7 +432,7 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 5. PAMImportProcessor — взаємодія з БД
+# 5. PAMImportProcessor — DB interaction
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPAMProcessorDatabase(unittest.TestCase):
@@ -567,7 +567,7 @@ class TestPAMProcessorDatabase(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 6. Ідемпотентність — повторний імпорт тих самих файлів
+# 6. Idempotency — re-importing the same files
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPAMProcessorIdempotency(unittest.TestCase):
@@ -631,7 +631,7 @@ class TestPAMProcessorIdempotency(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 7. Flask route: GET /<lang>/pam/import  (сторінка імпорту)
+# 7. Flask route: GET /<lang>/pam/import  (import page)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class PamImportRouteBase(unittest.TestCase):

@@ -1,12 +1,12 @@
 """
-Тести для декоратора role_required (app/camera_traps/decorators.py).
+Tests for the role_required decorator (app/camera_traps/decorators.py).
 
-Тестується поведінка декоратора в ізоляції:
-- блокує юзерів без потрібної ролі (викликає redirect + flash)
-- пропускає юзерів з потрібною роллю (викликає оригінальну функцію)
-- враховує ієрархію: вищі ролі включають нижчі
+Tests the decorator's behavior in isolation:
+- blocks users without the required role (triggers redirect + flash)
+- lets through users with the required role (calls the original function)
+- respects the hierarchy: higher roles include lower ones
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_access_decorator -v
 """
 import unittest
@@ -21,16 +21,16 @@ def _make_user(role_names, authenticated=True):
     for role, name in zip(user.roles, role_names):
         role.name = name
     user.is_authenticated = authenticated
-    # Підключаємо реальну логіку has_role замість дефолтного MagicMock
+    # Wire up the real has_role logic instead of the default MagicMock
     user.has_role.side_effect = lambda *args: User.has_role(user, *args)
     return user
 
 
 def _call_decorated(required_roles, user, *args, **kwargs):
     """
-    Обгортає пусту функцію в role_required і викликає її,
-    мокаючи current_user, redirect, flash та url_for.
-    Повертає (was_called, redirect_called).
+    Wraps an empty function in role_required and calls it,
+    mocking current_user, redirect, flash and url_for.
+    Returns (was_called, redirect_called).
     """
     from app.camera_traps.decorators import role_required
 
@@ -62,7 +62,7 @@ class TestRoleRequiredDecorator(unittest.TestCase):
     def tearDown(self):
         self.ctx.pop()
 
-    # --- блокування ---
+    # --- blocking ---
 
     def test_viewer_blocked_from_ct_verifier_route(self):
         user = _make_user(['viewer'])
@@ -101,7 +101,7 @@ class TestRoleRequiredDecorator(unittest.TestCase):
                 called, _ = _call_decorated([req], user)
                 self.assertFalse(called)
 
-    # --- пропускання ---
+    # --- passing ---
 
     def test_ct_verifier_passes_ct_verifier_route(self):
         user = _make_user(['ct_verifier'])
@@ -128,33 +128,33 @@ class TestRoleRequiredDecorator(unittest.TestCase):
                 called, _ = _call_decorated([req], user)
                 self.assertTrue(called)
 
-    # --- ієрархія ---
+    # --- hierarchy ---
 
     def test_analyst_passes_ct_verifier_route(self):
-        """Analyst включає ct_verifier."""
+        """Analyst includes ct_verifier."""
         user = _make_user(['analyst'])
         called, _ = _call_decorated(['ct_verifier'], user)
         self.assertTrue(called)
 
     def test_manager_passes_ct_verifier_route(self):
-        """Manager включає ct_verifier."""
+        """Manager includes ct_verifier."""
         user = _make_user(['manager'])
         called, _ = _call_decorated(['ct_verifier'], user)
         self.assertTrue(called)
 
     def test_manager_passes_analyst_route(self):
-        """Manager включає analyst."""
+        """Manager includes analyst."""
         user = _make_user(['manager'])
         called, _ = _call_decorated(['analyst'], user)
         self.assertTrue(called)
 
     def test_ct_verifier_blocked_from_analyst_route(self):
-        """ct_verifier НЕ включає analyst."""
+        """ct_verifier does NOT include analyst."""
         user = _make_user(['ct_verifier'])
         called, _ = _call_decorated(['analyst'], user)
         self.assertFalse(called)
 
-    # --- не аутентифікований ---
+    # --- not authenticated ---
 
     def test_unauthenticated_user_is_redirected(self):
         user = _make_user([], authenticated=False)

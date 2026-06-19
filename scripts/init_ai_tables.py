@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-only
 """
 Create AI-runner tables in ct_db.
 
@@ -35,7 +36,7 @@ def main():
     parser.add_argument(
         '--drop',
         action='store_true',
-        help='УВАГА: видалити існуючі AI-таблиці перед створенням (втрата даних)',
+        help='WARNING: drop existing AI tables before creating them (data loss)',
     )
     args = parser.parse_args()
 
@@ -51,11 +52,11 @@ def main():
 
         if args.drop:
             confirm = input(
-                f"Це видалить таблиці {[t.name for t in AI_TABLES]} і всі дані в них.\n"
-                f"Введи 'DROP' для підтвердження: "
+                f"This will drop the tables {[t.name for t in AI_TABLES]} and all data in them.\n"
+                f"Type 'DROP' to confirm: "
             )
             if confirm != 'DROP':
-                print("Скасовано.")
+                print("Cancelled.")
                 sys.exit(1)
             # drop order matters: dependents first (predictions references models)
             for table in reversed(AI_TABLES):
@@ -66,21 +67,21 @@ def main():
         # refresh inspector after possible drop
         existing = set(inspect(engine).get_table_names())
 
-        print("Стан таблиць:")
+        print("Table status:")
         to_create = []
         for table in AI_TABLES:
             if table.name in existing:
-                print(f"  ✓ {table.name} (уже існує)")
+                print(f"  ✓ {table.name} (already exists)")
             else:
-                print(f"  + {table.name} (буде створено)")
+                print(f"  + {table.name} (will be created)")
                 to_create.append(table)
 
         if not to_create:
-            print("\nНемає чого створювати.")
+            print("\nNothing to create.")
             return
 
         print()
-        print(f"Створюю {len(to_create)} таблиць...")
+        print(f"Creating {len(to_create)} tables...")
         for table in to_create:
             table.create(engine)
             print(f"  ✓ {table.name}")
@@ -88,10 +89,10 @@ def main():
         existing_after = set(inspect(engine).get_table_names())
         for table in to_create:
             if table.name not in existing_after:
-                print(f"  ✗ ПОМИЛКА: {table.name} не з'явилася в БД")
+                print(f"  ✗ ERROR: {table.name} did not appear in the DB")
                 sys.exit(2)
 
-        print("\nГотово.")
+        print("\nDone.")
 
 
 if __name__ == '__main__':

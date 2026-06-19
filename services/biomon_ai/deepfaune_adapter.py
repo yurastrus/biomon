@@ -1,22 +1,22 @@
-"""Обгортка DeepFaune (v1.4.x) під наш IClassifier.
+# SPDX-License-Identifier: AGPL-3.0-only
+"""Wrapper around DeepFaune (v1.4.x) for our IClassifier.
 
-DeepFaune-API живе в окремому склонованому репо (за домовленістю —
-/opt/biomon-ai/deepfaune/ на сервері). Тут ми додаємо її шлях у sys.path
-і імпортуємо PredictorImage.
+The DeepFaune API lives in a separate cloned repo (by convention,
+/opt/biomon-ai/deepfaune/ on the server). Here we add its path to sys.path
+and import PredictorImage.
 
-ВАЖЛИВО — порядок:
-    DeepFaune ВНУТРІШНЬО ПЕРЕВПОРЯДКОВУЄ файли за датою EXIF.
-    Тож output порядок ≠ input порядок.
-    Ми використовуємо predictor.getFilenames() щоб зіставити прогнози
-    з шляхами, а повертаємо результат у ВХІДНОМУ порядку
-    (worker'у це зручніше).
+IMPORTANT — ordering:
+    DeepFaune INTERNALLY REORDERS files by EXIF date.
+    So the output order ≠ the input order.
+    We use predictor.getFilenames() to match predictions to paths, and
+    return the result in the INPUT order (more convenient for the worker).
 
-ВАЖЛИВО — sequence boundary:
-    DeepFaune має параметр maxlag (секунди): фото з різницею у часі
-    > maxlag вважаються різними послідовностями. У нашому випадку
-    worker уже передає фото ОДНІЄЇ observation (тобто це і є одна
-    послідовність за визначенням біомону), тож виставляємо
-    maxlag=999999, щоб DeepFaune не розбивав їх на під-послідовності.
+IMPORTANT — sequence boundary:
+    DeepFaune has a maxlag parameter (seconds): photos more than maxlag
+    apart in time are treated as different sequences. In our case the
+    worker already passes photos of a SINGLE observation (which is one
+    sequence by the biomon definition), so we set maxlag=999999 to keep
+    DeepFaune from splitting them into sub-sequences.
 """
 
 from __future__ import annotations
@@ -33,22 +33,22 @@ from .adapter import IClassifier, PhotoPrediction
 logger = logging.getLogger(__name__)
 
 
-# Дефолтний шлях до DeepFaune на сервері. Override через env DEEPFAUNE_PATH
-# або параметр конструктора (для тестів).
+# Default path to DeepFaune on the server. Override via env DEEPFAUNE_PATH
+# or the constructor parameter (for tests).
 _DEFAULT_DEEPFAUNE_PATH = '/opt/biomon-ai/deepfaune'
 
 
 class DeepFauneAdapter(IClassifier):
-    """Класифікатор на основі DeepFaune ViT + детектора yolov8s.
+    """Classifier based on DeepFaune ViT + the yolov8s detector.
 
-    Параметри:
-        deepfaune_path: куди склонована DeepFaune. Default — env DEEPFAUNE_PATH
-            або /opt/biomon-ai/deepfaune.
-        threshold:    нижче цього score prediction_label стає 'undefined',
-                      але top1_label лишається справжнім класом.
-        version:      рядок версії, який запишеться в ai_models.version.
-                      Default '1.4.1' — оновлюйте коли підтягнете нову версію.
-        device:       None → авто-вибір (CPU якщо нема CUDA).
+    Parameters:
+        deepfaune_path: where DeepFaune is cloned. Default — env DEEPFAUNE_PATH
+            or /opt/biomon-ai/deepfaune.
+        threshold:    below this score prediction_label becomes 'undefined',
+                      but top1_label stays the real class.
+        version:      version string written to ai_models.version.
+                      Default '1.4.1' — update when you pull a new version.
+        device:       None → auto-select (CPU if there is no CUDA).
     """
 
     def __init__(
@@ -67,26 +67,26 @@ class DeepFauneAdapter(IClassifier):
         self._version = version
         self._device = device
 
-        # Додаємо DeepFaune у sys.path і робимо ledger-імпорт
+        # Add DeepFaune to sys.path and do the lazy import
         if self._deepfaune_path not in sys.path:
             sys.path.insert(0, self._deepfaune_path)
         try:
             from predictTools import PredictorImage
         except ImportError as e:
             raise RuntimeError(
-                f"Не вдалось імпортувати predictTools з {self._deepfaune_path}. "
-                f"Перевірте що DeepFaune склонована за цим шляхом і всі залежності "
-                f"(torch, ultralytics, timm, yolov5) встановлено в активному venv. "
-                f"Деталі: {e}"
+                f"Failed to import predictTools from {self._deepfaune_path}. "
+                f"Check that DeepFaune is cloned at this path and all dependencies "
+                f"(torch, ultralytics, timm, yolov5) are installed in the active venv. "
+                f"Details: {e}"
             ) from e
         self._PredictorImage = PredictorImage
 
-        # Обмежуємо PyTorch CPU-потоки щоб не зловити OOM/перевантаження сервера.
-        # Беремо мін(2, CPU_count-1) — лишаємо хоча б 1 ядро для інших процесів.
-        # Override через env TORCH_NUM_THREADS якщо треба.
-        # NOTE: `os` уже імпортовано на module-level (рядок 28), тому НЕ робимо
-        # повторний `import os` у try-блоці — Python вважатиме `os` локальним
-        # і впаде на доступі до `os.environ.get('DEEPFAUNE_PATH')` вище.
+        # Limit PyTorch CPU threads to avoid OOM / overloading the server.
+        # Take min(2, CPU_count-1) — leave at least 1 core for other processes.
+        # Override via env TORCH_NUM_THREADS if needed.
+        # NOTE: `os` is already imported at module level (line 28), so do NOT
+        # re-`import os` in the try block — Python would treat `os` as local
+        # and fail on the `os.environ.get('DEEPFAUNE_PATH')` access above.
         try:
             import torch as _torch
             n_threads = int(os.environ.get(
@@ -116,14 +116,14 @@ class DeepFauneAdapter(IClassifier):
         return {
             'threshold': self._threshold,
             'device': self._device or 'auto',
-            'birdclassification': True,     # птахи теж класифікуємо (8 під-класів)
-            'maxlag_seconds': 999999,       # вся observation = одна послідовність
+            'birdclassification': True,     # we also classify birds (8 sub-classes)
+            'maxlag_seconds': 999999,       # the whole observation = one sequence
             'detector': 'deepfaune-yolov8s_960 + md_v1000.0.0-sorrel',
             'classifier': 'vit_large_patch14_dinov2.lvd142m.v4',
         }
 
     # ─────────────────────────────────────────────────────────────────
-    # Головний метод
+    # Main method
     # ─────────────────────────────────────────────────────────────────
 
     def predict_observation(
@@ -133,26 +133,26 @@ class DeepFauneAdapter(IClassifier):
         if not photo_paths:
             return []
 
-        # Конвертуємо у звичайні рядки (PredictorImage очікує list[str])
+        # Convert to plain strings (PredictorImage expects list[str])
         paths_str = [str(p) for p in photo_paths]
 
         predictor = self._PredictorImage(
             paths_str,
             self._threshold,
-            999999,           # maxlag → форсуємо single-sequence для observation
-            'en',             # мова labels
-            True,             # birdclassification увімкнено (bird-head ваги)
+            999999,           # maxlag → force a single sequence for the observation
+            'en',             # label language
+            True,             # birdclassification enabled (bird-head weights)
         )
         predictor.allBatch()
 
-        # DeepFaune перевпорядковує файли за EXIF date → беремо її порядок
+        # DeepFaune reorders files by EXIF date → take its order
         ordered_paths = predictor.getFilenames()
         pred, score, boxes, count   = predictor.getPredictions()       # sequence-aware
         pred_b, score_b, _, _       = predictor.getPredictionsBase()   # per-photo
-        top1                        = predictor.getPredictedTop1()     # без threshold
+        top1                        = predictor.getPredictedTop1()     # without threshold
         human_count                 = predictor.getHumanCount()
 
-        # Будуємо словник path → PhotoPrediction
+        # Build the path → PhotoPrediction dict
         by_path: dict[str, PhotoPrediction] = {}
         for i, path in enumerate(ordered_paths):
             by_path[path] = PhotoPrediction(
@@ -161,7 +161,7 @@ class DeepFauneAdapter(IClassifier):
                 prediction_score=_safe_float(score[i]),
                 base_label=_clean_label(pred_b[i]),
                 base_score=_safe_float(score_b[i]),
-                # top1 не має окремого score — використовуємо той самий що для base
+                # top1 has no separate score — reuse the one for base
                 top1_label=_clean_label(top1[i]),
                 top1_score=_safe_float(score_b[i]),
                 animal_count=_safe_int(count[i] if hasattr(count, '__getitem__') else None),
@@ -169,22 +169,22 @@ class DeepFauneAdapter(IClassifier):
                 bbox=_bbox_to_dict(boxes[i] if i < len(boxes) else None),
             )
 
-        # Повертаємо у ВХІДНОМУ порядку. Якщо DeepFaune нормалізував шлях
-        # (наприклад, форвард- vs бек-слеши на Windows) — fallback по basename.
+        # Return in the INPUT order. If DeepFaune normalized the path
+        # (e.g. forward- vs back-slashes on Windows) — fall back by basename.
         out: List[PhotoPrediction] = []
         for p in paths_str:
             if p in by_path:
                 out.append(by_path[p])
                 continue
-            # Fallback: пошук по basename (Windows / vs \)
+            # Fallback: look up by basename (Windows / vs \)
             base = os.path.basename(p)
             match = next(
                 (rp for rp in by_path if os.path.basename(rp) == base),
                 None,
             )
             if match:
-                # повертаємо ту ж саму "сутність", але з оригінальним шляхом
-                # (worker мапить через photo_id_by_path[input_path])
+                # return the same "entity", but with the original path
+                # (the worker maps via photo_id_by_path[input_path])
                 pred_match = by_path[match]
                 out.append(PhotoPrediction(
                     photo_path=p,
@@ -200,7 +200,7 @@ class DeepFauneAdapter(IClassifier):
                 ))
             else:
                 logger.warning(
-                    f"DeepFaune не повернула прогноз для {p}. "
+                    f"DeepFaune returned no prediction for {p}. "
                     f"Output paths: {list(by_path.keys())[:3]}..."
                 )
                 out.append(PhotoPrediction(
@@ -211,17 +211,17 @@ class DeepFauneAdapter(IClassifier):
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Helper-конвертації
+# Helper conversions
 # ─────────────────────────────────────────────────────────────────────
 
 def _clean_label(value) -> Optional[str]:
-    """Нормалізує label від DeepFaune.
+    """Normalize a label from DeepFaune.
 
-    DeepFaune повертає:
-      - '' (пустий рядок) коли прогноз ще не готовий — повертаємо None.
-      - 'undefined' коли score < threshold — повертаємо як є, бо це валідне
-        значення для prediction_label (а species_map.py змапить його на None).
-      - реальний клас 'roe deer', 'fox', ... — повертаємо в lower-case.
+    DeepFaune returns:
+      - '' (empty string) when the prediction is not ready yet — return None.
+      - 'undefined' when score < threshold — return as is, since it is a
+        valid value for prediction_label (species_map.py maps it to None).
+      - a real class 'roe deer', 'fox', ... — return in lower-case.
     """
     if value is None or value == '':
         return None
@@ -229,7 +229,7 @@ def _clean_label(value) -> Optional[str]:
 
 
 def _safe_float(value) -> Optional[float]:
-    """Float з захистом від None/NaN."""
+    """Float with guard against None/NaN."""
     if value is None:
         return None
     try:
@@ -242,7 +242,7 @@ def _safe_float(value) -> Optional[float]:
 
 
 def _safe_int(value) -> Optional[int]:
-    """Int з захистом від None/NaN."""
+    """Int with guard against None/NaN."""
     if value is None:
         return None
     try:
@@ -253,10 +253,10 @@ def _safe_int(value) -> Optional[int]:
 
 
 def _bbox_to_dict(bbox) -> Optional[dict]:
-    """Конвертує numpy-array bbox у звичайний dict для JSONB.
+    """Convert a numpy-array bbox to a plain dict for JSONB.
 
-    DeepFaune повертає bbox як [x1, y1, x2, y2] у нормалізованих координатах
-    (0..1 від розмірів зображення).
+    DeepFaune returns the bbox as [x1, y1, x2, y2] in normalized coordinates
+    (0..1 of the image dimensions).
     """
     if bbox is None:
         return None

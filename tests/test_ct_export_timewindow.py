@@ -1,11 +1,12 @@
 """
-#36: CT export — режим 'location_timewindow' (інтервал незалежності).
+#36: CT export — 'location_timewindow' mode (independence interval).
 
-ct_db — PostgreSQL (window-функції, EXTRACT EPOCH), несумісне зі SQLite-фікстурою,
-тож мокаємо з'єднання й перевіряємо ПОБУДОВУ SQL + валідацію вікна:
-  - режим будує CTE з is_new_event / EventGrouped;
-  - вікно (хв) → :agg_seconds; clamp 1..EXPORT_MAX_AGG_MINUTES; невалідне → 5 хв.
-Коректність на реальних даних перевірено окремо через тунель (read-only).
+ct_db is PostgreSQL (window functions, EXTRACT EPOCH), incompatible with the
+SQLite fixture, so we mock the connection and verify SQL CONSTRUCTION + window
+validation:
+  - the mode builds a CTE with is_new_event / EventGrouped;
+  - window (min) -> :agg_seconds; clamp 1..EXPORT_MAX_AGG_MINUTES; invalid -> 5 min.
+Correctness on real data was verified separately via a tunnel (read-only).
 """
 from unittest.mock import patch, MagicMock
 
@@ -43,23 +44,23 @@ def _agg_seconds(captured):
 
 def test_timewindow_builds_independence_interval_sql(app):
     captured = _capture_export_sql(app, 5)
-    assert captured, 'жодного SQL не виконано'
+    assert captured, 'no SQL executed'
     sql_all = ' '.join(s for s, _ in captured)
     assert 'is_new_event' in sql_all
     assert 'EventGrouped' in sql_all
-    assert 300 in _agg_seconds(captured)        # 5 хв → 300 c
+    assert 300 in _agg_seconds(captured)        # 5 min -> 300 s
 
 
 def test_timewindow_clamps_above_max(app):
-    captured = _capture_export_sql(app, 999)     # > 60 → 3600 c
+    captured = _capture_export_sql(app, 999)     # > 60 -> 3600 s
     assert _agg_seconds(captured) == {3600}
 
 
 def test_timewindow_clamps_below_min(app):
-    captured = _capture_export_sql(app, 0)        # < 1 → 60 c
+    captured = _capture_export_sql(app, 0)        # < 1 -> 60 s
     assert _agg_seconds(captured) == {60}
 
 
 def test_timewindow_invalid_defaults_to_5(app):
-    captured = _capture_export_sql(app, 'abc')    # невалідне → 5 хв → 300 c
+    captured = _capture_export_sql(app, 'abc')    # invalid -> 5 min -> 300 s
     assert _agg_seconds(captured) == {300}

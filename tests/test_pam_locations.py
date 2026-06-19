@@ -1,15 +1,15 @@
 """
-Інтеграційні тести для управління та створення локацій ПАМ.
+Integration tests for managing and creating PAM locations.
 
-Покриває:
-  - manage_pam_locations (GET)          — доступ, фільтрація за установами
-  - api_get_pam_locations_with_status   — доступ, фільтр установ, порожній результат
-  - api_get_pam_service_history         — access guard за установами
-  - api_create_pam_service_visit        — access guard + валідація полів
-  - api_create_pam_location             — доступ, валідація, корректний INSERT
-  - update_pam_location                 — доступ, захист від призначення чужих установ
+Covers:
+  - manage_pam_locations (GET)          — access, filtering by institution
+  - api_get_pam_locations_with_status   — access, institution filter, empty result
+  - api_get_pam_service_history         — access guard by institution
+  - api_create_pam_service_visit        — access guard + field validation
+  - api_create_pam_location             — access, validation, correct INSERT
+  - update_pam_location                 — access, guard against assigning other institutions
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_pam_locations -v
 """
 
@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 # ── helpers ────────────────────────────────────────────────────────────────
 
 def _login(client, user_id):
-    """Встановлює Flask-Login сесію без HTTP-запиту."""
+    """Sets up a Flask-Login session without an HTTP request."""
     with client.session_transaction() as sess:
         sess['_user_id'] = str(user_id)
         sess['_fresh'] = True
@@ -31,7 +31,7 @@ def _login(client, user_id):
 
 def _make_location_row(location_id=1, name='Тестова локація', lat=49.85, lon=23.65,
                        name_en='Test Location', institution_id=None, state_province='Lviv Oblast'):
-    """Mock-рядок таблиці locations (з LEFT JOIN location_institutions)."""
+    """Mock row of the locations table (with LEFT JOIN location_institutions)."""
     row = MagicMock()
     row.location_id = location_id
     row.location_name = name
@@ -44,7 +44,7 @@ def _make_location_row(location_id=1, name='Тестова локація', lat=
 
 
 def _make_biotope_row(id=1, name_ua='Ліс', name_en='Forest'):
-    """Mock-рядок таблиці biotopes."""
+    """Mock row of the biotopes table."""
     row = MagicMock()
     row._mapping = {'id': id, 'name_ua': name_ua, 'name_en': name_en}
     return row
@@ -52,10 +52,10 @@ def _make_biotope_row(id=1, name_ua='Ліс', name_en='Forest'):
 
 def _make_pam_manage_conn(location_rows=(), biotope_rows=()):
     """
-    Mock conn для manage_pam_locations: 6 послідовних fetchall():
-    1 — локації з location_institutions,
+    Mock conn for manage_pam_locations: 6 sequential fetchall() calls:
+    1 — locations with location_institutions,
     2 — location_biotopes (biotope_links),
-    3 — biotopes (список для форми),
+    3 — biotopes (list for the form),
     4 — battery_types,
     5 — sd_card_status,
     6 — visit_purposes.
@@ -82,8 +82,8 @@ def _make_pam_manage_conn(location_rows=(), biotope_rows=()):
 
 def _make_pam_conn_for_create(new_id=42):
     """
-    Mock conn для api_create_pam_location:
-    перший execute() повертає (location_id,) з RETURNING.
+    Mock conn for api_create_pam_location:
+    the first execute() returns (location_id,) from RETURNING.
     """
     mock_conn = MagicMock()
     mock_result = MagicMock()
@@ -94,13 +94,13 @@ def _make_pam_conn_for_create(new_id=42):
 
 def _make_access_conn(has_access=True):
     """
-    Mock conn де перший fetchone() — access check
-    (returning (1,) або None), потім безмежний MagicMock для решти.
+    Mock conn where the first fetchone() is the access check
+    (returning (1,) or None), then an unbounded MagicMock for the rest.
     """
     mock_conn = MagicMock()
     access_result = MagicMock()
     access_result.fetchone.return_value = (1,) if has_access else None
-    # Другий execute — history/insert — може повертати будь-що
+    # Second execute — history/insert — may return anything
     rest_result = MagicMock()
     rest_result.fetchall.return_value = []
     rest_result.fetchone.return_value = None
@@ -164,12 +164,12 @@ class PamLocationTestBase(unittest.TestCase):
 
         pw = bcrypt.generate_password_hash('testpass').decode('utf-8')
 
-        # Адмін — бачить усе
+        # Admin — sees everything
         self.admin = User(username='admin_user', password_hash=pw)
         self.admin.roles.append(self.role_admin)
         db.session.add(self.admin)
 
-        # Менеджер А — лише inst_a
+        # Manager A — inst_a only
         self.manager = User(username='manager_a', password_hash=pw)
         self.manager.roles.append(self.role_manager)
         self.manager.institution_links.append(
@@ -177,7 +177,7 @@ class PamLocationTestBase(unittest.TestCase):
         )
         db.session.add(self.manager)
 
-        # Менеджер Б — лише inst_b
+        # Manager B — inst_b only
         self.manager_b = User(username='manager_b', password_hash=pw)
         self.manager_b.roles.append(self.role_manager)
         self.manager_b.institution_links.append(
@@ -185,7 +185,7 @@ class PamLocationTestBase(unittest.TestCase):
         )
         db.session.add(self.manager_b)
 
-        # Менеджер без установ
+        # Manager with no institutions
         self.manager_no_inst = User(username='manager_no_inst', password_hash=pw)
         self.manager_no_inst.roles.append(self.role_manager)
         db.session.add(self.manager_no_inst)
@@ -198,7 +198,7 @@ class PamLocationTestBase(unittest.TestCase):
         )
         db.session.add(self.pam_verifier)
 
-        # Viewer — без установ
+        # Viewer — no institutions
         self.viewer = User(username='viewer_user', password_hash=pw)
         self.viewer.roles.append(self.role_viewer)
         db.session.add(self.viewer)
@@ -207,11 +207,11 @@ class PamLocationTestBase(unittest.TestCase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 1. MANAGE PAM LOCATIONS — ДОСТУП
+# 1. MANAGE PAM LOCATIONS — ACCESS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestManagePamLocationsAccess(PamLocationTestBase):
-    """GET /pam/manage-locations — хто може зайти."""
+    """GET /pam/manage-locations — who can access it."""
 
     URL = '/uk/pam/manage-locations'
     _EMPTY_CONN = staticmethod(lambda: _make_pam_manage_conn())
@@ -227,7 +227,7 @@ class TestManagePamLocationsAccess(PamLocationTestBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_pam_verifier_can_access(self):
-        """pam_verifier тепер має доступ (мінімальна роль для об'єднаної сторінки)."""
+        """pam_verifier now has access (minimum role for the merged page)."""
         _login(self.client, self.pam_verifier.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=self._EMPTY_CONN()):
             resp = self.client.get(self.URL)
@@ -247,13 +247,13 @@ class TestManagePamLocationsAccess(PamLocationTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 2. MANAGE PAM LOCATIONS — ФІЛЬТРАЦІЯ КОНТЕНТУ
+# 2. MANAGE PAM LOCATIONS — CONTENT FILTERING
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestManagePamLocationsContent(PamLocationTestBase):
     """
-    manage_pam_locations фільтрує в Python:
-    менеджер бачить лише локації своєї установи.
+    manage_pam_locations filters in Python:
+    a manager sees only locations of their own institution.
     """
 
     URL = '/uk/pam/manage-locations'
@@ -304,7 +304,7 @@ class TestManagePamLocationsContent(PamLocationTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 3. API LOCATIONS-WITH-STATUS — ДОСТУП І БАЗОВА ПОВЕДІНКА
+# 3. API LOCATIONS-WITH-STATUS — ACCESS AND BASIC BEHAVIOR
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestPamLocationsWithStatus(PamLocationTestBase):
@@ -317,12 +317,12 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
         self.assertEqual(resp.status_code, 302)
 
     def test_manager_with_no_institutions_returns_empty_list_without_db_call(self):
-        """Маршрут повертає [] одразу, не звертаючись до PAM БД."""
+        """The route returns [] immediately, without touching the PAM DB."""
         mock_conn = MagicMock()
         _login(self.client, self.manager_no_inst.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn) as mock_get:
             resp = self.client.get(self.URL)
-        # Рання відповідь — PAM БД не відкривалась
+        # Early response — PAM DB was not opened
         mock_get.assert_not_called()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.get_json(), [])
@@ -334,8 +334,8 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
         self.assertEqual(resp.get_json(), [])
 
     def test_manager_with_institutions_returns_json_list(self):
-        """З мок-даними повертає список із одним записом."""
-        # Три послідовні execute: recordings, locations, service_visit
+        """With mock data, returns a list with a single record."""
+        # Three sequential executes: recordings, locations, service_visit
         recs   = MagicMock(); recs.fetchall.return_value = []
         loc_row = _make_location_row(101, 'PAM Локація')
         locs   = MagicMock(); locs.fetchall.return_value = [loc_row]
@@ -356,7 +356,7 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
         self.assertEqual(data[0]['name'], 'PAM Локація')
 
     def test_admin_gets_json_list(self):
-        """Адмін не обмежений установами."""
+        """Admin is not restricted by institutions."""
         recs  = MagicMock(); recs.fetchall.return_value = []
         row   = _make_location_row(5, 'Адмін-локація')
         locs  = MagicMock(); locs.fetchall.return_value = [row]
@@ -373,7 +373,7 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
         self.assertIsInstance(resp.get_json(), list)
 
     def test_institution_filter_param_accepted_without_error(self):
-        """?institution_id=X не спричиняє помилку."""
+        """?institution_id=X does not cause an error."""
         recs  = MagicMock(); recs.fetchall.return_value = []
         locs  = MagicMock(); locs.fetchall.return_value = []
         mock_conn = MagicMock()
@@ -386,7 +386,7 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
         self.assertEqual(resp.status_code, 200)
 
     def test_institution_filter_param_injected_into_sql_params(self):
-        """selected_inst_id потрапляє до параметрів SQL-запиту."""
+        """selected_inst_id ends up in the SQL query parameters."""
         recs  = MagicMock(); recs.fetchall.return_value = []
         locs  = MagicMock(); locs.fetchall.return_value = []
         mock_conn = MagicMock()
@@ -396,7 +396,7 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
             self.client.get(f'{self.URL}?institution_id={self.inst_a.id}')
 
-        # Другий виклик — запит локацій; перевіряємо параметри
+        # Second call — locations query; check the parameters
         calls = mock_conn.execute.call_args_list
         if len(calls) >= 2:
             _, loc_params = calls[1][0]
@@ -404,7 +404,7 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
             self.assertEqual(loc_params['selected_inst_id'], self.inst_a.id)
 
     def test_location_response_has_required_fields(self):
-        """Кожен елемент JSON містить очікувані ключі."""
+        """Each JSON item contains the expected keys."""
         recs  = MagicMock(); recs.fetchall.return_value = []
         row   = _make_location_row(77, 'Перевірка полів')
         locs  = MagicMock(); locs.fetchall.return_value = [row]
@@ -418,7 +418,7 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
 
         item = resp.get_json()[0]
         for key in ('id', 'name', 'latitude', 'longitude', 'status', 'last_visit_date', 'status_reason'):
-            self.assertIn(key, item, f"Відсутній ключ: {key}")
+            self.assertIn(key, item, f"Missing key: {key}")
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -426,7 +426,7 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestPamServiceHistoryAccess(PamLocationTestBase):
-    """GET /api/pam/location/<id>/service-history — перевірка access guard."""
+    """GET /api/pam/location/<id>/service-history — access guard check."""
 
     def _url(self, location_id=101):
         return f'/uk/api/pam/location/{location_id}/service-history'
@@ -436,7 +436,7 @@ class TestPamServiceHistoryAccess(PamLocationTestBase):
         self.assertEqual(resp.status_code, 302)
 
     def test_user_with_no_institutions_gets_403(self):
-        """Viewer без установ не може читати жодну історію."""
+        """A viewer with no institutions cannot read any history."""
         _login(self.client, self.viewer.id)
         mock_conn = MagicMock()
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
@@ -444,7 +444,7 @@ class TestPamServiceHistoryAccess(PamLocationTestBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_manager_with_access_gets_200(self):
-        """Менеджер із правом доступу — отримує відповідь."""
+        """A manager with access — gets a response."""
         mock_conn = _make_access_conn(has_access=True)
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
@@ -453,7 +453,7 @@ class TestPamServiceHistoryAccess(PamLocationTestBase):
         self.assertIsInstance(resp.get_json(), list)
 
     def test_manager_without_access_gets_403(self):
-        """Менеджер без доступу до локації отримує 403."""
+        """A manager without access to the location gets 403."""
         mock_conn = _make_access_conn(has_access=False)
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
@@ -462,8 +462,8 @@ class TestPamServiceHistoryAccess(PamLocationTestBase):
         self.assertIn('error', resp.get_json())
 
     def test_admin_bypasses_access_check(self):
-        """Адмін не проходить перевірку установ — бачить будь-яку локацію."""
-        # Лише один execute — history query (без access check)
+        """Admin skips the institution check — sees any location."""
+        # Only one execute — history query (no access check)
         history_mock = MagicMock()
         history_mock.fetchall.return_value = []
         mock_conn = MagicMock()
@@ -474,12 +474,12 @@ class TestPamServiceHistoryAccess(PamLocationTestBase):
             resp = self.client.get(self._url(location_id=999))
 
         self.assertEqual(resp.status_code, 200)
-        # Адмін не викликає access check — рівно один виклик (history)
+        # Admin does not invoke the access check — exactly one call (history)
         self.assertEqual(mock_conn.execute.call_count, 1)
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 5. API CREATE SERVICE VISIT — ДОСТУП І ВАЛІДАЦІЯ
+# 5. API CREATE SERVICE VISIT — ACCESS AND VALIDATION
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestPamCreateServiceVisit(PamLocationTestBase):
@@ -504,7 +504,7 @@ class TestPamCreateServiceVisit(PamLocationTestBase):
         self.assertEqual(resp.status_code, 302)
 
     def test_pam_verifier_gets_403(self):
-        """pam_verifier не може створювати записи (потрібен manager)."""
+        """pam_verifier cannot create records (manager required)."""
         _login(self.client, self.pam_verifier.id)
         resp = self.client.post(self.URL, json=self._valid_payload())
         self.assertEqual(resp.status_code, 403)
@@ -515,7 +515,7 @@ class TestPamCreateServiceVisit(PamLocationTestBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_manager_with_access_creates_visit_successfully(self):
-        """Менеджер із правом доступу — 201."""
+        """A manager with access — 201."""
         mock_conn = _make_access_conn(has_access=True)
         mock_conn.commit = MagicMock()
 
@@ -528,7 +528,7 @@ class TestPamCreateServiceVisit(PamLocationTestBase):
         self.assertTrue(data['success'])
 
     def test_manager_without_access_gets_403(self):
-        """Менеджер без доступу до локації — 403."""
+        """A manager without access to the location — 403."""
         mock_conn = _make_access_conn(has_access=False)
 
         _login(self.client, self.manager.id)
@@ -538,7 +538,7 @@ class TestPamCreateServiceVisit(PamLocationTestBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_can_create_without_institution_check(self):
-        """Адмін не проходить access check — одразу INSERT."""
+        """Admin skips the access check — straight to INSERT."""
         insert_mock = MagicMock()
         mock_conn = MagicMock()
         mock_conn.execute.return_value = insert_mock
@@ -549,7 +549,7 @@ class TestPamCreateServiceVisit(PamLocationTestBase):
             resp = self.client.post(self.URL, json=self._valid_payload())
 
         self.assertEqual(resp.status_code, 201)
-        # Тільки INSERT — один виклик execute (без access check)
+        # INSERT only — a single execute call (no access check)
         self.assertEqual(mock_conn.execute.call_count, 1)
 
     def test_missing_location_id_returns_400(self):
@@ -596,11 +596,11 @@ class TestPamCreateServiceVisit(PamLocationTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 6. API CREATE LOCATION — ДОСТУП
+# 6. API CREATE LOCATION — ACCESS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestPamCreateLocationAccess(PamLocationTestBase):
-    """POST /pam/api/location/create — хто може створювати локації."""
+    """POST /pam/api/location/create — who can create locations."""
 
     URL = '/uk/pam/api/location/create'
 
@@ -625,7 +625,7 @@ class TestPamCreateLocationAccess(PamLocationTestBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_pam_verifier_gets_403(self):
-        """pam_verifier не може створювати локації (потрібен manager/admin)."""
+        """pam_verifier cannot create locations (manager/admin required)."""
         _login(self.client, self.pam_verifier.id)
         resp = self.client.post(self.URL, json=self._valid_payload())
         self.assertEqual(resp.status_code, 403)
@@ -658,11 +658,11 @@ class TestPamCreateLocationAccess(PamLocationTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 7. API CREATE LOCATION — ВАЛІДАЦІЯ ВХІДНИХ ДАНИХ
+# 7. API CREATE LOCATION — INPUT VALIDATION
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestPamCreateLocationValidation(PamLocationTestBase):
-    """Валідація полів у api_create_pam_location."""
+    """Field validation in api_create_pam_location."""
 
     URL = '/uk/pam/api/location/create'
 
@@ -693,19 +693,19 @@ class TestPamCreateLocationValidation(PamLocationTestBase):
         self.assertEqual(resp.status_code, 400)
 
     def test_manager_cannot_assign_foreign_institution(self):
-        """Менеджер А не може призначити inst_b."""
+        """Manager A cannot assign inst_b."""
         resp = self._post({
             'name':            'Test',
             'lat':             49.85,
             'lon':             23.65,
-            'institution_ids': [self.inst_b.id],  # чужа установа
+            'institution_ids': [self.inst_b.id],  # foreign institution
             'biotope_ids':     [],
         })
         self.assertEqual(resp.status_code, 403)
         self.assertFalse(resp.get_json()['success'])
 
     def test_manager_cannot_assign_mixed_institutions(self):
-        """Менеджер А не може призначити inst_a + inst_b одночасно."""
+        """Manager A cannot assign inst_a + inst_b at the same time."""
         resp = self._post({
             'name':            'Test',
             'lat':             49.85,
@@ -716,7 +716,7 @@ class TestPamCreateLocationValidation(PamLocationTestBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_can_assign_any_institution(self):
-        """Адмін може призначити будь-яку комбінацію установ."""
+        """Admin can assign any combination of institutions."""
         mock_conn = _make_pam_conn_for_create(new_id=10)
         _login(self.client, self.admin.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
@@ -731,7 +731,7 @@ class TestPamCreateLocationValidation(PamLocationTestBase):
         self.assertTrue(resp.get_json()['success'])
 
     def test_create_without_institutions_is_allowed(self):
-        """Можна створити локацію без установи (institution_ids=[])."""
+        """A location can be created with no institution (institution_ids=[])."""
         mock_conn = _make_pam_conn_for_create(new_id=55)
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
@@ -747,11 +747,11 @@ class TestPamCreateLocationValidation(PamLocationTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 8. API CREATE LOCATION — СТРУКТУРА INSERT
+# 8. API CREATE LOCATION — INSERT STRUCTURE
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestPamCreateLocationInsert(PamLocationTestBase):
-    """Перевіряє що INSERT у БД виконується з правильною кількістю викликів."""
+    """Checks that the DB INSERT runs with the correct number of calls."""
 
     URL = '/uk/pam/api/location/create'
 
@@ -773,27 +773,27 @@ class TestPamCreateLocationInsert(PamLocationTestBase):
         self.assertTrue(mock_conn.execute.called)
 
     def test_only_location_insert_when_no_links(self):
-        """Без установ і біотопів — один виклик execute (INSERT locations)."""
+        """No institutions and no biotopes — a single execute (INSERT locations)."""
         mock_conn = self._create(institution_ids=[], biotope_ids=[])
         self.assertEqual(mock_conn.execute.call_count, 1)
 
     def test_two_inserts_when_only_institution(self):
-        """З однією установою — два execute: INSERT locations + INSERT location_institutions."""
+        """With one institution — two executes: INSERT locations + INSERT location_institutions."""
         mock_conn = self._create(institution_ids=[self.inst_a.id], biotope_ids=[])
         self.assertEqual(mock_conn.execute.call_count, 2)
 
     def test_two_inserts_when_only_biotope(self):
-        """З одним біотопом — два execute: INSERT locations + INSERT location_biotopes."""
+        """With one biotope — two executes: INSERT locations + INSERT location_biotopes."""
         mock_conn = self._create(institution_ids=[], biotope_ids=[1])
         self.assertEqual(mock_conn.execute.call_count, 2)
 
     def test_three_inserts_when_institution_and_biotope(self):
-        """І установа, і біотоп — три execute."""
+        """Both institution and biotope — three executes."""
         mock_conn = self._create(institution_ids=[self.inst_a.id], biotope_ids=[1])
         self.assertEqual(mock_conn.execute.call_count, 3)
 
     def test_begin_transaction_called(self):
-        """Операція виконується в транзакції (conn.begin() викликається)."""
+        """The operation runs in a transaction (conn.begin() is called)."""
         mock_conn = self._create(institution_ids=[self.inst_a.id])
         mock_conn.begin.assert_called_once()
 
@@ -808,7 +808,7 @@ class TestPamCreateLocationInsert(PamLocationTestBase):
         self.assertEqual(resp.get_json()['location_id'], 777)
 
     def test_db_error_returns_500(self):
-        """При помилці БД повертає 500."""
+        """On a DB error, returns 500."""
         mock_conn = MagicMock()
         mock_conn.begin.side_effect = Exception("DB unavailable")
 
@@ -823,7 +823,7 @@ class TestPamCreateLocationInsert(PamLocationTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 9. UPDATE LOCATION — ДОСТУП І ЗАХИСТ
+# 9. UPDATE LOCATION — ACCESS AND PROTECTION
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestPamUpdateLocation(PamLocationTestBase):
@@ -841,7 +841,7 @@ class TestPamUpdateLocation(PamLocationTestBase):
         }
 
     def _make_update_conn(self):
-        """Mock conn для успішного UPDATE."""
+        """Mock conn for a successful UPDATE."""
         mock_conn = MagicMock()
         return mock_conn
 
@@ -871,7 +871,7 @@ class TestPamUpdateLocation(PamLocationTestBase):
         self.assertTrue(resp.get_json()['success'])
 
     def test_manager_cannot_assign_foreign_institution(self):
-        """Менеджер не може призначити чужу установу — 403 без доступу до БД."""
+        """A manager cannot assign a foreign institution — 403 without DB access."""
         mock_conn = MagicMock()
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
@@ -880,7 +880,7 @@ class TestPamUpdateLocation(PamLocationTestBase):
                 json=self._valid_payload(institution_ids=[self.inst_b.id])
             )
         self.assertEqual(resp.status_code, 403)
-        # БД не мала викликатись — перевірка в Python
+        # DB should not be called — the check is in Python
         mock_conn.execute.assert_not_called()
 
     def test_admin_can_update_with_any_institutions(self):
@@ -894,7 +894,7 @@ class TestPamUpdateLocation(PamLocationTestBase):
         self.assertEqual(resp.status_code, 200)
 
     def test_update_executes_in_transaction(self):
-        """UPDATE виконується через conn.begin()."""
+        """UPDATE runs via conn.begin()."""
         mock_conn = self._make_update_conn()
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
@@ -905,7 +905,7 @@ class TestPamUpdateLocation(PamLocationTestBase):
         mock_conn.begin.assert_called_once()
 
     def test_conn_closed_after_success(self):
-        """З'єднання закривається після успішного виконання."""
+        """The connection is closed after a successful run."""
         mock_conn = self._make_update_conn()
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
@@ -917,20 +917,20 @@ class TestPamUpdateLocation(PamLocationTestBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 3b. API LOCATIONS-WITH-STATUS — МАТЕМАТИКА ПРОГНОЗУ (battery/SD days_left)
-#     Захищає дані, які споживає попап маркера service-режиму на manage-locations.
+# 3b. API LOCATIONS-WITH-STATUS — FORECAST MATH (battery/SD days_left)
+#     Guards the data consumed by the service-mode marker popup on manage-locations.
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestPamLocationStatusForecast(PamLocationTestBase):
-    """Перевіряє обчислення battery_days_left / sd_card_days_left та статусу."""
+    """Checks the battery_days_left / sd_card_days_left and status computation."""
 
     URL = '/uk/api/pam/locations-with-status'
 
     def _make_visit_row(self, days_ago, recording_hours, estimated_hours,
                         capacity_gb, purpose_id=1):
-        """Mock-рядок останнього сервісного візиту (з JOIN battery_types/sd_card_status)."""
+        """Mock row of the latest service visit (with JOIN battery_types/sd_card_status)."""
         row = MagicMock()
-        # Наївний datetime (tzinfo=None) — маршрут робить datetime.now(tzinfo)
+        # Naive datetime (tzinfo=None) — the route does datetime.now(tzinfo)
         row.visit_datetime = datetime.now() - timedelta(days=days_ago)
         row.recording_hours_per_day = recording_hours
         row.visit_purpose_id = purpose_id
@@ -939,7 +939,7 @@ class TestPamLocationStatusForecast(PamLocationTestBase):
         return row
 
     def _fetch(self, visit_row, location_id=101):
-        recs  = MagicMock(); recs.fetchall.return_value = []          # recordings — порожньо
+        recs  = MagicMock(); recs.fetchall.return_value = []          # recordings — empty
         loc   = _make_location_row(location_id, 'PAM Локація')
         locs  = MagicMock(); locs.fetchall.return_value = [loc]
         visit = MagicMock(); visit.fetchone.return_value = visit_row
@@ -953,9 +953,9 @@ class TestPamLocationStatusForecast(PamLocationTestBase):
 
     def test_battery_and_sd_forecast_computed(self):
         """
-        10 днів від візиту, 6 год/добу, батарея на 600 год, картка 128 ГБ.
+        10 days since visit, 6 h/day, battery rated for 600 h, 128 GB card.
         battery_days_left = round(600/6 - 10) = 90
-        daily_gb = 6*290/1024 = 1.6992; sd = 128/1.6992 - 10 ≈ 65
+        daily_gb = 6*290/1024 = 1.6992; sd = 128/1.6992 - 10 ~ 65
         """
         row = self._make_visit_row(days_ago=10, recording_hours=6,
                                    estimated_hours=600, capacity_gb=128)
@@ -966,8 +966,8 @@ class TestPamLocationStatusForecast(PamLocationTestBase):
         self.assertEqual(item['days_since_visit'], 10)
 
     def test_battery_critical_when_few_days_left(self):
-        """Батарея майже сіла → critical (<=3 днів лишилось)."""
-        # 98 днів від візиту, батарея на 600 год / 6 = 100 днів → лишилось 2
+        """Battery almost dead -> critical (<=3 days left)."""
+        # 98 days since visit, battery 600 h / 6 = 100 days -> 2 days left
         row = self._make_visit_row(days_ago=98, recording_hours=6,
                                    estimated_hours=600, capacity_gb=512)
         item = self._fetch(row)
@@ -975,7 +975,7 @@ class TestPamLocationStatusForecast(PamLocationTestBase):
         self.assertEqual(item['status'], 'critical')
 
     def test_device_removed_marks_inactive(self):
-        """visit_purpose_id == 3 (демонтовано) → status inactive, без прогнозу."""
+        """visit_purpose_id == 3 (dismounted) -> status inactive, no forecast."""
         row = self._make_visit_row(days_ago=5, recording_hours=6,
                                    estimated_hours=600, capacity_gb=128, purpose_id=3)
         item = self._fetch(row)
@@ -984,7 +984,7 @@ class TestPamLocationStatusForecast(PamLocationTestBase):
         self.assertIsNone(item['sd_card_days_left'])
 
     def test_no_battery_data_leaves_battery_forecast_none(self):
-        """Без estimated_recording_hours прогноз батареї = None, SD рахується."""
+        """Without estimated_recording_hours the battery forecast = None, SD is still computed."""
         row = self._make_visit_row(days_ago=10, recording_hours=6,
                                    estimated_hours=None, capacity_gb=128)
         item = self._fetch(row)
@@ -992,7 +992,7 @@ class TestPamLocationStatusForecast(PamLocationTestBase):
         self.assertEqual(item['sd_card_days_left'], 65)
 
     def _fetch_with_recordings(self, visit_row, last_recording_days_ago, location_id=101):
-        """Як _fetch, але з непорожньою таблицею recordings (стара дата активності)."""
+        """Like _fetch, but with a non-empty recordings table (old activity date)."""
         rec_row = MagicMock()
         rec_row.location_id = location_id
         rec_row.last_data_date = datetime.now() - timedelta(days=last_recording_days_ago)
@@ -1010,18 +1010,18 @@ class TestPamLocationStatusForecast(PamLocationTestBase):
 
     def test_old_recordings_do_not_override_fresh_install(self):
         """
-        РЕГРЕСІЯ (reinstall): осінні записи 240 днів тому НЕ мають робити локацію
-        inactive, якщо навесні зафіксовано свіже встановлення (16 днів, purpose != removal).
+        REGRESSION (reinstall): autumn recordings 240 days ago must NOT mark the location
+        inactive if a fresh install was logged in spring (16 days, purpose != removal).
         """
         visit = self._make_visit_row(days_ago=16, recording_hours=6,
                                      estimated_hours=600, capacity_gb=64, purpose_id=2)
         item = self._fetch_with_recordings(visit, last_recording_days_ago=240)
-        self.assertNotEqual(item['status'], 'inactive')      # головне: НЕ сірий
-        self.assertIsNotNone(item['battery_days_left'])      # прогноз порахувався
+        self.assertNotEqual(item['status'], 'inactive')      # key point: NOT greyed out
+        self.assertIsNotNone(item['battery_days_left'])      # forecast was computed
         self.assertEqual(item['days_since_visit'], 16)
 
     def test_old_recordings_and_old_visit_still_inactive(self):
-        """Якщо І дані, І останній візит старі (>200 днів) — лишається inactive."""
+        """If both the data AND the last visit are old (>200 days) -- stays inactive."""
         visit = self._make_visit_row(days_ago=250, recording_hours=6,
                                      estimated_hours=600, capacity_gb=64, purpose_id=1)
         item = self._fetch_with_recordings(visit, last_recording_days_ago=240)
