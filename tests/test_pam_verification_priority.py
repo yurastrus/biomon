@@ -1,12 +1,12 @@
 """
-Idea 7: PAM verification queue — пріоритет сегментів, близьких до консенсусу.
+Idea 7: PAM verification queue -- prioritize segments close to consensus.
 
-GET /api/verification/next-segment має сортувати кандидатів за
-verification_count DESC (NULL-safe через COALESCE) і лише потім RANDOM():
-сегменти зі спірними голосами (1:1) та одним голосом видаються раніше
-за свіжі — так консенсус досягається швидше.
+GET /api/verification/next-segment must sort candidates by
+verification_count DESC (NULL-safe via COALESCE) and only then RANDOM():
+segments with contested votes (1:1) and a single vote are served before
+fresh ones -- this way consensus is reached faster.
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_pam_verification_priority.py -v
 """
 from datetime import date, time
@@ -22,7 +22,7 @@ FAKE_ROW = (
 
 
 def _mock_conn(captured):
-    """conn.execute(...) збирає SQL-текст і повертає FAKE_ROW."""
+    """conn.execute(...) collects the SQL text and returns FAKE_ROW."""
     conn = MagicMock()
 
     def _execute(query, params=None):
@@ -36,7 +36,7 @@ def _mock_conn(captured):
 
 
 def test_next_segment_orders_by_verification_count(auth_client):
-    """Гілка без фільтра виду: ORDER BY verification_count DESC, RANDOM()."""
+    """Branch without a species filter: ORDER BY verification_count DESC, RANDOM()."""
     cl = auth_client(role='admin')
     captured = []
     with patch('app.pam.routes.get_pam_db_connection',
@@ -51,7 +51,7 @@ def test_next_segment_orders_by_verification_count(auth_client):
 
 
 def test_next_segment_species_branch_orders_by_verification_count(auth_client):
-    """Гілка з фільтром виду: той самий пріоритет near-consensus."""
+    """Branch with a species filter: the same near-consensus priority."""
     cl = auth_client(role='admin')
     captured = []
     with patch('app.pam.routes.get_pam_db_connection',
@@ -64,7 +64,7 @@ def test_next_segment_species_branch_orders_by_verification_count(auth_client):
 
 
 def test_next_segment_keeps_pending_and_own_votes_filters(auth_client):
-    """Фільтри status='pending' та виключення власних голосів не зникли."""
+    """The status='pending' filter and exclusion of own votes are still present."""
     cl = auth_client(role='admin')
     for url in ('/uk/api/verification/next-segment',
                 '/uk/api/verification/next-segment?species_id=5'):

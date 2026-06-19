@@ -1,12 +1,12 @@
 """
-#40: стартова сторінка фотопасток — секція «Аналітика» йде ПЕРШОЮ
-(узгоджено з PAM-хабом: публічна аналітика вгорі, рольові секції нижче).
+#40: camera-trap landing page — the "Analytics" section comes FIRST
+(aligned with the PAM hub: public analytics on top, role-based sections below).
 """
 from unittest.mock import patch
 
 
 def test_ct_overview_analytics_before_work(auth_client, db_session):
-    """Адмін бачить і «Аналітика», і «Робота» — аналітика має бути вище."""
+    """Admin sees both "Analytics" and "Work" — analytics must come first."""
     cl = auth_client(role='admin')
     resp = cl.get('/uk/camera-traps/')
     assert resp.status_code == 200

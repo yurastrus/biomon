@@ -1,7 +1,7 @@
 """
-Тест для перевірки redirect неавторизованого користувача на сторінку логування.
+Test verifying redirect of an unauthenticated user to the login page.
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_auth_redirect -v
 """
 import os
@@ -12,8 +12,8 @@ from unittest.mock import patch, MagicMock
 class TestAuthRedirect(unittest.TestCase):
 
     def setUp(self):
-        """Створюємо тестовий додаток з заглушками для БД."""
-        # Перевизначаємо URI до create_app, щоб не підключатись до PostgreSQL
+        """Create a test app with DB stubs."""
+        # Override the URI before create_app so we don't connect to PostgreSQL
         os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
 
         ct_engine_patcher = patch(
@@ -33,8 +33,8 @@ class TestAuthRedirect(unittest.TestCase):
 
     def test_unauthenticated_identify_redirects_to_login(self):
         """
-        GET /uk/camera-traps/identify без сесії повинен редіректити
-        на /uk/login з параметром next, а не повертати 500.
+        GET /uk/camera-traps/identify without a session must redirect
+        to /uk/login with a next parameter, not return 500.
         """
         response = self.client.get('/uk/camera-traps/identify')
 
@@ -50,14 +50,14 @@ class TestAuthRedirect(unittest.TestCase):
                       f"У redirect URL має бути параметр next: {location}")
 
     def test_unauthenticated_identify_next_points_to_identify(self):
-        """Параметр next має містити /uk/camera-traps/identify."""
+        """The next parameter must contain /uk/camera-traps/identify."""
         response = self.client.get('/uk/camera-traps/identify')
         location = response.headers.get('Location', '')
         self.assertIn('camera-traps/identify', location,
                       f"next має вказувати на identify: {location}")
 
     def test_login_page_accessible_without_auth(self):
-        """Сторінка логування доступна без авторизації (не 500)."""
+        """Login page is accessible without authentication (not 500)."""
         response = self.client.get('/uk/login')
         self.assertNotEqual(response.status_code, 500,
                             "Сторінка /uk/login не повинна повертати 500")

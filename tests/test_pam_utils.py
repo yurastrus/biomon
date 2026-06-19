@@ -1,7 +1,7 @@
 """
-Тести допоміжних функцій модуля pam.
+Tests for the pam module's helper functions.
 
-Підмінюємо `get_pam_db_connection` на mock — не торкаємось реальної PAM-БД.
+We replace `get_pam_db_connection` with a mock -- the real PAM DB is untouched.
 """
 import pytest
 from unittest.mock import MagicMock, patch
@@ -10,7 +10,7 @@ from app.pam.utils import get_available_species
 
 
 def _make_mock_conn(rows):
-    """Створює фейкове з'єднання, де conn.execute(...).mappings().fetchall() → rows."""
+    """Creates a fake connection where conn.execute(...).mappings().fetchall() -> rows."""
     conn = MagicMock()
     result = MagicMock()
     result.mappings.return_value.fetchall.return_value = rows

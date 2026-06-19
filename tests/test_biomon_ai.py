@@ -1,13 +1,13 @@
-"""Тести для services/biomon_ai/.
+"""Tests for services/biomon_ai/.
 
-Покриває:
-  • species_map.py    — мапінг DeepFaune labels → Species.id
+Covers:
+  • species_map.py    — mapping DeepFaune labels → Species.id
   • adapter.py        — IClassifier ABC, StubAdapter, PhotoPrediction
-  • worker.py         — оркестрація з моками БД і адаптера
+  • worker.py         — orchestration with mocked DB and adapter
   • cli.py            — CLI parsing, error paths
 
-Інтеграційні тести DeepFauneAdapter — окремий файл, бо потребують
-torch+ultralytics встановлених у biomon-ai-venv. Запускати окремо:
+DeepFauneAdapter integration tests live in a separate file, since they require
+torch+ultralytics installed in biomon-ai-venv. Run separately:
     /c/Users/IuriiStrus/repositories/biomon-ai-venv/Scripts/python \
         -m services.biomon_ai.test_deepfaune_integration
 """
@@ -35,9 +35,9 @@ from services.biomon_ai.species_map import (
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestSpeciesMap(unittest.TestCase):
-    """Мапінг DeepFaune labels → biomon Species.id."""
+    """Mapping DeepFaune labels → biomon Species.id."""
 
-    # ── Спецкласи (-1, -3, -5) ─────────────────────────────────────
+    # ── Special classes (-1, -3, -5) ───────────────────────────────
     def test_empty_maps_to_minus_1(self):
         self.assertEqual(map_deepfaune_label('empty'), -1)
 
@@ -47,9 +47,9 @@ class TestSpeciesMap(unittest.TestCase):
     def test_vehicle_maps_to_minus_3(self):
         self.assertEqual(map_deepfaune_label('vehicle'), -3)
 
-    # ── Основні карпатські ссавці ───────────────────────────────────
+    # ── Main Carpathian mammals ─────────────────────────────────────
     def test_carpathian_mammals_mapped(self):
-        """Усі види які реально водяться в Карпатах і є в Species."""
+        """All species that actually occur in the Carpathians and exist in Species."""
         cases = [
             ('roe deer', 4),     ('red deer', 5),  ('wild boar', 3),
             ('fox', 10),         ('wolf', 9),      ('lynx', 37),
@@ -65,14 +65,14 @@ class TestSpeciesMap(unittest.TestCase):
                 )
 
     def test_lagomorph_maps_to_hare(self):
-        """У Species тільки один лагоморф (заєць сірий, id=1)."""
+        """Species has only one lagomorph (brown hare, id=1)."""
         self.assertEqual(map_deepfaune_label('lagomorph'), 1)
 
     def test_micromammal_maps_to_generic_rodent(self):
-        """DeepFaune micromammal → 'Дрібний гризун' (-8)."""
+        """DeepFaune micromammal → 'Дрібний гризун' (small rodent, -8)."""
         self.assertEqual(map_deepfaune_label('micromammal'), -8)
 
-    # ── Види яких немає в Карпатах/Species → None ───────────────────
+    # ── Species not present in Carpathians/Species → None ───────────
     def test_non_carpathian_species_unmapped(self):
         for label in [
             'ibex', 'beaver', 'wolverine', 'genet', 'mustelid', 'otter',
@@ -86,14 +86,14 @@ class TestSpeciesMap(unittest.TestCase):
                     f'{label!r} should be None (not in biomon Species)'
                 )
 
-    # ── Свійські які тепер мапляться на спец-Species ───────────────
+    # ── Domestic animals now mapped to special Species ──────────────
     def test_cow_and_sheep_map_to_special_species(self):
         self.assertEqual(map_deepfaune_label('cow'), -10)
         self.assertEqual(map_deepfaune_label('sheep'), -11)
 
-    # ── Птахи: 8 під-класів DeepFaune + fallback ───────────────────
+    # ── Birds: 8 DeepFaune sub-classes + fallback ───────────────────
     def test_all_bird_subclasses_mapped(self):
-        """birdclassification=True → labels формату 'bird <subclass>' (пробіл)."""
+        """birdclassification=True → labels in 'bird <subclass>' format (space)."""
         cases = [
             ('bird anseriform',  -12),
             ('bird columbiform', -13),
@@ -113,7 +113,7 @@ class TestSpeciesMap(unittest.TestCase):
                     f'{label!r} should map to species_id={expected_id}'
                 )
 
-    # ── Спеціальне значення 'undefined' від DeepFaune (score<threshold) ─
+    # ── Special 'undefined' value from DeepFaune (score<threshold) ──
     def test_undefined_returns_none(self):
         self.assertIsNone(map_deepfaune_label('undefined'))
 
@@ -134,12 +134,12 @@ class TestSpeciesMap(unittest.TestCase):
         self.assertIsNone(map_deepfaune_label(''))
 
     def test_unknown_label(self):
-        """Захист від нових версій DeepFaune з новими класами."""
+        """Guard against new DeepFaune versions with new classes."""
         self.assertIsNone(map_deepfaune_label('alien-species-not-in-map'))
 
-    # ── Структурні перевірки мапи ─────────────────────────────────
+    # ── Structural checks on the map ────────────────────────────────
     def test_no_duplicate_keys(self):
-        # Якщо в мапі продубльовано ключ — це баг.
+        # A duplicated key in the map would be a bug.
         keys_lower = [k.lower() for k in DEEPFAUNE_TO_SPECIES_ID.keys()]
         self.assertEqual(len(keys_lower), len(set(keys_lower)))
 
@@ -149,10 +149,10 @@ class TestSpeciesMap(unittest.TestCase):
                 self.assertIsInstance(sp_id, int, f'{label!r} maps to {sp_id!r}')
 
     def test_no_double_mapping_for_positive_species(self):
-        # Жоден позитивний species_id не повинен бути в мапі двічі.
-        # Винятки — спецкласи -1, -3, -5, -8 (теоретично один Species
-        # може представляти декілька DeepFaune labels, але для позитивних
-        # це означало б помилку — реальні види унікальні).
+        # No positive species_id should appear in the map twice.
+        # Exceptions are the special classes -1, -3, -5, -8 (in theory one
+        # Species could represent several DeepFaune labels, but for positive
+        # ones that would mean an error — real species are unique).
         positive_ids = [v for v in DEEPFAUNE_TO_SPECIES_ID.values() if v is not None and v > 0]
         self.assertEqual(len(positive_ids), len(set(positive_ids)))
 
@@ -162,7 +162,7 @@ class TestSpeciesMap(unittest.TestCase):
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestIClassifier(unittest.TestCase):
-    """ABC має бути неможливим до інстанціації напряму."""
+    """The ABC must not be directly instantiable."""
 
     def test_iclassifier_is_abstract(self):
         with self.assertRaises(TypeError):
@@ -170,13 +170,13 @@ class TestIClassifier(unittest.TestCase):
 
     def test_subclass_must_implement_methods(self):
         class IncompleteAdapter(IClassifier):
-            pass  # без реалізацій
+            pass  # no implementations
         with self.assertRaises(TypeError):
             IncompleteAdapter()
 
 
 class TestPhotoPrediction(unittest.TestCase):
-    """DTO для прогнозу одного фото."""
+    """DTO for a single photo prediction."""
 
     def test_minimal_construction(self):
         p = PhotoPrediction(photo_path='/a.jpg')
@@ -209,7 +209,7 @@ class TestPhotoPrediction(unittest.TestCase):
 
 
 class TestStubAdapter(unittest.TestCase):
-    """StubAdapter — детермінований замінник DeepFaune для unit-тестів."""
+    """StubAdapter — deterministic DeepFaune replacement for unit tests."""
 
     def test_metadata(self):
         adapter = StubAdapter()
@@ -249,21 +249,21 @@ class TestStubAdapter(unittest.TestCase):
         self.assertEqual(adapter.predict_observation([]), [])
 
     def test_returns_independent_objects(self):
-        """Stub не повинен повертати один той самий екземпляр для всіх фото."""
+        """Stub must not return the same instance for all photos."""
         adapter = StubAdapter()
         results = adapter.predict_observation(['/x/a.jpg', '/x/b.jpg'])
         self.assertIsNot(results[0], results[1])
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 3. WORKER (process_batch + run_from_queue з моками)
+# 3. WORKER (process_batch + run_from_queue with mocks)
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestProcessBatch(unittest.TestCase):
-    """Тести оркестратора без реальної БД і файлів."""
+    """Orchestrator tests without a real DB or files."""
 
     def setUp(self):
-        # Патчимо всі DB-функції одразу
+        # Patch all DB functions at once
         self.engine_patch = patch('services.biomon_ai.worker.make_engine')
         self.session_patch = patch('services.biomon_ai.worker.make_session')
         self.get_model_patch = patch('services.biomon_ai.worker.get_or_create_model')
@@ -317,18 +317,18 @@ class TestProcessBatch(unittest.TestCase):
         self.mock_save.assert_not_called()
 
     def test_processes_observation_with_real_files(self):
-        """Якщо файли є на диску — adapter запускається, save викликається."""
+        """If files exist on disk — the adapter runs and save is called."""
         import tempfile
         from services.biomon_ai.db import PendingObservation
         from services.biomon_ai.worker import process_batch
 
-        # Створюємо тимчасові «фото» з очікуваним layout
+        # Create temporary "photos" with the expected layout
         with tempfile.TemporaryDirectory() as tmpdir:
             raw_dir = os.path.join(tmpdir, 'pending_photos', 'raw')
             os.makedirs(raw_dir)
             fake_file = os.path.join(raw_dir, 'fake.jpg')
             with open(fake_file, 'wb') as f:
-                f.write(b'\xff\xd8\xff\xe0fake')  # JPEG magic, не валідний
+                f.write(b'\xff\xd8\xff\xe0fake')  # JPEG magic, not valid
 
             self.mock_pick.return_value = [
                 PendingObservation(
@@ -345,25 +345,25 @@ class TestProcessBatch(unittest.TestCase):
             )
             self.assertEqual(result, 1)
             self.mock_save.assert_called_once()
-            # Перевіряємо що predictions від adapter'а були передані
+            # Check that predictions from the adapter were passed through
             kwargs = self.mock_save.call_args.kwargs
             self.assertEqual(kwargs['observation_id'], 1)
             self.assertEqual(kwargs['model_id'], 42)
             self.assertEqual(len(kwargs['predictions']), 1)
 
     def test_thumbnail_fallback_when_raw_missing(self):
-        """Якщо raw-файлу нема, але є мініатюра — worker використовує її."""
+        """If the raw file is missing but a thumbnail exists — worker uses it."""
         import tempfile
         from services.biomon_ai.db import PendingObservation
         from services.biomon_ai.worker import process_batch
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Створюємо ЛИШЕ мініатюру (без raw)
+            # Create ONLY the thumbnail (no raw)
             thumb_dir = os.path.join(tmpdir, 'pending_photos', 'thumbnails')
             os.makedirs(thumb_dir)
             with open(os.path.join(thumb_dir, 'only_thumb.jpg'), 'wb') as f:
                 f.write(b'\xff\xd8\xff\xe0' + b'thumbnail-only')
-            # raw/ навіть НЕ створено
+            # raw/ is NOT even created
 
             self.mock_pick.return_value = [
                 PendingObservation(observation_id=99, photos=[(500, 'only_thumb.jpg')]),
@@ -377,14 +377,14 @@ class TestProcessBatch(unittest.TestCase):
             )
             self.assertEqual(result, 1)
             self.mock_save.assert_called_once()
-            # Перевіряємо що в predictions передано саме thumbnail-шлях
+            # Check that the thumbnail path specifically was passed in predictions
             kwargs = self.mock_save.call_args.kwargs
             paths = list(kwargs['photo_id_by_path'].keys())
             self.assertEqual(len(paths), 1)
             self.assertIn('thumbnails', paths[0])
 
     def test_adapter_exception_does_not_stop_other_observations(self):
-        """Одна крашнула — інші продовжуються."""
+        """One crashed — the others keep going."""
         import tempfile
         from services.biomon_ai.db import PendingObservation
         from services.biomon_ai.worker import process_batch
@@ -401,7 +401,7 @@ class TestProcessBatch(unittest.TestCase):
                 PendingObservation(observation_id=2, photos=[(200, 'b.jpg')]),
             ]
 
-            # Адаптер кидає виняток на першу observation, нормально на другу
+            # Adapter raises on the first observation, succeeds on the second
             class FlakyAdapter(StubAdapter):
                 def __init__(inner_self):
                     super().__init__()
@@ -418,7 +418,7 @@ class TestProcessBatch(unittest.TestCase):
                 upload_path=tmpdir,
                 max_observations=10,
             )
-            # Одна крашнула, інша пройшла
+            # One crashed, the other went through
             self.assertEqual(result, 1)
             self.assertEqual(self.mock_save.call_count, 1)
 
@@ -428,11 +428,11 @@ class TestProcessBatch(unittest.TestCase):
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestProcessBatchTracked(unittest.TestCase):
-    """process_batch_tracked: порожній крон-запуск видаляє запис з БД."""
+    """process_batch_tracked: an idle cron run deletes the DB record."""
 
     def _run_tracked(self, process_batch_result: int) -> tuple:
-        """Запускає process_batch_tracked із заданим результатом process_batch.
-        Повертає (result, sql_stmts) де sql_stmts — список рядків виконаних SQL."""
+        """Runs process_batch_tracked with the given process_batch result.
+        Returns (result, sql_stmts) where sql_stmts is the list of executed SQL strings."""
         import services.biomon_ai.worker as mod
 
         mock_engine = MagicMock()
@@ -458,14 +458,14 @@ class TestProcessBatchTracked(unittest.TestCase):
         return result, sql_stmts
 
     def test_idle_cron_deletes_queue_record(self):
-        """Коли processed=0 — запис видаляється, не оновлюється."""
+        """When processed=0 — the record is deleted, not updated."""
         result, sqls = self._run_tracked(process_batch_result=0)
         self.assertEqual(result, 0)
         self.assertTrue(any('DELETE' in s for s in sqls), f"Expected DELETE, got: {sqls}")
         self.assertFalse(any('UPDATE' in s for s in sqls), f"Expected no UPDATE, got: {sqls}")
 
     def test_active_cron_updates_record_done(self):
-        """Коли processed>0 — запис оновлюється до status='done'."""
+        """When processed>0 — the record is updated to status='done'."""
         result, sqls = self._run_tracked(process_batch_result=5)
         self.assertEqual(result, 5)
         self.assertTrue(any('UPDATE' in s for s in sqls), f"Expected UPDATE, got: {sqls}")
@@ -477,7 +477,7 @@ class TestProcessBatchTracked(unittest.TestCase):
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestCLIParsing(unittest.TestCase):
-    """Тести argparse — не запускаємо main()."""
+    """argparse tests — we do not run main()."""
 
     def test_help_exits_zero(self):
         from services.biomon_ai.cli import parse_args
@@ -526,7 +526,7 @@ class TestCLIParsing(unittest.TestCase):
 
 
 class TestCLIMain(unittest.TestCase):
-    """Інтеграція: main() з моками і env."""
+    """Integration: main() with mocks and env."""
 
     def test_missing_upload_path_returns_1(self):
         from services.biomon_ai import cli

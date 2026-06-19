@@ -1,18 +1,18 @@
 """
-Тести для аналітики PAM (app/pam/pam_evaluation_utils.py + route).
+Tests for PAM analytics (app/pam/pam_evaluation_utils.py + route).
 
-Структура:
-  1. TestConvertNumpyTypes              — конверсія numpy → python
-  2. TestBuildInsufficientDataMessage   — формування читабельних повідомлень
-  3. TestGetSpeciesDiagnostic           — SQL для діагностики виду
-  4. TestGetSpeciesForDropdown          — SQL для випадаючого списку
+Structure:
+  1. TestConvertNumpyTypes              — numpy → python conversion
+  2. TestBuildInsufficientDataMessage   — building readable messages
+  3. TestGetSpeciesDiagnostic           — SQL for species diagnostics
+  4. TestGetSpeciesForDropdown          — SQL for the dropdown
   5. TestCalculateSpeciesMetrics        — Precision + bootstrap CI
-  6. TestRecalculateAllMetrics          — оркестратор (різні сценарії)
-  7. TestRecalculateReturnContract      — контракт повернення (reason, error)
-  8. TestEvaluationResultsPage          — GET сторінка
-  9. TestAdminRecalculateRoute          — POST маршрут і flash-рівні
+  6. TestRecalculateAllMetrics          — orchestrator (various scenarios)
+  7. TestRecalculateReturnContract      — return contract (reason, error)
+  8. TestEvaluationResultsPage          — GET page
+  9. TestAdminRecalculateRoute          — POST route and flash levels
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_pam_evaluation.py -v
 """
 
@@ -26,7 +26,7 @@ import numpy as np
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 1. convert_numpy_types — конверсія типів
+# 1. convert_numpy_types — type conversion
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestConvertNumpyTypes(unittest.TestCase):
@@ -75,7 +75,7 @@ class TestConvertNumpyTypes(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 2. _build_insufficient_data_message — повідомлення про брак даних
+# 2. _build_insufficient_data_message — insufficient-data messages
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestBuildInsufficientDataMessage(unittest.TestCase):
@@ -125,14 +125,14 @@ class TestBuildInsufficientDataMessage(unittest.TestCase):
         from app.pam.pam_evaluation_utils import _build_insufficient_data_message
         diag = self._diag(segments_meeting_min=3)
         msg = _build_insufficient_data_message(diag)
-        # Має давати поради
+        # Must give advice
         self.assertTrue(
             'додайте верифікацій' in msg or 'зменште поріг' in msg,
             f"Expected actionable hint in: {msg}"
         )
 
     def test_fallback_when_data_looks_ok(self):
-        """Edge case: всі лічильники проходять, але потрапили в fallback."""
+        """Edge case: all counters pass, but we still hit the fallback."""
         from app.pam.pam_evaluation_utils import _build_insufficient_data_message
         diag = self._diag(segments_meeting_min=10, required_segments=5)
         msg = _build_insufficient_data_message(diag)
@@ -140,7 +140,7 @@ class TestBuildInsufficientDataMessage(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 3. _get_species_diagnostic — SQL-запит
+# 3. _get_species_diagnostic — SQL query
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestGetSpeciesDiagnostic(unittest.TestCase):
@@ -215,7 +215,7 @@ class TestGetSpeciesDiagnostic(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 4. get_species_for_dropdown — повертає лічильники для UI
+# 4. get_species_for_dropdown — returns counters for the UI
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestGetSpeciesForDropdown(unittest.TestCase):
@@ -265,7 +265,7 @@ class TestGetSpeciesForDropdown(unittest.TestCase):
         conn.close.assert_called_once()
 
     def test_query_filters_to_verified_segments(self):
-        """SQL має фільтрувати тільки сегменти з результатом верифікації."""
+        """SQL must filter to only segments with a verification result."""
         from app.pam.pam_evaluation_utils import get_species_for_dropdown
         conn = self._mock_engine([])
         with patch('app.pam.pam_evaluation_utils.get_pam_db_connection', return_value=conn):
@@ -275,13 +275,13 @@ class TestGetSpeciesForDropdown(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 5. calculate_species_metrics — основний розрахунок
+# 5. calculate_species_metrics — the main calculation
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestCalculateSpeciesMetrics(unittest.TestCase):
     """
-    Перевіряємо граничні умови. Внутрішні sklearn-виклики мокаємо,
-    щоб тест залишався швидким і детермінованим.
+    Check edge conditions. Internal sklearn calls are mocked,
+    so the test stays fast and deterministic.
     """
 
     def _conn_with_rows(self, rows):
@@ -290,7 +290,7 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
         return conn
 
     def test_returns_none_for_under_5_segments(self):
-        """Менш ніж 5 сегментів → None (порог із SQL HAVING)."""
+        """Fewer than 5 segments → None (threshold from SQL HAVING)."""
         from app.pam.pam_evaluation_utils import calculate_species_metrics
         rows = [(i, 0.9, 1.0) for i in range(4)]  # 4 < 5
         with patch('app.pam.pam_evaluation_utils.get_pam_db_connection',
@@ -299,9 +299,9 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_returns_none_when_no_consensus(self):
-        """Якщо жодна верифікація не досягла consensus_threshold → None."""
+        """If no verification reached consensus_threshold → None."""
         from app.pam.pam_evaluation_utils import calculate_species_metrics
-        # avg_verification = 0.5 — ні позитив, ні негатив при threshold=2/3
+        # avg_verification = 0.5 — neither positive nor negative at threshold=2/3
         rows = [(i, 0.9, 0.5) for i in range(6)]
         with patch('app.pam.pam_evaluation_utils.get_pam_db_connection',
                    return_value=self._conn_with_rows(rows)):
@@ -310,7 +310,7 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
 
     def test_returns_dict_with_required_keys(self):
         from app.pam.pam_evaluation_utils import calculate_species_metrics
-        # Всі 6 сегментів — позитивні (avg >= 2/3)
+        # All 6 segments are positive (avg >= 2/3)
         rows = [(i, 0.9, 1.0) for i in range(6)]
         fake_logistic = {
             'beta0': 0.5, 'beta1': 1.0, 'r_squared': 0.8, 'n_samples': 6,
@@ -351,7 +351,7 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
 
     def test_precision_equals_zero_when_all_wrong(self):
         from app.pam.pam_evaluation_utils import calculate_species_metrics
-        # avg_verification = 0.0 → потрапить у "негативні"
+        # avg_verification = 0.0 → falls into "negative"
         rows = [(i, 0.9, 0.0) for i in range(6)]
         fake_logistic = {k: None for k in ('beta0', 'beta1', 'r_squared',
             'n_samples', 'status', 'p0_9_threshold', 'p0_9_lower_ci',
@@ -382,13 +382,13 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 6. recalculate_all_metrics — оркестратор
+# 6. recalculate_all_metrics — orchestrator
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestRecalculateAllMetrics(unittest.TestCase):
     """
-    Тестуємо повний цикл оркестратора. Внутрішнє calculate_species_metrics
-    мокається — нам важлива логіка диспетчеризації, а не SQL.
+    Tests the full orchestrator cycle. The inner calculate_species_metrics
+    is mocked — we care about the dispatch logic, not the SQL.
     """
 
     def _mock_conn(self, base_query_rows, diag_row=None):
@@ -419,7 +419,7 @@ class TestRecalculateAllMetrics(unittest.TestCase):
 
     # ── Path A: no eligible species ──────────────────────────────────────────
     def test_no_eligible_species_all_mode(self):
-        """Якщо база порожня і target_species_id=None → reason='no_eligible_species'."""
+        """If the database is empty and target_species_id=None → reason='no_eligible_species'."""
         from app.pam.pam_evaluation_utils import recalculate_all_metrics
         conn = self._mock_conn(base_query_rows=[])
         with patch('app.pam.pam_evaluation_utils.get_pam_db_connection', return_value=conn), \
@@ -428,10 +428,10 @@ class TestRecalculateAllMetrics(unittest.TestCase):
         self.assertFalse(result['success'])
         self.assertEqual(result['reason'], 'no_eligible_species')
         self.assertIn('error', result)
-        self.assertNotIn('message', result)  # старий ключ більше не використовується
+        self.assertNotIn('message', result)  # the old key is no longer used
 
     def test_no_data_for_specific_species_includes_diagnostic(self):
-        """target_species_id з порожнім результатом → reason='insufficient_data' + diagnostic."""
+        """target_species_id with an empty result → reason='insufficient_data' + diagnostic."""
         from app.pam.pam_evaluation_utils import recalculate_all_metrics
         diag = self._diag_row(scientific_name='Bubo bubo',
                               verified_segments=2, total_verifications=3,
@@ -447,7 +447,7 @@ class TestRecalculateAllMetrics(unittest.TestCase):
         self.assertIn('Bubo bubo', result['error'])
 
     def test_species_not_found_fallback(self):
-        """target_species_id, якого немає в базі взагалі → diagnostic=None."""
+        """target_species_id that is not in the database at all → diagnostic=None."""
         from app.pam.pam_evaluation_utils import recalculate_all_metrics
         conn = self._mock_conn(base_query_rows=[], diag_row=None)
         with patch('app.pam.pam_evaluation_utils.get_pam_db_connection', return_value=conn), \
@@ -461,7 +461,7 @@ class TestRecalculateAllMetrics(unittest.TestCase):
     def test_successful_calculation_returns_success_true(self):
         from app.pam.pam_evaluation_utils import recalculate_all_metrics
         conn = MagicMock()
-        # base_query повертає 1 вид
+        # base_query returns 1 species
         base_result = MagicMock()
         base_result.fetchall.return_value = [(1, 'Test sp')]
         conn.execute.return_value = base_result
@@ -489,22 +489,22 @@ class TestRecalculateAllMetrics(unittest.TestCase):
         self.assertEqual(result['calculated_species'], ['Test sp'])
 
     def test_failed_species_gets_diagnostic_appended(self):
-        """Якщо calculate_species_metrics→None для виду, в failed_species_detail
-        має бути запис із числами."""
+        """If calculate_species_metrics→None for a species, failed_species_detail
+        must contain a record with numbers."""
         from app.pam.pam_evaluation_utils import recalculate_all_metrics
         conn = MagicMock()
         diag = self._diag_row(scientific_name='Spinus spinus',
                               segments_meeting_min=3, verified_segments=7,
                               total_verifications=14)
 
-        # 1-й виклик — base_query (fetchall), решта — для diag (fetchone)
+        # 1st call — base_query (fetchall), the rest — for diag (fetchone)
         base_result = MagicMock()
         base_result.fetchall.return_value = [(5, 'Spinus spinus')]
         diag_result = MagicMock()
         diag_result.fetchone.return_value = diag
 
-        # Послідовність викликів: base_query, UPDATE is_current=false, diag query
-        # Тут спрощуємо — будь-який execute() повертає об'єкт з і fetchall, і fetchone
+        # Call sequence: base_query, UPDATE is_current=false, diag query
+        # Simplified here — any execute() returns an object with both fetchall and fetchone
         combined = MagicMock()
         combined.fetchall.return_value = [(5, 'Spinus spinus')]
         combined.fetchone.return_value = diag
@@ -606,13 +606,13 @@ class TestRecalculateAllMetrics(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 7. Контракт повернення — гарантуємо стабільні ключі для всіх сценаріїв
+# 7. Return contract — guarantee stable keys for all scenarios
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestRecalculateReturnContract(unittest.TestCase):
     """
-    Регресійний пакет: переконуємось, що 'success': False ВСЕ ще має 'error'
-    (а не 'message') — це баг, який ми щойно виправили.
+    Regression suite: make sure 'success': False STILL has 'error'
+    (and not 'message') — the bug we just fixed.
     """
 
     def _conn_empty(self, diag_row=None):
@@ -624,8 +624,8 @@ class TestRecalculateReturnContract(unittest.TestCase):
         return conn
 
     def test_no_data_returns_error_key_not_message(self):
-        """REGRESSION: раніше повертало {'message': ...} — роут читав 'error'
-        і показував 'Невідома помилка'."""
+        """REGRESSION: it used to return {'message': ...} — the route read 'error'
+        and showed 'Невідома помилка'."""
         from app.pam.pam_evaluation_utils import recalculate_all_metrics
         conn = self._conn_empty()
         with patch('app.pam.pam_evaluation_utils.get_pam_db_connection', return_value=conn), \
@@ -766,7 +766,7 @@ class TestEvaluationResultsPage(_PamEvalRouteBase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 9. POST /<lang>/admin/evaluation/recalculate — flash рівні
+# 9. POST /<lang>/admin/evaluation/recalculate — flash levels
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestAdminRecalculateRoute(_PamEvalRouteBase):
@@ -827,7 +827,7 @@ class TestAdminRecalculateRoute(_PamEvalRouteBase):
 
     # ── degraded success: 0 calculated ───────────────────────────────────────
     def test_zero_calculated_flashes_warning_not_success(self):
-        """Регресія: коли calculated=0 — не казати 'успішно', треба warning."""
+        """Regression: when calculated=0 — do not say 'success', a warning is needed."""
         self._login(self.manager.id)
         fake_result = {
             'success': True, 'mode': 'single',
@@ -843,7 +843,7 @@ class TestAdminRecalculateRoute(_PamEvalRouteBase):
                    return_value=fake_result):
             self._post(species_choice='42')
         flashes = self._get_flash()
-        # Жоден flash не має бути 'success'
+        # No flash should be 'success'
         self.assertFalse(any(cat == 'success' for cat, _ in flashes),
                          f"Got unexpected success flash: {flashes}")
         self.assertTrue(any(cat == 'warning' for cat, _ in flashes),
@@ -851,8 +851,8 @@ class TestAdminRecalculateRoute(_PamEvalRouteBase):
 
     # ── insufficient_data path ───────────────────────────────────────────────
     def test_insufficient_data_uses_warning_not_danger(self):
-        """REGRESSION: раніше показувалось 'danger'+'Невідома помилка'.
-        Має бути 'warning' з конкретним описом."""
+        """REGRESSION: it used to show 'danger'+'Невідома помилка'.
+        It must be 'warning' with a concrete description."""
         self._login(self.manager.id)
         fake_result = {
             'success': False,
@@ -922,7 +922,7 @@ class TestAdminRecalculateRoute(_PamEvalRouteBase):
         self.assertTrue(any('Bad2' in m for m in msgs))
 
     def test_too_many_failed_species_truncated(self):
-        """Більше 5 деталей → не виводимо всі, а 'та ще N'."""
+        """More than 5 details → do not print them all, but 'та ще N'."""
         self._login(self.manager.id)
         details = [{'name': f'Sp{i}', 'message': f'Sp{i}: bad', 'diagnostic': {}}
                    for i in range(8)]
@@ -940,20 +940,20 @@ class TestAdminRecalculateRoute(_PamEvalRouteBase):
             self._post()
         flashes = self._get_flash()
         msgs = [m for _, m in flashes]
-        # Have a 'та ще N' style message
+        # Have a 'та ще N' (and N more) style message
         self.assertTrue(any('ще' in m and '3' in m for m in msgs),
                         f"Expected truncation flash 'та ще 3', got: {msgs}")
 
     # ── form validation ──────────────────────────────────────────────────────
     def test_invalid_min_verifications_warning(self):
         self._login(self.manager.id)
-        # min_verifications=15 виходить за допустимі 1-10
+        # min_verifications=15 is outside the allowed 1-10 range
         self._post(min_verifications='15')
         flashes = self._get_flash()
         self.assertTrue(any(cat == 'warning' for cat, _ in flashes))
 
     def test_garbage_species_choice_treated_as_all(self):
-        """Якщо в species_choice прийшло сміття — параметр None (тобто 'all')."""
+        """If garbage came in species_choice — the parameter is None (i.e. 'all')."""
         self._login(self.manager.id)
         fake_result = {
             'success': True, 'mode': 'all',
@@ -965,7 +965,7 @@ class TestAdminRecalculateRoute(_PamEvalRouteBase):
         with patch('app.pam.pam_evaluation_utils.recalculate_all_metrics',
                    return_value=fake_result) as mock_calc:
             self._post(species_choice='not_a_number')
-        # target_species_id має бути None
+        # target_species_id must be None
         call_kwargs = mock_calc.call_args[1]
         self.assertIsNone(call_kwargs.get('target_species_id'))
 

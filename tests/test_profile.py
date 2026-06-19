@@ -1,7 +1,7 @@
 """
-#31: особиста сторінка /profile — зміна пароля/логіну + персональна статистика.
+#31: personal /profile page -- password/login change + personal statistics.
 
-Статистику (CT/PAM) мокаємо — тут перевіряємо логіку профілю, не реальні БД-запити.
+Statistics (CT/PAM) are mocked -- here we test the profile logic, not real DB queries.
 """
 from unittest.mock import patch
 
@@ -35,7 +35,7 @@ def test_profile_get_renders_username_and_stats(auth_client, db_session, stats_p
 
 def test_password_change_success(auth_client, db_session, stats_patched):
     from app.models import User
-    cl = auth_client(role='viewer', username='pwuser')          # пароль 'pass'
+    cl = auth_client(role='viewer', username='pwuser')          # password 'pass'
     resp = cl.post('/uk/profile', data={
         'current_password': 'pass',
         'new_password': 'newpass123',
@@ -56,9 +56,9 @@ def test_password_change_wrong_current_rejected(auth_client, db_session, stats_p
         'confirm_password': 'newpass123',
         'submit_password': 'Змінити пароль',
     })
-    assert resp.status_code == 200                              # без редіректу
+    assert resp.status_code == 200                              # no redirect
     u = User.query.filter_by(username='pwuser2').first()
-    assert bcrypt.check_password_hash(u.password_hash, 'pass')  # не змінено
+    assert bcrypt.check_password_hash(u.password_hash, 'pass')  # unchanged
 
 
 def test_password_change_weak_rejected(auth_client, db_session, stats_patched):
@@ -66,13 +66,13 @@ def test_password_change_weak_rejected(auth_client, db_session, stats_patched):
     cl = auth_client(role='viewer', username='pwuser3')
     resp = cl.post('/uk/profile', data={
         'current_password': 'pass',
-        'new_password': 'short1',                               # < 8, політика #27
+        'new_password': 'short1',                               # < 8, policy #27
         'confirm_password': 'short1',
         'submit_password': 'Змінити пароль',
     })
     assert resp.status_code == 200
     u = User.query.filter_by(username='pwuser3').first()
-    assert bcrypt.check_password_hash(u.password_hash, 'pass')  # не змінено
+    assert bcrypt.check_password_hash(u.password_hash, 'pass')  # unchanged
 
 
 def test_password_change_mismatch_rejected(auth_client, db_session, stats_patched):
@@ -109,5 +109,5 @@ def test_username_change_duplicate_rejected(auth_client, db_session, make_user, 
         'new_username': 'taken',
         'submit_username': 'Змінити логін',
     })
-    assert resp.status_code == 200                              # відхилено
+    assert resp.status_code == 200                              # rejected
     assert User.query.filter_by(username='wants_taken').first() is not None

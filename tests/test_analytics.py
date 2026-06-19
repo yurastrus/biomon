@@ -1,9 +1,9 @@
 """
-Тести для analytics_calculator._run_bootstrap()
+Tests for analytics_calculator._run_bootstrap()
 
-Функція чиста (не звертається до БД), тому тести не потребують моків БД.
+The function is pure (no DB access), so these tests need no DB mocks.
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_analytics -v
 """
 import unittest
@@ -33,7 +33,7 @@ class TestRunBootstrap(unittest.TestCase):
             N_ITERATIONS=n,
         )
 
-    # --- базові крайні випадки ---
+    # --- basic edge cases ---
 
     def test_empty_locations_returns_empty(self):
         result = self._run({}, [], [2020, 2021])
@@ -44,12 +44,12 @@ class TestRunBootstrap(unittest.TestCase):
         self.assertEqual(result, [])
 
     def test_all_zero_trap_days_returns_empty(self):
-        """Якщо trap_days = 0 для всіх локацій і років — DR не рахується."""
+        """If trap_days = 0 for all locations and years, DR is not computed."""
         loc_data = {1: {2020: (0, 0)}}
         result = self._run(loc_data, [1], [2020])
         self.assertEqual(result, [])
 
-    # --- структура результату ---
+    # --- result structure ---
 
     def test_returns_species_yearly_trend_objects(self):
         from app.camera_traps.models import SpeciesYearlyTrend
@@ -68,7 +68,7 @@ class TestRunBootstrap(unittest.TestCase):
         result = self._run(loc_data, [1], [2020])
         self.assertTrue(all(t.species_id == 1 for t in result))
 
-    # --- scope поля ---
+    # --- scope fields ---
 
     def test_global_scope_fields(self):
         loc_data = {1: {2020: (10, 100)}}
@@ -88,10 +88,10 @@ class TestRunBootstrap(unittest.TestCase):
         self.assertTrue(all(t.scope_type == 'ecoregion' for t in result))
         self.assertTrue(all(t.scope_id == 'Карпати' for t in result))
 
-    # --- значення DR та довірчих інтервалів ---
+    # --- DR values and confidence intervals ---
 
     def test_dr_index_in_range_0_to_100(self):
-        """DR = (detections×100)/trap_days — при detections ≤ trap_days має бути ≤ 100."""
+        """DR = (detections×100)/trap_days; with detections ≤ trap_days it must be ≤ 100."""
         loc_data = {1: {2020: (30, 100)}}  # DR ≈ 30
         result = self._run(loc_data, [1], [2020], n=500)
         self.assertEqual(len(result), 1)
@@ -107,48 +107,48 @@ class TestRunBootstrap(unittest.TestCase):
         self.assertLessEqual(float(t.lower_ci), float(t.mean_dr_index))
         self.assertLessEqual(float(t.mean_dr_index), float(t.upper_ci))
 
-    # --- фільтрація scope_locations ---
+    # --- scope_locations filtering ---
 
     def test_location_not_in_scope_is_excluded(self):
-        """Локація 2 з нульовими детекціями знижує DR при включенні."""
+        """Location 2 with zero detections lowers DR when included."""
         loc_data = {
-            1: {2020: (50, 100)},  # DR = 50 (у скоупі)
-            2: {2020: (0, 100)},   # DR = 0  (поза скоупом у першому тесті)
+            1: {2020: (50, 100)},  # DR = 50 (in scope)
+            2: {2020: (0, 100)},   # DR = 0  (out of scope in the first test)
         }
         result_scope_1 = self._run(loc_data, [1], [2020], n=500)
         result_scope_12 = self._run(loc_data, [1, 2], [2020], n=500)
         mean_1 = float(result_scope_1[0].mean_dr_index)
         mean_12 = float(result_scope_12[0].mean_dr_index)
-        # Включення локації з нульовим DR знижує середнє
+        # Including a location with zero DR lowers the mean
         self.assertGreater(mean_1, mean_12)
 
     def test_location_with_no_data_for_year_counts_as_zero(self):
-        """Якщо у локації немає даних за рік — детекції = 0 (нуль впливає на результат)."""
+        """If a location has no data for a year, detections = 0 (zero affects the result)."""
         loc_data = {
             1: {2020: (50, 100)},
-            2: {},                  # немає даних зовсім
+            2: {},                  # no data at all
         }
         result = self._run(loc_data, [1, 2], [2020], n=300)
-        # Має повернути результат (не порожній)
+        # Should return a result (non-empty)
         self.assertGreater(len(result), 0)
-        # DR має бути менший, ніж якби тільки локація 1
+        # DR should be lower than with location 1 alone
         result_only_1 = self._run(loc_data, [1], [2020], n=300)
         mean_both = float(result[0].mean_dr_index)
         mean_only_1 = float(result_only_1[0].mean_dr_index)
         self.assertLessEqual(mean_both, mean_only_1)
 
-    # --- стохастична стабільність ---
+    # --- stochastic stability ---
 
     def test_more_iterations_narrows_ci(self):
-        """При більшій кількості ітерацій CI вужчий (перевірка відносна)."""
+        """More iterations narrow the CI (relative check)."""
         loc_data = {i: {2020: (i * 5, 100)} for i in range(1, 6)}
         locations = list(loc_data.keys())
         result_100 = self._run(loc_data, locations, [2020], n=100)
         result_2000 = self._run(loc_data, locations, [2020], n=2000)
         ci_100 = float(result_100[0].upper_ci) - float(result_100[0].lower_ci)
         ci_2000 = float(result_2000[0].upper_ci) - float(result_2000[0].lower_ci)
-        # З більшою кількістю ітерацій CI, як правило, вужчий
-        self.assertGreater(ci_100, ci_2000 * 0.5)  # м'яка перевірка
+        # With more iterations the CI is usually narrower
+        self.assertGreater(ci_100, ci_2000 * 0.5)  # soft check
 
 
 if __name__ == '__main__':

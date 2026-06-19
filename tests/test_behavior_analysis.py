@@ -1,16 +1,16 @@
 """
-Тести для сторінки та API аналізу поведінки тварин.
+Tests for the animal behavior analysis page and API.
 
-Покриває:
+Covers:
   - GET /<lang>/camera-traps/analysis/behavior
-        (behavior_analysis) — доступ, шаблон, список видів
+        (behavior_analysis) — access, template, species list
   - GET /<lang>/camera-traps/api/behavior/data
-        (api_behavior_data)  — структура відповіді, бізнес-логіка,
-        фільтри, обробка помилок
+        (api_behavior_data)  — response structure, business logic,
+        filters, error handling
   - GET /<lang>/camera-traps/api/behavior/species-with-behaviors
-        (api_behavior_species) — вміст, мова, структура JSON
+        (api_behavior_species) — content, language, JSON structure
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_behavior_analysis -v
 """
 
@@ -22,17 +22,17 @@ from unittest.mock import patch, MagicMock
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# Допоміжні функції
+# Helper functions
 # ════════════════════════════════════════════════════════════════════════════
 
 def _login(client, user_id):
-    """Встановлює Flask-Login сесію без HTTP-запиту."""
+    """Set up a Flask-Login session without an HTTP request."""
     with client.session_transaction() as sess:
         sess['_user_id'] = str(user_id)
         sess['_fresh'] = True
 
 
-# ── Mock-об'єкти ────────────────────────────────────────────────────────────
+# ── Mock objects ────────────────────────────────────────────────────────────
 
 def _species(id=1, name_ua='Вовк звичайний', name_en='Gray wolf',
              scientific='Canis lupus', active=True):
@@ -60,7 +60,7 @@ def _ident(id=1):
 
 
 def _behavior_row(id=1, name_ua='Годування', name_en='Feeding', obs_count=5):
-    """Симулює рядок SQLAlchemy з агрегованим полем obs_count."""
+    """Simulate a SQLAlchemy row with an aggregated obs_count field."""
     return SimpleNamespace(
         id=id, name_ua=name_ua, name_en=name_en, obs_count=obs_count
     )
@@ -78,18 +78,18 @@ def _qty_row(qty=2, observation_id=1):
     return SimpleNamespace(qty=qty, observation_id=observation_id)
 
 
-# ── Mock-сесії ───────────────────────────────────────────────────────────────
+# ── Mock sessions ──────────────────────────────────────────────────────────
 
 def _make_page_session(species=(), biotopes=(), viewer_species=None):
-    """Mock ct_session для behavior_analysis (сторінка).
+    """Mock ct_session for behavior_analysis (page).
 
-    Порядок викликів:
+    Call order:
       1. Biotope  → .order_by().all()
       2. Species  → .join().join().filter()[.filter()].distinct().order_by().all()
 
-    viewer_species: якщо передано — повертається по шляху з додатковим
-                    .filter() (для звичайних юзерів, Species.id > 0).
-                    Якщо None — обидва шляхи повертають species.
+    viewer_species: if provided — returned via the path with an extra
+                    .filter() (for regular users, Species.id > 0).
+                    If None — both paths return species.
     """
     mock_session = MagicMock()
     call_idx = [0]
@@ -106,12 +106,12 @@ def _make_page_session(species=(), biotopes=(), viewer_species=None):
                  .join.return_value
                  .filter.return_value
             )
-            # Шлях адмін/менеджер: без додаткового filter()
+            # Admin/manager path: without the extra filter()
             (species_filter
                .distinct.return_value
                .order_by.return_value
                .all.return_value) = list(species)
-            # Шлях звичайний юзер: з filter(Species.id > 0)
+            # Regular user path: with filter(Species.id > 0)
             _viewer = viewer_species if viewer_species is not None else species
             (species_filter
                .filter.return_value
@@ -126,17 +126,17 @@ def _make_page_session(species=(), biotopes=(), viewer_species=None):
 
 def _make_data_session(identifications=(), behavior_rows=(),
                        seasonal_rows=(), qty_rows=(), tagged_count=0):
-    """Mock ct_session для api_behavior_data.
+    """Mock ct_session for api_behavior_data.
 
-    Порядок викликів:
+    Call order:
       1. Identification (base_q)  3 joins → filter → params → all
-         (та ж chain + ще join → filter → all для біотопу)
+         (same chain + another join → filter → all for biotope)
       2. BehaviorType distribution  3 joins → filter → group_by → order_by → all
       3. Seasonal rows              3 joins → filter → group_by → order_by → all
       4. Group size (qty)           1 join  → filter → group_by → all
       5. Tagged count               filter  → scalar
 
-    Якщо identifications=() — маршрут повертає рано; запити 2-5 не виконуються.
+    If identifications=() — the route returns early; queries 2-5 are not run.
     """
     mock_session = MagicMock()
     call_idx = [0]
@@ -154,7 +154,7 @@ def _make_data_session(identifications=(), behavior_rows=(),
                           .filter.return_value
                           .params.return_value)
             base_end.all.return_value = list(identifications)
-            # також підтримуємо шлях з біотопом: params → join → filter → all
+            # also support the biotope path: params → join → filter → all
             (base_end.join.return_value
                      .filter.return_value
                      .all.return_value) = list(identifications)
@@ -197,7 +197,7 @@ def _make_data_session(identifications=(), behavior_rows=(),
 
 
 def _make_species_session(species=()):
-    """Mock ct_session для api_behavior_species."""
+    """Mock ct_session for api_behavior_species."""
     mock_session = MagicMock()
     (mock_session.query.return_value
        .join.return_value
@@ -210,7 +210,7 @@ def _make_species_session(species=()):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# Базовий клас тестів
+# Base test class
 # ════════════════════════════════════════════════════════════════════════════
 
 class BehaviorBase(unittest.TestCase):
@@ -286,7 +286,7 @@ class BehaviorBase(unittest.TestCase):
 
         db.session.commit()
 
-    # ── HTTP-хелпери ─────────────────────────────────────────────────────────
+    # ── HTTP helpers ───────────────────────────────────────────────────────
 
     def _get(self, url, user_id=None, ct_session=None):
         if user_id:
@@ -304,16 +304,16 @@ class BehaviorBase(unittest.TestCase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 1. СТОРІНКА — ДОСТУП
+# 1. PAGE — ACCESS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestBehaviorPageAccess(BehaviorBase):
-    """GET /analysis/behavior — перевірка доступу для різних ролей."""
+    """GET /analysis/behavior — access checks for different roles."""
 
     URL = '/uk/camera-traps/analysis/behavior'
 
     def test_anonymous_gets_200(self):
-        """Сторінка публічна — анонімний користувач отримує 200."""
+        """Page is public — anonymous user gets 200."""
         resp = self._get(self.URL, ct_session=_make_page_session())
         self.assertEqual(resp.status_code, 200)
 
@@ -339,11 +339,11 @@ class TestBehaviorPageAccess(BehaviorBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 2. СТОРІНКА — КОНТЕНТ
+# 2. PAGE — CONTENT
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestBehaviorPageContent(BehaviorBase):
-    """HTML-контент сторінки behavior_analysis."""
+    """HTML content of the behavior_analysis page."""
 
     URL = '/uk/camera-traps/analysis/behavior'
 
@@ -352,7 +352,7 @@ class TestBehaviorPageContent(BehaviorBase):
         self.assertIn('Аналіз поведінки'.encode(), resp.data)
 
     def test_species_name_appears_in_select(self):
-        """Вид з поведінковими тегами відображається в фільтрі."""
+        """A species with behavior tags shows up in the filter."""
         sess = _make_page_session(
             species=[_species(1, name_ua='Вовк звичайний', scientific='Canis lupus')],
         )
@@ -373,7 +373,7 @@ class TestBehaviorPageContent(BehaviorBase):
         self.assertIn('Козуля'.encode(), resp.data)
 
     def test_empty_species_list_renders_without_error(self):
-        """Якщо видів з поведінками немає — сторінка рендериться без помилки."""
+        """If there are no species with behaviors — the page renders without error."""
         resp = self._get(self.URL, ct_session=_make_page_session(species=[]))
         self.assertEqual(resp.status_code, 200)
 
@@ -385,13 +385,13 @@ class TestBehaviorPageContent(BehaviorBase):
         self.assertIn('Мішаний ліс'.encode(), resp.data)
 
     def test_institution_appears_for_manager(self):
-        """Менеджер бачить свою установу у фільтрі."""
+        """Manager sees their own institution in the filter."""
         resp = self._get(self.URL, user_id=self.manager.id,
                          ct_session=_make_page_session())
         self.assertIn('Заповідник А'.encode(), resp.data)
 
     def test_manager_does_not_see_foreign_institution(self):
-        """Менеджер НЕ бачить установу, до якої не належить."""
+        """Manager does NOT see an institution they do not belong to."""
         resp = self._get(self.URL, user_id=self.manager.id,
                          ct_session=_make_page_session())
         self.assertNotIn('Заповідник Б'.encode(), resp.data)
@@ -403,22 +403,22 @@ class TestBehaviorPageContent(BehaviorBase):
         self.assertIn('Заповідник Б'.encode(), resp.data)
 
     def test_anonymous_sees_no_institution_filter(self):
-        """Анонімний — інституцій немає, список порожній."""
+        """Anonymous — no institutions, list is empty."""
         resp = self._get(self.URL, ct_session=_make_page_session())
-        # Немає жодної option з установою, але форма рендериться
+        # No institution options, but the form still renders
         self.assertNotIn('Заповідник А'.encode(), resp.data)
         self.assertNotIn('Заповідник Б'.encode(), resp.data)
 
     def test_ecoregion_appears_for_manager_with_institution(self):
-        """Менеджер бачить екорегіон своєї установи."""
+        """Manager sees the ecoregion of their institution."""
         resp = self._get(self.URL, user_id=self.manager.id,
                          ct_session=_make_page_session())
         self.assertIn('Розточчя'.encode(), resp.data)
 
-    # ── Фільтрація видів за роллю ─────────────────────────────────────────────
+    # ── Species filtering by role ────────────────────────────────────────────
 
     def test_admin_sees_negative_id_species(self):
-        """Адмін бачить «технічні» види (id < 0) — вони повертаються без extra filter."""
+        """Admin sees "technical" species (id < 0) — returned without the extra filter."""
         technical = _species(id=-1, name_ua='Автомобіль')
         normal    = _species(id=1,  name_ua='Козуля')
         sess = _make_page_session(species=[technical, normal])
@@ -427,7 +427,7 @@ class TestBehaviorPageContent(BehaviorBase):
         self.assertIn('Козуля'.encode(), resp.data)
 
     def test_manager_sees_negative_id_species(self):
-        """Менеджер (установа є) теж бачить технічні види."""
+        """Manager (has an institution) also sees technical species."""
         technical = _species(id=-1, name_ua='Мотоцикл')
         normal    = _species(id=2,  name_ua='Лисиця')
         sess = _make_page_session(species=[technical, normal])
@@ -436,17 +436,17 @@ class TestBehaviorPageContent(BehaviorBase):
         self.assertIn('Лисиця'.encode(), resp.data)
 
     def test_viewer_gets_filtered_species_list(self):
-        """Звичайний юзер (без установ) бачить лише види з id > 0."""
+        """Regular user (no institutions) sees only species with id > 0."""
         all_species = [_species(id=-1, name_ua='Людина'),
                        _species(id=1,  name_ua='Козуля')]
         filtered    = [_species(id=1,  name_ua='Козуля')]
-        # admin-шлях повертає all_species; viewer-шлях (extra filter) — filtered
+        # admin path returns all_species; viewer path (extra filter) — filtered
         sess = _make_page_session(species=all_species, viewer_species=filtered)
         resp = self._get(self.URL, user_id=self.viewer.id, ct_session=sess)
         self.assertNotIn('Людина'.encode(), resp.data)
         self.assertIn('Козуля'.encode(), resp.data)
 
-    # ── Решта ────────────────────────────────────────────────────────────────
+    # ── Misc ─────────────────────────────────────────────────────────────────
 
     def test_apply_button_in_html(self):
         resp = self._get(self.URL, ct_session=_make_page_session())
@@ -457,13 +457,13 @@ class TestBehaviorPageContent(BehaviorBase):
         self.assertIn(b'species-select', resp.data)
 
     def test_date_inputs_have_default_values(self):
-        """Поля дат мають дефолтні значення (start_date передається з бекенду)."""
+        """Date fields have default values (start_date is passed from the backend)."""
         resp = self._get(self.URL, ct_session=_make_page_session())
-        # start_date='2020-08-01' вбудований у value=""
+        # start_date='2020-08-01' embedded in value=""
         self.assertIn(b'2020-08-01', resp.data)
 
     def test_scientific_name_appended(self):
-        """Наукова назва додається в дужках після загальної."""
+        """Scientific name is appended in parentheses after the common name."""
         sess = _make_page_session(
             species=[_species(1, name_ua='Вовк', scientific='Canis lupus')],
         )
@@ -471,7 +471,7 @@ class TestBehaviorPageContent(BehaviorBase):
         self.assertIn(b'Canis lupus', resp.data)
 
     def test_species_without_scientific_name(self):
-        """Вид без наукової назви — тільки загальна (без дужок)."""
+        """Species without a scientific name — only common name (no parentheses)."""
         sess = _make_page_session(
             species=[_species(1, name_ua='Невідомий', scientific=None)],
         )
@@ -481,11 +481,11 @@ class TestBehaviorPageContent(BehaviorBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 3. API /api/behavior/data — ПОМИЛКИ ВВОДУ
+# 3. API /api/behavior/data — INPUT ERRORS
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestApiBehaviorDataErrors(BehaviorBase):
-    """api_behavior_data — обробка некоректних запитів."""
+    """api_behavior_data — handling of invalid requests."""
 
     URL = '/uk/camera-traps/api/behavior/data'
 
@@ -507,11 +507,11 @@ class TestApiBehaviorDataErrors(BehaviorBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 4. API /api/behavior/data — СТРУКТУРА ВІДПОВІДІ
+# 4. API /api/behavior/data — RESPONSE STRUCTURE
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestApiBehaviorDataStructure(BehaviorBase):
-    """api_behavior_data — перевірка структури JSON."""
+    """api_behavior_data — JSON structure checks."""
 
     URL = '/uk/camera-traps/api/behavior/data?species_id=1'
 
@@ -528,7 +528,7 @@ class TestApiBehaviorDataStructure(BehaviorBase):
         self.assertIn('untagged_count', body)
 
     def test_empty_result_when_no_identifications(self):
-        """Якщо ідентифікацій немає — всі масиви порожні, total=0."""
+        """If there are no identifications — all arrays empty, total=0."""
         sess = _make_data_session(identifications=[])
         _, body = self._get_json(self.URL, ct_session=sess)
         self.assertEqual(body['behavior_distribution'], [])
@@ -559,7 +559,7 @@ class TestApiBehaviorDataStructure(BehaviorBase):
         _, body = self._get_json(self.URL, ct_session=sess)
         item = body['behavior_distribution'][0]
         self.assertEqual(item['behavior_id'], 3)
-        self.assertEqual(item['label'], 'Переміщення')  # uk мова (URL /uk/)
+        self.assertEqual(item['label'], 'Переміщення')  # uk language (URL /uk/)
         self.assertEqual(item['count'], 12)
 
     def test_seasonal_item_keys(self):
@@ -600,21 +600,21 @@ class TestApiBehaviorDataStructure(BehaviorBase):
         self.assertIn('frequency', item)
 
     def test_total_identifications_matches_count(self):
-        idents = [_ident(i) for i in range(1, 6)]  # 5 ідентифікацій
+        idents = [_ident(i) for i in range(1, 6)]  # 5 identifications
         sess = _make_data_session(identifications=idents)
         _, body = self._get_json(self.URL, ct_session=sess)
         self.assertEqual(body['total_identifications'], 5)
 
     def test_untagged_count_in_response(self):
         """untagged_count = total - tagged_count."""
-        idents = [_ident(i) for i in range(1, 6)]  # 5 ідентифікацій
-        # 3 з них мають теги (tagged_count=3) → untagged=2
+        idents = [_ident(i) for i in range(1, 6)]  # 5 identifications
+        # 3 of them are tagged (tagged_count=3) → untagged=2
         sess = _make_data_session(identifications=idents, tagged_count=3)
         _, body = self._get_json(self.URL, ct_session=sess)
         self.assertEqual(body['untagged_count'], 2)
 
     def test_untagged_count_zero_when_all_tagged(self):
-        """Якщо всі ідентифікації мають теги — untagged_count=0."""
+        """If all identifications are tagged — untagged_count=0."""
         idents = [_ident(i) for i in range(1, 4)]
         sess = _make_data_session(identifications=idents, tagged_count=3)
         _, body = self._get_json(self.URL, ct_session=sess)
@@ -627,16 +627,16 @@ class TestApiBehaviorDataStructure(BehaviorBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 5. API /api/behavior/data — БІЗНЕС-ЛОГІКА
+# 5. API /api/behavior/data — BUSINESS LOGIC
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestApiBehaviorDataLogic(BehaviorBase):
-    """api_behavior_data — бізнес-логіка: агрегація, фільтри, мова."""
+    """api_behavior_data — business logic: aggregation, filters, language."""
 
     BASE = '/uk/camera-traps/api/behavior/data?species_id=1'
     BASE_EN = '/en/camera-traps/api/behavior/data?species_id=1'
 
-    # ── Мова ─────────────────────────────────────────────────────────────────
+    # ── Language ─────────────────────────────────────────────────────────────
 
     def test_behavior_label_ukrainian_by_default(self):
         sess = _make_data_session(
@@ -671,7 +671,7 @@ class TestApiBehaviorDataLogic(BehaviorBase):
         self.assertEqual(body['seasonal_behaviors'][0]['label'], 'Marking')
 
     def test_behavior_falls_back_to_ua_when_en_missing(self):
-        """Якщо name_en = None або порожній — використовується name_ua."""
+        """If name_en is None or empty — name_ua is used."""
         sess = _make_data_session(
             identifications=[_ident(1)],
             behavior_rows=[_behavior_row(name_ua='Відпочинок', name_en=None)],
@@ -679,10 +679,10 @@ class TestApiBehaviorDataLogic(BehaviorBase):
         _, body = self._get_json(self.BASE_EN, ct_session=sess)
         self.assertEqual(body['behavior_distribution'][0]['label'], 'Відпочинок')
 
-    # ── Гістограма розміру групи ──────────────────────────────────────────────
+    # ── Group size histogram ─────────────────────────────────────────────────
 
     def test_group_histogram_single_entry(self):
-        """1 спостереження з кількістю 2 → histogram [{quantity:2, frequency:1}]."""
+        """1 observation with quantity 2 → histogram [{quantity:2, frequency:1}]."""
         sess = _make_data_session(
             identifications=[_ident(1)],
             qty_rows=[_qty_row(qty=2, observation_id=10)],
@@ -694,7 +694,7 @@ class TestApiBehaviorDataLogic(BehaviorBase):
         self.assertEqual(hist[0]['frequency'], 1)
 
     def test_group_histogram_multiple_same_quantity(self):
-        """Два спостереження по 2 особини → frequency=2."""
+        """Two observations of 2 individuals each → frequency=2."""
         sess = _make_data_session(
             identifications=[_ident(1)],
             qty_rows=[
@@ -709,7 +709,7 @@ class TestApiBehaviorDataLogic(BehaviorBase):
         self.assertEqual(hist[0]['frequency'], 2)
 
     def test_group_histogram_mixed_quantities(self):
-        """Кілька різних кількостей → декілька записів, відсортовані за qty."""
+        """Several different quantities → multiple entries, sorted by qty."""
         sess = _make_data_session(
             identifications=[_ident(1)],
             qty_rows=[
@@ -722,17 +722,17 @@ class TestApiBehaviorDataLogic(BehaviorBase):
         _, body = self._get_json(self.BASE, ct_session=sess)
         hist = body['group_size_histogram']
         quantities = [h['quantity'] for h in hist]
-        # Відсортовані за зростанням
+        # Sorted in ascending order
         self.assertEqual(quantities, sorted(quantities))
-        # Qty=1 зустрічалась двічі
+        # Qty=1 occurred twice
         entry_1 = next(h for h in hist if h['quantity'] == 1)
         self.assertEqual(entry_1['frequency'], 2)
-        # Qty=3 і 5 — по одному разу
+        # Qty=3 and 5 — once each
         entry_3 = next(h for h in hist if h['quantity'] == 3)
         self.assertEqual(entry_3['frequency'], 1)
 
     def test_group_histogram_empty_when_no_qty(self):
-        """Якщо немає qty-рядків — histogram порожній."""
+        """If there are no qty rows — histogram is empty."""
         sess = _make_data_session(
             identifications=[_ident(1)],
             qty_rows=[],
@@ -740,7 +740,7 @@ class TestApiBehaviorDataLogic(BehaviorBase):
         _, body = self._get_json(self.BASE, ct_session=sess)
         self.assertEqual(body['group_size_histogram'], [])
 
-    # ── Поведінки — множинні рядки ───────────────────────────────────────────
+    # ── Behaviors — multiple rows ────────────────────────────────────────────
 
     def test_multiple_behaviors_all_returned(self):
         behaviors = [
@@ -768,10 +768,10 @@ class TestApiBehaviorDataLogic(BehaviorBase):
         _, body = self._get_json(self.BASE, ct_session=sess)
         self.assertEqual(len(body['seasonal_behaviors']), 3)
 
-    # ── Фільтри ───────────────────────────────────────────────────────────────
+    # ── Filters ──────────────────────────────────────────────────────────────
 
     def test_invalid_date_format_does_not_crash(self):
-        """Некоректна дата → дефолти, 200 OK."""
+        """Invalid date → defaults, 200 OK."""
         url = self.BASE + '&start_date=not-a-date&end_date=also-bad'
         sess = _make_data_session(identifications=[])
         resp, body = self._get_json(url, ct_session=sess)
@@ -779,30 +779,30 @@ class TestApiBehaviorDataLogic(BehaviorBase):
         self.assertIn('total_identifications', body)
 
     def test_institution_filter_parameter_accepted(self):
-        """Параметр institution_id не викликає помилки."""
+        """The institution_id parameter does not cause an error."""
         url = self.BASE + f'&institution_id={self.inst_a.id}'
         sess = _make_data_session(identifications=[])
         resp, _ = self._get_json(url, ct_session=sess)
         self.assertEqual(resp.status_code, 200)
 
     def test_ecoregion_filter_maps_to_institution(self):
-        """Параметр ecoregion знаходить установу через Institution.query."""
+        """The ecoregion parameter finds an institution via Institution.query."""
         url = self.BASE + '&ecoregion=Розточчя'
         sess = _make_data_session(identifications=[])
         resp, body = self._get_json(url, user_id=self.manager.id,
                                     ct_session=sess)
-        # Інституція inst_a має ecoregion_uk='Розточчя' — запит не падає
+        # Institution inst_a has ecoregion_uk='Розточчя' — query does not fail
         self.assertEqual(resp.status_code, 200)
 
     def test_biotope_filter_parameter_accepted(self):
-        """Параметр biotope_id не викликає помилки."""
+        """The biotope_id parameter does not cause an error."""
         url = self.BASE + '&biotope_id=1'
         sess = _make_data_session(identifications=[])
         resp, _ = self._get_json(url, ct_session=sess)
         self.assertEqual(resp.status_code, 200)
 
     def test_unknown_ecoregion_returns_empty(self):
-        """Неіснуючий екорегіон → Institution.query повертає [] → порожній результат."""
+        """Nonexistent ecoregion → Institution.query returns [] → empty result."""
         url = self.BASE + '&ecoregion=НеіснуючийЕкорегіон'
         sess = _make_data_session(identifications=[])
         resp, body = self._get_json(url, ct_session=sess)
@@ -815,10 +815,10 @@ class TestApiBehaviorDataLogic(BehaviorBase):
         resp, _ = self._get_json(url, ct_session=sess)
         self.assertEqual(resp.status_code, 200)
 
-    # ── Права доступу ─────────────────────────────────────────────────────────
+    # ── Access rights ────────────────────────────────────────────────────────
 
     def test_anonymous_can_call_api(self):
-        """API доступне без авторизації."""
+        """API is accessible without authentication."""
         sess = _make_data_session(identifications=[])
         resp, body = self._get_json(self.BASE, ct_session=sess)
         self.assertEqual(resp.status_code, 200)
@@ -835,10 +835,10 @@ class TestApiBehaviorDataLogic(BehaviorBase):
                                     ct_session=sess)
         self.assertEqual(resp.status_code, 200)
 
-    # ── Сезонні дані — валідність місяців ─────────────────────────────────────
+    # ── Seasonal data — month validity ───────────────────────────────────────
 
     def test_seasonal_month_values_are_1_to_12(self):
-        """Місяці мають бути цілими числами 1–12."""
+        """Months must be integers 1–12."""
         seasonals = [
             _seasonal_row(month=m, behavior_id=1)
             for m in [1, 3, 6, 9, 12]
@@ -853,7 +853,7 @@ class TestApiBehaviorDataLogic(BehaviorBase):
             self.assertIn(m, range(1, 13))
 
     def test_behavior_counts_are_positive(self):
-        """obs_count у behavior_distribution завжди > 0."""
+        """obs_count in behavior_distribution is always > 0."""
         sess = _make_data_session(
             identifications=[_ident(1)],
             behavior_rows=[
@@ -868,11 +868,11 @@ class TestApiBehaviorDataLogic(BehaviorBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 6. API /api/behavior/species-with-behaviors — СТРУКТУРА І МОВА
+# 6. API /api/behavior/species-with-behaviors — STRUCTURE AND LANGUAGE
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestApiBehaviorSpecies(BehaviorBase):
-    """api_behavior_species — список видів з поведінками."""
+    """api_behavior_species — list of species with behaviors."""
 
     URL_UK = '/uk/camera-traps/api/behavior/species-with-behaviors'
     URL_EN = '/en/camera-traps/api/behavior/species-with-behaviors'
@@ -961,7 +961,7 @@ class TestApiBehaviorSpecies(BehaviorBase):
         self.assertEqual(len(body), 5)
 
     def test_fallback_to_ua_name_when_en_absent(self):
-        """Якщо common_name_en = None — використовується ua-назва."""
+        """If common_name_en = None — the ua name is used."""
         sess = _make_species_session(
             species=[SimpleNamespace(
                 id=1, common_name_ua='Борсук', common_name_en=None,
@@ -972,7 +972,7 @@ class TestApiBehaviorSpecies(BehaviorBase):
         self.assertIn('Борсук', body[0]['text'])
 
     def test_anonymous_can_access_species_api(self):
-        """API видів доступне без авторизації."""
+        """Species API is accessible without authentication."""
         sess = _make_species_session()
         resp = self._get(self.URL_UK, ct_session=sess)
         self.assertEqual(resp.status_code, 200)
@@ -985,16 +985,16 @@ class TestApiBehaviorSpecies(BehaviorBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 7. НАВІГАЦІЯ — посилання з dashboard
+# 7. NAVIGATION — link from dashboard
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestBehaviorNavLink(BehaviorBase):
-    """Перевіряє що посилання на сторінку поведінки є на dashboard."""
+    """Verifies that the link to the behavior page is on the dashboard."""
 
     def _dashboard_session(self):
-        """Мінімальний mock для dashboard."""
+        """Minimal mock for dashboard."""
         mock_session = MagicMock()
-        # Всі query-ланцюжки повертають порожні списки
+        # All query chains return empty lists
         q = MagicMock()
         q.scalar.return_value = 0
         q.all.return_value = []
@@ -1011,7 +1011,7 @@ class TestBehaviorNavLink(BehaviorBase):
         return mock_session
 
     def test_behavior_link_on_overview(self):
-        """Посилання на аналіз поведінки доступне з хабу модуля."""
+        """Link to behavior analysis is available from the module hub."""
         _login(self.client, self.admin.id)
         resp = self.client.get('/uk/camera-traps/')
         self.assertEqual(resp.status_code, 200)

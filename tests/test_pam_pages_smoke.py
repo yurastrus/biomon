@@ -263,7 +263,7 @@ class TestPamHomePage(_PamSmokeBase):
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPamBaseTemplate(unittest.TestCase):
-    """Перевіряємо, що pam_base.html має правильну структуру."""
+    """Verify that pam_base.html has the correct structure."""
 
     def test_extends_base_html(self):
         from pathlib import Path
@@ -287,18 +287,18 @@ class TestPamBaseTemplate(unittest.TestCase):
         self.assertIn('{% block pam_head_extra %}', content)
 
     def test_back_link_conditional_on_endpoint(self):
-        """Back-link не має з'являтися на самому pam_home."""
+        """Back-link must not appear on pam_home itself."""
         from pathlib import Path
         content = Path('app/pam/templates/pam_base.html').read_text(encoding='utf-8')
         self.assertIn("request.endpoint != 'pam.pam_home'", content)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Тести pam_style.css — обов'язкові елементи
+# Tests for pam_style.css -- required elements
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestNoInlineStyles(unittest.TestCase):
-    """Регресія: після рефакторингу жоден PAM-шаблон не повинен мати <style>."""
+    """Regression: after the refactor no PAM template should contain <style>."""
 
     def test_no_pam_template_has_inline_style(self):
         from pathlib import Path
@@ -314,7 +314,7 @@ class TestNoInlineStyles(unittest.TestCase):
         )
 
     def test_all_pam_templates_extend_pam_base(self):
-        """Усі PAM-шаблони (крім pam_base.html самого) extends 'pam_base.html'."""
+        """All PAM templates (except pam_base.html itself) must extend 'pam_base.html'."""
         from pathlib import Path
         import re
         offenders = []
@@ -332,7 +332,7 @@ class TestNoInlineStyles(unittest.TestCase):
 
 
 class TestPamStyleCss(unittest.TestCase):
-    """Базові інваріанти CSS-файлу — мають триматися упродовж усього рефакторингу."""
+    """Core CSS-file invariants -- must hold throughout the entire refactor."""
 
     @classmethod
     def setUpClass(cls):
@@ -341,7 +341,7 @@ class TestPamStyleCss(unittest.TestCase):
 
     def test_has_root_variables(self):
         self.assertIn(':root', self.css)
-        # Перевіряємо ключові токени
+        # Check the key tokens
         for var in ('--color-primary', '--text-primary', '--bg-primary',
                     '--card-bg', '--border-color', '--radius-md', '--shadow-sm'):
             self.assertIn(var, self.css, f'CSS variable {var} missing')
@@ -350,9 +350,9 @@ class TestPamStyleCss(unittest.TestCase):
         self.assertIn('body.dark-theme', self.css)
 
     def test_has_container_reset(self):
-        """style.css має бути перевизначений, інакше grid не працює."""
+        """style.css must be overridden, otherwise the grid won't work."""
         self.assertIn('main .container:not(.maplistcontainer)', self.css)
-        # Має бути display: block (не flex)
+        # Must be display: block (not flex)
         idx = self.css.find('main .container:not(.maplistcontainer)')
         block_section = self.css[idx:idx + 300]
         self.assertIn('display: block', block_section)
@@ -365,12 +365,12 @@ class TestPamStyleCss(unittest.TestCase):
             self.assertIn(cls, self.css, f'Hub class {cls} missing')
 
     def test_has_numbered_sections(self):
-        """18 номерованих секцій — структурна основа файлу."""
+        """18 numbered sections -- the structural backbone of the file."""
         import re
-        # Шукаємо коментарі вигляду "   1. " ... "   18. "
+        # Look for comments of the form "   1. " ... "   18. "
         sections = re.findall(r'\n\s*(\d+)\.\s+\w', self.css)
         section_nums = set(int(n) for n in sections)
-        # Хоча б 10 з 18 секцій мають бути присутні (інші додаються поступово)
+        # At least 10 of 18 sections must be present (the rest are added gradually)
         self.assertGreaterEqual(
             len(section_nums), 10,
             f'Очікувано принаймні 10 секцій, знайдено {len(section_nums)}: {sorted(section_nums)}'

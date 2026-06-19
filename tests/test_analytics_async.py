@@ -1,20 +1,20 @@
 """
-Тести асинхронного перерахунку аналітики (analytics_calculator + маршрути).
+Tests for async analytics recalculation (analytics_calculator + routes).
 
-Чому з'явилось: update_analytics_tables() триває ~3 хв на бойових даних і,
-викликаний синхронно з HTTP-запиту, перевищував gunicorn --timeout → воркер
-убивався → 500 на /admin/run-analytics. Перероблено на фоновий потік зі
-станом у calculation_log і polling-ом, за патерном cleanup.py / fast_upload.py.
+Why this exists: update_analytics_tables() takes ~3 min on production data and,
+called synchronously from an HTTP request, exceeded gunicorn --timeout → the worker
+was killed → 500 on /admin/run-analytics. Reworked into a background thread with
+state in calculation_log and polling, following the cleanup.py / fast_upload.py pattern.
 
-Шари тестів:
-  • UNIT (завжди) — контракт update_analytics_tables (return bool),
-    оркестрація start_async_analytics / _run_analytics_in_thread (моки),
-    доступ і коди відповіді маршрутів.
+Test layers:
+  • UNIT (always) — update_analytics_tables contract (return bool),
+    start_async_analytics / _run_analytics_in_thread orchestration (mocks),
+    route access and response codes.
   • INTEGRATION (real Postgres, CT_TEST_DATABASE_URI) — compare-and-set guard,
-    recover_stuck_analytics, get_analytics_status на справжньому calculation_log
+    recover_stuck_analytics, get_analytics_status against a real calculation_log
     (ON CONFLICT / IS DISTINCT FROM — PG-only).
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_analytics_async.py -v
     CT_TEST_DATABASE_URI=postgresql://... -m integration
 """
@@ -40,10 +40,10 @@ def _login(client, user_id):
 
 def _calc_session(current_count, last_count):
     """
-    Мок get_ct_session() для update_analytics_tables:
+    Mock get_ct_session() for update_analytics_tables:
       • session.query(func.count(...)).filter(...).scalar() → current_count
       • session.query(CalculationLog).filter_by(...).first() → log_entry|None
-    Обидва виклики query() повертають той самий q — конфігуруємо обидві гілки.
+    Both query() calls return the same q, so we configure both branches.
     """
     log_entry = None
     if last_count is not None:
@@ -62,7 +62,7 @@ def _calc_session(current_count, last_count):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# UNIT — контракт update_analytics_tables (return True/False)
+# UNIT — update_analytics_tables contract (return True/False)
 # ═════════════════════════════════════════════════════════════════════════════
 
 class TestUpdateAnalyticsReturnValue(unittest.TestCase):
@@ -116,7 +116,7 @@ class TestUpdateAnalyticsReturnValue(unittest.TestCase):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# Базовий клас з app-контекстом + seed користувачів (як CleanupRouteBase)
+# Base class with app context + seeded users (like CleanupRouteBase)
 # ═════════════════════════════════════════════════════════════════════════════
 
 class AnalyticsBase(unittest.TestCase):
@@ -169,7 +169,7 @@ class AnalyticsBase(unittest.TestCase):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# UNIT — оркестрація start_async_analytics / _run_analytics_in_thread
+# UNIT — start_async_analytics / _run_analytics_in_thread orchestration
 # ═════════════════════════════════════════════════════════════════════════════
 
 class TestAsyncOrchestration(AnalyticsBase):
@@ -218,7 +218,7 @@ class TestAsyncOrchestration(AnalyticsBase):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# UNIT — маршрути: доступ + коди відповіді
+# UNIT — routes: access + response codes
 # ═════════════════════════════════════════════════════════════════════════════
 
 class TestAnalyticsRoutes(AnalyticsBase):
@@ -283,7 +283,7 @@ class TestAnalyticsRoutes(AnalyticsBase):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# INTEGRATION — guard / recovery / status на справжньому Postgres
+# INTEGRATION — guard / recovery / status against real Postgres
 # ═════════════════════════════════════════════════════════════════════════════
 
 CT_TEST_URI = os.environ.get('CT_TEST_DATABASE_URI', '')
@@ -295,8 +295,8 @@ INTEGRATION_AVAILABLE = CT_TEST_URI and not CT_TEST_URI.startswith('sqlite')
                     reason="CT_TEST_DATABASE_URI not set (Postgres required)")
 class TestAnalyticsGuardIntegration:
     """
-    Перевіряє PG-залежну логіку (ON CONFLICT, IS DISTINCT FROM) на реальному
-    calculation_log у тимчасовій схемі.
+    Exercises PG-specific logic (ON CONFLICT, IS DISTINCT FROM) against a real
+    calculation_log in a temporary schema.
     """
 
     @pytest.fixture(autouse=True)
@@ -359,14 +359,14 @@ class TestAnalyticsGuardIntegration:
             try_start_analytics_run, _finish_analytics_run)
         assert try_start_analytics_run(triggered_by=1) is True
         _finish_analytics_run('completed')
-        # після завершення — новий запуск дозволено
+        # after finishing, a new run is allowed
         assert try_start_analytics_run(triggered_by=1) is True
 
     def test_stuck_running_can_be_reacquired(self):
         from sqlalchemy import text
         from app.camera_traps.analytics_calculator import (
             try_start_analytics_run, ANALYTICS_STUCK_MINUTES)
-        # рядок 'running' зі старим started_at — застряг
+        # a 'running' row with an old started_at — stuck
         old = datetime.utcnow() - timedelta(minutes=ANALYTICS_STUCK_MINUTES + 5)
         with self._engine_scoped.begin() as c:
             c.execute(text("""
@@ -407,7 +407,7 @@ class TestAnalyticsGuardIntegration:
         assert set(data.keys()) >= {
             'status', 'started_at', 'last_calculated_at',
             'last_count', 'error_message'}
-        # _ensure_log_row створив рядок зі станом 'idle'
+        # _ensure_log_row created a row with status 'idle'
         assert data['status'] == 'idle'
 
     def test_finish_failed_records_error_message(self):
@@ -418,18 +418,18 @@ class TestAnalyticsGuardIntegration:
         row = self._status_row()
         assert row.status == 'failed'
         assert row.error_message == 'something broke'
-        # 'failed' НЕ оновлює час останнього успіху
+        # 'failed' does NOT update the last-success time
         assert row.last_calculated_at is None
 
     def test_finish_completed_sets_last_calculated_at(self):
         from app.camera_traps.analytics_calculator import (
             try_start_analytics_run, _finish_analytics_run)
         try_start_analytics_run(triggered_by=1)
-        # до завершення часу успіху ще нема
+        # before finishing there is no success time yet
         assert self._status_row().last_calculated_at is None
         _finish_analytics_run('completed')
         row = self._status_row()
         assert row.status == 'completed'
         assert row.error_message is None
-        # бейдж «Останній успішний перерахунок» отримує правдивий час
+        # the "Last successful recalculation" badge gets a real timestamp
         assert row.last_calculated_at is not None

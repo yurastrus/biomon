@@ -1,12 +1,12 @@
 """
-Тести імпорту деплойментів з Екселю (app/camera_traps/deployment_import.py).
+Tests for importing deployments from Excel (app/camera_traps/deployment_import.py).
 
-Покривають:
-  - коерсери (bool/int/year/camera_id, порожні/\xa0 -> None);
-  - матчинг локацій за округленими координатами;
-  - пропуск рядків без локації / без назви;
-  - інверсну семантику (data_usable -> qc_data_not_usable);
-  - ідемпотентність (повторний запуск оновлює, не дублює).
+Cover:
+  - coercers (bool/int/year/camera_id, empty/\xa0 -> None);
+  - location matching by rounded coordinates;
+  - skipping rows without a location / without a name;
+  - inverted semantics (data_usable -> qc_data_not_usable);
+  - idempotency (a repeat run updates rather than duplicates).
 """
 from datetime import date
 
@@ -19,7 +19,7 @@ from app.camera_traps.deployment_import import (
 from app.camera_traps.models import Deployment
 
 
-# ── коерсери ────────────────────────────────────────────────────────────────
+# ── coercers ──────────────────────────────────────────────────────────────────
 
 def test_coerce_bool_variants():
     assert coerce_bool('TRUE') is True
@@ -27,7 +27,7 @@ def test_coerce_bool_variants():
     assert coerce_bool(1) is True
     assert coerce_bool(0) is False
     assert coerce_bool(None) is None
-    assert coerce_bool('\xa0') is None  # нерозривний пробіл -> NA
+    assert coerce_bool('\xa0') is None  # non-breaking space -> NA
     with pytest.raises(ValueError):
         coerce_bool('maybe')
 
@@ -36,17 +36,17 @@ def test_coerce_int_and_year():
     assert coerce_int('75') == 75
     assert coerce_int(75.0) == 75
     assert coerce_int(None) is None
-    assert coerce_year('2023-2024') == 2023   # зимова кампанія -> стартовий рік
+    assert coerce_year('2023-2024') == 2023   # winter campaign -> start year
     assert coerce_year(2025) == 2025
 
 
 def test_coerce_camera_id_leading_zero_and_long():
-    assert coerce_camera_id(405) == '0405'      # доповнення нулями до 4
-    assert coerce_camera_id('12140') == '12140'  # 5-знач. валідний
+    assert coerce_camera_id(405) == '0405'      # zero-padded to 4 digits
+    assert coerce_camera_id('12140') == '12140'  # 5-digit, valid
     assert coerce_camera_id(None) is None
 
 
-# ── імпорт ──────────────────────────────────────────────────────────────────
+# ── import ────────────────────────────────────────────────────────────────────
 
 def _write_xlsx(tmp_path, rows):
     path = tmp_path / 'deployments.xlsx'
@@ -61,7 +61,7 @@ def test_import_matches_location_and_skips_unmatched(tmp_path, ct_session, make_
          'study_year': 2025, 'study_season': 'Summer', 'camera_id': 405,
          'start_date': '2025-07-01', 'end_date': '2025-09-05',
          'qc_data_not_usable': False},
-        {'deployment_id': 'D2', 'latitude': 10.0, 'longitude': 10.0,  # нема локації
+        {'deployment_id': 'D2', 'latitude': 10.0, 'longitude': 10.0,  # no location
          'study_year': 2025, 'qc_data_not_usable': True},
     ])
 
@@ -78,7 +78,7 @@ def test_import_matches_location_and_skips_unmatched(tmp_path, ct_session, make_
 
 def test_import_inverted_semantics(tmp_path, ct_session, make_ct_location):
     make_ct_location(latitude=48.5, longitude=24.5)
-    # data_usable=TRUE означає придатні -> qc_data_not_usable=False
+    # data_usable=TRUE means usable -> qc_data_not_usable=False
     xlsx = _write_xlsx(tmp_path, [
         {'deployment_id': 'D1', 'latitude': 48.5, 'longitude': 24.5, 'data_usable': True},
     ])
@@ -98,7 +98,7 @@ def test_import_skips_row_without_name(tmp_path, ct_session, make_ct_location):
 
 
 def test_import_no_gps_deployment_without_location(tmp_path, ct_session):
-    """Порожній GPS -> деплоймент імпортується з location_id=NULL (для QC-аналізу)."""
+    """Empty GPS -> deployment is imported with location_id=NULL (for QC analysis)."""
     xlsx = _write_xlsx(tmp_path, [
         {'deployment_id': 'D1', 'latitude': None, 'longitude': None, 'study_year': 2025},
     ])
@@ -113,7 +113,7 @@ def test_import_no_gps_deployment_without_location(tmp_path, ct_session):
 
 
 def test_import_creates_location_with_institution(tmp_path, ct_session):
-    """create_missing_locations: нова локація + зв'язок установи за назвою парку."""
+    """create_missing_locations: new location + institution link by park name."""
     from app.camera_traps.models import Location, location_institutions
     xlsx = _write_xlsx(tmp_path, [
         {'deployment_id': 'D9', 'latitude': 48.9, 'longitude': 24.9,

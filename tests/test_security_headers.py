@@ -1,8 +1,8 @@
-"""SEC-010: тести для Flask-Talisman security headers + CSP report endpoint.
+"""SEC-010: tests for Flask-Talisman security headers + CSP report endpoint.
 
-Talisman у `create_app` пропускається коли TESTING=True (щоб не ламати
-існуючі тести). Тому тут створюємо власний модульний `app` фікстуру
-з ручною ініціалізацією Talisman через `_init_talisman`.
+Talisman is skipped in `create_app` when TESTING=True (so as not to break
+existing tests). So here we create our own module-scoped `app` fixture
+with manual Talisman initialization via `_init_talisman`.
 """
 import logging
 
@@ -11,13 +11,13 @@ import pytest
 
 @pytest.fixture(scope='module')
 def talisman_app(_ct_engine_patch):
-    """Окрема Flask-app instance з активованим Talisman."""
+    """Separate Flask-app instance with Talisman enabled."""
     from app import create_app, _init_talisman
     from app.extensions import db
 
     flask_app = create_app('testing')
     flask_app.config['WTF_CSRF_ENABLED'] = False
-    # Talisman пропустився в create_app (TESTING=True) — застосовуємо вручну
+    # Talisman was skipped in create_app (TESTING=True) -- apply it manually
     _init_talisman(flask_app)
     with flask_app.app_context():
         db.create_all()
@@ -32,9 +32,9 @@ def talisman_client(talisman_app):
 # ── Security headers (Talisman defaults + CSP) ──────────────────────────────
 
 def test_csp_report_only_header_present(talisman_client):
-    """Talisman повертає Content-Security-Policy-Report-Only, не enforce."""
+    """Talisman returns Content-Security-Policy-Report-Only, not enforce."""
     resp = talisman_client.get('/')
-    # У режимі report-only заголовок саме `...-Report-Only`, а не `Content-Security-Policy`
+    # In report-only mode the header is `...-Report-Only`, not `Content-Security-Policy`
     assert 'Content-Security-Policy-Report-Only' in resp.headers
     csp = resp.headers['Content-Security-Policy-Report-Only']
     assert "default-src 'self'" in csp
@@ -42,7 +42,7 @@ def test_csp_report_only_header_present(talisman_client):
 
 
 def test_strict_transport_security_present(talisman_client):
-    # HSTS видається тільки над HTTPS — імітуємо TLS-запит
+    # HSTS is only issued over HTTPS -- simulate a TLS request
     resp = talisman_client.get('/', base_url='https://localhost')
     assert 'Strict-Transport-Security' in resp.headers
     assert 'max-age=31536000' in resp.headers['Strict-Transport-Security']
@@ -88,15 +88,15 @@ def test_csp_report_endpoint_handles_malformed_json(talisman_client, caplog):
             data=b'not-a-json{{{',
             content_type='application/csp-report',
         )
-    # silent=True + or {} → endpoint все одно повертає 204
+    # silent=True + or {} -> the endpoint still returns 204
     assert resp.status_code == 204
-    # Має бути warning з порожнім payload {}
+    # There must be a warning with an empty payload {}
     assert any('CSP violation' in rec.message for rec in caplog.records)
 
 
 def test_csp_report_endpoint_rate_limited(talisman_app, talisman_client):
     """101+ POST → 429 (rate-limit 100/hour)."""
-    # Reset limiter storage щоб не залежати від попередніх тестів
+    # Reset limiter storage so we don't depend on previous tests
     from app.extensions import limiter
     limiter.reset()
 

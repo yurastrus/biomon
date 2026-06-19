@@ -1,16 +1,16 @@
 """
 SEC-003: Auth coverage for SDM blueprint routes.
 
-Перевіряє що всі 6 SDM-маршрутів захищені:
-  - анонімний → 302 redirect до login
-  - authenticated analyst → 403 на /enqueue (лише admin/manager)
-  - authenticated admin → не отримує 302/403/401 на /
+Verifies that all 6 SDM routes are protected:
+  - anonymous -> 302 redirect to login
+  - authenticated analyst -> 403 on /enqueue (admin/manager only)
+  - authenticated admin -> does not get 302/403/401 on /
 """
 import pytest
 from unittest.mock import patch, MagicMock
 
 
-# Патчимо SDM-адаптери щоб не намагатись підключитись до БД
+# Patch the SDM adapters so we don't try to connect to the DB
 _ADAPTER_PATCHES = [
     patch('app.sdm.routes._species_list', return_value=[]),
     patch('app.sdm.routes._recent_jobs', return_value=[]),
@@ -20,7 +20,7 @@ _ADAPTER_PATCHES = [
 
 @pytest.fixture(autouse=True)
 def _patch_sdm_adapters():
-    """Замінюємо DB-хелпери SDM на стаби для всіх тестів у цьому модулі."""
+    """Replace the SDM DB helpers with stubs for all tests in this module."""
     started = [p.start() for p in _ADAPTER_PATCHES]
     yield
     for p in _ADAPTER_PATCHES:
@@ -79,7 +79,7 @@ def test_authenticated_admin_can_view_dashboard(auth_client):
 
 
 def test_authenticated_analyst_cannot_enqueue(auth_client):
-    """analyst має доступ до dashboard, але НЕ до /enqueue (тільки admin/manager)."""
+    """analyst has access to the dashboard but NOT to /enqueue (admin/manager only)."""
     cl = auth_client(role='analyst')
     resp = cl.post('/uk/sdm/enqueue', data={'species_code': 'Vulpes_vulpes'})
     assert resp.status_code == 403, (

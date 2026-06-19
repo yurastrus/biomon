@@ -751,7 +751,7 @@ class TestCtUpdateServiceVisit(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 302)
 
     def test_manager_can_edit_own_visit_with_access(self):
-        """Менеджер редагує свій запис, локація доступна."""
+        """Manager edits their own record, location is accessible."""
         visit = _make_visit(id=1, user_id=self.manager.id)
         session = _make_update_visit_session(visit, has_access=True)
         resp = self._post(self._url(1), self._valid_payload(),
@@ -760,7 +760,7 @@ class TestCtUpdateServiceVisit(CtManageLocationsBase):
         self.assertTrue(resp.get_json()['success'])
 
     def test_manager_cannot_edit_others_visit(self):
-        """Менеджер не може редагувати чужий запис → 403."""
+        """Manager cannot edit someone else's record -> 403."""
         visit = _make_visit(id=2, user_id=self.admin.id)
         session = _make_update_visit_session(visit, has_access=True)
         resp = self._post(self._url(2), self._valid_payload(),
@@ -768,7 +768,7 @@ class TestCtUpdateServiceVisit(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_manager_cannot_edit_own_visit_if_location_not_accessible(self):
-        """Власний запис, але локація не в установах менеджера → 403."""
+        """Own record, but location not in the manager's institutions -> 403."""
         visit = _make_visit(id=3, user_id=self.manager.id)
         session = _make_update_visit_session(visit, has_access=False)
         resp = self._post(self._url(3), self._valid_payload(),
@@ -776,13 +776,13 @@ class TestCtUpdateServiceVisit(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_can_edit_any_visit(self):
-        """Адмін редагує будь-який запис без перевірки установи."""
+        """Admin edits any record without an institution check."""
         visit = _make_visit(id=3, user_id=self.manager.id)
         session = _make_update_visit_session(visit)
         resp = self._post(self._url(3), self._valid_payload(),
                           user_id=self.admin.id, session=session)
         self.assertEqual(resp.status_code, 200)
-        # Адмін не викликає execute() для перевірки установи
+        # Admin does not call execute() for the institution check
         session.execute.assert_not_called()
 
     def test_visit_not_found_returns_404(self):
@@ -817,7 +817,7 @@ class TestCtUpdateServiceVisit(CtManageLocationsBase):
         session.commit.assert_called_once()
 
     def test_manager2_cannot_edit_manager1_visit(self):
-        """Різні менеджери захищені один від одного."""
+        """Different managers are protected from each other."""
         visit = _make_visit(id=10, user_id=self.manager.id)
         session = _make_update_visit_session(visit, has_access=True)
         resp = self._post(self._url(10), self._valid_payload(),
@@ -826,11 +826,11 @@ class TestCtUpdateServiceVisit(CtManageLocationsBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 8. API CREATE LOCATION — MANAGER+ З ПЕРЕВІРКОЮ УСТАНОВИ
+# 8. API CREATE LOCATION — MANAGER+ WITH INSTITUTION CHECK
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestCtCreateLocation(CtManageLocationsBase):
-    """POST /camera-traps/api/location/create — тепер manager+ з установою."""
+    """POST /camera-traps/api/location/create — now manager+ with institution."""
 
     URL = '/uk/camera-traps/api/location/create'
 
@@ -854,7 +854,7 @@ class TestCtCreateLocation(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 302)
 
     def test_manager_can_create_with_own_institution(self):
-        """Менеджер може створити локацію для своєї установи."""
+        """Manager can create a location for their own institution."""
         session = _make_create_location_session()
         mock_loc = MagicMock()
         mock_loc.id = 42
@@ -874,7 +874,7 @@ class TestCtCreateLocation(CtManageLocationsBase):
         self.assertEqual(resp.get_json()['location_id'], 42)
 
     def test_manager_cannot_use_foreign_institution(self):
-        """Менеджер А не може призначити inst_b → 403."""
+        """Manager A cannot assign inst_b -> 403."""
         session = _make_create_location_session()
         _login(self.client, self.manager.id)
         with patch('app.camera_traps.routes.get_ct_session', return_value=session), \
@@ -887,7 +887,7 @@ class TestCtCreateLocation(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_manager_can_create_without_institution(self):
-        """Менеджер може створити локацію без установи."""
+        """Manager can create a location without an institution."""
         session = _make_create_location_session()
         mock_loc = MagicMock()
         mock_loc.id = 55
@@ -905,7 +905,7 @@ class TestCtCreateLocation(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 201)
 
     def test_admin_can_create_with_any_institution(self):
-        """Адмін може призначити будь-яку установу."""
+        """Admin can assign any institution."""
         session = _make_create_location_session()
         mock_loc = MagicMock()
         mock_loc.id = 99
@@ -952,11 +952,11 @@ class TestCtCreateLocation(CtManageLocationsBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 9. API UPDATE LOCATION — MANAGER+ З ПЕРЕВІРКОЮ УСТАНОВИ
+# 9. API UPDATE LOCATION — MANAGER+ WITH INSTITUTION CHECK
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestCtUpdateLocation(CtManageLocationsBase):
-    """POST /camera-traps/api/update-location/<id> — тепер manager+ з установою."""
+    """POST /camera-traps/api/update-location/<id> — now manager+ with institution."""
 
     def _url(self, location_id=1):
         return f'/uk/camera-traps/api/update-location/{location_id}'
@@ -980,7 +980,7 @@ class TestCtUpdateLocation(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 302)
 
     def test_manager_can_update_accessible_location(self):
-        """Менеджер оновлює локацію своєї установи."""
+        """Manager updates a location of their own institution."""
         session = _make_update_location_session(has_access=True)
         resp = self._post(self._url(), self._valid_payload(),
                           user_id=self.manager.id, session=session)
@@ -988,7 +988,7 @@ class TestCtUpdateLocation(CtManageLocationsBase):
         self.assertTrue(resp.get_json()['success'])
 
     def test_manager_cannot_update_inaccessible_location(self):
-        """Локація не в установах менеджера → 403."""
+        """Location not in the manager's institutions -> 403."""
         session = _make_update_location_session(has_access=False)
         resp = self._post(self._url(999), self._valid_payload(),
                           user_id=self.manager.id, session=session)
@@ -1001,7 +1001,7 @@ class TestCtUpdateLocation(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_can_update_any_location(self):
-        """Адмін оновлює без перевірки установи."""
+        """Admin updates without an institution check."""
         session = _make_update_location_session(has_access=True)
         resp = self._post(self._url(), self._valid_payload(),
                           user_id=self.admin.id, session=session)

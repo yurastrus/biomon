@@ -1,10 +1,10 @@
 """
-Idea 6 (#19): прапорець «на повторний розгляд» для серій CT.
+Idea 6 (#19): "needs re-review" flag for CT series.
 
-flag/unflag endpoints, admin-список, доступ. Flag — організаційна позначка
-(НЕ змінює status, НЕ виключає з аналітики).
+flag/unflag endpoints, admin list, access. Flag is an organizational marker
+(does NOT change status, does NOT exclude from analytics).
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_ct_flag_review.py -v
 """
 from unittest.mock import patch
@@ -91,12 +91,12 @@ def test_flagged_list_requires_admin(auth_client, db_session, ct_route_session):
 
 def test_lang_code_declared_at_top_level_in_identification_template():
     """
-    Регрес-інваріант: переконатись, що `const langCode` оголошено рівно один раз
-    і що воно НЕ знаходиться всередині обробника '#fullsize-btn' чи '#flag-btn'.
+    Regression invariant: ensure `const langCode` is declared exactly once
+    and that it is NOT inside the '#fullsize-btn' or '#flag-btn' handler.
 
-    Першопричина баґу: langCode був оголошений через `const` всередині
-    блоку '#fullsize-btn'.on('click'), тому обробник '#flag-btn' не мав
-    до нього доступу → ReferenceError → fetch на /flag не відправлявся.
+    Root cause of the bug: langCode was declared with `const` inside the
+    '#fullsize-btn'.on('click') block, so the '#flag-btn' handler had no
+    access to it -> ReferenceError -> fetch to /flag was never sent.
     """
     import re, pathlib
 
@@ -105,31 +105,31 @@ def test_lang_code_declared_at_top_level_in_identification_template():
     ).parent.parent / 'app' / 'camera_traps' / 'templates' / 'identification.html'
     text = template.read_text(encoding='utf-8')
 
-    # 1. Рівно одне оголошення const langCode у всьому файлі.
+    # 1. Exactly one const langCode declaration in the whole file.
     declarations = re.findall(r'const langCode\s*=', text)
     assert len(declarations) == 1, (
-        f"Очікується 1 оголошення `const langCode`, знайдено: {len(declarations)}"
+        f"Expected 1 `const langCode` declaration, found: {len(declarations)}"
     )
 
-    # 2. Між початком '#fullsize-btn'.on('click' і наступним відповідним `});`
-    #    не повинно бути `const langCode`.
+    # 2. Between the start of '#fullsize-btn'.on('click' and the matching `});`
+    #    there must be no `const langCode`.
     fullsize_match = re.search(r"fullsize-btn['\"]?\)\.on\(", text)
-    assert fullsize_match, "#fullsize-btn обробник не знайдено"
+    assert fullsize_match, "#fullsize-btn handler not found"
 
-    # Шукаємо наступний `});` після початку обробника.
+    # Find the next `});` after the handler start.
     after_fullsize = text[fullsize_match.start():]
     closing_match = re.search(r'\}\);', after_fullsize)
-    assert closing_match, "Кінець обробника #fullsize-btn не знайдено"
+    assert closing_match, "End of #fullsize-btn handler not found"
 
     fullsize_body = after_fullsize[:closing_match.end()]
     assert 'const langCode' not in fullsize_body, (
-        "const langCode знайдено всередині обробника #fullsize-btn — баґ повернувся!"
+        "const langCode found inside the #fullsize-btn handler — the bug is back!"
     )
 
-    # 3. `const langCode` стоїть ДО позиції обробника #fullsize-btn.
+    # 3. `const langCode` comes BEFORE the #fullsize-btn handler position.
     decl_match = re.search(r'const langCode\s*=', text)
     assert decl_match.start() < fullsize_match.start(), (
-        "const langCode оголошено ПІСЛЯ обробника #fullsize-btn, а не на top-level"
+        "const langCode declared AFTER the #fullsize-btn handler, not at top level"
     )
 
 
@@ -137,22 +137,22 @@ def test_flag_then_appears_in_admin_flagged_list(auth_client, db_session,
                                                   ct_route_session,
                                                   make_ct_observation):
     """
-    Наскрізний бекенд-регрес (happy path):
-      1. Admin (ієрархічно включає ct_verifier) шле POST /flag з нотаткою → 302.
-      2. Observation.flagged стає True, flag_note збережено в CT-БД.
-      3. Той самий admin клієнт дістає GET /admin/flagged → 200,
-         нотатка присутня в HTML.
-    Перевіряє зв'язок між endpoint-ом прапорця та чергою перевірки.
-    Використовується ОДИН клієнт з роллю admin (яка через ієрархію включає
-    ct_verifier), щоб уникнути проблем з ізоляцією між двома test_client.
+    End-to-end backend regression (happy path):
+      1. Admin (hierarchically includes ct_verifier) sends POST /flag with a note -> 302.
+      2. Observation.flagged becomes True, flag_note saved in the CT DB.
+      3. The same admin client does GET /admin/flagged -> 200,
+         the note is present in the HTML.
+    Verifies the link between the flag endpoint and the review queue.
+    Uses ONE client with the admin role (which via hierarchy includes
+    ct_verifier) to avoid isolation issues between two test_client instances.
     """
     obs = make_ct_observation()
     note = 'наскрізний регрес-тест нотатка'
 
-    # Admin ієрархічно включає ct_verifier, тому може виконувати /flag.
+    # Admin hierarchically includes ct_verifier, so it can perform /flag.
     cl = auth_client(role='admin')
 
-    # -- крок 1: flag серії через POST --
+    # -- step 1: flag the series via POST --
     resp = cl.post(
         f'/uk/camera-traps/observation/{obs.id}/flag',
         data={'note': note},
@@ -161,14 +161,14 @@ def test_flag_then_appears_in_admin_flagged_list(auth_client, db_session,
         f"Очікується redirect після /flag, отримано {resp.status_code}"
     )
 
-    # -- крок 2: перевірка стану в CT-БД --
+    # -- step 2: check the state in the CT DB --
     ct_route_session.refresh(obs)
     assert obs.flagged is True, "Observation.flagged має бути True після POST /flag"
     assert obs.flag_note == note, (
         f"Очікується flag_note={note!r}, отримано {obs.flag_note!r}"
     )
 
-    # -- крок 3: той самий admin клієнт бачить запис у черзі перевірки --
+    # -- step 3: the same admin client sees the entry in the review queue --
     resp_list = cl.get('/uk/camera-traps/admin/flagged')
     assert resp_list.status_code == 200, (
         f"GET /admin/flagged має повернути 200, отримано {resp_list.status_code}"
@@ -181,8 +181,8 @@ def test_flag_then_appears_in_admin_flagged_list(auth_client, db_session,
 def test_flagged_list_has_identify_link(auth_client, db_session,
                                         ct_route_session, make_ct_observation):
     """
-    Сторінка /admin/flagged має містити посилання «Визначити» для кожної
-    зафлагованої серії, що веде на /identify?start_obs_id=<id>.
+    The /admin/flagged page must contain an "Identify" link for each
+    flagged series, pointing to /identify?start_obs_id=<id>.
     """
     obs = make_ct_observation()
     obs.flagged = True
@@ -194,10 +194,10 @@ def test_flagged_list_has_identify_link(auth_client, db_session,
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
 
-    # Кнопка «Визначити» присутня
+    # The «Визначити» button is present
     assert 'Визначити' in html, "Кнопка «Визначити» не знайдена на сторінці /admin/flagged"
 
-    # Посилання веде на /identify з правильним start_obs_id
+    # The link points to /identify with the correct start_obs_id
     expected_url = f'/uk/camera-traps/identify?start_obs_id={obs.id}'
     assert expected_url in html, (
         f"Посилання {expected_url!r} не знайдено на сторінці /admin/flagged. "
@@ -212,8 +212,8 @@ def test_next_observation_api_accepts_start_obs_id(auth_client, db_session,
                                                     make_ct_photo):
     """
     GET /api/next-observation-for-identification?start_obs_id=<id>
-    повертає 200 і observation_id == переданому id.
-    Локація публічна (visibility_level=0), тому доступна ct_verifier без установи.
+    returns 200 and observation_id == the passed id.
+    The location is public (visibility_level=0), so accessible to ct_verifier without an institution.
     """
     loc = make_ct_location(visibility_level=0)
     obs = make_ct_observation(location=loc)

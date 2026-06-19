@@ -2,7 +2,7 @@
 Idea 3: storage/batch health metrics in the CT admin panel.
 
 admin_panel() pulls in get_cleanup_statistics() + get_batch_statistics()
-and passes them to admin.html in a new "Сховище та батчі" section.
+and passes them to admin.html in a new "Storage and batches" section.
 We verify: number rendering, graceful degradation on error, access.
 
 Run:

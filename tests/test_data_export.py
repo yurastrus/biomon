@@ -1,10 +1,10 @@
 """
-Тести для app/camera_traps/data_export.py
+Tests for app/camera_traps/data_export.py
 
-Запуск:
+Run:
     cd biomon
     venv/Scripts/python -m pytest tests/test_data_export.py -v
-    або:
+    or:
     venv/Scripts/python -m unittest tests.test_data_export -v
 """
 import unittest
@@ -13,7 +13,7 @@ from datetime import datetime
 
 
 def _make_mock_row(**kwargs):
-    """Повертає mock-рядок результату БД."""
+    """Returns a mock DB result row."""
     defaults = {
         'observation_id': 42,
         'scientific_name': 'Canis lupus',
@@ -38,8 +38,8 @@ def _make_mock_row(**kwargs):
 
 def _make_engine_mock(count_result=1, rows=None):
     """
-    Будує повний mock для engine.connect() як context manager.
-    Повертає (mock_engine, mock_conn).
+    Builds a full mock for engine.connect() as a context manager.
+    Returns (mock_engine, mock_conn).
     """
     if rows is None:
         rows = [_make_mock_row()]
@@ -65,10 +65,10 @@ def _make_engine_mock(count_result=1, rows=None):
 
 
 class TestGetCtOccurrenceDataStructure(unittest.TestCase):
-    """Перевіряє структуру та вміст результату."""
+    """Checks the structure and content of the result."""
 
     def setUp(self):
-        # Flask app context потрібен для current_app та User.query
+        # Flask app context is needed for current_app and User.query
         from app import create_app
         self.app = create_app('testing')
         self.ctx = self.app.app_context()
@@ -93,7 +93,7 @@ class TestGetCtOccurrenceDataStructure(unittest.TestCase):
         self.assertEqual(len(result['data']), 1)
 
     def test_occurrence_has_required_dwc_fields(self):
-        """Перевіряє наявність обов'язкових Darwin Core полів."""
+        """Checks for the presence of required Darwin Core fields."""
         mock_engine, _ = _make_engine_mock()
 
         with patch('app.camera_traps.data_export.get_ct_engine', return_value=mock_engine), \
@@ -126,7 +126,7 @@ class TestGetCtOccurrenceDataStructure(unittest.TestCase):
         self.assertIn(':42', occ['occurrenceID'])  # observation_id=42
 
     def test_identifier_names_resolved_from_user_map(self):
-        """Перевіряє що identifier_user_ids перетворюється на імена."""
+        """Checks that identifier_user_ids is resolved to names."""
         row = _make_mock_row(identifier_user_ids='1|2')
         mock_engine, _ = _make_engine_mock(rows=[row])
 
@@ -149,7 +149,7 @@ class TestGetCtOccurrenceDataStructure(unittest.TestCase):
         self.assertIn('Леся Українка', identified_by)
 
     def test_single_word_species_name_no_epithet(self):
-        """Якщо scientific_name з одного слова — specificEpithet має бути None."""
+        """If scientific_name is a single word — specificEpithet must be None."""
         row = _make_mock_row(scientific_name='Animalia')
         mock_engine, _ = _make_engine_mock(rows=[row])
 
@@ -163,7 +163,7 @@ class TestGetCtOccurrenceDataStructure(unittest.TestCase):
         self.assertIsNone(result['data'][0]['specificEpithet'])
 
     def test_limit_applied(self):
-        """Перевіряє що LIMIT додається до запиту при передачі limit."""
+        """Checks that LIMIT is added to the query when limit is passed."""
         mock_engine, mock_conn = _make_engine_mock()
 
         with patch('app.camera_traps.data_export.get_ct_engine', return_value=mock_engine), \
@@ -173,7 +173,7 @@ class TestGetCtOccurrenceDataStructure(unittest.TestCase):
             from app.camera_traps.data_export import get_ct_occurrence_data
             get_ct_occurrence_data({'start_date': '2024-01-01', 'end_date': '2024-12-31'}, limit=10)
 
-        # Другий виклик execute — це data query. Перевіряємо що params містить 'limit'.
+        # The second execute call is the data query. Check that params contains 'limit'.
         second_call_params = mock_conn.execute.call_args_list[1][0][1]
         self.assertIn('limit', second_call_params)
         self.assertEqual(second_call_params['limit'], 10)
@@ -181,8 +181,8 @@ class TestGetCtOccurrenceDataStructure(unittest.TestCase):
 
 class TestGetCtOccurrenceDataConnectionLifecycle(unittest.TestCase):
     """
-    Ключові тести: перевіряє що з'єднання завжди закривається.
-    Саме це виправляє баг з 'idle in transaction'.
+    Key tests: verify that the connection is always closed.
+    This is exactly what fixes the 'idle in transaction' bug.
     """
 
     def setUp(self):
@@ -195,7 +195,7 @@ class TestGetCtOccurrenceDataConnectionLifecycle(unittest.TestCase):
         self.ctx.pop()
 
     def test_connection_closed_on_success(self):
-        """З'єднання закривається після успішного виконання."""
+        """The connection is closed after successful execution."""
         mock_engine, _ = _make_engine_mock()
 
         with patch('app.camera_traps.data_export.get_ct_engine', return_value=mock_engine), \
@@ -205,11 +205,11 @@ class TestGetCtOccurrenceDataConnectionLifecycle(unittest.TestCase):
             from app.camera_traps.data_export import get_ct_occurrence_data
             get_ct_occurrence_data({'start_date': '2024-01-01', 'end_date': '2024-12-31'})
 
-        # __exit__ context manager'а має бути викликаний (це закриває з'єднання)
+        # The context manager's __exit__ must be called (this closes the connection)
         mock_engine.connect.return_value.__exit__.assert_called_once()
 
     def test_connection_closed_on_db_error(self):
-        """З'єднання закривається навіть якщо БД кинула помилку."""
+        """The connection is closed even if the DB raised an error."""
         mock_conn = MagicMock()
         mock_conn.execute.side_effect = Exception("Connection refused")
 
@@ -225,11 +225,11 @@ class TestGetCtOccurrenceDataConnectionLifecycle(unittest.TestCase):
             with self.assertRaises(Exception):
                 get_ct_occurrence_data({'start_date': '2024-01-01', 'end_date': '2024-12-31'})
 
-        # Навіть при помилці — __exit__ має бути викликаний
+        # Even on error — __exit__ must be called
         mock_ctx.__exit__.assert_called_once()
 
     def test_uses_engine_not_session(self):
-        """Перевіряє що функція використовує get_ct_engine, а не get_ct_session."""
+        """Checks that the function uses get_ct_engine, not get_ct_session."""
         mock_engine, _ = _make_engine_mock()
 
         with patch('app.camera_traps.data_export.get_ct_engine', return_value=mock_engine) as mock_get_engine, \
@@ -240,16 +240,16 @@ class TestGetCtOccurrenceDataConnectionLifecycle(unittest.TestCase):
             get_ct_occurrence_data({'start_date': '2024-01-01', 'end_date': '2024-12-31'})
 
         mock_get_engine.assert_called_once()
-        # get_ct_session не повинна викликатись — її вже немає в імпортах
+        # get_ct_session must not be called — it is no longer in the imports
         mock_engine.connect.assert_called_once()
 
 
 class TestQcFiltering(unittest.TestCase):
-    """QC-фільтрація: перевіряє побудову SQL і логіку виключення.
+    """QC filtering: checks SQL construction and exclusion logic.
 
-    Оскільки engine замоканий, тести перевіряють структуру згенерованого SQL.
-    Це достатньо для верифікації правильності умов виключення — реальна
-    поведінка БД гарантується коректністю SQL.
+    Since the engine is mocked, the tests check the structure of the generated SQL.
+    This is enough to verify the correctness of the exclusion conditions — the actual
+    DB behavior is guaranteed by the SQL being correct.
     """
 
     def setUp(self):
@@ -272,29 +272,29 @@ class TestQcFiltering(unittest.TestCase):
             mock_user.query.filter.return_value.all.return_value = []
             from app.camera_traps.data_export import get_ct_occurrence_data
             get_ct_occurrence_data(base)
-        # Перший виклик execute — це count-запит, він містить повну BaseData CTE.
+        # The first execute call is the count query; it contains the full BaseData CTE.
         count_sql = str(mock_conn.execute.call_args_list[0][0][0])
         return count_sql
 
-    # ── 1. Обраний прапорець → SQL містить NOT EXISTS ──────────────────────────
+    # ── 1. Selected flag → SQL contains NOT EXISTS ─────────────────────────────
     def test_flag_raised_generates_not_exists(self):
         sql = self._run(['qc_non_functional'])
         self.assertIn('NOT EXISTS', sql)
         self.assertIn('qc_non_functional = TRUE', sql)
 
-    # ── 2. Без жодного прапорця → NOT EXISTS відсутній (orphan-записи проходять)
+    # ── 2. No flags → no NOT EXISTS (orphan records pass through)
     def test_no_flags_no_not_exists(self):
         sql = self._run([])
         self.assertNotIn('NOT EXISTS', sql)
 
-    # ── 3. Прапорець є, але = FALSE → умова NOT EXISTS не спрацьовує для нього
-    #       (це забезпечує SQL-синтаксис: d_qc.flag = TRUE)
-    #       Перевіряємо: при вказаному прапорці умова точно порівнює з TRUE
+    # ── 3. Flag present but = FALSE → the NOT EXISTS condition does not trigger for it
+    #       (the SQL syntax d_qc.flag = TRUE ensures this)
+    #       Check: with a given flag the condition compares exactly against TRUE
     def test_boolean_flag_uses_true_comparison(self):
         sql = self._run(['qc_stolen'])
         self.assertIn('qc_stolen = TRUE', sql)
 
-    # ── 4. OR-логіка: 2+ прапорці — один NOT EXISTS з OR-умовами ──────────────
+    # ── 4. OR logic: 2+ flags — one NOT EXISTS with OR conditions ──────────────
     def test_or_logic_single_not_exists_block(self):
         sql = self._run(['qc_non_functional', 'qc_stolen'])
         self.assertEqual(sql.count('NOT EXISTS'), 1,
@@ -303,29 +303,29 @@ class TestQcFiltering(unittest.TestCase):
         self.assertIn('qc_stolen = TRUE', sql)
         self.assertIn(' OR ', sql)
 
-    # ── 5. Кілька розгортань → покривається EXISTS (достатньо одного «поганого»)
-    #       Перевіряємо, що у WHERE є тільки EXISTS (не JOIN), тобто
-    #       логіка «OR = EXCLUDED» реалізована через EXISTS, а не через INNER JOIN.
+    # ── 5. Multiple deployments → covered by EXISTS (one "bad" one is enough)
+    #       Check that WHERE has only EXISTS (not JOIN), i.e. the
+    #       "OR = EXCLUDED" logic is implemented via EXISTS, not via INNER JOIN.
     def test_exists_not_join_approach(self):
         sql = self._run(['qc_data_not_usable'])
         self.assertIn('EXISTS', sql)
         self.assertNotIn('JOIN deployments', sql.upper())
 
-    # ── 6. Часова межа: перетин по даті вбудований в умову EXISTS ─────────────
+    # ── 6. Time boundary: date overlap is built into the EXISTS condition ──────
     def test_date_overlap_condition_in_exists(self):
         sql = self._run(['qc_hardware_issue'])
         self.assertIn('series_start_time', sql)
         self.assertIn('start_date', sql)
         self.assertIn('end_date', sql)
 
-    # ── 7. Жодна галочка → результат ідентичний запиту без qc_exclude (регресія)
+    # ── 7. No checkbox → result identical to a query without qc_exclude (regression)
     def test_empty_qc_identical_to_no_qc_key(self):
         sql_no_key  = self._run(None)
         sql_empty   = self._run([])
         self.assertEqual(sql_no_key, sql_empty,
                          "Порожній qc_exclude має давати той самий SQL, що й відсутній ключ")
 
-    # ── 8. Preview і download — однакова QC-логіка ────────────────────────────
+    # ── 8. Preview and download — identical QC logic ───────────────────────────
     def test_preview_and_download_same_qc_sql(self):
         flags = ['qc_non_functional', 'qc_data_not_usable']
 
@@ -350,12 +350,12 @@ class TestQcFiltering(unittest.TestCase):
         self.assertEqual(sql_preview, sql_download,
                          "Preview і download повинні генерувати однаковий count-SQL при однакових фільтрах")
 
-    # ── Безпека: невідомий прапорець ігнорується (SQL injection whitelist) ─────
+    # ── Security: unknown flag is ignored (SQL injection whitelist) ────────────
     def test_invalid_flag_ignored(self):
         sql = self._run(["malicious'; DROP TABLE deployments; --"])
         self.assertNotIn('NOT EXISTS', sql)
 
-    # ── TEXT-поле qc_local_datetime_issue: умова IS NOT NULL AND <> '' ─────────
+    # ── TEXT field qc_local_datetime_issue: condition IS NOT NULL AND <> '' ────
     def test_text_field_uses_is_not_null_condition(self):
         sql = self._run(['qc_local_datetime_issue'])
         self.assertIn('NOT EXISTS', sql)

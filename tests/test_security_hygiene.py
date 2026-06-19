@@ -1,13 +1,13 @@
 """
-SEC Phase 2: code hygiene — regression-тести (SEC-011 + SEC-020).
+SEC Phase 2: code hygiene -- regression tests (SEC-011 + SEC-020).
 
-SEC-011: unexpected exceptions у JSON API не повинні віддавати клієнту
-         str(exc) (DB schema, internal paths). Відповідь — generic,
-         повна інформація лишається у логах.
-SEC-020: embed JSON у <script> через |tojson (escape `<` → \\u003c),
-         а не json.dumps + |safe (XSS якщо name містить </script>).
+SEC-011: unexpected exceptions in the JSON API must not return str(exc)
+         to the client (DB schema, internal paths). The response is generic,
+         full information stays in the logs.
+SEC-020: embed JSON in <script> via |tojson (escape `<` -> \\u003c),
+         not json.dumps + |safe (XSS if name contains </script>).
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_security_hygiene.py -v
 """
 import io
@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Текст, що імітує leak внутрішньої інформації (схема БД)
+# Text that simulates a leak of internal information (DB schema)
 LEAKY = 'relation "secret_internal_table" does not exist'
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -27,9 +27,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # ════════════════════════════════════════════════════════════════════════════
 
 def test_sdm_api_error_returns_generic_no_schema_leak(auth_client):
-    """GET /sdm/api/predictions: DB-помилка → 500 + generic, без схеми БД."""
+    """GET /sdm/api/predictions: DB error -> 500 + generic, no DB schema."""
     cl = auth_client(role='admin')
-    import app.sdm  # noqa: F401 — додає корінь сабмодуля у sys.path (adapters)
+    import app.sdm  # noqa: F401 -- adds the submodule root to sys.path (adapters)
     with patch('adapters.biomon.sdm_connection', side_effect=Exception(LEAKY)):
         resp = cl.get('/uk/sdm/api/predictions?species=Vulpes_vulpes')
 
@@ -39,7 +39,7 @@ def test_sdm_api_error_returns_generic_no_schema_leak(auth_client):
 
 
 def test_pam_yearly_trends_table_error_returns_generic(client):
-    """GET /api/pam/yearly-trends-table: DB-помилка → 500 + generic."""
+    """GET /api/pam/yearly-trends-table: DB error -> 500 + generic."""
     with patch('app.pam.routes.get_pam_db_connection',
                side_effect=Exception(LEAKY)):
         resp = client.get(
@@ -51,8 +51,8 @@ def test_pam_yearly_trends_table_error_returns_generic(client):
 
 
 def test_pam_import_api_unexpected_error_returns_generic(auth_client):
-    """POST /api/pam/import: неочікувана помилка → 500 + generic."""
-    cl = auth_client(role='admin')  # admin обходить перевірку доступу до локації
+    """POST /api/pam/import: unexpected error → 500 + generic."""
+    cl = auth_client(role='admin')  # admin bypasses the location access check
     with patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
          patch('app.pam.routes.PAMImportProcessor',
                side_effect=Exception(LEAKY)):
@@ -70,7 +70,7 @@ def test_pam_import_api_unexpected_error_returns_generic(auth_client):
 
 
 def test_pam_import_api_valueerror_passes_user_message(auth_client):
-    """POST /api/pam/import: ValueError (навмисна валідація) → 400 + текст."""
+    """POST /api/pam/import: ValueError (deliberate validation) → 400 + text."""
     cl = auth_client(role='admin')
     with patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
          patch('app.pam.routes.PAMImportProcessor',
@@ -88,7 +88,7 @@ def test_pam_import_api_valueerror_passes_user_message(auth_client):
 
 
 def test_pam_zip_upload_unexpected_error_returns_generic(auth_client):
-    """POST upload ZIP: неочікувана помилка → 500 без str(e) у відповіді."""
+    """POST upload ZIP: unexpected error → 500 without str(e) in the response."""
     cl = auth_client(role='admin')
     with patch('app.pam.routes.process_zip_archive',
                side_effect=Exception(LEAKY)):
@@ -97,7 +97,7 @@ def test_pam_zip_upload_unexpected_error_returns_generic(auth_client):
             data={'zip_file': (io.BytesIO(b'PK\x03\x04fake'), 'test.zip')},
             content_type='multipart/form-data')
 
-    # Якщо маршрут має інший шлях — головне, що leak відсутній
+    # If the route has a different path — the main thing is that there is no leak
     if resp.status_code == 500:
         data = resp.get_json()
         assert data['success'] is False
@@ -106,7 +106,7 @@ def test_pam_zip_upload_unexpected_error_returns_generic(auth_client):
 
 
 def test_pam_zip_upload_valueerror_passes_user_message(auth_client):
-    """POST upload ZIP: ValueError → 400 + user-facing текст валідації."""
+    """POST upload ZIP: ValueError → 400 + user-facing validation text."""
     cl = auth_client(role='admin')
     with patch('app.pam.routes.process_zip_archive',
                side_effect=ValueError('Пошкоджений файл в архіві: x.wav')):
@@ -122,10 +122,10 @@ def test_pam_zip_upload_valueerror_passes_user_message(auth_client):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# SEC-020: |safe → |tojson у templates
+# SEC-020: |safe → |tojson in templates
 # ════════════════════════════════════════════════════════════════════════════
 
-# Шаблони, що вбудовують серверні дані у <script> (історично через |safe)
+# Templates that embed server data in <script> (historically via |safe)
 _JSON_EMBED_TEMPLATES = [
     'app/camera_traps/templates/upload.html',
     'app/camera_traps/templates/upload_fast.html',
@@ -140,7 +140,7 @@ _JSON_EMBED_TEMPLATES = [
 
 @pytest.mark.parametrize('rel_path', _JSON_EMBED_TEMPLATES)
 def test_template_has_no_safe_json_embed(rel_path):
-    """Жоден з шаблонів не вбудовує JSON через |safe (regression guard)."""
+    """No template embeds JSON via |safe (regression guard)."""
     text = (REPO_ROOT / rel_path).read_text(encoding='utf-8')
     for needle in ('_json_string|safe', '_json_string | safe',
                    'records_json|safe', '_json|safe'):
@@ -152,7 +152,7 @@ def test_template_has_no_safe_json_embed(rel_path):
 
 
 def test_tojson_escapes_script_breakout(app):
-    """|tojson екранує `<` → \\u003c: '</script>' не розриває <script>-блок."""
+    """|tojson escapes `<` → \\u003c: '</script>' does not break the <script> block."""
     from flask import render_template_string
     payload = [{'name': '</script><script>alert(1)</script>'}]
     with app.test_request_context():
@@ -161,7 +161,7 @@ def test_tojson_escapes_script_breakout(app):
 
     assert '</script>' not in rendered
     assert '\\u003c/script' in rendered
-    # Дані відновлюються без втрат на боці JS (JSON-еквівалентність)
+    # Data is restored without loss on the JS side (JSON equivalence)
     import json
     js_literal = rendered.removeprefix('const d = ').removesuffix(';')
     assert json.loads(js_literal) == payload

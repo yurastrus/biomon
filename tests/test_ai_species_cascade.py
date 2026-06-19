@@ -358,15 +358,15 @@ class TestIdentifyAiSpeciesEndpoint(unittest.TestCase):
     def test_anonymous_redirected(self):
         with self._patched():
             r = self.client.get(self.URL)
-        # role_required робить redirect (302/303) на login для анонімних
+        # role_required redirects (302/303) anonymous users to login
         self.assertIn(r.status_code, (302, 303))
 
     def test_viewer_forbidden(self):
         _login(self.client, self.viewer.id)
         with self._patched():
             r = self.client.get(self.URL)
-        # ct_verifier-only → недостатньо прав. Decorator може робити
-        # redirect (302) або 403 — приймаємо обидва варіанти.
+        # ct_verifier-only → insufficient permissions. The decorator may either
+        # redirect (302) or return 403 — we accept both.
         self.assertIn(r.status_code, (302, 303, 403))
 
     def test_verifier_ok(self):
@@ -422,11 +422,11 @@ class TestIdentifyAiSpeciesEndpoint(unittest.TestCase):
         self.assertIsNone(kwargs.get('scope_institution_id'))
         self.assertIsNone(kwargs.get('scope_ecoregion'))
 
-    # ── non-admin не може заглядати в чужу установу ────────────────
+    # ── non-admin cannot peek into another institution ────────────────
 
     def test_verifier_scope_other_institution_returns_empty(self):
         _login(self.client, self.verifier.id)
-        # verifier має доступ тільки до inst_a; запитує inst_b → []
+        # verifier only has access to inst_a; requests inst_b → []
         with self._patched(items_return=[
             {'id': 4, 'text': 'should not be returned'}
         ]) as mock_get:
@@ -436,7 +436,7 @@ class TestIdentifyAiSpeciesEndpoint(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         data = r.get_json()
         self.assertEqual(data['items'], [])
-        # helper не повинен викликатись — short-circuit у роуті
+        # the helper must not be called — short-circuit in the route
         mock_get.assert_not_called()
 
     def test_verifier_scope_own_institution_ok(self):

@@ -1,9 +1,10 @@
 """
-SEC Phase 3 (#26, Варіант A): confinement шляхів до аудіо/спектрограм PAM.
+SEC Phase 3 (#26, Option A): confinement of PAM audio/spectrogram paths.
 
-serve_verification_audio / serve_spectrogram_image віддавали файл за абсолютним
-file_path з БД без перевірки. _confine_to_pam_base() гарантує, що шлях лежить
-усередині PAM_UPLOAD_PATH; інакше — 403. Захист від підміненого в БД file_path.
+serve_verification_audio / serve_spectrogram_image used to serve a file by its
+absolute file_path from the DB without validation. _confine_to_pam_base() ensures
+the path lies inside PAM_UPLOAD_PATH; otherwise 403. Guards against a file_path
+tampered with in the DB.
 """
 import os
 
@@ -26,7 +27,7 @@ def test_path_outside_base_aborts_403(app, tmp_path, monkeypatch):
     from app.pam.routes import _confine_to_pam_base
     base = tmp_path / 'allowed'
     base.mkdir()
-    outside = tmp_path / 'secret.txt'      # сусідня тека, поза base
+    outside = tmp_path / 'secret.txt'      # sibling directory, outside base
     outside.write_bytes(b'secret')
     with app.app_context():
         monkeypatch.setitem(app.config, 'PAM_UPLOAD_PATH', str(base))
@@ -46,7 +47,7 @@ def test_traversal_escape_aborts_403(app, tmp_path, monkeypatch):
 
 
 def test_unconfigured_base_skips_without_break(app, tmp_path, monkeypatch):
-    """Якщо PAM_UPLOAD_PATH не налаштовано — повертає шлях без 403 (без регресії)."""
+    """If PAM_UPLOAD_PATH is not configured, returns the path without 403 (no regression)."""
     from app.pam.routes import _confine_to_pam_base
     p = str(tmp_path / 'x.wav')
     with app.app_context():

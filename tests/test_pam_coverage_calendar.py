@@ -1,10 +1,10 @@
 """
-Idea 10 / #37: календар покриття локації за СУМОЮ тривалості записів.
+Idea 10 / #37: location coverage calendar based on the SUM of recording durations.
 
-build_coverage_calendar приймає {date: {'count', 'minutes'}}; день good якщо
-сумарні години запису (minutes/60) ≥ COVERAGE_GOOD_HOURS (6).
+build_coverage_calendar accepts {date: {'count', 'minutes'}}; a day is good if
+the total recording hours (minutes/60) ≥ COVERAGE_GOOD_HOURS (6).
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_pam_coverage_calendar.py -v
 """
 from datetime import date
@@ -20,7 +20,7 @@ def _d(count, minutes):
     return {'count': count, 'minutes': minutes}
 
 
-# ── Чиста функція ────────────────────────────────────────────────────────────
+# ── Pure function ─────────────────────────────────────────────────────────────
 
 def test_empty_input():
     cov = build_coverage_calendar({})
@@ -32,7 +32,7 @@ def test_empty_input():
 
 
 def test_none_date_key_ignored():
-    """recordings без дати (DATE(NULL)=None) ігноруються (regression)."""
+    """recordings without a date (DATE(NULL)=None) are ignored (regression)."""
     cov = build_coverage_calendar({None: _d(50, 250), date(2025, 6, 2): _d(10, 50)})
     assert cov['active_days'] == 1
     assert cov['total_recordings'] == 10
@@ -48,7 +48,7 @@ def test_only_none_dates_is_empty():
 def test_single_day_totals():
     cov = build_coverage_calendar({date(2025, 6, 2): _d(100, 500)})
     assert cov['total_recordings'] == 100
-    assert cov['total_hours'] == round(500 / 60.0, 1)  # 8.3 год
+    assert cov['total_hours'] == round(500 / 60.0, 1)  # 8.3 h
     assert cov['active_days'] == 1
     assert cov['day_range'] == (date(2025, 6, 2), date(2025, 6, 2))
     assert cov['months'][0]['label'] == '2025-06'
@@ -64,7 +64,7 @@ def _find_cell(cov, target):
 
 
 def test_coverage_levels():
-    # 480 хв = 8 год ≥6 → good; 180 хв = 3 год → partial; без записів → missing
+    # 480 min = 8 h ≥6 → good; 180 min = 3 h → partial; no recordings → missing
     cov = build_coverage_calendar(
         {date(2025, 6, 2): _d(96, 480), date(2025, 6, 3): _d(36, 180)})
     assert _find_cell(cov, date(2025, 6, 2))['level'] == 'good'
@@ -74,18 +74,18 @@ def test_coverage_levels():
 
 
 def test_boundary_6_hours_is_good():
-    """Рівно 360 хв = 6 год = good (поріг не строгий)."""
+    """Exactly 360 min = 6 h = good (threshold is not strict)."""
     cov = build_coverage_calendar({date(2025, 6, 2): _d(72, 360)})
     assert _find_cell(cov, date(2025, 6, 2))['level'] == 'good'
     assert _find_cell(cov, date(2025, 6, 2))['hours'] == 6.0
 
 
 def test_intensity_linear():
-    """#43: intensity лінійна (min→0, max→1); 0 год → None (сірий)."""
+    """#43: intensity is linear (min→0, max→1); 0 h → None (gray)."""
     cov = build_coverage_calendar({
-        date(2025, 6, 1): _d(0, 0),     # 0 год → missing/None
-        date(2025, 6, 2): _d(10, 180),  # 3 год → min → 0.0
-        date(2025, 6, 3): _d(10, 360),  # 6 год → max → 1.0
+        date(2025, 6, 1): _d(0, 0),     # 0 h → missing/None
+        date(2025, 6, 2): _d(10, 180),  # 3 h → min → 0.0
+        date(2025, 6, 3): _d(10, 360),  # 6 h → max → 1.0
     })
     assert _find_cell(cov, date(2025, 6, 1))['intensity'] is None
     assert _find_cell(cov, date(2025, 6, 2))['intensity'] == 0.0
@@ -93,23 +93,23 @@ def test_intensity_linear():
 
 
 def test_aggregated_mode_sums_across_years():
-    """#39: режим aggregated зводить (місяць,день) за всі роки + рахує роки."""
+    """#39: aggregated mode collapses (month,day) across all years + counts years."""
     cov = build_coverage_calendar(
         {date(2024, 5, 1): _d(10, 300), date(2025, 5, 1): _d(8, 240)},
         mode='aggregated')
     assert cov['mode'] == 'aggregated'
-    assert len(cov['months']) == 12          # умовний рік
-    cell = _find_cell(cov, date(2000, 5, 1))  # 2000 — умовний leap-рік
+    assert len(cov['months']) == 12          # nominal year
+    cell = _find_cell(cov, date(2000, 5, 1))  # 2000 — nominal leap year
     assert cell['hours'] == 9.0              # (300+240)/60
     assert cell['years'] == 2
     assert cov['years'] == [2024, 2025]
 
 
 def test_day_hours_not_capped():
-    """Кілька ресиверів на локації → сума за добу законно > 24 год (без cap)."""
-    cov = build_coverage_calendar({date(2025, 6, 2): _d(473, 2365)})  # 39.4 год
+    """Multiple receivers at a location → daily sum legitimately > 24 h (no cap)."""
+    cov = build_coverage_calendar({date(2025, 6, 2): _d(473, 2365)})  # 39.4 h
     cell = _find_cell(cov, date(2025, 6, 2))
-    assert cell['hours'] == 39.4     # без обмеження
+    assert cell['hours'] == 39.4     # no limit
     assert cell['level'] == 'good'
 
 
@@ -160,7 +160,7 @@ def test_coverage_route_renders(auth_client):
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
     assert 'Тестова локація' in html
-    assert 'rgba(76,175,80' in html      # градієнтна заливка (#43)
+    assert 'rgba(76,175,80' in html      # gradient fill (#43)
     assert '2025-06' in html
 
 

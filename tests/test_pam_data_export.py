@@ -1,15 +1,15 @@
 """
-Тести для фільтра по установах на сторінці експорту PAM
+Tests for the institution filter on the PAM export page
 (app/pam/routes.py: pam_data_export, api_data_preview, api_data_download
  + app/pam/utils.py: get_institution_filter).
 
-Структура:
-  1. TestGetInstitutionFilter         — комбінації admin/manager × single/multi/empty
-  2. TestPamDataExportPage            — GET сторінка передає institutions у шаблон
-  3. TestDataPreviewAPI               — POST/GET API парсить institution_ids
-  4. TestDataDownloadAPI              — те саме для скачування
+Structure:
+  1. TestGetInstitutionFilter         — admin/manager × single/multi/empty combinations
+  2. TestPamDataExportPage            — GET page passes institutions to the template
+  3. TestDataPreviewAPI               — POST/GET API parses institution_ids
+  4. TestDataDownloadAPI              — same for download
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_pam_data_export.py -v
 """
 
@@ -21,11 +21,11 @@ os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 1. get_institution_filter — комбінації admin/manager × single/multi/empty
+# 1. get_institution_filter — admin/manager × single/multi/empty combinations
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestGetInstitutionFilter(unittest.TestCase):
-    """Pure-function tests — без БД."""
+    """Pure-function tests — no DB."""
 
     def test_admin_no_filter_returns_trivial_condition(self):
         from app.pam.utils import get_institution_filter
@@ -60,7 +60,7 @@ class TestGetInstitutionFilter(unittest.TestCase):
         self.assertEqual(params['selected_inst_id'], [1])
 
     def test_anonymous_falls_back_to_visibility_public_only(self):
-        """user_inst_ids порожній, не admin → лише публічні локації."""
+        """user_inst_ids empty, not admin → public locations only."""
         from app.pam.utils import get_institution_filter
         cond, params = get_institution_filter(user_inst_ids=[], is_admin=False)
         self.assertIn('visibility_level = 0', cond)
@@ -85,12 +85,12 @@ class TestGetInstitutionFilter(unittest.TestCase):
         cond, params = get_institution_filter(
             user_inst_ids=[1], is_admin=False, selected_inst_id=[]
         )
-        # Порожній список вважається falsy → не додає AND EXISTS(li_sel)
+        # An empty list is treated as falsy → does not add AND EXISTS(li_sel)
         self.assertNotIn('li_sel', cond)
         self.assertNotIn('selected_inst_id', params)
 
     def test_selected_garbage_string_ignored(self):
-        """'abc,def' → жодних int → не додає фільтр."""
+        """'abc,def' → no ints → does not add a filter."""
         from app.pam.utils import get_institution_filter
         cond, params = get_institution_filter(
             user_inst_ids=[1], is_admin=False, selected_inst_id='abc,def'
@@ -185,7 +185,7 @@ class _ExportRouteBase(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 2. GET /pam/data-export — сторінка отримує institutions у контексті
+# 2. GET /pam/data-export — page receives institutions in the context
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPamDataExportPage(_ExportRouteBase):
@@ -205,7 +205,7 @@ class TestPamDataExportPage(_ExportRouteBase):
         self.assertEqual(resp.status_code, 200)
 
     def test_manager_sees_only_own_institutions(self):
-        """Manager отримує лише inst_a/inst_b, НЕ inst_c."""
+        """Manager gets only inst_a/inst_b, NOT inst_c."""
         self._login(self.manager.id)
         resp = self.client.get('/uk/pam/data-export')
         html = resp.get_data(as_text=True)
@@ -237,7 +237,7 @@ class TestPamDataExportPage(_ExportRouteBase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 3. API /api/pam/data-preview — парсинг institution_ids
+# 3. API /api/pam/data-preview — parsing institution_ids
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestDataPreviewAPI(_ExportRouteBase):
@@ -292,7 +292,7 @@ class TestDataPreviewAPI(_ExportRouteBase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 4. API /api/pam/data-download — той самий парсинг
+# 4. API /api/pam/data-download — the same parsing
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestDataDownloadAPI(_ExportRouteBase):
@@ -329,13 +329,13 @@ class TestDataDownloadAPI(_ExportRouteBase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 5. get_occurrence_data — institution_ids потрапляє у фільтр (інтеграційно)
+# 5. get_occurrence_data — institution_ids reaches the filter (integration)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestGetOccurrenceDataFilterPlumbing(_ExportRouteBase):
     """
-    Перевіряємо, що значення institution_ids у filters справді
-    передається у get_institution_filter як selected_inst_id.
+    Verify that the institution_ids value in filters is actually
+    passed to get_institution_filter as selected_inst_id.
     """
 
     def test_filters_passes_institution_ids_to_inst_filter(self):

@@ -1,7 +1,7 @@
 """
-Тести для системи ролей: User.has_role()
+Tests for the roles system: User.has_role()
 
-Запуск:
+Run:
     venv/Scripts/python -m unittest tests.test_roles -v
 """
 import unittest
@@ -9,10 +9,10 @@ from unittest.mock import MagicMock
 
 
 def _make_user(role_names):
-    """Мок-юзер із заданими ролями."""
+    """Mock user with the given roles."""
     user = MagicMock()
     user.roles = [MagicMock(name=n) for n in role_names]
-    # name у MagicMock за замовчуванням — назва атрибута, задаємо явно
+    # MagicMock's name defaults to the attribute name -- we set it explicitly
     for role, name in zip(user.roles, role_names):
         role.name = name
     user.is_authenticated = True
@@ -20,7 +20,7 @@ def _make_user(role_names):
 
 
 class TestHasRole(unittest.TestCase):
-    """Перевірка User.has_role() та ієрархії ролей."""
+    """Check User.has_role() and the role hierarchy."""
 
     def setUp(self):
         from app import create_app
@@ -112,7 +112,7 @@ class TestHasRole(unittest.TestCase):
                 self.assertFalse(self._check([], role))
 
     def test_multiple_required_any_match_sufficient(self):
-        """has_role('a', 'b') → True якщо є хоча б одна."""
+        """has_role('a', 'b') -> True if at least one is present."""
         self.assertTrue(self._check(['viewer'], 'viewer', 'ct_verifier'))
         self.assertTrue(self._check(['ct_verifier'], 'viewer', 'ct_verifier'))
 

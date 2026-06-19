@@ -1,12 +1,12 @@
 """
-SEC Phase 3 (#27): політика паролів admin-форм — мін. 8 + літери і цифри.
+SEC Phase 3 (#27): password policy for admin forms -- min. 8 + letters and digits.
 
-Стосується лише НОВИХ паролів:
-  - UserCreateForm — пароль обов'язковий;
-  - UserEditForm — пароль необов'язковий (порожній = «не міняти»).
-Існуючі логіни / хеші не зачіпаються (тут не тестуються — окремий потік).
+Applies only to NEW passwords:
+  - UserCreateForm -- password is required;
+  - UserEditForm -- password is optional (empty = "do not change").
+Existing logins / hashes are untouched (not tested here -- a separate flow).
 
-Валідуємо поле password ізольовано (інші поля форми не заповнюємо).
+We validate the password field in isolation (other form fields are left empty).
 """
 import pytest
 from config import Config
@@ -36,17 +36,17 @@ def test_min_length_configurable_is_8():
 
 
 def test_too_short_rejected(app, CreateForm):
-    ok, _ = _validate_password(app, CreateForm, 'Ab1xyz')      # 6 символів
+    ok, _ = _validate_password(app, CreateForm, 'Ab1xyz')      # 6 characters
     assert ok is False
 
 
 def test_no_digit_rejected(app, CreateForm):
-    ok, _ = _validate_password(app, CreateForm, 'OnlyLetters')  # ≥8, без цифри
+    ok, _ = _validate_password(app, CreateForm, 'OnlyLetters')  # >=8, no digit
     assert ok is False
 
 
 def test_no_letter_rejected(app, CreateForm):
-    ok, _ = _validate_password(app, CreateForm, '12345678')     # ≥8, без літери
+    ok, _ = _validate_password(app, CreateForm, '12345678')     # >=8, no letter
     assert ok is False
 
 
@@ -56,17 +56,17 @@ def test_strong_password_accepted(app, CreateForm):
 
 
 def test_exactly_min_length_with_letter_and_digit_accepted(app, CreateForm):
-    ok, errors = _validate_password(app, CreateForm, 'abcde123')  # рівно 8
+    ok, errors = _validate_password(app, CreateForm, 'abcde123')  # exactly 8
     assert ok is True, errors
 
 
 def test_edit_form_blank_password_allowed(app, EditForm):
-    """UserEditForm: порожній пароль = «не міняти» → валідний (Optional)."""
+    """UserEditForm: empty password = "do not change" -> valid (Optional)."""
     ok, errors = _validate_password(app, EditForm, '', user_id=1)
     assert ok is True, errors
 
 
 def test_edit_form_weak_password_rejected(app, EditForm):
-    """Якщо адмін ВВОДИТЬ новий пароль при редагуванні — політика діє."""
+    """If the admin DOES enter a new password while editing -- the policy applies."""
     ok, _ = _validate_password(app, EditForm, 'short1', user_id=1)   # <8
     assert ok is False

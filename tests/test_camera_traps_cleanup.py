@@ -1,26 +1,26 @@
 """
-Тести cleanup-модуля (заміна старого cleanup_stale_batches).
+Tests for the cleanup module (replacement for the old cleanup_stale_batches).
 
-Покриває критичні інваріанти безпеки:
-  1. is_favorite=TRUE ніколи не у звіті/видаленні
-  2. observation_id IS NOT NULL ніколи не у звіті/видаленні
-  3. status != 'uploaded' ніколи не у звіті/видаленні
-  4. Активні batch (probe детектує зміну processed_files) → захищені
-  5. Файли молодші DISK_MTIME_SAFETY_SECONDS → захищені
-  6. Звіт expired (>10 хв) → execute відхиляється з 410
-  7. Подвійний execute → 409
-  8. Recovery: status='executing' старші 1 год → 'failed'
-  9. Retention: рядки cleanup_log старші 90 днів → видалені при analyze
- 10. Не-admin → 302/403
+Covers critical safety invariants:
+  1. is_favorite=TRUE never in the report/deletion
+  2. observation_id IS NOT NULL never in the report/deletion
+  3. status != 'uploaded' never in the report/deletion
+  4. Active batches (probe detects processed_files change) → protected
+  5. Files younger than DISK_MTIME_SAFETY_SECONDS → protected
+  6. Expired report (>10 min) → execute rejected with 410
+  7. Double execute → 409
+  8. Recovery: status='executing' older than 1 hour → 'failed'
+  9. Retention: cleanup_log rows older than 90 days → deleted on analyze
+ 10. Non-admin → 302/403
 
-Інтеграційні (real Postgres, через CT_TEST_DATABASE_URI):
- 11. E2E: analyze → execute → перевірка реального стану БД + диска
- 12. Active batch detected by probe — не у звіті
- 13. Орфан-файли видаляються; favorite/observation-файли — ні
- 14. Concurrent insert під час analyze — батч стає захищеним
- 15. Партіальне виконання при OSError на одному файлі — інші чистяться
+Integration (real Postgres, via CT_TEST_DATABASE_URI):
+ 11. E2E: analyze → execute → verify real DB + disk state
+ 12. Active batch detected by probe — not in the report
+ 13. Orphan files are deleted; favorite/observation files are not
+ 14. Concurrent insert during analyze — batch becomes protected
+ 15. Partial execution on OSError for one file — the rest are cleaned
 
-Запуск:
+Run:
     venv/Scripts/python -m pytest tests/test_camera_traps_cleanup.py -v
     CT_TEST_DATABASE_URI=postgresql://... -m integration
 """
@@ -40,7 +40,7 @@ import pytest
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# UNIT TESTS — Access control + basic route behavior (моки)
+# UNIT TESTS — Access control + basic route behavior (mocks)
 # ═════════════════════════════════════════════════════════════════════════════
 
 def _login(client, user_id):
@@ -118,7 +118,7 @@ class CleanupRouteBase(unittest.TestCase):
 
 
 class TestCleanupRouteAccess(CleanupRouteBase):
-    """Тести доступу до маршрутів — лише admin."""
+    """Route access tests — admin only."""
 
     def test_analyze_admin_starts_thread(self):
         _login(self.client, self.admin.id)
@@ -195,7 +195,7 @@ class TestCleanupRouteAccess(CleanupRouteBase):
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# INTEGRATION TESTS — real Postgres ct_db через тунель
+# INTEGRATION TESTS — real Postgres ct_db over a tunnel
 # ═════════════════════════════════════════════════════════════════════════════
 
 CT_TEST_URI = os.environ.get('CT_TEST_DATABASE_URI', '')
@@ -207,9 +207,9 @@ INTEGRATION_AVAILABLE = CT_TEST_URI and not CT_TEST_URI.startswith('sqlite')
                     reason="CT_TEST_DATABASE_URI not set (Postgres required)")
 class TestCleanupIntegration:
     """
-    E2E на реальній Postgres. Створює тимчасову схему з усіма потрібними
-    таблицями (фактично копія публічних), наповнює, ганяє cleanup,
-    перевіряє інваріанти.
+    E2E against a real Postgres. Creates a temporary schema with all the
+    required tables (effectively a copy of the public ones), populates it,
+    runs cleanup, and verifies the invariants.
     """
 
     @pytest.fixture(autouse=True)
@@ -291,14 +291,14 @@ class TestCleanupIntegration:
             connect_args={'options': f'-csearch_path={self.schema},public'})
         monkeypatch.setattr(cleanup_mod, 'get_ct_engine', lambda: scoped_engine)
 
-        # Створюємо тимчасові директорії raw/thumbnails
+        # Create temporary raw/thumbnails directories
         self.upload_root = str(tmp_path)
         os.makedirs(os.path.join(self.upload_root, 'pending_photos', 'raw'))
         os.makedirs(os.path.join(self.upload_root, 'pending_photos', 'thumbnails'))
         self.raw_dir = os.path.join(self.upload_root, 'pending_photos', 'raw')
         self.thumb_dir = os.path.join(self.upload_root, 'pending_photos', 'thumbnails')
 
-        # Flask-context з потрібним конфігом
+        # Flask context with the required config
         from flask import Flask
         flask_app = Flask(__name__)
         flask_app.config['CAMERA_TRAP_CONFIG'] = {
@@ -358,7 +358,7 @@ class TestCleanupIntegration:
             for d in (self.raw_dir, self.thumb_dir):
                 with open(os.path.join(d, fn), 'wb') as f:
                     f.write(b'X' * 1024)
-            # Backdate mtime щоб пройти DISK_MTIME_SAFETY
+            # Backdate mtime so it passes DISK_MTIME_SAFETY
             old = time.time() - 3600
             for d in (self.raw_dir, self.thumb_dir):
                 os.utime(os.path.join(d, fn), (old, old))
@@ -376,8 +376,8 @@ class TestCleanupIntegration:
                 {"l": loc_id}).scalar()
 
     def _make_orphan_file(self, name, age_seconds=3600):
-        """Файл на диску, якого НЕМАЄ в photos."""
-        for d in (self.thumb_dir,):  # лише thumbnails — частіший випадок
+        """A file on disk that is NOT in photos."""
+        for d in (self.thumb_dir,):  # thumbnails only — the more common case
             p = os.path.join(d, name)
             with open(p, 'wb') as f:
                 f.write(b'O' * 512)
@@ -385,16 +385,16 @@ class TestCleanupIntegration:
             os.utime(p, (old, old))
 
     def _collect_report_sync(self, threshold_hours=0, probe_seconds=1):
-        """Викликаємо _collect_cleanup_report напряму — без threading."""
+        """Call _collect_cleanup_report directly — without threading."""
         from app.camera_traps.cleanup import _collect_cleanup_report
         return _collect_cleanup_report(threshold_hours, probe_seconds)
 
-    # ────────── Інваріанти SAFETY ──────────
+    # ────────── SAFETY invariants ──────────
 
     def test_favorite_photo_never_in_report(self):
         loc = self._mk_loc()
         bid = self._mk_batch(loc, status='failed', age_min=60)
-        # Один stranded + один favorite (з тим же batch — обидва без obs)
+        # One stranded + one favorite (same batch — both without obs)
         pid_strand, fn_strand = self._mk_photo(bid, is_favorite=False)
         pid_fav, fn_fav = self._mk_photo(bid, is_favorite=True)
         report = self._collect_report_sync()
@@ -424,7 +424,7 @@ class TestCleanupIntegration:
         assert fn not in names
 
     def test_completed_batch_not_in_stale_list(self):
-        """Завершені batchʼі не позначаються як stale."""
+        """Completed batches are not marked as stale."""
         loc = self._mk_loc()
         bid_completed = self._mk_batch(loc, status='completed', age_min=60)
         bid_failed = self._mk_batch(loc, status='failed', age_min=60)
@@ -434,7 +434,7 @@ class TestCleanupIntegration:
         assert bid_completed not in stale_ids
 
     def test_recent_file_protected_by_mtime(self):
-        """Файл-сирота молодший 5 хв — не у звіті."""
+        """An orphan file younger than 5 min — not in the report."""
         self._make_orphan_file('fresh_orphan.jpg', age_seconds=60)
         self._make_orphan_file('old_orphan.jpg', age_seconds=3600)
         report = self._collect_report_sync()
@@ -443,17 +443,17 @@ class TestCleanupIntegration:
         assert 'fresh_orphan.jpg' not in names
 
     def test_active_batch_protected_by_probe(self):
-        """probe: симулюємо зростання processed_files → batch захищений."""
+        """probe: simulate processed_files growth → batch is protected."""
         from sqlalchemy import text
         loc = self._mk_loc()
         bid_active = self._mk_batch(loc, status='uploading', processed=5)
         bid_stale = self._mk_batch(loc, status='uploading', processed=10,
                                     age_min=120)
 
-        # Імітуємо «активність» через окремий thread, який під час probe
-        # робить UPDATE processed_files. Затримка повинна бути більшою за
-        # мережеву латентність першого snapshot-запиту (інакше snap1 може
-        # прочитати вже оновлене значення → probe не побачить різниці).
+        # Simulate "activity" via a separate thread that does UPDATE
+        # processed_files during the probe. The delay must be larger than
+        # the network latency of the first snapshot query (otherwise snap1
+        # might read the already-updated value → probe sees no difference).
         import threading
         def bump():
             time.sleep(1.5)
@@ -474,7 +474,7 @@ class TestCleanupIntegration:
     # ────────── End-to-end ──────────
 
     def test_e2e_analyze_then_execute(self):
-        """Повний прохід: створити сцену, analyze, execute, перевірити."""
+        """Full pass: set up the scene, analyze, execute, verify."""
         from sqlalchemy import text
         from app.camera_traps.cleanup import (
             _collect_cleanup_report, _execute_cleanup,
@@ -493,13 +493,13 @@ class TestCleanupIntegration:
         self._make_orphan_file('orph_1.jpg', age_seconds=3600)
         self._make_orphan_file('orph_2.jpg', age_seconds=3600)
 
-        # ANALYZE — синхронно (обхід threading для тесту)
+        # ANALYZE — synchronously (bypass threading for the test)
         report = _collect_report_sync(threshold_hours=0, probe_seconds=1) if False else \
                  _collect_cleanup_report(0, 1)
         assert report["stranded_photos_count"] == 3
         assert report["orphan_files_count"] == 2
 
-        # Запис у БД для execute
+        # Write to the DB for execute
         report_id = str(uuid.uuid4())
         with self.engine.begin() as c:
             c.execute(text(f"SET search_path TO {self.schema}, public"))
@@ -512,8 +512,8 @@ class TestCleanupIntegration:
         # EXECUTE
         stats = _execute_cleanup(report_id, probe_seconds=1)
 
-        # ПЕРЕВІРКИ
-        # 3 stranded photos видалено
+        # CHECKS
+        # 3 stranded photos deleted
         with self.engine.connect() as c:
             c.execute(text(f"SET search_path TO {self.schema}, public"))
             remaining = c.execute(text(
@@ -521,13 +521,13 @@ class TestCleanupIntegration:
                 f"WHERE upload_batch_id=:b"), {"b": bid}).scalar()
         assert remaining == 2, f"Expected 2 (favorite + grouped), got {remaining}"
 
-        # Файли stranded видалено
+        # Stranded files deleted
         for _, fn in (s1, s2, s3):
             assert not os.path.exists(os.path.join(self.thumb_dir, fn))
-        # Файли favorite + grouped — лишились
+        # Favorite + grouped files — kept
         for _, fn in (fav, grp):
             assert os.path.exists(os.path.join(self.thumb_dir, fn))
-        # Orphan files видалено
+        # Orphan files deleted
         assert not os.path.exists(os.path.join(self.thumb_dir, 'orph_1.jpg'))
         assert not os.path.exists(os.path.join(self.thumb_dir, 'orph_2.jpg'))
 
@@ -536,20 +536,20 @@ class TestCleanupIntegration:
         assert stats["fd"] >= 2  # files_deleted: 2 orphan + 3*2 stranded files (raw+thumb)
 
     def test_purge_old_logs(self):
-        """Записи cleanup_log старші retention — видаляються."""
+        """cleanup_log rows older than retention — are deleted."""
         from sqlalchemy import text
         from app.camera_traps.cleanup import purge_old_logs
 
         with self.engine.begin() as c:
             c.execute(text(f"SET search_path TO {self.schema}, public"))
-            # старий запис (валідний UUID — VARCHAR(36) обмеження)
+            # old record (valid UUID — VARCHAR(36) constraint)
             c.execute(text(f"""
                 INSERT INTO {self.schema}.cleanup_log
                     (id, kind, status, triggered_by, started_at)
                 VALUES (:id, 'analysis', 'completed', 1, :ts)
             """), {"id": str(uuid.uuid4()),
                    "ts": datetime.utcnow() - timedelta(days=100)})
-            # свіжий запис
+            # fresh record
             c.execute(text(f"""
                 INSERT INTO {self.schema}.cleanup_log
                     (id, kind, status, triggered_by, started_at)
@@ -566,7 +566,7 @@ class TestCleanupIntegration:
         assert cnt == 1
 
     def test_recover_stuck_cleanup(self):
-        """status='executing' старші 1 год → переведені у 'failed'."""
+        """status='executing' older than 1 hour → switched to 'failed'."""
         from sqlalchemy import text
         from app.camera_traps.cleanup import recover_stuck_cleanup
 
@@ -600,7 +600,7 @@ class TestCleanupIntegration:
         assert fresh_status == 'executing'
 
     def test_execute_reverifies_active(self):
-        """Якщо batch стає активним між analyze і execute — не чіпаємо."""
+        """If a batch becomes active between analyze and execute — leave it alone."""
         from sqlalchemy import text
         from app.camera_traps.cleanup import _collect_cleanup_report, _execute_cleanup
 
@@ -608,11 +608,11 @@ class TestCleanupIntegration:
         bid = self._mk_batch(loc, status='uploading', processed=0, age_min=120)
         pid, fn = self._mk_photo(bid, is_favorite=False)
 
-        # analyze — batch нерухомий, потрапляє у stale
+        # analyze — batch is idle, ends up in stale
         report = _collect_cleanup_report(threshold_hours=0, probe_seconds=1)
         assert bid in {b["id"] for b in report["stale_batches"]}
 
-        # Зберігаємо звіт
+        # Save the report
         report_id = str(uuid.uuid4())
         with self.engine.begin() as c:
             c.execute(text(f"SET search_path TO {self.schema}, public"))
@@ -622,8 +622,8 @@ class TestCleanupIntegration:
                 VALUES (:id, 'analysis', 'analyzed', 1, 0, CAST(:r AS JSONB))
             """), {"id": report_id, "r": json.dumps(report)})
 
-        # Симулюємо «active» — інкремент під час execute-probe. Затримка
-        # 1.5с > мережева латентність першого snap → snap1<snap2.
+        # Simulate "active" — increment during execute-probe. The 1.5s delay
+        # > network latency of the first snap → snap1<snap2.
         import threading
         def bump():
             time.sleep(1.5)
@@ -636,9 +636,9 @@ class TestCleanupIntegration:
         threading.Thread(target=bump).start()
 
         stats = _execute_cleanup(report_id, probe_seconds=3)
-        # batch не марковано failed (бо став активним)
+        # batch not marked failed (because it became active)
         assert stats["bmf"] == 0
-        # photo не видалено
+        # photo not deleted
         with self.engine.connect() as c:
             c.execute(text(f"SET search_path TO {self.schema}, public"))
             still = c.execute(text(

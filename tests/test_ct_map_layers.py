@@ -1,7 +1,7 @@
 """
-#45: усі карти фотопасток мають перемикач OSM↔Супутник, дефолт — OSM.
+#45: every camera-trap map must have an OSM<->Satellite toggle, default — OSM.
 
-Regression-guard на контракт шаблонів (візуально перевіряється на проді).
+Regression guard on the template contract (verified visually in production).
 """
 import re
 import pathlib
@@ -20,7 +20,7 @@ MAPS = [
     'species_detailed.html',
 ]
 
-# OSM як дефолт: або `osm/osmLayer.addTo(map|window.map)`, або OSM-тайл із chained .addTo(map)
+# OSM as default: either `osm/osmLayer.addTo(map|window.map)`, or an OSM tile with chained .addTo(map)
 _OSM_DEFAULT = re.compile(
     r'osm\w*\.addTo\((?:window\.)?map\)|openstreetmap[^;]*?\.addTo\(map\)',
     re.IGNORECASE,
@@ -38,5 +38,5 @@ def test_ct_map_has_osm_satellite_toggle(fname):
 def test_ct_map_defaults_to_osm(fname):
     src = (CT_TPL / fname).read_text(encoding='utf-8')
     assert _OSM_DEFAULT.search(src), f'{fname}: OSM не є дефолтним базовим шаром'
-    # старий дефолт-«супутник» прибрано
+    # old default "satellite" removed
     assert 'hybridLayer.addTo' not in src, f'{fname}: лишився hybridLayer.addTo (супутник дефолт)'

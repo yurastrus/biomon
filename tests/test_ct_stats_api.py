@@ -21,11 +21,11 @@ from unittest.mock import patch, MagicMock
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Допоміжні функції
+# Helper functions
 # ═══════════════════════════════════════════════════════════════════════════
 
 def _login(client, user_id):
-    """Встановлює Flask-Login сесію без HTTP-запиту."""
+    """Set up a Flask-Login session without an HTTP request."""
     with client.session_transaction() as sess:
         sess['_user_id'] = str(user_id)
         sess['_fresh'] = True
@@ -33,7 +33,7 @@ def _login(client, user_id):
 
 def _generic_session():
     """
-    Mock ct_session: будь-який ORM-ланцюжок повертає [], scalar() → 0.
+    Mock ct_session: any ORM chain returns [], scalar() → 0.
     Raw SQL (session.connection().execute().mappings().fetchall()) → [].
     """
     q = MagicMock()
@@ -55,7 +55,7 @@ def _generic_session():
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Базовий клас
+# Base class
 # ═══════════════════════════════════════════════════════════════════════════
 
 class StatsApiBase(unittest.TestCase):
@@ -131,7 +131,7 @@ class StatsApiBase(unittest.TestCase):
         db.session.commit()
 
     def _get(self, url, user_id=None, extra_patches=()):
-        """GET-запит з замоканою CT-сесією та додатковими патчами."""
+        """GET request with a mocked CT session and extra patches."""
         if user_id:
             _login(self.client, user_id)
         with contextlib.ExitStack() as stack:
@@ -237,7 +237,7 @@ class TestDistributionMap(StatsApiBase):
         self.assertEqual(resp.status_code, 400)
 
     def test_valid_params_no_data_returns_summary_structure(self):
-        """З валідними параметрами але без даних — повертає structure з summary."""
+        """With valid params but no data — returns a structure with summary."""
         url = self.URL + '?species_id=1&start_date=2024-01-01&end_date=2024-12-31'
         resp, body = self._get_json(url)
         self.assertEqual(resp.status_code, 200)
@@ -277,13 +277,13 @@ class TestDailyActivity(StatsApiBase):
         self.assertEqual(resp.status_code, 400)
 
     def test_invalid_species_id_only_returns_400(self):
-        """Тільки нечислові species_ids → порожній список → 400."""
+        """Only non-numeric species_ids → empty list → 400."""
         url = self.URL + '?start_date=2024-01-01&end_date=2024-12-31&species_ids=abc'
         resp, body = self._get_json(url)
         self.assertEqual(resp.status_code, 400)
 
     def test_valid_params_insufficient_data_returns_structure(self):
-        """Малий набір даних (< 2 точок) — не будується крива, але структура є."""
+        """Small dataset (< 2 points) — no curve is built, but the structure exists."""
         url = self.URL + '?start_date=2024-01-01&end_date=2024-12-31&species_ids=1'
         raw_data_patch = patch(
             'app.camera_traps.routes.fetch_raw_daily_data',
@@ -339,7 +339,7 @@ class TestApiComparison(StatsApiBase):
         self.assertEqual(resp.status_code, 400)
 
     def test_anonymous_cannot_access_institution_scope(self):
-        """Анонімний користувач не має доступу до жодної установи → 403."""
+        """Anonymous user has no access to any institution → 403."""
         url = (self.URL +
                '?left_scope_id=1&left_scope_type=institution'
                '&right_scope_id=2&right_scope_type=institution')
@@ -348,7 +348,7 @@ class TestApiComparison(StatsApiBase):
         self.assertIn('error', body)
 
     def test_viewer_cannot_access_institution_scope(self):
-        """Viewer без установ не має доступу → 403."""
+        """Viewer with no institutions has no access → 403."""
         url = (self.URL +
                f'?left_scope_id={self.inst_a.id}&left_scope_type=institution'
                f'&right_scope_id={self.inst_b.id}&right_scope_type=institution')
@@ -356,7 +356,7 @@ class TestApiComparison(StatsApiBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_manager_cannot_access_foreign_institution(self):
-        """Менеджер не має доступу до чужої установи (inst_b) → 403."""
+        """Manager has no access to a foreign institution (inst_b) → 403."""
         url = (self.URL +
                f'?left_scope_id={self.inst_b.id}&left_scope_type=institution'
                f'&right_scope_id={self.inst_b.id}&right_scope_type=institution')
@@ -364,7 +364,7 @@ class TestApiComparison(StatsApiBase):
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_valid_scopes_no_locations_returns_404(self):
-        """Адмін, валідні скоупи, але жодних локацій у CT-БД → 404."""
+        """Admin, valid scopes, but no locations in the CT DB → 404."""
         url = (self.URL +
                f'?left_scope_id={self.inst_a.id}&left_scope_type=institution'
                f'&right_scope_id={self.inst_b.id}&right_scope_type=institution')
@@ -394,7 +394,7 @@ class TestGalleryPhotos(StatsApiBase):
         self.assertIn('error', body)
 
     def test_species_id_zero_no_photos_returns_404(self):
-        """species_id=0 означає «всі види», але БД порожня → 404."""
+        """species_id=0 means "all species", but the DB is empty → 404."""
         resp, body = self._get_json(self.URL + '?species_id=0')
         self.assertEqual(resp.status_code, 404)
         self.assertIn('message', body)
