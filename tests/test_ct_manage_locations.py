@@ -402,6 +402,27 @@ class TestManageLocationsContent(CtManageLocationsBase):
                          session=_make_manage_session())
         self.assertIn(b'institution-select', resp.data)
 
+    def test_invalid_legend_and_marker_rendered(self):
+        """Невалідні локації мають окрему малинову позначку + запис у легенді."""
+        resp = self._get(self.URL, user_id=self.manager.id,
+                         session=_make_manage_session())
+        self.assertEqual(resp.status_code, 200)
+        # Малиновий колір легенди (обидва режими карти).
+        self.assertIn(b'#c2185b', resp.data)
+        # Підпис легенди.
+        self.assertIn('Невалідні'.encode(), resp.data)
+        # Окрема SVG-іконка для невалідних маркерів.
+        self.assertIn(b'invalidIcon', resp.data)
+        self.assertIn(b'marker-invalid-icon', resp.data)
+
+    def test_invalid_location_marked_in_list(self):
+        """Невалідна локація отримує клас loc-invalid і бейдж у списку."""
+        loc = _make_location(3, 'Стара точка', biotope_ids=[1])
+        loc.is_valid = False
+        resp = self._get(self.URL, user_id=self.manager.id,
+                         session=_make_manage_session(locations=[loc]))
+        self.assertIn(b'loc-invalid', resp.data)
+
 
 # ════════════════════════════════════════════════════════════════════════════
 # 3. SERVICE LOG REDIRECT
