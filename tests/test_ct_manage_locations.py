@@ -1027,5 +1027,86 @@ class TestCtUpdateLocation(CtManageLocationsBase):
         session.commit.assert_called_once()
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# 10. SET LOCATION VALIDITY — ADMIN-ONLY + JSON-РЕГРЕСІЯ
+# ════════════════════════════════════════════════════════════════════════════
+
+def _make_validity_session(location=None):
+    """Mock ct_session для set_location_validity: .query(Location).get(id)."""
+    mock_session = MagicMock()
+    q = MagicMock()
+    q.get.return_value = location
+    mock_session.query.return_value = q
+    return mock_session
+
+
+class TestCtSetLocationValidity(CtManageLocationsBase):
+    """POST /camera-traps/location/<id>/validity — admin-only прапорець валідності.
+
+    Регресія: фронтовий fetch() шле тіло як application/json, але БЕЗ заголовків
+    Accept / X-Requested-With. Маршрут має повертати JSON (через request.is_json),
+    а не 302-редирект на HTML — інакше r.json() на клієнті падає і показує "Error."
+    попри успішний commit у БД.
+    """
+
+    def _url(self, location_id=1):
+        return f'/uk/camera-traps/location/{location_id}/validity'
+
+    def test_anonymous_is_redirected(self):
+        resp = self.client.post(self._url(), json={'is_valid': False})
+        self.assertEqual(resp.status_code, 302)
+
+    def test_viewer_is_redirected(self):
+        """Не-адмін (viewer) → redirect, бо @role_required('admin')."""
+        session = _make_validity_session(_make_location(1))
+        resp = self._post(self._url(), {'is_valid': False},
+                          user_id=self.viewer.id, session=session)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_manager_is_redirected(self):
+        """Менеджер не адмін → redirect."""
+        session = _make_validity_session(_make_location(1))
+        resp = self._post(self._url(), {'is_valid': False},
+                          user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_admin_json_post_returns_json_not_redirect(self):
+        """Ядро бага: JSON-тіло без Accept/X-Requested-With → має бути JSON 200."""
+        session = _make_validity_session(_make_location(1))
+        resp = self._post(self._url(1), {'is_valid': False, 'note': 'тест'},
+                          user_id=self.admin.id, session=session)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type.split(';')[0], 'application/json')
+        data = resp.get_json()
+        self.assertTrue(data['success'])
+        self.assertFalse(data['is_valid'])
+
+    def test_admin_marks_invalid_persists_note_and_commits(self):
+        loc = _make_location(1)
+        session = _make_validity_session(loc)
+        self._post(self._url(1), {'is_valid': False, 'note': 'погані дані'},
+                   user_id=self.admin.id, session=session)
+        self.assertFalse(loc.is_valid)
+        self.assertEqual(loc.invalid_note, 'погані дані')
+        session.commit.assert_called_once()
+
+    def test_admin_marks_valid_clears_note(self):
+        loc = _make_location(1)
+        session = _make_validity_session(loc)
+        resp = self._post(self._url(1), {'is_valid': True, 'note': 'ignored'},
+                          user_id=self.admin.id, session=session)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(loc.is_valid)
+        self.assertIsNone(loc.invalid_note)
+        self.assertTrue(resp.get_json()['is_valid'])
+
+    def test_location_not_found_returns_json_404(self):
+        session = _make_validity_session(location=None)
+        resp = self._post(self._url(999), {'is_valid': False},
+                          user_id=self.admin.id, session=session)
+        self.assertEqual(resp.status_code, 404)
+        self.assertIn('error', resp.get_json())
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
