@@ -1,17 +1,20 @@
 """
-Integration tests for the admin-only location data-validity flag (camera traps).
+Integration tests for the location data-validity flag (camera traps).
 
 Covers:
-  - set_location_validity (POST)   - admin marks a location invalid / restores it
-  - access control                 - non-admin (manager) is redirected (302)
+  - set_location_validity (POST)   - mark a location invalid / restore it
+  - access control                 - manager+ scoped to their institutions:
+                                     admin → any location; manager → only own
+                                     institutions (403 otherwise); viewer → 302
   - not-found                      - 404 when the location does not exist
   - manual_run_analytics           - the "discard invalid locations" checkbox is
                                      forwarded to start_async_analytics (default ON)
 
 Key points:
   - CT uses SQLAlchemy ORM (get_ct_session / close_ct_session), mocked here.
-  - CT role_required returns 302 (redirect), not 403.
-  - The validity endpoint is admin-only.
+  - CT role_required returns 302 (redirect) for an insufficient role.
+  - The validity endpoint is manager+; managers may only toggle locations
+    belonging to one of their institutions.
 
 Run:
     venv/bin/python -m unittest tests.test_ct_location_validity -v
@@ -37,12 +40,16 @@ def _make_location(id=1, name='Тест ліс', is_valid=True, invalid_note=Non
     return loc
 
 
-def _make_validity_session(location):
-    """Mock ct_session where query(Location).get(id) -> location (or None)."""
+def _make_validity_session(location, has_access=True):
+    """Mock ct_session: query(Location).get(id) -> location (or None);
+    execute().fetchone() -> (1,) if has_access (institution check), else None."""
     mock_session = MagicMock()
     q = MagicMock()
     q.get.return_value = location
     mock_session.query.return_value = q
+    access_result = MagicMock()
+    access_result.fetchone.return_value = (1,) if has_access else None
+    mock_session.execute.return_value = access_result
     return mock_session
 
 
@@ -82,11 +89,16 @@ class CtLocationValidityBase(unittest.TestCase):
 
     def _seed(self):
         from app.extensions import db, bcrypt
-        from app.models import User, Role
+        from app.models import User, Role, Institution, UserInstitution
 
         role_admin = Role(name='admin')
         role_manager = Role(name='manager')
-        db.session.add_all([role_admin, role_manager])
+        role_viewer = Role(name='viewer')
+        db.session.add_all([role_admin, role_manager, role_viewer])
+        db.session.flush()
+
+        inst = Institution(name_uk='Заповідник А', name_en='Reserve A', code='res_a')
+        db.session.add(inst)
         db.session.flush()
 
         pw = bcrypt.generate_password_hash('testpass').decode('utf-8')
@@ -95,9 +107,22 @@ class CtLocationValidityBase(unittest.TestCase):
         self.admin.roles.append(role_admin)
         db.session.add(self.admin)
 
+        # Manager with an institution → may toggle locations in that institution.
         self.manager = User(username='manager_user', password_hash=pw)
         self.manager.roles.append(role_manager)
+        self.manager.institution_links.append(
+            UserInstitution(institution_id=inst.id, can_export=False)
+        )
         db.session.add(self.manager)
+
+        # Manager with no institutions → no location access.
+        self.manager_no_inst = User(username='manager_no_inst', password_hash=pw)
+        self.manager_no_inst.roles.append(role_manager)
+        db.session.add(self.manager_no_inst)
+
+        self.viewer = User(username='viewer_user', password_hash=pw)
+        self.viewer.roles.append(role_viewer)
+        db.session.add(self.viewer)
 
         db.session.commit()
 
@@ -136,12 +161,40 @@ class TestSetLocationValidity(CtLocationValidityBase):
         self.assertTrue(loc.is_valid)
         self.assertIsNone(loc.invalid_note)
 
-    def test_manager_is_forbidden_redirect(self):
+    def test_manager_with_access_marks_invalid(self):
+        """Manager toggling a location in their own institution succeeds."""
+        loc = _make_location(1, is_valid=True)
+        session = _make_validity_session(loc, has_access=True)
+        resp = self._post_validity(1, {'is_valid': False, 'note': 'погані координати'},
+                                   user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.get_json()['success'])
+        self.assertFalse(loc.is_valid)
+        session.commit.assert_called_once()
+
+    def test_manager_without_access_forbidden_403(self):
+        """Location outside the manager's institutions → 403, untouched."""
+        loc = _make_location(1)
+        session = _make_validity_session(loc, has_access=False)
+        resp = self._post_validity(1, {'is_valid': False},
+                                   user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 403)
+        session.commit.assert_not_called()
+
+    def test_manager_without_institution_forbidden_403(self):
+        loc = _make_location(1)
+        session = _make_validity_session(loc, has_access=False)
+        resp = self._post_validity(1, {'is_valid': False},
+                                   user_id=self.manager_no_inst.id, session=session)
+        self.assertEqual(resp.status_code, 403)
+        session.commit.assert_not_called()
+
+    def test_viewer_is_forbidden_redirect(self):
+        """Viewer < manager → role_required redirects (302), untouched."""
         loc = _make_location(1)
         session = _make_validity_session(loc)
         resp = self._post_validity(1, {'is_valid': False},
-                                   user_id=self.manager.id, session=session)
-        # CT role_required redirects (302) rather than 403; the location must be untouched.
+                                   user_id=self.viewer.id, session=session)
         self.assertEqual(resp.status_code, 302)
         self.assertNotIn('login', resp.headers.get('Location', ''))
         session.commit.assert_not_called()

@@ -1052,17 +1052,26 @@ class TestCtUpdateLocation(CtManageLocationsBase):
 # 10. SET LOCATION VALIDITY — ADMIN-ONLY + JSON-РЕГРЕСІЯ
 # ════════════════════════════════════════════════════════════════════════════
 
-def _make_validity_session(location=None):
-    """Mock ct_session для set_location_validity: .query(Location).get(id)."""
+def _make_validity_session(location=None, has_access=True):
+    """Mock ct_session для set_location_validity.
+
+    .query(Location).get(id) → location;
+    execute().fetchone() → (1,) якщо has_access (перевірка установи), інакше None.
+    """
     mock_session = MagicMock()
     q = MagicMock()
     q.get.return_value = location
     mock_session.query.return_value = q
+    access_result = MagicMock()
+    access_result.fetchone.return_value = (1,) if has_access else None
+    mock_session.execute.return_value = access_result
     return mock_session
 
 
 class TestCtSetLocationValidity(CtManageLocationsBase):
-    """POST /camera-traps/location/<id>/validity — admin-only прапорець валідності.
+    """POST /camera-traps/location/<id>/validity — прапорець валідності (manager+).
+
+    Менеджер може перемикати лише локації своїх установ; адмін — будь-які.
 
     Регресія: фронтовий fetch() шле тіло як application/json, але БЕЗ заголовків
     Accept / X-Requested-With. Маршрут має повертати JSON (через request.is_json),
@@ -1078,18 +1087,68 @@ class TestCtSetLocationValidity(CtManageLocationsBase):
         self.assertEqual(resp.status_code, 302)
 
     def test_viewer_is_redirected(self):
-        """Не-адмін (viewer) → redirect, бо @role_required('admin')."""
+        """Viewer < manager → redirect через @role_required('manager')."""
         session = _make_validity_session(_make_location(1))
         resp = self._post(self._url(), {'is_valid': False},
                           user_id=self.viewer.id, session=session)
         self.assertEqual(resp.status_code, 302)
 
-    def test_manager_is_redirected(self):
-        """Менеджер не адмін → redirect."""
-        session = _make_validity_session(_make_location(1))
-        resp = self._post(self._url(), {'is_valid': False},
+    def test_manager_with_access_can_invalidate(self):
+        """Менеджер своєї установи → 200 + JSON."""
+        loc = _make_location(1)
+        session = _make_validity_session(loc, has_access=True)
+        resp = self._post(self._url(1), {'is_valid': False, 'note': 'погані дані'},
                           user_id=self.manager.id, session=session)
-        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.get_json()['success'])
+        self.assertFalse(loc.is_valid)
+        self.assertEqual(loc.invalid_note, 'погані дані')
+        session.commit.assert_called_once()
+
+    def test_manager_with_access_can_revalidate(self):
+        """Менеджер може й повернути локацію у валідні."""
+        loc = _make_location(1)
+        session = _make_validity_session(loc, has_access=True)
+        resp = self._post(self._url(1), {'is_valid': True},
+                          user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(loc.is_valid)
+        self.assertIsNone(loc.invalid_note)
+
+    def test_manager_without_access_gets_403(self):
+        """Локація не в установах менеджера → 403, без commit."""
+        loc = _make_location(999)
+        session = _make_validity_session(loc, has_access=False)
+        resp = self._post(self._url(999), {'is_valid': False},
+                          user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 403)
+        self.assertIn('error', resp.get_json())
+        session.commit.assert_not_called()
+
+    def test_manager_without_institution_gets_403(self):
+        """Менеджер без установ → 403."""
+        loc = _make_location(1)
+        session = _make_validity_session(loc, has_access=False)
+        resp = self._post(self._url(1), {'is_valid': False},
+                          user_id=self.manager_no_inst.id, session=session)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_manager2_cannot_touch_other_institution_location(self):
+        """Менеджер Б не може чіпати локацію установи А → 403."""
+        loc = _make_location(1)
+        session = _make_validity_session(loc, has_access=False)
+        resp = self._post(self._url(1), {'is_valid': False},
+                          user_id=self.manager2.id, session=session)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_bypasses_institution_check(self):
+        """Адмін не проходить перевірку установи — execute() не викликається."""
+        loc = _make_location(1)
+        session = _make_validity_session(loc, has_access=False)
+        resp = self._post(self._url(1), {'is_valid': False},
+                          user_id=self.admin.id, session=session)
+        self.assertEqual(resp.status_code, 200)
+        session.execute.assert_not_called()
 
     def test_admin_json_post_returns_json_not_redirect(self):
         """Ядро бага: JSON-тіло без Accept/X-Requested-With → має бути JSON 200."""
