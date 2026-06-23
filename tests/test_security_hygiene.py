@@ -50,15 +50,35 @@ def test_pam_yearly_trends_table_error_returns_generic(client):
     assert 'secret_internal_table' not in resp.get_data(as_text=True)
 
 
+def _pam_models_conn():
+    """get_pam_db_connection() stand-in returning the models catalogue (so the
+    route's model_id validation passes and execution reaches the processor)."""
+    from collections import namedtuple
+    M = namedtuple('M', 'model_id name version')
+    conn = MagicMock()
+
+    def _ex(sql, params=None):
+        res = MagicMock()
+        if 'FROM models' in str(sql):
+            res.fetchall.return_value = [M(1, 'BirdNET', '2.4'), M(2, 'Perch', 'v2')]
+        else:
+            res.fetchone.return_value = (1,)
+        return res
+
+    conn.execute.side_effect = _ex
+    return conn
+
+
 def test_pam_import_api_unexpected_error_returns_generic(auth_client):
     """POST /api/pam/import: unexpected error → 500 + generic."""
     cl = auth_client(role='admin')  # admin bypasses the location access check
-    with patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+    with patch('app.pam.routes.get_pam_db_connection', return_value=_pam_models_conn()), \
+         patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
          patch('app.pam.routes.PAMImportProcessor',
                side_effect=Exception(LEAKY)):
         resp = cl.post(
             '/uk/api/pam/import',
-            data={'location_id': '1',
+            data={'location_id': '1', 'format': 'birdnet', 'model_id': '1',
                   'files': (io.BytesIO(b'col\nval\n'), 'test.csv')},
             content_type='multipart/form-data')
 
@@ -72,12 +92,13 @@ def test_pam_import_api_unexpected_error_returns_generic(auth_client):
 def test_pam_import_api_valueerror_passes_user_message(auth_client):
     """POST /api/pam/import: ValueError (deliberate validation) → 400 + text."""
     cl = auth_client(role='admin')
-    with patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+    with patch('app.pam.routes.get_pam_db_connection', return_value=_pam_models_conn()), \
+         patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
          patch('app.pam.routes.PAMImportProcessor',
                side_effect=ValueError('Невідомий формат CSV')):
         resp = cl.post(
             '/uk/api/pam/import',
-            data={'location_id': '1',
+            data={'location_id': '1', 'format': 'birdnet', 'model_id': '1',
                   'files': (io.BytesIO(b'col\nval\n'), 'test.csv')},
             content_type='multipart/form-data')
 

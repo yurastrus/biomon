@@ -83,6 +83,55 @@ Start (s),End (s),Scientific name,Common name,File
 """
 
 
+# ─── Raven Selection Table fixtures (tab-separated) ───────────────────────────
+
+def _raven(header, *rows):
+    return header + "\n" + "\n".join(rows) + "\n"
+
+# Chirpity-style: no Species Code column; cumulative Begin/End Time; the
+# within-recording offset is in 'File Offset (s)'.
+RAVEN_CHIRPITY_HEADER = ("Selection\tView\tChannel\tBegin Time (s)\tEnd Time (s)"
+                         "\tLow Freq (Hz)\tHigh Freq (Hz)\tCommon Name\tConfidence"
+                         "\tBegin Path\tFile Offset (s)")
+
+def _chirpity_row(sel, begin, end, common, conf, rec, offset):
+    return (f"{sel}\tSpectrogram 1\t1\t{begin}\t{end}\t0\t15000\t{common}\t{conf}"
+            f"\tF:\\rec\\{rec}\t{offset}")
+
+RAVEN_CHIRPITY_VALID = _raven(
+    RAVEN_CHIRPITY_HEADER,
+    _chirpity_row(1, 0,   5,   'Great Tit',          0.78, 'ROZ_20230331_185300.wav', 0),
+    _chirpity_row(2, 5,   10,  'Eurasian Blackbird', 0.59, 'ROZ_20230331_185300.wav', 5),
+    # second recording — Begin/End cumulative, but File Offset resets:
+    _chirpity_row(3, 305, 310, 'Tawny Owl',          0.91, 'ROZ_20230331_190302.wav', 5),
+)
+
+# BirdNET Analyzer Raven export: has a Species Code column; "nocall" rows.
+RAVEN_BIRDNET_HEADER = ("Selection\tView\tChannel\tBegin Time (s)\tEnd Time (s)"
+                        "\tLow Freq (Hz)\tHigh Freq (Hz)\tCommon Name\tSpecies Code"
+                        "\tConfidence\tBegin Path\tFile Offset (s)")
+
+def _birdnet_raven_row(sel, begin, end, common, code, conf, rec, offset):
+    return (f"{sel}\tSpectrogram 1\t1\t{begin}\t{end}\t0\t12000\t{common}\t{code}"
+            f"\t{conf}\tF:\\rec\\{rec}\t{offset}")
+
+RAVEN_BIRDNET_NOCALL = _raven(
+    RAVEN_BIRDNET_HEADER,
+    _birdnet_raven_row(1, 0, 3, 'nocall', 'nocall', 1.0, 'SITE_20230401_060200.wav', 0),
+)
+
+RAVEN_BIRDNET_VALID = _raven(
+    RAVEN_BIRDNET_HEADER,
+    _birdnet_raven_row(1, 0, 3, 'Tawny Owl', 'tawowl1', 0.83, 'SITE_20230401_060200.wav', 0),
+    _birdnet_raven_row(2, 3, 6, 'nocall',    'nocall',  1.0,  'SITE_20230401_060200.wav', 3),
+)
+
+RAVEN_HEADER_ONLY = RAVEN_CHIRPITY_HEADER + "\n"
+
+RAVEN_MISSING_COL = ("Selection\tCommon Name\tConfidence\tBegin Path\n"
+                     "1\tGreat Tit\t0.5\tF:\\rec\\R_20230401_060200.wav\n")
+
+
 # ─── helpers ──────────────────────────────────────────────────────────────────
 
 class MockFileStorage:
@@ -95,50 +144,126 @@ class MockFileStorage:
         return self._content
 
 
-def _make_processor_conn(
-    species_map=None,       # {scientific_name: species_id}
-    recording_id=1,
-    was_inserted=True,
-    det_inserted=3,
-):
+from collections import namedtuple
+
+_DetRow = namedtuple('_DetRow',
+                     'detection_id recording_id species_id start_s end_s was_inserted')
+_CN     = namedtuple('_CN', 'cn species_id')
+
+
+class FakeConn:
     """
-    Builds a mock SQLAlchemy connection matching the PAMImportProcessor call sequence:
-      execute #1  — species upsert INSERT   (result ignored)
-      execute #2  — species SELECT           (iterable of (name, id) rows)
-      execute #3  — recording upsert INSERT  (fetchone → (recording_id, was_inserted))
-      execute #4+ — detection CTE INSERT     (fetchone → (count,)) — one per batch
+    Keyword-dispatch fake of a SQLAlchemy connection that mirrors the new
+    two-phase PAMImportProcessor flow (and ON CONFLICT semantics):
+
+      * INSERT INTO species                  → ignored
+      * SELECT scientific_name, species_id   → iterates species_map
+      * SELECT lower(common_name_en) …        → iterates common_map rows
+      * INSERT INTO recordings … RETURNING   → fetchone (recording_id, was_inserted)
+      * INSERT INTO detections … RETURNING   → fetchall, reflecting the params it
+                                               was given (one row per VALUES row),
+                                               assigning fresh detection_ids and
+                                               flagging the first `new_detection_count`
+                                               as inserted (rest = duplicate)
+      * INSERT INTO detection_models … (CTE) → fetchone (new_links, total_links)
+
+    Counts are driven by `new_detection_count` / `new_link_count` (None = all new).
     """
-    if species_map is None:
-        species_map = {'Turdus merula': 1, 'Strix aluco': 2, 'Turdus iliacus': 3}
 
-    mock_conn = MagicMock()
+    def __init__(self, species_map=None, common_map=None, recording_id=1,
+                 recording_existed=False, new_detection_count=None,
+                 new_link_count=None):
+        self.species_map = species_map if species_map is not None else \
+            {'Turdus merula': 1, 'Strix aluco': 2, 'Turdus iliacus': 3}
+        self.common_map = common_map or {}
+        self.recording_id = recording_id
+        self.recording_existed = recording_existed
+        self.new_detection_count = new_detection_count
+        self.new_link_count = new_link_count
+        self.calls = []
+        self._next_det_id = 1000
 
-    # execute #1: species upsert — return value is irrelevant
-    sp_upsert = MagicMock()
+    # transaction context manager (conn.begin())
+    def begin(self):
+        cm = MagicMock()
+        cm.__enter__ = lambda *a: None
+        cm.__exit__ = lambda *a: False
+        return cm
 
-    # execute #2: species SELECT → iterable
-    sp_select = MagicMock()
-    sp_select.__iter__ = lambda self: iter(list(species_map.items()))
+    def close(self):
+        pass
 
-    # execute #3: recording INSERT
-    rec_result = MagicMock()
-    rec_result.fetchone.return_value = (recording_id, was_inserted)
+    def execute(self, sql, params=None):
+        s = str(sql)
+        self.calls.append((s, params))
 
-    # execute #4+: detection CTE INSERT (each batch)
-    det_result = MagicMock()
-    det_result.fetchone.return_value = (det_inserted,)
+        if 'INSERT INTO species' in s:
+            return MagicMock()
 
-    mock_conn.execute.side_effect = [sp_upsert, sp_select, rec_result, det_result,
-                                      det_result, det_result]  # extra for multi-batch
+        if 'SELECT scientific_name, species_id' in s:
+            res = MagicMock()
+            res.__iter__ = lambda *_: iter(list(self.species_map.items()))
+            return res
 
-    return mock_conn
+        if 'lower(common_name_en)' in s:
+            rows = [_CN(k, v) for k, v in self.common_map.items()]
+            res = MagicMock()
+            res.__iter__ = lambda *_: iter(rows)
+            return res
+
+        if 'INSERT INTO recordings' in s:
+            res = MagicMock()
+            res.fetchone.return_value = (self.recording_id, not self.recording_existed)
+            return res
+
+        if 'INSERT INTO detections' in s:
+            rows, i = [], 0
+            while f'rec{i}' in (params or {}):
+                rec, sp = params[f'rec{i}'], params[f'sp{i}']
+                st, en = float(params[f's{i}']), float(params[f'e{i}'])
+                was = True if self.new_detection_count is None else (i < self.new_detection_count)
+                rows.append(_DetRow(self._next_det_id, rec, sp, st, en, was))
+                self._next_det_id += 1
+                i += 1
+            res = MagicMock()
+            res.fetchall.return_value = rows
+            return res
+
+        if 'INTO detection_models' in s:
+            total, i = 0, 0
+            while f'd{i}' in (params or {}):
+                total += 1
+                i += 1
+            new = total if self.new_link_count is None else self.new_link_count
+            res = MagicMock()
+            res.fetchone.return_value = (new, total)
+            return res
+
+        return MagicMock()
 
 
-def _make_engine(mock_conn):
-    """Wraps a mock_conn in a mock engine."""
+def _make_engine(conn):
+    """Wraps a connection (FakeConn or MagicMock) in a mock engine."""
     mock_engine = MagicMock()
-    mock_engine.connect.return_value = mock_conn
+    mock_engine.connect.return_value = conn
     return mock_engine
+
+
+# Default model wiring for processor tests: model 1 == reference (BirdNET 2.4).
+_REF_MODEL = 1
+
+
+def _make_processor(engine=None, importer=None, location_id=1,
+                    model_id=_REF_MODEL, reference_model_id=_REF_MODEL,
+                    duration_minutes=5):
+    from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
+    if engine is None:
+        engine = MagicMock()
+    if importer is None:
+        importer = BirdNETImporter()
+    return PAMImportProcessor(engine, location_id=location_id, importer=importer,
+                              duration_minutes=duration_minutes, model_id=model_id,
+                              reference_model_id=reference_model_id)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -334,16 +459,95 @@ class TestBirdNETParseDateTime(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# 3b. RavenSelectionTableImporter.parse_csv / parse_datetime
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestRavenParseCSV(unittest.TestCase):
+
+    def setUp(self):
+        from app.pam.pam_import_utils import RavenSelectionTableImporter
+        self.imp = RavenSelectionTableImporter()
+
+    def test_mode_is_common(self):
+        self.assertEqual(self.imp.species_lookup_mode, 'common')
+
+    def test_chirpity_parses_all_rows(self):
+        rows = self.imp.parse_csv(RAVEN_CHIRPITY_VALID)
+        self.assertEqual(len(rows), 3)
+
+    def test_chirpity_no_scientific_name(self):
+        rows = self.imp.parse_csv(RAVEN_CHIRPITY_VALID)
+        self.assertTrue(all(r.scientific_name is None for r in rows))
+
+    def test_chirpity_common_name(self):
+        rows = self.imp.parse_csv(RAVEN_CHIRPITY_VALID)
+        self.assertEqual(rows[0].common_name_en, 'Great Tit')
+
+    def test_uses_file_offset_not_cumulative_begin_time(self):
+        # Row 3 has cumulative Begin Time 305 but File Offset 5 → start_s must be 5.
+        rows = self.imp.parse_csv(RAVEN_CHIRPITY_VALID)
+        owl = [r for r in rows if r.common_name_en == 'Tawny Owl'][0]
+        self.assertEqual(owl.start_s, 5.0)
+        self.assertEqual(owl.end_s, 10.0)   # offset 5 + (310-305) duration
+
+    def test_confidence_parsed(self):
+        rows = self.imp.parse_csv(RAVEN_CHIRPITY_VALID)
+        self.assertAlmostEqual(rows[0].confidence, 0.78, places=2)
+
+    def test_recording_filename_from_begin_path(self):
+        rows = self.imp.parse_csv(RAVEN_CHIRPITY_VALID)
+        self.assertEqual(rows[0].recording_filename, 'ROZ_20230331_185300.wav')
+
+    def test_multiple_recordings_in_one_table(self):
+        rows = self.imp.parse_csv(RAVEN_CHIRPITY_VALID)
+        self.assertEqual(len({r.recording_filename for r in rows}), 2)
+
+    def test_birdnet_raven_skips_nocall(self):
+        rows = self.imp.parse_csv(RAVEN_BIRDNET_VALID)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].common_name_en, 'Tawny Owl')
+
+    def test_all_nocall_file_yields_no_rows(self):
+        rows = self.imp.parse_csv(RAVEN_BIRDNET_NOCALL)
+        self.assertEqual(rows, [])
+
+    def test_high_precision_times_rounded_stable(self):
+        content = _raven(
+            RAVEN_CHIRPITY_HEADER,
+            _chirpity_row(1, 10001.916000000001, 10006.916000000001,
+                          'Great Tit', 0.5, 'R_20230401_060200.wav', 12),
+        )
+        rows = self.imp.parse_csv(content)
+        self.assertEqual(rows[0].start_s, 12.0)
+        self.assertEqual(rows[0].end_s, 17.0)   # 12 + round(5.0)
+
+    def test_missing_required_column_raises(self):
+        with self.assertRaises(ValueError):
+            self.imp.parse_csv(RAVEN_MISSING_COL)
+
+    def test_header_only_returns_empty(self):
+        self.assertEqual(self.imp.parse_csv(RAVEN_HEADER_ONLY), [])
+
+    def test_parse_datetime(self):
+        self.assertEqual(self.imp.parse_datetime('ROZ_20230331_185300.wav'),
+                         datetime(2023, 3, 31, 18, 53, 0))
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 4. PAMImportProcessor — file handling (without a DB)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPAMProcessorFileHandling(unittest.TestCase):
 
     def _make_processor(self, engine=None):
+        return _make_processor(engine=engine)
+
+    def test_model_id_required(self):
         from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        if engine is None:
-            engine = MagicMock()
-        return PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+        proc = PAMImportProcessor(MagicMock(), location_id=1,
+                                  importer=BirdNETImporter())  # no model_id
+        with self.assertRaises(ValueError):
+            proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
 
     def test_empty_file_list_returns_zero_stats(self):
         proc = self._make_processor()
@@ -353,21 +557,19 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
         self.assertEqual(stats['files_failed'], 0)
 
     def test_header_only_file_counted_as_empty(self):
-        mock_conn = _make_processor_conn()
-        proc = self._make_processor(_make_engine(mock_conn))
+        proc = self._make_processor(_make_engine(FakeConn()))
         files = [MockFileStorage(BIRDNET_CSV_HEADER_ONLY, 'empty.csv')]
         stats = proc.process_batch(files)
         self.assertEqual(stats['files_empty'], 1)
         self.assertEqual(stats['files_processed'], 0)
 
     def test_blank_file_counted_as_empty(self):
-        proc = self._make_processor()
+        proc = self._make_processor(_make_engine(FakeConn()))
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_BLANK)])
         self.assertEqual(stats['files_empty'], 1)
 
     def test_valid_file_counted_as_processed(self):
-        mock_conn = _make_processor_conn()
-        proc = self._make_processor(_make_engine(mock_conn))
+        proc = self._make_processor(_make_engine(FakeConn()))
         files = [MockFileStorage(BIRDNET_CSV_VALID, 'rec.csv')]
         stats = proc.process_batch(files)
         self.assertEqual(stats['files_processed'], 1)
@@ -381,19 +583,15 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
 
     def test_duration_minutes_passed_to_recording_insert(self):
         """#37: the given duration ends up in INSERT recordings (param 'dur')."""
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        mock_conn = _make_processor_conn()
-        proc = PAMImportProcessor(_make_engine(mock_conn), location_id=1,
-                                  importer=BirdNETImporter(), duration_minutes=10)
+        conn = FakeConn()
+        proc = _make_processor(engine=_make_engine(conn), duration_minutes=10)
         proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID, 'rec.csv')])
-        rec_calls = [c for c in mock_conn.execute.call_args_list
-                     if 'INSERT INTO recordings' in str(c.args[0])]
+        rec_calls = [c for c in conn.calls if 'INSERT INTO recordings' in c[0]]
         self.assertTrue(rec_calls, "no INSERT INTO recordings call")
-        self.assertEqual(rec_calls[0].args[1]['dur'], 10)
+        self.assertEqual(rec_calls[0][1]['dur'], 10)
 
     def test_mixed_empty_and_valid(self):
-        mock_conn = _make_processor_conn()
-        proc = self._make_processor(_make_engine(mock_conn))
+        proc = self._make_processor(_make_engine(FakeConn()))
         files = [
             MockFileStorage(BIRDNET_CSV_HEADER_ONLY, 'empty1.csv'),
             MockFileStorage(BIRDNET_CSV_VALID,       'valid.csv'),
@@ -404,7 +602,7 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
         self.assertEqual(stats['files_empty'],     2)
 
     def test_unreadable_file_counted_as_failed(self):
-        proc = self._make_processor()
+        proc = self._make_processor(_make_engine(FakeConn()))
         bad_file = MagicMock()
         bad_file.read.side_effect = OSError("read error")
         stats = proc.process_batch([bad_file])
@@ -412,14 +610,14 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
         self.assertEqual(stats['files_processed'], 0)
 
     def test_invalid_csv_structure_counted_as_failed(self):
-        proc = self._make_processor()
+        proc = self._make_processor(_make_engine(FakeConn()))
         # CSV missing required column → parse_csv raises ValueError
         files = [MockFileStorage(BIRDNET_CSV_MISSING_COL, 'bad.csv')]
         stats = proc.process_batch(files)
         self.assertEqual(stats['files_failed'], 1)
 
     def test_utf8_decoding_errors_handled(self):
-        proc = self._make_processor()
+        proc = self._make_processor(_make_engine(FakeConn()))
         bad_file = MagicMock()
         # Simulate a file with bad encoding that decode still handles via errors='replace'
         bad_file.read.return_value = b'\xff\xfe' + BIRDNET_CSV_HEADER_ONLY.encode('utf-8')
@@ -432,138 +630,181 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 5. PAMImportProcessor — DB interaction
+# 5. PAMImportProcessor — DB interaction (two-phase + model accounting)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class TestPAMProcessorDatabase(unittest.TestCase):
 
-    def _run(self, csv_content, species_map=None, recording_id=1,
-             was_inserted=True, det_inserted=3):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        mock_conn = _make_processor_conn(species_map, recording_id, was_inserted, det_inserted)
-        engine = _make_engine(mock_conn)
-        proc = PAMImportProcessor(engine, location_id=42, importer=BirdNETImporter())
+    def _run(self, csv_content, conn=None, location_id=42, model_id=_REF_MODEL,
+             reference_model_id=_REF_MODEL):
+        if conn is None:
+            conn = FakeConn()
+        engine = _make_engine(conn)
+        proc = _make_processor(engine=engine, location_id=location_id,
+                               model_id=model_id, reference_model_id=reference_model_id)
         stats = proc.process_batch([MockFileStorage(csv_content, 'test.csv')])
-        return stats, mock_conn
+        return stats, conn
 
     def test_new_recording_increments_recordings_new(self):
-        stats, _ = self._run(BIRDNET_CSV_VALID, was_inserted=True)
+        stats, _ = self._run(BIRDNET_CSV_VALID, conn=FakeConn(recording_existed=False))
         self.assertEqual(stats['recordings_new'], 1)
         self.assertEqual(stats['recordings_existing'], 0)
 
     def test_existing_recording_increments_recordings_existing(self):
-        stats, _ = self._run(BIRDNET_CSV_VALID, was_inserted=False)
+        stats, _ = self._run(BIRDNET_CSV_VALID, conn=FakeConn(recording_existed=True))
         self.assertEqual(stats['recordings_existing'], 1)
         self.assertEqual(stats['recordings_new'], 0)
 
     def test_detections_inserted_count(self):
-        stats, _ = self._run(BIRDNET_CSV_VALID, det_inserted=3)
+        stats, _ = self._run(BIRDNET_CSV_VALID)
         self.assertEqual(stats['detections_inserted'], 3)
 
     def test_detections_duplicate_count(self):
-        # 3 rows in CSV, 1 actually inserted → 2 duplicates
-        stats, _ = self._run(BIRDNET_CSV_VALID, det_inserted=1)
+        # 3 rows, only 1 a new event → 2 duplicate events
+        stats, _ = self._run(BIRDNET_CSV_VALID, conn=FakeConn(new_detection_count=1))
         self.assertEqual(stats['detections_inserted'], 1)
         self.assertEqual(stats['detections_duplicate'], 2)
 
+    def test_model_links_counted(self):
+        stats, _ = self._run(BIRDNET_CSV_VALID)
+        # every new detection gets a fresh model link
+        self.assertEqual(stats['model_links_new'], 3)
+        self.assertEqual(stats['model_links_existing'], 0)
+
+    def test_existing_model_links_counted(self):
+        stats, _ = self._run(BIRDNET_CSV_VALID, conn=FakeConn(new_link_count=0))
+        self.assertEqual(stats['model_links_new'], 0)
+        self.assertEqual(stats['model_links_existing'], 3)
+
     def test_species_count(self):
-        species_map = {'Turdus merula': 1, 'Strix aluco': 2, 'Turdus iliacus': 3}
-        stats, _ = self._run(BIRDNET_CSV_VALID, species_map=species_map)
+        stats, _ = self._run(BIRDNET_CSV_VALID)
         self.assertEqual(stats['species_count'], 3)
 
+    def test_reference_model_writes_detection_confidence(self):
+        """For the reference model, the detections INSERT carries real confidence values."""
+        conn = FakeConn()
+        proc = _make_processor(engine=_make_engine(conn), model_id=1, reference_model_id=1)
+        proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+        det_call = [c for c in conn.calls if 'INSERT INTO detections' in c[0]][0]
+        params = det_call[1]
+        conf_values = [v for k, v in params.items() if k.startswith('c')]
+        self.assertTrue(any(v is not None for v in conf_values),
+                        "reference model must write confidence into detections")
+
+    def test_non_reference_model_writes_null_detection_confidence(self):
+        """A non-reference model must NOT write into detections.confidence (NULL on insert)."""
+        conn = FakeConn()
+        proc = _make_processor(engine=_make_engine(conn), model_id=2, reference_model_id=1)
+        proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+        det_call = [c for c in conn.calls if 'INSERT INTO detections' in c[0]][0]
+        params = det_call[1]
+        conf_values = [v for k, v in params.items() if k.startswith('c')]
+        self.assertTrue(all(v is None for v in conf_values),
+                        "non-reference model must leave detections.confidence NULL")
+        # …but per-model confidence still flows into detection_models:
+        dm_call = [c for c in conn.calls if 'INTO detection_models' in c[0]][0]
+        dm_conf = [v for k, v in dm_call[1].items() if k.startswith('dc')]
+        self.assertTrue(any(v is not None for v in dm_conf),
+                        "detection_models must store per-model confidence")
+
+    def test_detection_upsert_targets_real_unique_key(self):
+        """The detections upsert must target (recording_id, species_id, start_s, end_s)."""
+        conn = FakeConn()
+        proc = _make_processor(engine=_make_engine(conn))
+        proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+        det_sql = [c[0] for c in conn.calls if 'INSERT INTO detections' in c[0]][0]
+        self.assertIn('ON CONFLICT (recording_id, species_id, start_s, end_s)', det_sql)
+        self.assertIn('RETURNING', det_sql)
+
+    def test_detection_models_upsert_present(self):
+        conn = FakeConn()
+        proc = _make_processor(engine=_make_engine(conn))
+        proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+        dm_sql = [c[0] for c in conn.calls if 'INTO detection_models' in c[0]]
+        self.assertTrue(dm_sql, "no detection_models upsert issued")
+        self.assertIn('ON CONFLICT (detection_id, model_id)', dm_sql[0])
+
     def test_engine_connect_called_once_per_batch(self):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        mock_conn = _make_processor_conn()
-        engine = _make_engine(mock_conn)
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+        conn = FakeConn()
+        engine = _make_engine(conn)
+        proc = _make_processor(engine=engine)
         proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
         engine.connect.assert_called_once()
 
-    def test_connection_closed_after_success(self):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        mock_conn = _make_processor_conn()
-        engine = _make_engine(mock_conn)
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
-        proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
-        mock_conn.close.assert_called_once()
-
     def test_connection_closed_after_db_error(self):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        mock_conn = MagicMock()
-        mock_conn.execute.side_effect = Exception("DB error")
-        engine = _make_engine(mock_conn)
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+        conn = MagicMock()
+        conn.execute.side_effect = Exception("DB error")
+        engine = _make_engine(conn)
+        proc = _make_processor(engine=engine)
         try:
             proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
         except Exception:
             pass
-        mock_conn.close.assert_called()
+        conn.close.assert_called()
 
     def test_two_recordings_processed(self):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-
-        # Need extra execute slots: 1 upsert + 1 select + 2 recording inserts + 2 det inserts
-        mock_conn = MagicMock()
-        sp_upsert = MagicMock()
-        sp_select = MagicMock()
-        sp_select.__iter__ = lambda s: iter([('Turdus merula', 1), ('Strix aluco', 2)])
-        rec_result_1 = MagicMock(); rec_result_1.fetchone.return_value = (1, True)
-        rec_result_2 = MagicMock(); rec_result_2.fetchone.return_value = (2, True)
-        det_result   = MagicMock(); det_result.fetchone.return_value = (1,)
-        mock_conn.execute.side_effect = [
-            sp_upsert, sp_select,
-            rec_result_1, det_result,
-            rec_result_2, det_result,
-        ]
-
-        engine = _make_engine(mock_conn)
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+        conn = FakeConn(species_map={'Turdus merula': 1, 'Strix aluco': 2})
+        proc = _make_processor(engine=_make_engine(conn))
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_TWO_RECORDINGS)])
         self.assertEqual(stats['recordings_new'], 2)
 
     def test_species_upsert_preserves_existing_common_name(self):
         """COALESCE must prefer species.common_name_en over EXCLUDED (don't overwrite existing)."""
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        mock_conn = _make_processor_conn()
-        engine = _make_engine(mock_conn)
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+        conn = FakeConn()
+        proc = _make_processor(engine=_make_engine(conn))
         proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
-
-        upsert_call = mock_conn.execute.call_args_list[0]
-        sql_str = str(upsert_call[0][0])
-        # species.common_name_en must come BEFORE EXCLUDED so existing value wins
+        sql_str = [c[0] for c in conn.calls if 'INSERT INTO species' in c[0]][0]
         idx_existing = sql_str.index('species.common_name_en')
         idx_excluded = sql_str.index('EXCLUDED.common_name_en')
         self.assertLess(idx_existing, idx_excluded,
             "COALESCE must prefer species.common_name_en (existing) over EXCLUDED")
 
     def test_recording_insert_uses_correct_location_id(self):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
         LOCATION_ID = 99
-        mock_conn = _make_processor_conn()
-        engine = _make_engine(mock_conn)
-        proc = PAMImportProcessor(engine, location_id=LOCATION_ID, importer=BirdNETImporter())
+        conn = FakeConn()
+        proc = _make_processor(engine=_make_engine(conn), location_id=LOCATION_ID)
         proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+        rec_call = [c for c in conn.calls if 'INSERT INTO recordings' in c[0]][0]
+        self.assertEqual(rec_call[1]['loc'], LOCATION_ID)
 
-        # Third execute call is recording INSERT; check params contain location_id
-        rec_call = mock_conn.execute.call_args_list[2]
-        params = rec_call[0][1]  # second positional arg is params dict
-        self.assertEqual(params['loc'], LOCATION_ID)
 
-    def test_detection_cte_counts_inserted_vs_skipped(self):
-        """Verifies _insert_detections_batch uses CTE + RETURNING for accurate counts."""
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        mock_conn = _make_processor_conn(det_inserted=2)
-        engine = _make_engine(mock_conn)
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
-        proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+# ══════════════════════════════════════════════════════════════════════════════
+# 5b. Raven import — species resolution by common name
+# ══════════════════════════════════════════════════════════════════════════════
 
-        # Fourth execute call is detection CTE INSERT
-        det_call = mock_conn.execute.call_args_list[3]
-        sql_str = str(det_call[0][0])
-        self.assertIn('ON CONFLICT DO NOTHING', sql_str)
-        self.assertIn('RETURNING', sql_str)
-        self.assertIn('COUNT', sql_str)
+class TestPAMProcessorRavenCommonName(unittest.TestCase):
+
+    def _proc(self, conn, model_id=2, reference_model_id=1):
+        from app.pam.pam_import_utils import RavenSelectionTableImporter
+        return _make_processor(engine=_make_engine(conn),
+                               importer=RavenSelectionTableImporter(),
+                               model_id=model_id, reference_model_id=reference_model_id)
+
+    def test_resolves_by_common_name(self):
+        # DB has these common names (lower-cased); 'Eurasian Blackbird' is missing.
+        conn = FakeConn(common_map={'great tit': 10, 'tawny owl': 11})
+        stats = self._proc(conn).process_batch([MockFileStorage(RAVEN_CHIRPITY_VALID, 'r.txt')])
+        # 3 rows: Great Tit (match), Eurasian Blackbird (miss), Tawny Owl (match)
+        self.assertEqual(stats['detections_inserted'], 2)
+        self.assertEqual(stats['rows_skipped_unknown_species'], 1)
+
+    def test_skipped_species_reported(self):
+        conn = FakeConn(common_map={'great tit': 10, 'tawny owl': 11})
+        stats = self._proc(conn).process_batch([MockFileStorage(RAVEN_CHIRPITY_VALID, 'r.txt')])
+        self.assertIn('Eurasian Blackbird', stats['skipped_species'])
+        self.assertEqual(stats['skipped_species']['Eurasian Blackbird'], 1)
+
+    def test_no_species_created_in_common_mode(self):
+        conn = FakeConn(common_map={'great tit': 10, 'tawny owl': 11})
+        self._proc(conn).process_batch([MockFileStorage(RAVEN_CHIRPITY_VALID, 'r.txt')])
+        self.assertFalse(any('INSERT INTO species' in c[0] for c in conn.calls),
+                         "common-name mode must never create species rows")
+
+    def test_all_unmatched_skips_everything(self):
+        conn = FakeConn(common_map={})  # nothing matches
+        stats = self._proc(conn).process_batch([MockFileStorage(RAVEN_CHIRPITY_VALID, 'r.txt')])
+        self.assertEqual(stats['detections_inserted'], 0)
+        self.assertEqual(stats['rows_skipped_unknown_species'], 3)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -572,59 +813,50 @@ class TestPAMProcessorDatabase(unittest.TestCase):
 
 class TestPAMProcessorIdempotency(unittest.TestCase):
 
-    def _make_existing_conn(self):
-        """Simulates DB state where everything already exists."""
-        mock_conn = MagicMock()
-        sp_upsert = MagicMock()
-        sp_select = MagicMock()
-        sp_select.__iter__ = lambda s: iter([('Turdus merula', 1), ('Strix aluco', 2), ('Turdus iliacus', 3)])
-        rec_result = MagicMock()
-        # was_inserted=False → recording already existed
-        rec_result.fetchone.return_value = (1, False)
-        det_result = MagicMock()
-        # 0 inserted → all are duplicates
-        det_result.fetchone.return_value = (0,)
-        mock_conn.execute.side_effect = [sp_upsert, sp_select, rec_result, det_result,
-                                          det_result, det_result]
-        return mock_conn
+    def _existing_conn(self):
+        """DB state where the recording, all detections and all links already exist."""
+        return FakeConn(recording_existed=True, new_detection_count=0, new_link_count=0)
 
     def test_second_import_reports_existing_recording(self):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        engine = _make_engine(self._make_existing_conn())
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+        proc = _make_processor(engine=_make_engine(self._existing_conn()))
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
         self.assertEqual(stats['recordings_new'], 0)
         self.assertEqual(stats['recordings_existing'], 1)
 
     def test_second_import_reports_all_detections_as_duplicates(self):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        engine = _make_engine(self._make_existing_conn())
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+        proc = _make_processor(engine=_make_engine(self._existing_conn()))
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
         self.assertEqual(stats['detections_inserted'], 0)
         self.assertEqual(stats['detections_duplicate'], 3)
 
-    def test_second_import_does_not_change_species_count(self):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        engine = _make_engine(self._make_existing_conn())
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+    def test_second_import_adds_no_new_model_links(self):
+        proc = _make_processor(engine=_make_engine(self._existing_conn()))
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
-        # Species SELECT returns 3 regardless
+        self.assertEqual(stats['model_links_new'], 0)
+        self.assertEqual(stats['model_links_existing'], 3)
+
+    def test_second_import_does_not_change_species_count(self):
+        proc = _make_processor(engine=_make_engine(self._existing_conn()))
+        stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
         self.assertEqual(stats['species_count'], 3)
 
     def test_second_import_files_still_counted_as_processed(self):
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        engine = _make_engine(self._make_existing_conn())
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+        proc = _make_processor(engine=_make_engine(self._existing_conn()))
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
         self.assertEqual(stats['files_processed'], 1)
 
+    def test_second_model_on_existing_events_adds_links_not_detections(self):
+        """A different model over events that already exist: 0 new detections, new links."""
+        conn = FakeConn(recording_existed=True, new_detection_count=0, new_link_count=3)
+        proc = _make_processor(engine=_make_engine(conn), model_id=2, reference_model_id=1)
+        stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+        self.assertEqual(stats['detections_inserted'], 0)
+        self.assertEqual(stats['model_links_new'], 3)
+
     def test_partial_duplicate_partial_new(self):
         """1 new detection + 2 duplicates in the same batch."""
-        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
-        mock_conn = _make_processor_conn(det_inserted=1)
-        engine = _make_engine(mock_conn)
-        proc = PAMImportProcessor(engine, location_id=1, importer=BirdNETImporter())
+        conn = FakeConn(new_detection_count=1)
+        proc = _make_processor(engine=_make_engine(conn))
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
         self.assertEqual(stats['detections_inserted'], 1)
         self.assertEqual(stats['detections_duplicate'], 2)
@@ -761,35 +993,58 @@ class TestPAMImportPage(PamImportRouteBase):
 # 8. Flask route: POST /<lang>/api/pam/import
 # ══════════════════════════════════════════════════════════════════════════════
 
+_RouteModel = namedtuple('_RouteModel', 'model_id name version')
+_ROUTE_MODELS = [
+    _RouteModel(1, 'BirdNET', '2.4'),
+    _RouteModel(2, 'Perch', 'v2'),
+    _RouteModel(3, 'Nocmig', ''),
+    _RouteModel(4, 'Nocmig', 'V2 Beta'),
+]
+
+
+def _route_conn(has_access=True):
+    """A get_pam_db_connection() stand-in: returns the models catalogue for the
+    models query and an access row for the location_institutions query."""
+    conn = MagicMock()
+
+    def _ex(sql, params=None):
+        s = str(sql)
+        res = MagicMock()
+        if 'FROM models' in s:
+            res.fetchall.return_value = _ROUTE_MODELS
+        elif 'location_institutions' in s:
+            res.fetchone.return_value = (1,) if has_access else None
+        else:
+            res.fetchall.return_value = []
+            res.fetchone.return_value = None
+        return res
+
+    conn.execute.side_effect = _ex
+    return conn
+
+
 class TestPAMImportAPI(PamImportRouteBase):
 
-    def _post(self, files=None, location_id=1, classifier='birdnet', user=None):
+    def _post(self, files=None, location_id=1, fmt='birdnet', model_id='1', user=None):
         """Helper: POST to import API as given user."""
         if user is None:
             user = self.manager
         self._login(user.id)
 
-        data = {
-            'location_id': str(location_id),
-            'classifier': classifier,
-        }
+        data = {'location_id': str(location_id), 'format': fmt, 'model_id': str(model_id)}
         if files:
             data['files'] = files
-
-        # Access check conn (for non-admin: checks location_institutions)
-        access_conn = MagicMock()
-        access_row = MagicMock()
-        access_row.fetchone.return_value = (1,)  # has access
-        access_conn.execute.return_value = access_row
 
         mock_stats = {
             'files_processed': 1, 'files_empty': 0, 'files_failed': 0,
             'recordings_new': 1, 'recordings_existing': 0,
             'detections_inserted': 3, 'detections_duplicate': 0,
+            'model_links_new': 3, 'model_links_existing': 0,
+            'rows_skipped_unknown_species': 0, 'skipped_species': {},
             'species_count': 2,
         }
 
-        with patch('app.pam.routes.get_pam_db_connection', return_value=access_conn), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
              patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
              patch('app.pam.routes.PAMImportProcessor') as mock_processor_cls:
 
@@ -817,24 +1072,18 @@ class TestPAMImportAPI(PamImportRouteBase):
     def test_viewer_returns_403(self):
         self._login(self.viewer.id)
         resp = self.client.post('/uk/api/pam/import',
-                                data={'location_id': '1', 'classifier': 'birdnet'},
+                                data={'location_id': '1', 'format': 'birdnet', 'model_id': '1'},
                                 content_type='multipart/form-data')
         self.assertEqual(resp.status_code, 403)
 
     def test_no_access_to_location_returns_403(self):
         self._login(self.manager.id)
-        # Access check returns None → no access
-        access_conn = MagicMock()
-        access_row = MagicMock()
-        access_row.fetchone.return_value = None
-        access_conn.execute.return_value = access_row
-
-        with patch('app.pam.routes.get_pam_db_connection', return_value=access_conn), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn(has_access=False)), \
              patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
              patch('app.pam.routes.PAMImportProcessor'):
             resp = self.client.post(
                 '/uk/api/pam/import',
-                data={'location_id': '999', 'classifier': 'birdnet',
+                data={'location_id': '999', 'format': 'birdnet', 'model_id': '1',
                       'files': self._make_csv_file()},
                 content_type='multipart/form-data',
             )
@@ -843,66 +1092,101 @@ class TestPAMImportAPI(PamImportRouteBase):
     def test_admin_bypasses_institution_check(self):
         """Admin user skips the location_institutions access check."""
         self._login(self.admin.id)
-        mock_stats = {
-            'files_processed': 1, 'files_empty': 0, 'files_failed': 0,
-            'recordings_new': 1, 'recordings_existing': 0,
-            'detections_inserted': 3, 'detections_duplicate': 0,
-            'species_count': 2,
-        }
-        with patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
              patch('app.pam.routes.PAMImportProcessor') as mock_cls:
-            mock_cls.return_value.process_batch.return_value = mock_stats
+            mock_cls.return_value.process_batch.return_value = {'species_count': 0}
             resp = self.client.post(
                 '/uk/api/pam/import',
-                data={'location_id': '1', 'classifier': 'birdnet',
+                data={'location_id': '1', 'format': 'birdnet', 'model_id': '1',
                       'files': self._make_csv_file()},
                 content_type='multipart/form-data',
             )
-        # Should succeed (no access check for admin) → NOT 403
         self.assertNotEqual(resp.status_code, 403)
 
     # ── validation ────────────────────────────────────────────────────────────
 
     def test_missing_location_id_returns_400(self):
         self._login(self.manager.id)
-        with patch('app.pam.routes.get_pam_db_connection', return_value=MagicMock()), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
              patch('app.pam.routes.get_pam_engine', return_value=MagicMock()):
             resp = self.client.post(
                 '/uk/api/pam/import',
-                data={'classifier': 'birdnet'},
+                data={'format': 'birdnet', 'model_id': '1'},
                 content_type='multipart/form-data',
             )
         body = json.loads(resp.data)
         self.assertEqual(resp.status_code, 400)
         self.assertFalse(body['success'])
 
-    def test_unknown_classifier_returns_400(self):
+    def test_unknown_format_returns_400(self):
         self._login(self.manager.id)
-        with patch('app.pam.routes.get_pam_db_connection', return_value=MagicMock()), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
              patch('app.pam.routes.get_pam_engine', return_value=MagicMock()):
             resp = self.client.post(
                 '/uk/api/pam/import',
-                data={'location_id': '1', 'classifier': 'nonexistent'},
+                data={'location_id': '1', 'format': 'nonexistent', 'model_id': '1'},
                 content_type='multipart/form-data',
             )
         body = json.loads(resp.data)
         self.assertEqual(resp.status_code, 400)
         self.assertFalse(body['success'])
+
+    def test_invalid_model_id_returns_400(self):
+        self._login(self.admin.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+             patch('app.pam.routes.PAMImportProcessor'):
+            resp = self.client.post(
+                '/uk/api/pam/import',
+                data={'location_id': '1', 'format': 'birdnet', 'model_id': '999',
+                      'files': self._make_csv_file()},
+                content_type='multipart/form-data',
+            )
+        body = json.loads(resp.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(body['success'])
+
+    def test_missing_model_id_returns_400(self):
+        self._login(self.admin.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+             patch('app.pam.routes.PAMImportProcessor'):
+            resp = self.client.post(
+                '/uk/api/pam/import',
+                data={'location_id': '1', 'format': 'birdnet',
+                      'files': self._make_csv_file()},
+                content_type='multipart/form-data',
+            )
+        self.assertEqual(resp.status_code, 400)
 
     def test_no_files_returns_400(self):
         self._login(self.manager.id)
-        access_conn = MagicMock()
-        access_conn.execute.return_value.fetchone.return_value = (1,)
-        with patch('app.pam.routes.get_pam_db_connection', return_value=access_conn), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
              patch('app.pam.routes.get_pam_engine', return_value=MagicMock()):
             resp = self.client.post(
                 '/uk/api/pam/import',
-                data={'location_id': '1', 'classifier': 'birdnet'},
+                data={'location_id': '1', 'format': 'birdnet', 'model_id': '1'},
                 content_type='multipart/form-data',
             )
         body = json.loads(resp.data)
         self.assertEqual(resp.status_code, 400)
         self.assertFalse(body['success'])
+
+    def test_legacy_classifier_field_still_accepted(self):
+        """Backward compat: old 'classifier' field works when 'format' is absent."""
+        self._login(self.admin.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+             patch('app.pam.routes.PAMImportProcessor') as mock_cls:
+            mock_cls.return_value.process_batch.return_value = {'species_count': 0}
+            resp = self.client.post(
+                '/uk/api/pam/import',
+                data={'location_id': '1', 'classifier': 'birdnet', 'model_id': '1',
+                      'files': self._make_csv_file()},
+                content_type='multipart/form-data',
+            )
+        self.assertEqual(resp.status_code, 200)
 
     # ── success path ──────────────────────────────────────────────────────────
 
@@ -925,55 +1209,76 @@ class TestPAMImportAPI(PamImportRouteBase):
                     'detections_inserted', 'detections_duplicate', 'species_count'):
             self.assertIn(key, stats, f"Missing key: {key}")
 
+    def test_raven_format_uses_raven_importer(self):
+        from app.pam.pam_import_utils import RavenSelectionTableImporter
+        self._login(self.admin.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+             patch('app.pam.routes.PAMImportProcessor') as mock_cls:
+            mock_cls.return_value.process_batch.return_value = {'species_count': 0}
+            self.client.post(
+                '/uk/api/pam/import',
+                data={'location_id': '1', 'format': 'raven', 'model_id': '2',
+                      'files': (io.BytesIO(RAVEN_CHIRPITY_VALID.encode()), 'r.txt')},
+                content_type='multipart/form-data',
+            )
+        self.assertIsInstance(mock_cls.call_args[0][2], RavenSelectionTableImporter)
+
+    def test_processor_called_with_model_id_and_reference(self):
+        self._login(self.admin.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+             patch('app.pam.routes.PAMImportProcessor') as mock_cls:
+            mock_cls.return_value.process_batch.return_value = {'species_count': 0}
+            self.client.post(
+                '/uk/api/pam/import',
+                data={'location_id': '1', 'format': 'raven', 'model_id': '2',
+                      'files': (io.BytesIO(RAVEN_CHIRPITY_VALID.encode()), 'r.txt')},
+                content_type='multipart/form-data',
+            )
+        kwargs = mock_cls.call_args.kwargs
+        self.assertEqual(kwargs['model_id'], 2)
+        self.assertEqual(kwargs['reference_model_id'], 1)   # BirdNET 2.4
+
     def test_processor_called_with_correct_location(self):
         LOCATION_ID = 77
         self._login(self.admin.id)
-        with patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
              patch('app.pam.routes.PAMImportProcessor') as mock_cls:
-            mock_cls.return_value.process_batch.return_value = {
-                'files_processed': 0, 'files_empty': 0, 'files_failed': 0,
-                'recordings_new': 0, 'recordings_existing': 0,
-                'detections_inserted': 0, 'detections_duplicate': 0, 'species_count': 0,
-            }
+            mock_cls.return_value.process_batch.return_value = {'species_count': 0}
             self.client.post(
                 '/uk/api/pam/import',
-                data={'location_id': str(LOCATION_ID), 'classifier': 'birdnet',
+                data={'location_id': str(LOCATION_ID), 'format': 'birdnet', 'model_id': '1',
                       'files': self._make_csv_file()},
                 content_type='multipart/form-data',
             )
-        # Check PAMImportProcessor was instantiated with location_id=77
-        # Route calls PAMImportProcessor(engine, location_id, importer) positionally
-        call_args = mock_cls.call_args
-        self.assertEqual(call_args[0][1], LOCATION_ID)
+        self.assertEqual(mock_cls.call_args[0][1], LOCATION_ID)
 
     def test_processor_called_with_birdnet_importer(self):
         from app.pam.pam_import_utils import BirdNETImporter
         self._login(self.admin.id)
-        with patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
              patch('app.pam.routes.PAMImportProcessor') as mock_cls:
-            mock_cls.return_value.process_batch.return_value = {
-                'files_processed': 0, 'files_empty': 0, 'files_failed': 0,
-                'recordings_new': 0, 'recordings_existing': 0,
-                'detections_inserted': 0, 'detections_duplicate': 0, 'species_count': 0,
-            }
+            mock_cls.return_value.process_batch.return_value = {'species_count': 0}
             self.client.post(
                 '/uk/api/pam/import',
-                data={'location_id': '1', 'classifier': 'birdnet',
+                data={'location_id': '1', 'format': 'birdnet', 'model_id': '1',
                       'files': self._make_csv_file()},
                 content_type='multipart/form-data',
             )
-        # Route calls PAMImportProcessor(engine, location_id, importer) positionally
-        call_args = mock_cls.call_args
-        self.assertIsInstance(call_args[0][2], BirdNETImporter)
+        self.assertIsInstance(mock_cls.call_args[0][2], BirdNETImporter)
 
     def test_db_error_returns_500(self):
         self._login(self.admin.id)
-        with patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
              patch('app.pam.routes.PAMImportProcessor') as mock_cls:
             mock_cls.return_value.process_batch.side_effect = Exception("DB down")
             resp = self.client.post(
                 '/uk/api/pam/import',
-                data={'location_id': '1', 'classifier': 'birdnet',
+                data={'location_id': '1', 'format': 'birdnet', 'model_id': '1',
                       'files': self._make_csv_file()},
                 content_type='multipart/form-data',
             )
@@ -983,17 +1288,14 @@ class TestPAMImportAPI(PamImportRouteBase):
 
     def test_multiple_files_passed_to_processor(self):
         self._login(self.admin.id)
-        with patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
+        with patch('app.pam.routes.get_pam_db_connection', return_value=_route_conn()), \
+             patch('app.pam.routes.get_pam_engine', return_value=MagicMock()), \
              patch('app.pam.routes.PAMImportProcessor') as mock_cls:
-            mock_cls.return_value.process_batch.return_value = {
-                'files_processed': 3, 'files_empty': 0, 'files_failed': 0,
-                'recordings_new': 3, 'recordings_existing': 0,
-                'detections_inserted': 9, 'detections_duplicate': 0, 'species_count': 2,
-            }
+            mock_cls.return_value.process_batch.return_value = {'species_count': 2}
             self.client.post(
                 '/uk/api/pam/import',
                 data={
-                    'location_id': '1', 'classifier': 'birdnet',
+                    'location_id': '1', 'format': 'birdnet', 'model_id': '1',
                     'files': [
                         self._make_csv_file(name='a.csv'),
                         self._make_csv_file(name='b.csv'),
@@ -1018,6 +1320,15 @@ class TestIMPORTERSRegistry(unittest.TestCase):
 
     def test_birdnet_key_present(self):
         self.assertIn('birdnet', self.importers)
+
+    def test_raven_key_present(self):
+        self.assertIn('raven', self.importers)
+
+    def test_birdnet_is_scientific_mode(self):
+        self.assertEqual(self.importers['birdnet'].species_lookup_mode, 'scientific')
+
+    def test_raven_is_common_mode(self):
+        self.assertEqual(self.importers['raven'].species_lookup_mode, 'common')
 
     def test_all_importers_have_name_and_key(self):
         from app.pam.pam_import_utils import BaseDetectionImporter
