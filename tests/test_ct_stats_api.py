@@ -54,6 +54,47 @@ def _generic_session():
     return sess
 
 
+def _capturing_session():
+    """Like _generic_session but records every SQL string passed to execute().
+
+    Captures both raw connection execute (conn.execute) and session.execute,
+    plus the SQL text given to ORM .filter(text(...)). Returns (sess, captured)
+    where ``captured`` is a list of stringified SQL fragments.
+    """
+    captured = []
+
+    def _record(*args, **kwargs):
+        if args:
+            captured.append(str(args[0]))
+        out = MagicMock()
+        out.mappings.return_value.fetchall.return_value = []
+        out.fetchall.return_value = []
+        return out
+
+    q = MagicMock()
+    for method in ('join', 'outerjoin', 'order_by', 'group_by',
+                   'having', 'distinct', 'params', 'limit', 'offset',
+                   'select_from', 'with_entities', 'options'):
+        getattr(q, method).return_value = q
+
+    def _filter(*args, **kwargs):
+        if args:
+            captured.append(str(args[0]))
+        return q
+    q.filter.side_effect = _filter
+    q.all.return_value = []
+    q.scalar.return_value = 0
+    q.first.return_value = None
+    q.__iter__ = MagicMock(side_effect=lambda: iter([]))
+    q.subquery.return_value = MagicMock()
+
+    sess = MagicMock()
+    sess.query.return_value = q
+    sess.connection.return_value.execute.side_effect = _record
+    sess.execute.side_effect = _record
+    return sess, captured
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Base class
 # ═══════════════════════════════════════════════════════════════════════════
@@ -406,6 +447,163 @@ class TestGalleryPhotos(StatsApiBase):
     def test_authenticated_user_missing_species_id_returns_400(self):
         resp, body = self._get_json(self.URL, self.manager.id)
         self.assertEqual(resp.status_code, 400)
+
+
+class TestQcExclusionAcrossEndpoints(StatsApiBase):
+    """QC opt-in filter reaches every real-time endpoint, gated to logged-in users."""
+
+    BASE = '/uk/camera-traps'
+
+    def _get_capturing(self, url, user_id=None):
+        """GET with a SQL-capturing CT session; returns (resp, captured_sql_list)."""
+        sess, captured = _capturing_session()
+        if user_id:
+            _login(self.client, user_id)
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(
+                patch('app.camera_traps.routes.get_ct_session', return_value=sess))
+            stack.enter_context(patch('app.camera_traps.routes.close_ct_session'))
+            resp = self.client.get(url)
+        return resp, captured
+
+    @staticmethod
+    def _joined(captured):
+        return '\n'.join(captured)
+
+    # ── top-species (raw SQL, alias o) ─────────────────────────────────────────
+    def test_top_species_no_qc_no_not_exists(self):
+        url = self.BASE + '/api/stats/top-species?start_date=2024-01-01&end_date=2024-12-31'
+        resp, cap = self._get_capturing(url, self.admin.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    def test_top_species_with_qc_adds_not_exists(self):
+        url = (self.BASE + '/api/stats/top-species'
+               '?start_date=2024-01-01&end_date=2024-12-31&qc_exclude=qc_non_functional')
+        resp, cap = self._get_capturing(url, self.admin.id)
+        sql = self._joined(cap)
+        self.assertIn('NOT EXISTS', sql)
+        self.assertIn('qc_non_functional = TRUE', sql)
+        self.assertIn('o.location_id', sql)
+
+    def test_top_species_invalid_flag_ignored(self):
+        url = (self.BASE + '/api/stats/top-species'
+               '?start_date=2024-01-01&end_date=2024-12-31&qc_exclude=bogus')
+        resp, cap = self._get_capturing(url, self.admin.id)
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    def test_top_species_anonymous_qc_ignored(self):
+        url = (self.BASE + '/api/stats/top-species'
+               '?start_date=2024-01-01&end_date=2024-12-31&qc_exclude=qc_non_functional')
+        resp, cap = self._get_capturing(url)  # anonymous
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    # ── locations (ORM, alias observations) ─────────────────────────────────────
+    def test_locations_with_qc_adds_not_exists_observations_alias(self):
+        url = (self.BASE + '/api/stats/locations'
+               '?start_date=2024-01-01&end_date=2024-12-31&qc_exclude=qc_stolen')
+        resp, cap = self._get_capturing(url, self.admin.id)
+        sql = self._joined(cap)
+        self.assertIn('NOT EXISTS', sql)
+        self.assertIn('observations.location_id', sql)
+
+    def test_locations_anonymous_qc_ignored(self):
+        url = (self.BASE + '/api/stats/locations'
+               '?start_date=2024-01-01&end_date=2024-12-31&qc_exclude=qc_stolen')
+        resp, cap = self._get_capturing(url)
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    # ── distribution-map (raw SQL, alias o) ─────────────────────────────────────
+    def test_distribution_map_with_qc_adds_not_exists(self):
+        url = (self.BASE + '/api/stats/distribution-map'
+               '?species_id=1&start_date=2024-01-01&end_date=2024-12-31'
+               '&qc_exclude=qc_hardware_issue')
+        resp, cap = self._get_capturing(url, self.admin.id)
+        sql = self._joined(cap)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('NOT EXISTS', sql)
+        self.assertIn('qc_hardware_issue = TRUE', sql)
+
+    def test_distribution_map_no_qc_no_not_exists(self):
+        url = (self.BASE + '/api/stats/distribution-map'
+               '?species_id=1&start_date=2024-01-01&end_date=2024-12-31')
+        resp, cap = self._get_capturing(url, self.admin.id)
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    def test_distribution_map_anonymous_qc_ignored(self):
+        url = (self.BASE + '/api/stats/distribution-map'
+               '?species_id=1&start_date=2024-01-01&end_date=2024-12-31'
+               '&qc_exclude=qc_hardware_issue')
+        resp, cap = self._get_capturing(url)
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    # ── daily-activity (raw SQL helper, alias o) ────────────────────────────────
+    def test_daily_activity_with_qc_adds_not_exists(self):
+        url = (self.BASE + '/api/stats/daily-activity'
+               '?start_date=2024-01-01&end_date=2024-12-31&species_ids=1'
+               '&qc_exclude=qc_data_not_usable')
+        resp, cap = self._get_capturing(url, self.admin.id)
+        sql = self._joined(cap)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('NOT EXISTS', sql)
+        self.assertIn('qc_data_not_usable = TRUE', sql)
+
+    def test_daily_activity_no_qc_no_not_exists(self):
+        url = (self.BASE + '/api/stats/daily-activity'
+               '?start_date=2024-01-01&end_date=2024-12-31&species_ids=1')
+        resp, cap = self._get_capturing(url, self.admin.id)
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    def test_daily_activity_anonymous_qc_ignored(self):
+        url = (self.BASE + '/api/stats/daily-activity'
+               '?start_date=2024-01-01&end_date=2024-12-31&species_ids=1'
+               '&qc_exclude=qc_data_not_usable')
+        resp, cap = self._get_capturing(url)
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    # ── activity-heatmap (raw SQL helper, alias o) ──────────────────────────────
+    def test_activity_heatmap_with_qc_adds_not_exists(self):
+        # NOTE: jsonify of the mock species_name fails (test artifact, not a code
+        # bug), so the response may be 500. We assert on the captured SQL, which
+        # proves the QC predicate reached fetch_heatmap_data's query.
+        url = (self.BASE + '/api/stats/activity-heatmap'
+               '?species_id=1&start_date=2024-01-01&end_date=2024-12-31'
+               '&qc_exclude=qc_stolen')
+        _, cap = self._get_capturing(url, self.admin.id)
+        sql = self._joined(cap)
+        self.assertIn('NOT EXISTS', sql)
+        self.assertIn('qc_stolen = TRUE', sql)
+        self.assertIn('o.location_id', sql)
+
+    def test_activity_heatmap_anonymous_qc_ignored(self):
+        url = (self.BASE + '/api/stats/activity-heatmap'
+               '?species_id=1&start_date=2024-01-01&end_date=2024-12-31'
+               '&qc_exclude=qc_stolen')
+        _, cap = self._get_capturing(url)  # anonymous
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    # ── dashboard (ORM page, alias observations) ────────────────────────────────
+    def test_dashboard_with_qc_adds_not_exists_observations_alias(self):
+        url = (self.BASE + '/dashboard'
+               '?start_date=2024-01-01&end_date=2024-12-31&qc_exclude=qc_stolen')
+        resp, cap = self._get_capturing(url, self.admin.id)
+        sql = self._joined(cap)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('NOT EXISTS', sql)
+        self.assertIn('observations.location_id', sql)
+
+    def test_dashboard_no_qc_no_not_exists(self):
+        url = self.BASE + '/dashboard?start_date=2024-01-01&end_date=2024-12-31'
+        resp, cap = self._get_capturing(url, self.admin.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
+
+    def test_dashboard_anonymous_qc_ignored(self):
+        url = (self.BASE + '/dashboard'
+               '?start_date=2024-01-01&end_date=2024-12-31&qc_exclude=qc_stolen')
+        resp, cap = self._get_capturing(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn('NOT EXISTS', self._joined(cap))
 
 
 if __name__ == '__main__':

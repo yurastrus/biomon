@@ -364,5 +364,67 @@ class TestQcFiltering(unittest.TestCase):
         self.assertNotIn('qc_local_datetime_issue = TRUE', sql)
 
 
+class TestQcExclusionHelperContract(unittest.TestCase):
+    """Direct unit tests for the refactored _build_qc_exclusion_cond contract.
+
+    After the refactor (shared by export + dashboard + real-time APIs) the helper
+    returns a BARE ``NOT EXISTS (...)`` predicate (no leading ` AND `) and accepts
+    an ``obs_alias`` to correlate against the right observations alias.
+    """
+
+    def test_returns_bare_predicate_without_leading_and(self):
+        from app.camera_traps.data_export import _build_qc_exclusion_cond
+        frag = _build_qc_exclusion_cond(['qc_non_functional'])
+        self.assertTrue(frag.lstrip().startswith('NOT EXISTS'),
+                        "Фрагмент має починатися з NOT EXISTS, без провідного AND")
+        # No leading AND before the predicate.
+        self.assertFalse(frag.lstrip().startswith('AND'))
+
+    def test_empty_returns_empty_string(self):
+        from app.camera_traps.data_export import _build_qc_exclusion_cond
+        self.assertEqual(_build_qc_exclusion_cond([]), "")
+        self.assertEqual(_build_qc_exclusion_cond(None or []), "")
+
+    def test_default_alias_is_o(self):
+        from app.camera_traps.data_export import _build_qc_exclusion_cond
+        frag = _build_qc_exclusion_cond(['qc_stolen'])
+        self.assertIn('o.location_id', frag)
+        self.assertIn('o.series_start_time', frag)
+
+    def test_observations_alias_substituted(self):
+        from app.camera_traps.data_export import _build_qc_exclusion_cond
+        frag = _build_qc_exclusion_cond(['qc_stolen'], obs_alias='observations')
+        self.assertIn('observations.location_id', frag)
+        self.assertIn('observations.series_start_time', frag)
+        self.assertNotIn('o.location_id', frag)
+
+    def test_boolean_semantics_unchanged(self):
+        from app.camera_traps.data_export import _build_qc_exclusion_cond
+        frag = _build_qc_exclusion_cond(['qc_non_functional'], obs_alias='observations')
+        self.assertIn('d_qc.qc_non_functional = TRUE', frag)
+
+    def test_text_field_semantics_unchanged(self):
+        from app.camera_traps.data_export import _build_qc_exclusion_cond
+        frag = _build_qc_exclusion_cond(['qc_local_datetime_issue'], obs_alias='observations')
+        self.assertIn('IS NOT NULL', frag)
+        self.assertIn("<> ''", frag)
+        self.assertNotIn('qc_local_datetime_issue = TRUE', frag)
+
+    def test_or_logic_single_block(self):
+        from app.camera_traps.data_export import _build_qc_exclusion_cond
+        frag = _build_qc_exclusion_cond(['qc_non_functional', 'qc_stolen'], obs_alias='observations')
+        self.assertEqual(frag.count('NOT EXISTS'), 1)
+        self.assertIn(' OR ', frag)
+
+    def test_whitelist_ignores_invalid_flag(self):
+        from app.camera_traps.data_export import _build_qc_exclusion_cond
+        self.assertEqual(
+            _build_qc_exclusion_cond(["bogus'; DROP TABLE deployments; --"]), "")
+        # Mixed valid+invalid → only the valid flag survives.
+        frag = _build_qc_exclusion_cond(['qc_stolen', 'not_a_flag'])
+        self.assertIn('qc_stolen = TRUE', frag)
+        self.assertNotIn('not_a_flag', frag)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
