@@ -769,6 +769,57 @@ class TestPAMProcessorDatabase(unittest.TestCase):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# 5a-bis. PAMImportProcessor — confidence-threshold import filter
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestPAMProcessorConfidenceThreshold(unittest.TestCase):
+    """BIRDNET_CSV_VALID carries 3 rows with confidence 0.9754, 0.8123, 0.1036."""
+
+    def _run(self, threshold, csv=BIRDNET_CSV_VALID):
+        from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
+        conn = FakeConn()
+        proc = PAMImportProcessor(
+            _make_engine(conn), location_id=1, importer=BirdNETImporter(),
+            model_id=_REF_MODEL, reference_model_id=_REF_MODEL,
+            confidence_threshold=threshold)
+        stats = proc.process_batch([MockFileStorage(csv, 'test.csv')])
+        return stats, conn
+
+    def test_default_zero_keeps_all(self):
+        stats, _ = self._run(0.0)
+        self.assertEqual(stats['detections_filtered'], 0)
+        self.assertEqual(stats['detections_inserted'], 3)
+
+    def test_threshold_drops_rows_below(self):
+        # threshold 0.5 → only the 0.1036 row is dropped
+        stats, _ = self._run(0.5)
+        self.assertEqual(stats['detections_filtered'], 1)
+        self.assertEqual(stats['detections_inserted'], 2)
+
+    def test_high_threshold_drops_most(self):
+        # threshold 0.9 → only the 0.9754 row survives
+        stats, _ = self._run(0.9)
+        self.assertEqual(stats['detections_filtered'], 2)
+        self.assertEqual(stats['detections_inserted'], 1)
+
+    def test_filtered_confidence_absent_from_insert(self):
+        # the dropped row's confidence must never reach the detections INSERT
+        _, conn = self._run(0.5)
+        det_call = [c for c in conn.calls if 'INSERT INTO detections' in c[0]][0]
+        conf_values = [v for k, v in det_call[1].items() if k.startswith('c')]
+        self.assertNotIn(0.1036, conf_values)
+
+    def test_null_confidence_always_kept(self):
+        # non-numeric confidence parses to None and must survive any threshold
+        csv = ("Start (s),End (s),Scientific name,Common name,Confidence,File\n"
+               "6.0,9.0,Turdus merula,Eurasian Blackbird,n/a,"
+               "F:\\path\\FRANKO_20260305_170100.wav\n")
+        stats, _ = self._run(0.9, csv=csv)
+        self.assertEqual(stats['detections_filtered'], 0)
+        self.assertEqual(stats['detections_inserted'], 1)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 5b. Raven import — species resolution by common name
 # ══════════════════════════════════════════════════════════════════════════════
 
