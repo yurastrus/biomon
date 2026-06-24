@@ -6,7 +6,13 @@ We replace `get_pam_db_connection` with a mock -- the real PAM DB is untouched.
 import pytest
 from unittest.mock import MagicMock, patch
 
-from app.pam.utils import get_available_species
+from app.pam.utils import (
+    get_available_species,
+    get_models_list,
+    _normalize_model_mode,
+    _confidence_filter_sql,
+    _confidence_value_sql,
+)
 
 
 def _make_mock_conn(rows):
@@ -67,3 +73,97 @@ def test_get_available_species_sorted_alphabetically(app):
             result = get_available_species('en')
     assert result[0]['value'] == 'Alpha alpha'
     assert result[1]['value'] == 'Zelta zelta'
+
+
+# ── Dashboard model switcher (Task B) ─────────────────────────────────────────
+
+class TestNormalizeModelMode:
+    def test_default_is_birdnet(self):
+        assert _normalize_model_mode('birdnet', None) == 'birdnet'
+
+    def test_invalid_mode_falls_back_to_birdnet(self):
+        assert _normalize_model_mode('garbage', 5) == 'birdnet'
+
+    def test_combined(self):
+        assert _normalize_model_mode('combined', None) == 'combined'
+
+    def test_model_without_id_falls_back(self):
+        assert _normalize_model_mode('model', None) == 'birdnet'
+
+    def test_model_with_id_binds_param(self):
+        params = {'confidence': 0.5}
+        assert _normalize_model_mode('model', 3, params) == 'model'
+        assert params['model_id'] == 3
+
+    def test_birdnet_does_not_bind_model_id(self):
+        params = {'confidence': 0.5}
+        _normalize_model_mode('birdnet', 3, params)
+        assert 'model_id' not in params
+
+
+class TestConfidenceFilterSql:
+    def test_birdnet_is_unchanged_predicate(self):
+        # Regression guard: default mode must be byte-identical to the old SQL.
+        assert _confidence_filter_sql('birdnet') == 'd.confidence >= :confidence'
+
+    def test_birdnet_respects_alias(self):
+        assert _confidence_filter_sql('birdnet', alias='x') == 'x.confidence >= :confidence'
+
+    def test_model_uses_detection_models_and_model_id(self):
+        sql = _confidence_filter_sql('model', 7)
+        assert 'detection_models' in sql
+        assert ':model_id' in sql
+        assert ':confidence' in sql
+        assert 'EXISTS' in sql
+
+    def test_combined_uses_any_model(self):
+        sql = _confidence_filter_sql('combined')
+        assert 'detection_models' in sql
+        assert ':model_id' not in sql
+        assert ':confidence' in sql
+
+    def test_model_without_id_falls_back_to_birdnet(self):
+        assert _confidence_filter_sql('model', None) == 'd.confidence >= :confidence'
+
+
+class TestConfidenceValueSql:
+    def test_birdnet_is_plain_column(self):
+        assert _confidence_value_sql('birdnet') == 'd.confidence'
+
+    def test_model_selects_that_models_confidence(self):
+        sql = _confidence_value_sql('model', 2)
+        assert 'detection_models' in sql and ':model_id' in sql
+
+    def test_combined_selects_max(self):
+        sql = _confidence_value_sql('combined')
+        assert 'MAX(dm.confidence)' in sql
+
+
+class TestGetModelsList:
+    def _conn(self, rows):
+        conn = MagicMock()
+        conn.execute.return_value.fetchall.return_value = rows
+        return conn
+
+    def test_marks_reference_and_builds_label(self, app):
+        from types import SimpleNamespace
+        rows = [
+            SimpleNamespace(model_id=1, name='BirdNET', version='2.4'),
+            SimpleNamespace(model_id=2, name='Perch', version='v2'),
+            SimpleNamespace(model_id=3, name='Nocmig', version=None),
+        ]
+        conn = self._conn(rows)
+        with app.test_request_context('/'):
+            with patch('app.pam.utils.get_pam_db_connection', return_value=conn):
+                result = get_models_list()
+        assert result[0] == {'model_id': 1, 'label': 'BirdNET 2.4', 'is_reference': True}
+        assert result[1] == {'model_id': 2, 'label': 'Perch v2', 'is_reference': False}
+        assert result[2]['label'] == 'Nocmig'  # version omitted when blank
+        assert result[2]['is_reference'] is False
+
+    def test_returns_empty_on_db_error(self, app):
+        conn = MagicMock()
+        conn.execute.side_effect = RuntimeError('no models table')
+        with app.test_request_context('/'):
+            with patch('app.pam.utils.get_pam_db_connection', return_value=conn):
+                assert get_models_list() == []
