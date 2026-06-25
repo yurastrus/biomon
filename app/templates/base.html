@@ -6,8 +6,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}{{ _('Автоматизований моніторинг фауни') }}{% endblock %}</title>
+
+    {# ── SEO meta ─────────────────────────────────────────────────────────── #}
+    <meta name="description" content="{% block meta_description %}{{ _('БіоМон — платформа автоматизованого моніторингу фауни: фотопастки, біоакустичний моніторинг (PAM) і моделювання поширення видів.') }}{% endblock %}">
+    <meta name="robots" content="{% block robots %}index, follow{% endblock %}">
+    <link rel="canonical" href="{{ request.base_url }}">
+
+    {# hreflang alternates — reciprocal cluster + x-default (mirrors sitemap.xml).
+       Only emitted for language-prefixed endpoints (those carrying lang_code). #}
+    {% if request.endpoint and request.view_args and 'lang_code' in request.view_args %}
+        {% for code in LANGUAGES.keys() %}
+            {% set _alt_args = request.view_args.copy() %}
+            {% do _alt_args.update({'lang_code': code}) %}
+            <link rel="alternate" hreflang="{{ code }}" href="{{ url_for(request.endpoint, _external=True, **_alt_args) }}">
+        {% endfor %}
+        {% set _xdef_args = request.view_args.copy() %}
+        {% do _xdef_args.update({'lang_code': 'uk'}) %}
+        <link rel="alternate" hreflang="x-default" href="{{ url_for(request.endpoint, _external=True, **_xdef_args) }}">
+    {% endif %}
+
+    {# Open Graph #}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ _('БіоМон') }}">
+    <meta property="og:title" content="{% block og_title %}{{ self.title()|trim }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ self.meta_description()|trim }}{% endblock %}">
+    <meta property="og:url" content="{{ request.base_url }}">
+    <meta property="og:locale" content="{{ 'uk_UA' if g.lang_code == 'uk' else 'en_US' }}">
+    <meta property="og:locale:alternate" content="{{ 'en_US' if g.lang_code == 'uk' else 'uk_UA' }}">
+    <meta property="og:image" content="{{ url_for('static', filename='img/og-banner.png', _external=True) }}">
+
+    {# Twitter card #}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ self.og_title()|trim }}">
+    <meta name="twitter:description" content="{{ self.og_description()|trim }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-banner.png', _external=True) }}">
+
+    <meta name="theme-color" content="#0779e4">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block head_extra %}{% endblock %}
+
+    {# Structured data — Organization #}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": {{ _('БіоМон') | tojson }},
+      "url": {{ config.SITE_URL | tojson }},
+      "logo": {{ url_for('static', filename='img/og-banner.png', _external=True) | tojson }},
+      "description": {{ _('БіоМон — платформа автоматизованого моніторингу фауни: фотопастки, біоакустичний моніторинг (PAM) і моделювання поширення видів.') | tojson }}
+    }
+    </script>
 </head>
 <body>
     <div class="page-wrapper">

@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Увійти') }}{% endblock %}
 
+{# Public but must not rank: noindex (NOT robots.txt Disallow — see app/seo.py). #}
+{% block robots %}noindex, follow{% endblock %}
+
 {% block content %}
 <div class="container" style="max-width: 500px; text-align: center;">
     <h2>{{ _('Увійти в систему') }}</h2>

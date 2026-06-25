@@ -4,6 +4,8 @@
     {{ content.title_uk if lang_code == 'uk' else content.title_en }}
 {% endblock %}
 
+{% block meta_description %}{{ _('БіоМон — автоматизований моніторинг фауни на Розточчі: дані фотопасток, біоакустичний моніторинг (PAM) і моделювання поширення видів у єдиній платформі.') }}{% endblock %}
+
 {% block content %}
 <div class="container">
     {% if content %}

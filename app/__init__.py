@@ -78,6 +78,10 @@ def create_app(config_name=None):
     from app.sdm import sdm_bp
     app.register_blueprint(sdm_bp, url_prefix='/<lang_code>/sdm')
 
+    # SEO: /robots.txt and /sitemap.xml at the domain root (no lang prefix).
+    from app.seo import seo_bp
+    app.register_blueprint(seo_bp)
+
     from app.commands import register_commands
     register_commands(app)
 
