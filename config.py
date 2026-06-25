@@ -109,6 +109,15 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
 
+    # Telegram notifications — reuses the server's state-alert bot.
+    # Token/chat kept in .env only (never committed); empty = notifications disabled.
+    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
+
+    # Google reCAPTCHA v2 keys for the public contact form.
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
+    RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
+
     # Public site URL (used in email links)
     SITE_URL = os.environ.get('SITE_URL', 'http://localhost:5000')
 

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% set status_labels = {'new': _('Нове'), 'read': _('Прочитане'), 'replied': _('Відповіли')} %}
+{% set status_badge = {'new': 'badge-success', 'read': 'badge-secondary', 'replied': 'badge-secondary'} %}
+
+{% block content %}
+<div class="container" style="margin-top: 20px; margin-bottom: 50px;">
+
+    <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
+        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a>
+        &raquo; <strong>{{ _('Звернення') }}</strong>
+    </div>
+
+    <h2 style="text-align: left; margin-bottom: 15px;">{{ _('Звернення з форми зворотного зв’язку') }}</h2>
+
+    <div style="text-align: left; margin-bottom: 20px;">
+        {% set filters = [(None, _('Усі')), ('new', _('Нові')), ('read', _('Прочитані')), ('replied', _('Відповіли'))] %}
+        {% for value, label in filters %}
+            <a href="{{ url_for('admin.contact_submissions', lang_code=g.lang_code, status=value) }}"
+               class="button-small"
+               style="{{ 'background-color:#0779e4;color:#fff;' if active_status == value else '' }}">
+                {{ label }}{% if value == 'new' and new_count %} ({{ new_count }}){% endif %}
+            </a>
+        {% endfor %}
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th style="width: 130px;">{{ _('Дата') }}</th>
+                <th>{{ _('Від') }}</th>
+                <th>{{ _('Тема / повідомлення') }}</th>
+                <th style="width: 110px;">{{ _('Статус') }}</th>
+                <th style="text-align: right;">{{ _('Дії') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in submissions %}
+            <tr>
+                <td style="white-space: nowrap; font-size: 0.85em; color: #666;">
+                    {{ s.submitted_at.strftime('%Y-%m-%d %H:%M') if s.submitted_at else '' }}
+                </td>
+                <td>
+                    <strong>{{ s.name }}</strong><br>
+                    <a href="mailto:{{ s.email }}?subject=Re: {{ s.subject or _('Ваше звернення на biomon.app') }}"
+                       style="font-size: 0.85em;">{{ s.email }}</a>
+                </td>
+                <td>
+                    {% if s.subject %}<strong>{{ s.subject }}</strong><br>{% endif %}
+                    <span style="white-space: pre-wrap;">{{ s.message }}</span>
+                </td>
+                <td>
+                    <span class="badge {{ status_badge.get(s.status, 'badge-secondary') }}">
+                        {{ status_labels.get(s.status, s.status) }}
+                    </span>
+                </td>
+                <td style="text-align: right; white-space: nowrap;">
+                    {% for value, label in [('read', _('Прочитане')), ('replied', _('Відповіли')), ('new', _('Нове'))] %}
+                        {% if s.status != value %}
+                        <form action="{{ url_for('admin.update_submission_status', lang_code=g.lang_code, submission_id=s.id) }}"
+                              method="POST" style="display:inline-block; margin:0 0 4px 0; padding:0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="status" value="{{ value }}">
+                            <button type="submit" class="button-small">{{ label }}</button>
+                        </form>
+                        {% endif %}
+                    {% endfor %}
+                    <form action="{{ url_for('admin.delete_submission', lang_code=g.lang_code, submission_id=s.id) }}"
+                          method="POST" style="display:inline-block; margin:0; padding:0;"
+                          onsubmit="return confirm('{{ _('Видалити це звернення?') }}\n\n{{ _('Ця дія є незворотною.') }}');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="button-danger" style="border:none; cursor:pointer; font-family:inherit;">
+                            {{ _('Видалити') }}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 30px; color: gray;">
+                    {{ _('Звернень поки немає.') }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

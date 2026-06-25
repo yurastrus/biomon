@@ -50,6 +50,19 @@
                 {{ _('Переглянути') }}
             </a>
         </div>
+
+        <div class="stat-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; border-top: 4px solid #28a745;">
+            <div>
+                <i class="fas fa-envelope" style="font-size: 3em; color: #28a745; margin-bottom: 20px;"></i>
+                <h5 style="font-size: 20px; color: #333; margin-bottom: 10px;">{{ _('Звернення') }}</h5>
+                <p style="color: #666; font-size: 14px; margin-bottom: 25px; line-height: 1.4;">
+                    {{ _('Повідомлення з форми зворотного зв’язку: перегляд, статуси, видалення.') }}
+                </p>
+            </div>
+            <a href="{{ url_for('admin.contact_submissions', lang_code=g.lang_code) }}" class="button" style="margin: 0; min-width: auto; width: 100%;">
+                {{ _('Переглянути') }}
+            </a>
+        </div>
         {% endif %}
 
     </div>

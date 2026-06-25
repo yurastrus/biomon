@@ -134,6 +134,32 @@ class Role(db.Model):
     def __repr__(self):
         return f"Role('{self.name}')"
 
+class ContactSubmission(db.Model):
+    """A message sent through the public contact form.
+
+    Stored in the main DB and pushed to Telegram on creation; the admin replies
+    by email manually (no personal email is embedded in the site). The `status`
+    column tracks the handling lifecycle.
+    """
+    __tablename__ = 'contact_submissions'
+
+    STATUS_NEW = 'new'
+    STATUS_READ = 'read'
+    STATUS_REPLIED = 'replied'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    subject = db.Column(db.String(200))
+    message = db.Column(db.Text, nullable=False)
+    submitted_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    ip_address = db.Column(db.String(45))  # fits IPv4 and IPv6
+    status = db.Column(db.String(20), default=STATUS_NEW, nullable=False)
+
+    def __repr__(self):
+        return f'<ContactSubmission {self.id} {self.email} [{self.status}]>'
+
+
 class SiteTextContent(db.Model):
     __tablename__ = 'site_text_content'
     id = db.Column(db.Integer, primary_key=True)

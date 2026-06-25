@@ -1,21 +1,69 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Заголовок сторінки') }}{% endblock %}
+{% block title %}{{ _('Зворотний зв’язок') }}{% endblock %}
 
 {% block meta_description %}{{ _('Контакти проєкту БіоМон — зв’яжіться з командою автоматизованого моніторингу фауни щодо співпраці та доступу до даних фотопасток і PAM.') }}{% endblock %}
 
+{% block head_extra %}
+<style>
+    .contact-form { max-width: 600px; margin: 0 auto; text-align: left; }
+    .contact-form .form-group { margin-bottom: 18px; }
+    .contact-form label { display: block; margin-bottom: 6px; font-weight: bold; }
+    .contact-form input[type="text"],
+    .contact-form input[type="email"],
+    .contact-form textarea {
+        width: 100%; padding: 10px; box-sizing: border-box;
+        border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;
+    }
+    .contact-form .field-error { color: #dc3545; font-size: 0.9em; margin-top: 4px; }
+    .captcha-container { display: flex; justify-content: center; margin: 20px 0; }
+    .captcha-container > div { max-width: 100%; overflow: hidden; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container" style="text-align: center; padding: 50px 0;">
-    <h1>{{ _('Зв’язок з автором') }}</h1>
-    
-    <div style="margin-top: 20px; font-size: 1.2rem;">
-        <p>
-            {{ _('Якщо у вас є запитання, або пропозиції щодо проекту, ви можете задати їх через форму на персональному сайті автора ') }}
-            <br><br>
-            <a href="https://yurastrus.dev/{{ g.lang_code }}/contact" class="button" style="text-decoration: none; font-weight: bold; min-width: auto">
-                {{ _('Форма') }} →
-            </a>
-        </p>
-    </div>
+<div class="container" style="padding: 50px 0;">
+    <h1 style="text-align: center;">{{ _('Зворотний зв’язок') }}</h1>
+    <p style="text-align: center; margin-bottom: 30px;">
+        {{ _('Маєте запитання чи пропозицію щодо проєкту? Заповніть форму — ми звʼяжемося з вами.') }}
+    </p>
+
+    <form method="POST" action="{{ url_for('main.contacts', lang_code=g.lang_code) }}"
+          class="contact-form" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.name.label }}
+            {{ form.name() }}
+            {% for error in form.name.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.email.label }}
+            {{ form.email() }}
+            {% for error in form.email.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.subject.label }}
+            {{ form.subject() }}
+            {% for error in form.subject.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.message.label }}
+            {{ form.message(rows=6) }}
+            {% for error in form.message.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group captcha-container">
+            {{ form.recaptcha }}
+            {% for error in form.recaptcha.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group" style="text-align: center;">
+            {{ form.submit(class='button') }}
+        </div>
+    </form>
 </div>
 {% endblock %}

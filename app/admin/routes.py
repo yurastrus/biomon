@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from flask_babel import gettext as _
 
 from app.extensions import db
-from app.models import User, Institution, Role
+from app.models import User, Institution, Role, ContactSubmission
 from app.utils.decorators import role_required
 from app.admin.forms import UserCreateForm, UserEditForm, InstitutionForm, RoleForm
 from app.admin.services import UserService, InstitutionService, RoleService
@@ -355,3 +355,65 @@ def delete_role(role_id):
         flash(f'Помилка при видаленні: {str(e)}', 'danger')
 
     return redirect(url_for('admin.role_list', lang_code=g.lang_code))
+
+
+# ===========================================================================
+# Contact form submissions (admin only)
+# ===========================================================================
+
+_VALID_STATUSES = {ContactSubmission.STATUS_NEW,
+                   ContactSubmission.STATUS_READ,
+                   ContactSubmission.STATUS_REPLIED}
+
+
+@admin_bp.route('/contact-submissions')
+@login_required
+@role_required('admin')
+def contact_submissions():
+    """List contact-form submissions, newest first. Optional ?status= filter."""
+    status = request.args.get('status')
+    query = ContactSubmission.query
+    if status in _VALID_STATUSES:
+        query = query.filter_by(status=status)
+    submissions = query.order_by(ContactSubmission.submitted_at.desc()).all()
+    new_count = ContactSubmission.query.filter_by(
+        status=ContactSubmission.STATUS_NEW).count()
+    return render_template('admin_contact_submissions.html',
+                           submissions=submissions,
+                           active_status=status if status in _VALID_STATUSES else None,
+                           new_count=new_count)
+
+
+@admin_bp.route('/contact-submissions/<int:submission_id>/status', methods=['POST'])
+@login_required
+@role_required('admin')
+def update_submission_status(submission_id):
+    """Set a submission's status to one of new / read / replied."""
+    submission = ContactSubmission.query.get_or_404(submission_id)
+    new_status = request.form.get('status')
+    if new_status not in _VALID_STATUSES:
+        flash(_('Невідомий статус.'), 'danger')
+        return redirect(url_for('admin.contact_submissions', lang_code=g.lang_code))
+    try:
+        submission.status = new_status
+        db.session.commit()
+        flash(_('Статус оновлено.'), 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Помилка: {str(e)}', 'danger')
+    return redirect(url_for('admin.contact_submissions', lang_code=g.lang_code))
+
+
+@admin_bp.route('/contact-submissions/<int:submission_id>/delete', methods=['POST'])
+@login_required
+@role_required('admin')
+def delete_submission(submission_id):
+    submission = ContactSubmission.query.get_or_404(submission_id)
+    try:
+        db.session.delete(submission)
+        db.session.commit()
+        flash(_('Звернення видалено.'), 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Помилка при видаленні: {str(e)}', 'danger')
+    return redirect(url_for('admin.contact_submissions', lang_code=g.lang_code))

@@ -7,8 +7,10 @@ from app.utils.forms import LoginForm, ContactForm, ChangePasswordForm, ChangeUs
 from app.utils.utils import is_safe_url
 from flask_babel import lazy_gettext as _l
 from app.routes import bp
-from app.models import User, SiteTextContent
+from app.models import User, SiteTextContent, ContactSubmission
+from app.utils.notifications import send_telegram_notification
 from app.extensions import bcrypt, limiter, csrf, db
+from markupsafe import escape
 from werkzeug.security import check_password_hash
 
 
@@ -43,12 +45,50 @@ def about(lang_code):
                            lang_code=lang_code, 
                            content=content)
 
-@bp.route('/<lang_code>/contacts')
+@bp.route('/<lang_code>/contacts', methods=['GET', 'POST'])
+@limiter.limit("5/hour", methods=["POST"])
 def contacts(lang_code):
-    """Render the contacts page."""
+    """Public contact form: save to DB and notify admin via Telegram.
+
+    No personal email is exposed; the admin replies manually from the mailbox
+    shown in the Telegram card and in the admin panel.
+    """
     if lang_code not in current_app.config['LANGUAGES']:
         return redirect(url_for('main.root'))
-    return render_template('contacts.html')
+
+    form = ContactForm()
+    if form.validate_on_submit():
+        try:
+            submission = ContactSubmission(
+                name=form.name.data.strip(),
+                email=form.email.data.strip(),
+                subject=(form.subject.data or '').strip() or None,
+                message=form.message.data.strip(),
+                ip_address=request.remote_addr,
+            )
+            db.session.add(submission)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Contact form: DB save failed: {e}")
+            flash(_l('Сталася помилка при відправці. Спробуйте пізніше.'), 'danger')
+            return render_template('contacts.html', form=form)
+
+        # Telegram is best-effort: the message is already safely in the DB.
+        text = (
+            "📨 <b>Нове звернення з biomon.app</b>\n\n"
+            f"<b>Імʼя:</b> {escape(submission.name)}\n"
+            f"<b>Email:</b> {escape(submission.email)}\n"
+            f"<b>Тема:</b> {escape(submission.subject or '—')}\n\n"
+            f"{escape(submission.message)}"
+        )
+        send_telegram_notification(text)
+
+        flash(_l('Ваше повідомлення надіслано! Ми звʼяжемося з вами найближчим часом.'), 'success')
+        # PRG pattern: redirect after POST to avoid duplicate submits on refresh.
+        return redirect(url_for('main.contacts', lang_code=lang_code))
+
+    return render_template('contacts.html', form=form)
 
 @bp.route('/<lang_code>/login', methods=['GET', 'POST'])
 @limiter.limit("5/minute", methods=["POST"])
