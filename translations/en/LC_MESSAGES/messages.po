@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-25 11:55+0300\n"
+"POT-Creation-Date: 2026-06-25 17:21+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -104,31 +104,51 @@ msgstr "Edit role"
 msgid "Додати роль"
 msgstr "Add role"
 
+#: app/admin/routes.py:395
+msgid "Невідомий статус."
+msgstr "Unknown status."
+
+#: app/admin/routes.py:400
+msgid "Статус оновлено."
+msgstr "Status updated."
+
+#: app/admin/routes.py:415
+msgid "Звернення видалено."
+msgstr "Submission deleted."
+
 #: app/routes/main.py:74
+msgid "Сталася помилка при відправці. Спробуйте пізніше."
+msgstr "An error occurred while sending. Please try again later."
+
+#: app/routes/main.py:87
+msgid "Ваше повідомлення надіслано! Ми звʼяжемося з вами найближчим часом."
+msgstr "Your message has been sent! We will get back to you soon."
+
+#: app/routes/main.py:114
 msgid "Неправильний логін або пароль. Спробуйте ще раз."
 msgstr "Incorrect login or password. Please try again."
 
-#: app/routes/main.py:76 app/templates/base.html:90 app/templates/login.html:2
+#: app/routes/main.py:116 app/templates/base.html:90 app/templates/login.html:2
 msgid "Увійти"
 msgstr "Log in"
 
-#: app/routes/main.py:100
+#: app/routes/main.py:140
 msgid "Поточний пароль невірний."
 msgstr "Current password is incorrect."
 
-#: app/routes/main.py:106
+#: app/routes/main.py:146
 msgid "Пароль успішно змінено."
 msgstr "Password changed successfully."
 
-#: app/routes/main.py:113
+#: app/routes/main.py:153
 msgid "Це ваш поточний логін."
 msgstr "This is your current username."
 
-#: app/routes/main.py:116
+#: app/routes/main.py:156
 msgid "Цей логін уже зайнятий."
 msgstr "This username is already taken."
 
-#: app/routes/main.py:123
+#: app/routes/main.py:163
 msgid "Логін успішно змінено."
 msgstr "Username changed successfully."
 
@@ -206,33 +226,25 @@ msgstr "Log out"
 msgid "Проект БіоМон, ©"
 msgstr "BioMon Project, ©"
 
-#: app/templates/contacts.html:3
-msgid "Заголовок сторінки"
-msgstr "Page title"
+#: app/templates/contacts.html:3 app/templates/contacts.html:26
+msgid "Зворотний зв’язок"
+msgstr "Contact"
 
 #: app/templates/contacts.html:5
 msgid ""
 "Контакти проєкту БіоМон — зв’яжіться з командою автоматизованого "
 "моніторингу фауни щодо співпраці та доступу до даних фотопасток і PAM."
 msgstr ""
-"Contact the BioMon project — reach the automated wildlife monitoring team "
-"about collaboration and access to camera-trap and PAM data."
+"Contact the BioMon project — reach the automated wildlife monitoring team"
+" about collaboration and access to camera-trap and PAM data."
 
-#: app/templates/contacts.html:9
-msgid "Зв’язок з автором"
-msgstr "Get in touch with the author"
-
-#: app/templates/contacts.html:13
+#: app/templates/contacts.html:28
 msgid ""
-"Якщо у вас є запитання, або пропозиції щодо проекту, ви можете задати їх "
-"через форму на персональному сайті автора "
+"Маєте запитання чи пропозицію щодо проєкту? Заповніть форму — ми "
+"звʼяжемося з вами."
 msgstr ""
-"If you have any questions or suggestions about the project, you can "
-"submit them through the form on the author’s personal website."
-
-#: app/templates/contacts.html:16
-msgid "Форма"
-msgstr "Form"
+"Have a question or suggestion about the project? Fill out the form and we"
+" will get back to you."
 
 #: app/templates/index.html:7
 msgid ""
@@ -314,6 +326,23 @@ msgstr "Verifications"
 msgid "Підтверджень"
 msgstr "Positive"
 
+#: app/templates/admin/admin_contact_submissions.html:3
+#: app/templates/admin/admin_contact_submissions.html:58
+msgid "Нове"
+msgstr "New"
+
+#: app/templates/admin/admin_contact_submissions.html:3
+#: app/templates/admin/admin_contact_submissions.html:58
+msgid "Прочитане"
+msgstr "Read"
+
+#: app/templates/admin/admin_contact_submissions.html:3
+#: app/templates/admin/admin_contact_submissions.html:17
+#: app/templates/admin/admin_contact_submissions.html:58
+msgid "Відповіли"
+msgstr "Replied"
+
+#: app/templates/admin/admin_contact_submissions.html:10
 #: app/templates/admin/admin_home.html:7
 #: app/templates/admin/admin_institution_form.html:7
 #: app/templates/admin/admin_institutions_list.html:7
@@ -323,6 +352,76 @@ msgstr "Positive"
 #: app/templates/admin/admin_users_list.html:7
 msgid "Адмін-панель"
 msgstr "Admin panel"
+
+#: app/templates/admin/admin_contact_submissions.html:11
+#: app/templates/admin/admin_home.html:57
+msgid "Звернення"
+msgstr "Submissions"
+
+#: app/templates/admin/admin_contact_submissions.html:14
+msgid "Звернення з форми зворотного зв’язку"
+msgstr "Contact form submissions"
+
+#: app/templates/admin/admin_contact_submissions.html:17
+msgid "Усі"
+msgstr "All"
+
+#: app/templates/admin/admin_contact_submissions.html:17
+msgid "Нові"
+msgstr "New"
+
+#: app/templates/admin/admin_contact_submissions.html:17
+msgid "Прочитані"
+msgstr "Read"
+
+#: app/templates/admin/admin_contact_submissions.html:30
+msgid "Дата"
+msgstr "Date"
+
+#: app/templates/admin/admin_contact_submissions.html:31
+msgid "Від"
+msgstr "From"
+
+#: app/templates/admin/admin_contact_submissions.html:32
+msgid "Тема / повідомлення"
+msgstr "Subject / message"
+
+#: app/templates/admin/admin_contact_submissions.html:33
+msgid "Статус"
+msgstr "Status"
+
+#: app/templates/admin/admin_contact_submissions.html:34
+#: app/templates/admin/admin_institutions_list.html:26
+#: app/templates/admin/admin_roles_list.html:25
+#: app/templates/admin/admin_users_list.html:88
+msgid "Дії"
+msgstr "Actions"
+
+#: app/templates/admin/admin_contact_submissions.html:45
+msgid "Ваше звернення на biomon.app"
+msgstr "Your message to biomon.app"
+
+#: app/templates/admin/admin_contact_submissions.html:70
+msgid "Видалити це звернення?"
+msgstr "Delete this submission?"
+
+#: app/templates/admin/admin_contact_submissions.html:70
+#: app/templates/admin/admin_users_list.html:121
+msgid "Ця дія є незворотною."
+msgstr "This action is irreversible."
+
+#: app/templates/admin/admin_contact_submissions.html:73
+#: app/templates/admin/admin_institutions_list.html:49
+#: app/templates/admin/admin_roles_list.html:61
+#: app/templates/admin/admin_roles_list.html:66
+#: app/templates/admin/admin_users_list.html:124
+#: app/templates/admin/admin_users_list.html:129
+msgid "Видалити"
+msgstr "Delete"
+
+#: app/templates/admin/admin_contact_submissions.html:81
+msgid "Звернень поки немає."
+msgstr "No submissions yet."
 
 #: app/templates/admin/admin_home.html:10
 msgid "Панель керування"
@@ -341,6 +440,7 @@ msgstr "Manage user accounts, change passwords and configure access rights."
 #: app/templates/admin/admin_home.html:23
 #: app/templates/admin/admin_home.html:37
 #: app/templates/admin/admin_home.html:50
+#: app/templates/admin/admin_home.html:63
 msgid "Переглянути"
 msgstr "View"
 
@@ -365,6 +465,10 @@ msgstr "Roles"
 #: app/templates/admin/admin_home.html:46
 msgid "Глобальне налаштування системних ролей та їх видимості для менеджерів."
 msgstr "Global configuration of system roles and their visibility for managers."
+
+#: app/templates/admin/admin_home.html:59
+msgid "Повідомлення з форми зворотного зв’язку: перегляд, статуси, видалення."
+msgstr "Contact form messages: view, statuses, deletion."
 
 #: app/templates/admin/admin_institution_form.html:18
 #: app/templates/admin/admin_role_form.html:18
@@ -420,12 +524,6 @@ msgstr "Manage institutions"
 msgid "Код"
 msgstr "Code"
 
-#: app/templates/admin/admin_institutions_list.html:26
-#: app/templates/admin/admin_roles_list.html:25
-#: app/templates/admin/admin_users_list.html:88
-msgid "Дії"
-msgstr "Actions"
-
 #: app/templates/admin/admin_institutions_list.html:39
 #: app/templates/admin/admin_roles_list.html:50
 #: app/templates/admin/admin_users_list.html:115
@@ -443,14 +541,6 @@ msgid ""
 msgstr ""
 "Warning: This will remove it from user profiles. Data in the PAM module "
 "will not be affected."
-
-#: app/templates/admin/admin_institutions_list.html:49
-#: app/templates/admin/admin_roles_list.html:61
-#: app/templates/admin/admin_roles_list.html:66
-#: app/templates/admin/admin_users_list.html:124
-#: app/templates/admin/admin_users_list.html:129
-msgid "Видалити"
-msgstr "Delete"
 
 #: app/templates/admin/admin_institutions_list.html:57
 msgid "Установ не знайдено."
@@ -642,10 +732,6 @@ msgstr "Full name"
 #: app/templates/admin/admin_users_list.html:121
 msgid "Ви впевнені, що хочете видалити користувача:"
 msgstr "Are you sure you want to delete the user:"
-
-#: app/templates/admin/admin_users_list.html:121
-msgid "Ця дія є незворотною."
-msgstr "This action is irreversible."
 
 #: app/templates/admin/admin_users_list.html:128
 msgid "Ви не можете видалити себе"
@@ -1308,4 +1394,24 @@ msgstr "Change username"
 
 #~ msgid "Без екорегіону"
 #~ msgstr "No ecoregion"
+
+#~ msgid "Заголовок сторінки"
+#~ msgstr "Page title"
+
+#~ msgid "Зв’язок з автором"
+#~ msgstr "Get in touch with the author"
+
+#~ msgid ""
+#~ "Якщо у вас є запитання, або "
+#~ "пропозиції щодо проекту, ви можете "
+#~ "задати їх через форму на персональному"
+#~ " сайті автора "
+#~ msgstr ""
+#~ "If you have any questions or "
+#~ "suggestions about the project, you can"
+#~ " submit them through the form on "
+#~ "the author’s personal website."
+
+#~ msgid "Форма"
+#~ msgstr "Form"
 
