@@ -24,6 +24,7 @@ from .db import (
     AIRunQueue,
     finish_queue_request,
     get_or_create_model,
+    is_ai_paused_on_session,
     make_engine,
     make_session,
     pick_pending_observations,
@@ -149,6 +150,24 @@ def process_batch(
                     f"Reached target ({max_observations} successful). Stopping."
                 )
                 break
+
+            # ── Pause gate INSIDE the loop (per-series, not per-batch) ──
+            # An upload can start mid-batch. cli.py only checks the pause lease
+            # once, before the run — by then a 200-series batch can take 15-20
+            # min, far longer than a typical upload, so the pause would never
+            # bite. Re-check before EACH series: the series already in flight
+            # finishes (we are at the top of the loop, nothing started yet for
+            # `obs`), and the next one does not begin. Remaining pending series
+            # are picked up on a later tick once the lease lifts.
+            if is_ai_paused_on_session(session):
+                logger.info(
+                    f"AI paused (reason=upload-in-progress): stopping batch "
+                    f"after {processed} observation(s), before observation "
+                    f"{obs.observation_id}. Remaining observations will be "
+                    f"classified on a later run once the upload finishes."
+                )
+                break
+
             try:
                 paths, path_to_id = _resolve_photo_paths(upload_path, obs.photos)
                 if not paths:

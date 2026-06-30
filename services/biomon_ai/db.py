@@ -518,3 +518,30 @@ def is_ai_paused(database_url: Optional[str] = None) -> bool:
         return False
     finally:
         session.close()
+
+
+def is_ai_paused_on_session(session) -> bool:
+    """Same lease check as is_ai_paused(), but reuses an ALREADY-OPEN session
+    instead of opening a fresh engine+connection each call.
+
+    Designed to be called inside the process_batch loop — before EACH series —
+    so the worker reacts to an upload that starts mid-batch instead of only at
+    the batch boundary. Cheap enough for that: a single-row PK lookup on the
+    connection we already hold, no new connection per iteration.
+
+    Fail-open like is_ai_paused(): on ANY error return False so classification
+    proceeds (pausing is an optimisation, not a correctness requirement). On
+    error we also roll back, so a failed SELECT does not leave the session's
+    transaction poisoned for the next observation's commit."""
+    try:
+        return bool(session.execute(text(
+            "SELECT pause_until IS NOT NULL AND pause_until > NOW() "
+            "FROM ai_control WHERE id = 1"
+        )).scalar())
+    except Exception as e:
+        logger.debug(f"is_ai_paused_on_session: treating as not paused ({e})")
+        try:
+            session.rollback()
+        except Exception:
+            pass
+        return False

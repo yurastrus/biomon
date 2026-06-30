@@ -269,12 +269,18 @@ class TestProcessBatch(unittest.TestCase):
         self.get_model_patch = patch('services.biomon_ai.worker.get_or_create_model')
         self.pick_patch = patch('services.biomon_ai.worker.pick_pending_observations')
         self.save_patch = patch('services.biomon_ai.worker.save_observation_predictions')
+        # The per-series pause gate is checked inside the loop. Default it to
+        # "not paused" so the existing tests run end-to-end; the pause-specific
+        # tests override .side_effect / .return_value.
+        self.paused_patch = patch('services.biomon_ai.worker.is_ai_paused_on_session')
 
         self.mock_engine = self.engine_patch.start()
         self.mock_session_factory = self.session_patch.start()
         self.mock_get_model = self.get_model_patch.start()
         self.mock_pick = self.pick_patch.start()
         self.mock_save = self.save_patch.start()
+        self.mock_paused = self.paused_patch.start()
+        self.mock_paused.return_value = False
 
         self.mock_session = MagicMock()
         self.mock_session_factory.return_value = self.mock_session
@@ -283,7 +289,7 @@ class TestProcessBatch(unittest.TestCase):
     def tearDown(self):
         for p in [
             self.engine_patch, self.session_patch, self.get_model_patch,
-            self.pick_patch, self.save_patch,
+            self.pick_patch, self.save_patch, self.paused_patch,
         ]:
             p.stop()
 
@@ -421,6 +427,74 @@ class TestProcessBatch(unittest.TestCase):
             # One crashed, the other went through
             self.assertEqual(result, 1)
             self.assertEqual(self.mock_save.call_count, 1)
+
+    # ── Per-series pause gate (upload-in-progress) ──────────────────
+
+    def test_pause_mid_batch_stops_after_current_series(self):
+        """Pause flag flips ON after the 2nd series: the worker finishes the
+        series already in flight and then stops at the TOP of the next loop
+        iteration — it must NOT drain the whole batch."""
+        import tempfile
+        from services.biomon_ai.db import PendingObservation
+        from services.biomon_ai.worker import process_batch
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            raw_dir = os.path.join(tmpdir, 'pending_photos', 'raw')
+            os.makedirs(raw_dir)
+            for fn in ['a.jpg', 'b.jpg', 'c.jpg', 'd.jpg', 'e.jpg']:
+                with open(os.path.join(raw_dir, fn), 'wb') as f:
+                    f.write(b'\xff\xd8\xff\xe0')
+
+            # A 5-series "batch" — the upload starts during processing.
+            self.mock_pick.return_value = [
+                PendingObservation(observation_id=i, photos=[(100 + i, fn)])
+                for i, fn in enumerate(['a.jpg', 'b.jpg', 'c.jpg', 'd.jpg', 'e.jpg'])
+            ]
+            self.mock_save.return_value = 1
+
+            # Pause gate: not paused before series #0 and #1, then paused —
+            # checked at the TOP of the loop, so series #0 and #1 complete and
+            # the check before series #2 trips the break.
+            self.mock_paused.side_effect = [False, False, True]
+
+            result = process_batch(
+                adapter=StubAdapter(),
+                upload_path=tmpdir,
+                max_observations=5,
+            )
+
+            # Only the first two series were processed; the batch did NOT finish.
+            self.assertEqual(result, 2)
+            self.assertEqual(self.mock_save.call_count, 2)
+            self.assertLess(result, 5, "must stop before draining the whole batch")
+            # The gate was consulted per-series (3 checks: pass, pass, trip).
+            self.assertEqual(self.mock_paused.call_count, 3)
+
+    def test_pause_active_from_start_processes_nothing(self):
+        """If the lease is already active when the batch begins, the very first
+        series is skipped — zero processed."""
+        import tempfile
+        from services.biomon_ai.db import PendingObservation
+        from services.biomon_ai.worker import process_batch
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            raw_dir = os.path.join(tmpdir, 'pending_photos', 'raw')
+            os.makedirs(raw_dir)
+            with open(os.path.join(raw_dir, 'a.jpg'), 'wb') as f:
+                f.write(b'\xff\xd8\xff\xe0')
+
+            self.mock_pick.return_value = [
+                PendingObservation(observation_id=1, photos=[(100, 'a.jpg')]),
+            ]
+            self.mock_paused.return_value = True
+
+            result = process_batch(
+                adapter=StubAdapter(),
+                upload_path=tmpdir,
+                max_observations=10,
+            )
+            self.assertEqual(result, 0)
+            self.mock_save.assert_not_called()
 
 
 # ════════════════════════════════════════════════════════════════════════════
