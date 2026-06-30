@@ -136,6 +136,18 @@ def main(argv=None) -> int:
         print('ERROR: env CT_DATABASE_URL is not defined', file=sys.stderr)
         return 1
 
+    # ── Pause gate: skip the whole run if a camera-trap upload is in progress ─
+    # An upload sets a short pause lease (ai_control.pause_until). While it is
+    # active we load nothing and touch no queue, so heavy classification does not
+    # compete with the upload for DB/CPU/RAM. For --from-queue we return WITHOUT
+    # draining the pending request, so it is picked up on a later tick once the
+    # pause lifts. The lease expires on its own if the uploader dies, so this can
+    # never wedge the worker permanently. See app/camera_traps/ai_runner.py.
+    from .db import is_ai_paused
+    if is_ai_paused():
+        logger.info('AI is paused (camera-trap upload in progress). Skipping run.')
+        return 0
+
     threshold = (
         args.threshold
         if args.threshold is not None

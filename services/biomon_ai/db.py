@@ -104,6 +104,18 @@ class AIRunQueue(Base):
     error_msg       = Column(Text, nullable=True)
 
 
+class AIControl(Base):
+    """Single-row pause-lease table (mirror of app/camera_traps/models.py).
+    The worker only READS it (is_ai_paused); Flask writes/creates it. The worker
+    never creates this table, so the CHECK/onupdate niceties are omitted here."""
+    __tablename__ = 'ai_control'
+
+    id           = Column(Integer, primary_key=True, autoincrement=False)
+    pause_until  = Column(DateTime, nullable=True)
+    pause_reason = Column(String(64), nullable=True)
+    updated_at   = Column(DateTime, default=func.now(), nullable=False)
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Connection / session factory
 # ─────────────────────────────────────────────────────────────────────
@@ -477,5 +489,32 @@ def drain_one_empty_queue_request(database_url: Optional[str] = None) -> int:
         """))
         session.commit()
         return int(result.rowcount or 0)
+    finally:
+        session.close()
+
+
+def is_ai_paused(database_url: Optional[str] = None) -> bool:
+    """True if a camera-trap upload has paused classification (lease in the
+    future). The worker calls this before doing any work (see cli.py) and skips
+    the whole run if paused — so heavy inference never competes with an
+    in-progress upload for DB/CPU/RAM.
+
+    Fail-open: on ANY error (ai_control absent on an un-migrated server, DB
+    hiccup) return False so classification proceeds. Pausing is an optimisation,
+    not a correctness requirement — the worst case of a false 'not paused' is the
+    pre-existing resource contention, never data loss.
+
+    The comparison runs in the DB (pause_until > NOW()) to avoid client/server
+    clock skew."""
+    engine = make_engine(database_url)
+    session = make_session(engine)
+    try:
+        return bool(session.execute(text(
+            "SELECT pause_until IS NOT NULL AND pause_until > NOW() "
+            "FROM ai_control WHERE id = 1"
+        )).scalar())
+    except Exception as e:
+        logger.debug(f"is_ai_paused: treating as not paused ({e})")
+        return False
     finally:
         session.close()

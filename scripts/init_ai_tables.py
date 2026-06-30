@@ -25,10 +25,13 @@ from sqlalchemy import inspect
 
 from app import create_app
 from app.camera_traps.database import get_ct_engine
-from app.camera_traps.models import AIModel, AIPrediction, AIRunQueue
+from app.camera_traps.models import AIModel, AIPrediction, AIRunQueue, AIControl
 
 
-AI_TABLES = [AIModel.__table__, AIPrediction.__table__, AIRunQueue.__table__]
+AI_TABLES = [
+    AIModel.__table__, AIPrediction.__table__, AIRunQueue.__table__,
+    AIControl.__table__,
+]
 
 
 def main():
@@ -76,21 +79,31 @@ def main():
                 print(f"  + {table.name} (will be created)")
                 to_create.append(table)
 
-        if not to_create:
+        if to_create:
+            print()
+            print(f"Creating {len(to_create)} tables...")
+            for table in to_create:
+                table.create(engine)
+                print(f"  ✓ {table.name}")
+
+            existing_after = set(inspect(engine).get_table_names())
+            for table in to_create:
+                if table.name not in existing_after:
+                    print(f"  ✗ ERROR: {table.name} did not appear in the DB")
+                    sys.exit(2)
+        else:
             print("\nNothing to create.")
-            return
 
-        print()
-        print(f"Creating {len(to_create)} tables...")
-        for table in to_create:
-            table.create(engine)
-            print(f"  ✓ {table.name}")
-
-        existing_after = set(inspect(engine).get_table_names())
-        for table in to_create:
-            if table.name not in existing_after:
-                print(f"  ✗ ERROR: {table.name} did not appear in the DB")
-                sys.exit(2)
+        # Seed the ai_control singleton row (id=1). Idempotent — the Flask pause
+        # helpers also upsert it on first use, but seeding here guarantees the
+        # row exists from the start. Safe to run every time.
+        from sqlalchemy import text
+        with engine.begin() as conn:
+            conn.execute(text(
+                "INSERT INTO ai_control (id, updated_at) VALUES (1, NOW()) "
+                "ON CONFLICT (id) DO NOTHING"
+            ))
+        print("  ✓ ai_control singleton row ensured (id=1)")
 
         print("\nDone.")
 
