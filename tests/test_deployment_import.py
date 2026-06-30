@@ -130,6 +130,49 @@ def test_import_creates_location_with_institution(tmp_path, ct_session):
     assert link is not None and link.institution_id == 777
 
 
+def test_import_matches_existing_location_by_name(tmp_path, ct_session, make_ct_location):
+    """A location named after the deployment already exists → reuse it, never
+    create a duplicate, even when another location sits at the same coordinates."""
+    from app.camera_traps.models import Location
+    own = make_ct_location(latitude=48.5, longitude=24.5,
+                           name='2025_Summer_Karpatskyi NNP_1809')
+    xlsx = _write_xlsx(tmp_path, [
+        {'deployment_id': '2025_Summer_Karpatskyi NNP_1809', 'latitude': 48.5,
+         'longitude': 24.5, 'study_year': 2025},
+    ])
+    report = import_deployments(ct_session, xlsx, sheets=['SMM_2025'],
+                                create_missing_locations=True)
+    assert report['locations_created'] == 0
+    dep = ct_session.query(Deployment).filter_by(name='2025_Summer_Karpatskyi NNP_1809').one()
+    assert dep.location_id == own.id
+
+
+def test_import_creates_per_campaign_location_at_shared_coords(
+        tmp_path, ct_session, make_ct_location):
+    """A prior campaign's location already sits at these coordinates under a
+    different name. create_missing_locations must still create a NEW location
+    named after the deployment (one location per camera-season), not reuse the
+    other campaign's location by coordinates."""
+    from app.camera_traps.models import Location
+    existing = make_ct_location(latitude=48.5, longitude=24.5,
+                                name='2024_Summer_Carpathian NNP_1801')
+    xlsx = _write_xlsx(tmp_path, [
+        {'deployment_id': '2025_Summer_Karpatskyi NNP_1801', 'latitude': 48.5,
+         'longitude': 24.5, 'study_area_name_EN': 'Karpatskyi NNP',
+         'study_year': 2025, 'study_season': 'Summer'},
+    ])
+    report = import_deployments(ct_session, xlsx, sheets=['SMM_2025'],
+                                create_missing_locations=True,
+                                park_institution_map={'karpatskyi nnp': 777})
+    assert report['locations_created'] == 1
+    new_loc = ct_session.query(Location).filter_by(
+        name='2025_Summer_Karpatskyi NNP_1801').one()
+    assert new_loc.id != existing.id
+    dep = ct_session.query(Deployment).filter_by(
+        name='2025_Summer_Karpatskyi NNP_1801').one()
+    assert dep.location_id == new_loc.id
+
+
 def test_import_idempotent(tmp_path, ct_session, make_ct_location):
     make_ct_location(latitude=48.5, longitude=24.5)
     xlsx = _write_xlsx(tmp_path, [
