@@ -79,3 +79,87 @@ def test_storage_section_requires_admin(auth_client):
     cl = auth_client(role='manager')
     resp = cl.get(URL)
     assert resp.status_code in (302, 403)
+
+
+# ── get_storage_disk_usage() — page-side `df -h` for the photo storage ──────
+from unittest.mock import MagicMock  # noqa: E402
+from app.camera_traps.background_tasks import get_storage_disk_usage  # noqa: E402
+
+
+def _du(total, used, free):
+    m = MagicMock()
+    m.total, m.used, m.free = total, used, free
+    return m
+
+
+def test_disk_usage_reports_free_bytes(app, tmp_path):
+    """Reads UPLOAD_PATH from CAMERA_TRAP_CONFIG and returns byte counts."""
+    with app.app_context():
+        app.config['CAMERA_TRAP_CONFIG'] = {'UPLOAD_PATH': str(tmp_path)}
+        with patch('app.camera_traps.background_tasks.shutil.disk_usage',
+                   return_value=_du(100, 40, 60)) as du:
+            result = get_storage_disk_usage()
+    assert result['free_bytes'] == 60
+    assert result['total_bytes'] == 100
+    assert result['path'] == str(tmp_path)
+    du.assert_called_once()
+
+
+def test_disk_usage_walks_up_to_existing_parent(app, tmp_path):
+    """A not-yet-created uploads subfolder still resolves to its filesystem."""
+    missing = tmp_path / 'not' / 'created' / 'yet'
+    with app.app_context():
+        app.config['CAMERA_TRAP_CONFIG'] = {'UPLOAD_PATH': str(missing)}
+        with patch('app.camera_traps.background_tasks.shutil.disk_usage',
+                   return_value=_du(100, 40, 60)) as du:
+            result = get_storage_disk_usage()
+    assert result['free_bytes'] == 60
+    # probed an existing ancestor, not the missing leaf
+    probed = du.call_args[0][0]
+    import os
+    assert os.path.exists(probed)
+
+
+def test_disk_usage_empty_when_no_upload_path(app):
+    """No UPLOAD_PATH configured -> {} (template renders a dash)."""
+    with app.app_context():
+        app.config['CAMERA_TRAP_CONFIG'] = {}
+        assert get_storage_disk_usage() == {}
+
+
+def test_disk_usage_empty_on_oserror(app, tmp_path):
+    """disk_usage raising OSError degrades to {} instead of a 500."""
+    with app.app_context():
+        app.config['CAMERA_TRAP_CONFIG'] = {'UPLOAD_PATH': str(tmp_path)}
+        with patch('app.camera_traps.background_tasks.shutil.disk_usage',
+                   side_effect=OSError('gone')):
+            assert get_storage_disk_usage() == {}
+
+
+def test_admin_card_shows_free_space_in_gb(auth_client):
+    """The new first card renders human-readable free space (GB above 1 GiB)."""
+    cl = auth_client(role='admin')
+    p1, p2 = _patch_stats()
+    with p1, p2, patch(
+            'app.camera_traps.background_tasks.get_storage_disk_usage',
+            return_value={'path': '/data', 'total_bytes': 40 * 1024**3,
+                          'used_bytes': 15 * 1024**3, 'free_bytes': 25 * 1024**3}):
+        resp = cl.get(URL)
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    assert 'Доступно місця у сховищі' in html
+    assert '25.0' in html   # 25 GiB free rendered with one decimal
+
+
+def test_admin_card_shows_free_space_in_mb_below_1gb(auth_client):
+    """Under 1 GiB free -> shown in MB per the requested threshold."""
+    cl = auth_client(role='admin')
+    p1, p2 = _patch_stats()
+    with p1, p2, patch(
+            'app.camera_traps.background_tasks.get_storage_disk_usage',
+            return_value={'path': '/data', 'total_bytes': 40 * 1024**3,
+                          'used_bytes': 39 * 1024**3,
+                          'free_bytes': 500 * 1024**2}):
+        resp = cl.get(URL)
+    html = resp.get_data(as_text=True)
+    assert '500' in html    # 500 MiB free
