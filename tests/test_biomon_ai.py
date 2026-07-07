@@ -428,6 +428,70 @@ class TestProcessBatch(unittest.TestCase):
             self.assertEqual(result, 1)
             self.assertEqual(self.mock_save.call_count, 1)
 
+    # ── Regression: no open transaction during inference (obs 85151) ─
+
+    def test_transaction_released_before_each_inference(self):
+        """Regression for the 522-photo series 85151 that failed on EVERY run.
+
+        The read transaction opened by the pick query (before the first series)
+        and re-opened by the per-series pause check (before every series) must be
+        released BEFORE the long-running inference. Otherwise the connection sits
+        'idle in transaction' across a multi-minute predict_observation() and
+        PostgreSQL terminates it at idle_in_transaction_session_timeout (5 min on
+        prod) — the following commit then dies with
+        'SSL connection has been closed unexpectedly' and the series is never saved.
+
+        We assert that at the moment each inference starts, at least one
+        session.rollback() (transaction release) has run since the previous one —
+        i.e. no series' inference runs under an open read transaction.
+        """
+        import tempfile
+        from services.biomon_ai.db import PendingObservation
+        from services.biomon_ai.worker import process_batch
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            raw_dir = os.path.join(tmpdir, 'pending_photos', 'raw')
+            os.makedirs(raw_dir)
+            for fn in ['a.jpg', 'b.jpg']:
+                with open(os.path.join(raw_dir, fn), 'wb') as f:
+                    f.write(b'\xff\xd8\xff\xe0')
+
+            self.mock_pick.return_value = [
+                PendingObservation(observation_id=1, photos=[(100, 'a.jpg')]),
+                PendingObservation(observation_id=2, photos=[(200, 'b.jpg')]),
+            ]
+            self.mock_save.return_value = 1
+
+            # Record session.rollback() call count at the moment each inference
+            # begins. The fix guarantees a release happens before every predict.
+            mock_session = self.mock_session
+            rollbacks_at_inference = []
+
+            class RecordingAdapter(StubAdapter):
+                def predict_observation(inner_self, paths):
+                    rollbacks_at_inference.append(mock_session.rollback.call_count)
+                    return super().predict_observation(paths)
+
+            process_batch(
+                adapter=RecordingAdapter(),
+                upload_path=tmpdir,
+                max_observations=10,
+            )
+
+            # Two series → two inferences observed.
+            self.assertEqual(len(rollbacks_at_inference), 2)
+            # A transaction was released before the FIRST inference (pick query).
+            self.assertGreaterEqual(
+                rollbacks_at_inference[0], 1,
+                "transaction not released before the first inference",
+            )
+            # And another release happened before the SECOND inference (the
+            # per-series pause check reopens a transaction each iteration).
+            self.assertGreater(
+                rollbacks_at_inference[1], rollbacks_at_inference[0],
+                "transaction not released before the second inference",
+            )
+
     # ── Per-series pause gate (upload-in-progress) ──────────────────
 
     def test_pause_mid_batch_stops_after_current_series(self):

@@ -140,6 +140,19 @@ def process_batch(
             f"will process up to {max_observations} successful"
         )
 
+        # The pick query above (and the model/label-map reads) leave an OPEN
+        # read transaction on this session. The inference below does NO database
+        # work and can run for many minutes on a large series — holding that
+        # transaction across it would leave the connection 'idle in transaction',
+        # which PostgreSQL terminates at idle_in_transaction_session_timeout
+        # (5 min on prod). The next commit then dies with "SSL connection has
+        # been closed unexpectedly" and the whole series is lost — this is what
+        # happened to the 522-photo series 85151 on EVERY run (it is always the
+        # first/oldest candidate, so its ~7-min inference always ran inside this
+        # open transaction). Release it now; save_observation_predictions opens
+        # its own short-lived write transaction per series.
+        session.rollback()
+
         if not observations:
             return 0
 
@@ -167,6 +180,17 @@ def process_batch(
                     f"classified on a later run once the upload finishes."
                 )
                 break
+
+            # The pause check just ran a SELECT on ai_control, re-opening a read
+            # transaction on this session. Release it BEFORE the inference for the
+            # same reason as after the pick query above: never sit 'idle in
+            # transaction' across the (potentially multi-minute) predict call, or
+            # PostgreSQL kills the connection at idle_in_transaction_session_timeout
+            # and the following commit fails. The save path re-opens a write
+            # transaction. (Without this, every series — not just the first — is
+            # at risk, because this per-series pause check reopens a transaction
+            # on each iteration.)
+            session.rollback()
 
             try:
                 paths, path_to_id = _resolve_photo_paths(upload_path, obs.photos)
