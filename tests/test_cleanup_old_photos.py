@@ -381,6 +381,56 @@ class TestCleanupOldPhotos:
         assert os.path.exists(os.path.join(self.raw_dir, fn))
         assert os.path.exists(os.path.join(self.thumb_dir, fn))
 
+    def test_all_favorite_series_not_counted_and_not_stuck(self):
+        """A series whose ONLY photo is a completed favorite can never be
+        archived (favorites are never deleted), so it must NOT be reported as
+        'ready to archive' — otherwise the admin counter sticks at 1 forever
+        (regression: series 1862). cleanup_old_photos leaves it 'completed' and
+        the favorite file intact; get_cleanup_statistics does not count it.
+        """
+        from app.camera_traps.background_tasks import (
+            cleanup_old_photos, get_cleanup_statistics,
+        )
+        loc = self._mk_location()
+        obs = self._mk_obs(loc)
+        pid_fav, fn_fav = self._mk_photo(obs, is_favorite=True)
+        self._mk_identification(pid_fav, species_id=1)
+
+        # Not counted as ready-to-archive (the whole point of the fix).
+        stats = get_cleanup_statistics()
+        assert stats['observations_count'] == 0
+        assert stats['photos_count'] == 0
+
+        # And the job leaves it fully intact — no archiving, no stuck state.
+        result = cleanup_old_photos()
+        assert result['photos_deleted'] == 0
+        assert result['observations_archived'] == 0
+        assert self._photo_status(pid_fav) == 'completed'
+        assert self._obs_status(obs) == 'completed'
+        assert os.path.exists(os.path.join(self.raw_dir, fn_fav))
+        assert os.path.exists(os.path.join(self.thumb_dir, fn_fav))
+
+    def test_mixed_favorite_series_still_counted(self):
+        """Boundary: a series with a favorite AND a normal photo has an
+        archivable photo, so it IS still counted and archived — the fix must
+        not over-exclude."""
+        from app.camera_traps.background_tasks import (
+            cleanup_old_photos, get_cleanup_statistics,
+        )
+        loc = self._mk_location()
+        obs = self._mk_obs(loc)
+        pid_fav, _ = self._mk_photo(obs, is_favorite=True)
+        pid_normal, _ = self._mk_photo(obs)
+        self._mk_identification(pid_fav, species_id=1)
+        self._mk_identification(pid_normal, species_id=1)
+
+        stats = get_cleanup_statistics()
+        assert stats['observations_count'] == 1
+        assert stats['photos_count'] == 1  # only the non-favorite photo
+
+        cleanup_old_photos()
+        assert self._obs_status(obs) == 'archived'
+
     def test_returns_partial_counts_on_failure(self):
         """On failure it returns the count of SUCCESSFULLY archived, not the total."""
         from app.camera_traps.background_tasks import cleanup_old_photos
