@@ -15,6 +15,8 @@ from app.camera_traps.utils import (
     extract_datetime_from_exif,
     mark_observation_complete,
     check_consensus_for_observation,
+    create_thumbnail,
+    _verify_files_on_disk,
 )
 from app.camera_traps.models import Identification
 
@@ -123,3 +125,69 @@ def test_check_consensus_insufficient_votes_stays_pending(app, ct_session,
 
     ct_session.refresh(obs)
     assert obs.status == 'pending'
+
+
+# ── Disk-full guard: a Photo row must never exist without its file ──────────
+# Regression for the 2026-07-08 disk-full incident: files failed to write but
+# DB rows were still created → orphans that jam AI classification forever.
+
+def _tiny_jpeg_stream():
+    from PIL import Image
+    buf = io.BytesIO()
+    Image.new('RGB', (10, 10), (120, 30, 30)).save(buf, 'JPEG')
+    buf.seek(0)
+    return buf
+
+
+def test_verify_files_on_disk_passes_when_present_and_nonempty(tmp_path):
+    p = tmp_path / 'a.jpg'
+    p.write_bytes(b'\xff\xd8\xff\xe0somedata')
+    _verify_files_on_disk([str(p)])  # must not raise
+
+
+def test_verify_files_on_disk_raises_when_missing(tmp_path):
+    with pytest.raises(IOError):
+        _verify_files_on_disk([str(tmp_path / 'does_not_exist.jpg')])
+
+
+def test_verify_files_on_disk_raises_when_empty(tmp_path):
+    """A 0-byte file (typical disk-full partial write) counts as not-saved."""
+    empty = tmp_path / 'empty.jpg'
+    empty.write_bytes(b'')
+    with pytest.raises(IOError):
+        _verify_files_on_disk([str(empty)])
+
+
+def test_verify_files_on_disk_raises_if_any_of_several_missing(tmp_path):
+    good = tmp_path / 'good.jpg'
+    good.write_bytes(b'data')
+    with pytest.raises(IOError):
+        _verify_files_on_disk([str(good), str(tmp_path / 'missing.jpg')])
+
+
+def test_create_thumbnail_returns_true_and_writes_file(app, tmp_path):
+    with app.app_context(), \
+         patch.dict(app.config, {'CAMERA_TRAP_CONFIG': {'THUMBNAIL_SIZE': (64, 64)}}):
+        out = tmp_path / 'thumb.jpg'
+        ok = create_thumbnail(_tiny_jpeg_stream(), str(out))
+    assert ok is True
+    assert out.exists() and out.stat().st_size > 0
+
+
+def test_create_thumbnail_returns_false_on_bad_source(app, tmp_path):
+    with app.app_context(), \
+         patch.dict(app.config, {'CAMERA_TRAP_CONFIG': {'THUMBNAIL_SIZE': (64, 64)}}):
+        out = tmp_path / 'thumb.jpg'
+        ok = create_thumbnail(io.BytesIO(b'not an image at all'), str(out))
+    assert ok is False
+    assert not out.exists()
+
+
+def test_create_thumbnail_returns_false_on_write_failure(app, tmp_path):
+    """Destination directory missing → write fails (stands in for disk-full).
+    Must report False (not swallow-and-continue) so the caller aborts."""
+    with app.app_context(), \
+         patch.dict(app.config, {'CAMERA_TRAP_CONFIG': {'THUMBNAIL_SIZE': (64, 64)}}):
+        out = tmp_path / 'no_such_dir' / 'thumb.jpg'  # parent does not exist
+        ok = create_thumbnail(_tiny_jpeg_stream(), str(out))
+    assert ok is False
