@@ -118,6 +118,35 @@ header a:hover {
     align-items: center;
 }
 
+/* Hamburger toggle — hidden on desktop, revealed in the ≤768px block */
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 40px;
+    padding: 9px 8px;
+    background: none;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.nav-toggle__bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+}
+
+/* Menu wrapper. On desktop it is transparent to layout (display: contents),
+   so <nav> and #user-actions flow into header .container exactly as before.
+   The ≤768px block turns it into a real collapsible panel. */
+.header-menu {
+    display: contents;
+}
+
 /* =================================================================
    Main Content & Generic Elements
    ================================================================= */
@@ -814,25 +843,60 @@ footer {
    ================================================================= */
 @media(max-width: 768px) {
     header .container {
-        flex-direction: column;
+        flex-wrap: wrap;
         align-items: center;
-        gap: 20px;
+        row-gap: 12px;
     }
 
     header #branding {
-        margin-right: 0;
-        text-align: center;
+        margin-right: auto;      /* pushes the toggle to the right edge */
+        text-align: left;
+    }
+
+    header #branding h1 {
+        font-size: 22px;
+    }
+
+    .nav-toggle {
+        display: flex;
+    }
+
+    /* Collapsible panel: full-width row below branding, hidden until toggled */
+    .header-menu {
+        display: none;
+        flex-basis: 100%;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+    }
+
+    .header-menu.is-open {
+        display: flex;
+    }
+
+    header nav ul {
+        display: flex;
+        flex-direction: column;
     }
 
     header nav li {
         display: block;
-        text-align: center;
-        padding: 8px 0;
+        padding: 0;
+    }
+
+    header nav li a {
+        display: block;
+        padding: 12px 8px;       /* ~44px tap target */
     }
 
     #user-actions {
         margin-left: 0;
-        justify-content: center;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 10px 8px 4px;
+        margin-top: 4px;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     #lang-switcher {

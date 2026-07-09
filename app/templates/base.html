@@ -43,7 +43,7 @@
 
     <meta name="theme-color" content="#0779e4">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=2) }}">
     {% block head_extra %}{% endblock %}
 
     {# Structured data — Organization #}
@@ -65,7 +65,14 @@
                 <div id="branding">
                     <h1><span class="highlight-color">{{ _('Автоматизований моніторинг фауни') }}</h1>
                 </div>
-                
+
+                <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="{{ _('Меню') }}">
+                    <span class="nav-toggle__bar"></span>
+                    <span class="nav-toggle__bar"></span>
+                    <span class="nav-toggle__bar"></span>
+                </button>
+
+                <div class="header-menu" id="site-nav">
                 <nav>
                     <ul>
                         <li class="{{ 'current' if request.endpoint == 'index' else '' }}"><a href="{{ url_for('main.index', lang_code=g.lang_code or 'uk') }}">{{ _('ГОЛОВНА') }}</a></li>
@@ -105,6 +112,7 @@
                         {% endif %}
                     </div>
                 </div>
+                </div>{# /.header-menu #}
             </div>
         </header>
 
@@ -127,6 +135,20 @@
     <footer>
         <p>{{ _('Проект БіоМон, ©') }} {{ now.year }}</p>
     </footer>
+
+    {# Mobile nav toggle — global, kept outside {% block scripts %} so child
+       templates that override that block don't drop it. #}
+    <script>
+    (function () {
+        var toggle = document.querySelector('.nav-toggle');
+        var menu = document.getElementById('site-nav');
+        if (!toggle || !menu) return;
+        toggle.addEventListener('click', function () {
+            var open = menu.classList.toggle('is-open');
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    })();
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>
