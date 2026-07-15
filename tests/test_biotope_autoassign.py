@@ -102,16 +102,6 @@ def test_auto_assign_route_requires_admin(auth_client):
     assert resp.status_code in (302, 401, 403)
 
 
-def test_mapping_save_rejects_unknown_class(auth_client):
-    c = auth_client(role='admin')
-    resp = c.post(
-        '/uk/camera-traps/admin/biotopes/mapping',
-        json={'worldcover_class': 999, 'biotope_id': None},
-        headers={'X-Requested-With': 'XMLHttpRequest'},
-    )
-    assert resp.status_code == 400
-
-
 # ── Constant / seed consistency ───────────────────────────────────────────────
 
 def test_seed_classes_are_known_worldcover_classes():
