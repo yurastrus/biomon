@@ -10,10 +10,13 @@ What it does:
     1. Connects to ct_db via CT_DATABASE_URI.
     2. Creates the biotope_landcover_map table if it does not exist
        (CTBase.metadata.create_all for that one table).
-    3. Seeds conservative default mappings (ESA WorldCover class → biotope),
-       matching biotopes by name_ua. Only classes not already mapped are
-       inserted (ON CONFLICT DO NOTHING) and only when the named biotope exists,
-       so the seed is safe on any installation and idempotent.
+    3. Seeds general landcover biotopes (Ліс, Чагарники, Рілля, Забудова,
+       Оголений ґрунт, Водойми, Водно-болотне угіддя) into the biotopes table,
+       idempotently by name_ua, so every relevant WorldCover class has a biotope.
+    4. Seeds default mappings (ESA WorldCover class → biotope), matching biotopes
+       by name_ua. Only classes not already mapped are inserted
+       (ON CONFLICT DO NOTHING) and only when the named biotope exists, so the
+       seed is safe on any installation and idempotent.
 
 Idempotent: safe to run multiple times. On installations with different biotope
 names the seed simply inserts nothing — the admin fills the mapping via the UI.
@@ -30,7 +33,7 @@ from app import create_app
 from app.camera_traps.database import get_ct_engine
 from app.camera_traps.models import CTBase, BiotopeLandcoverMap
 from app.camera_traps.biotope_autoassign import (
-    DEFAULT_SEED_BY_NAME_UA, WORLDCOVER_CLASSES,
+    DEFAULT_SEED_BY_NAME_UA, DEFAULT_LANDCOVER_BIOTOPES, WORLDCOVER_CLASSES,
 )
 
 
@@ -45,7 +48,24 @@ def main():
         print("  > CREATE TABLE IF NOT EXISTS biotope_landcover_map")
         CTBase.metadata.create_all(engine, tables=[BiotopeLandcoverMap.__table__])
 
-        # 2. Seed conservative defaults by biotope name_ua.
+        # 2. Seed general landcover biotopes (idempotent by name_ua).
+        created_biotopes = 0
+        with engine.begin() as conn:
+            for name_ua, name_en in DEFAULT_LANDCOVER_BIOTOPES:
+                res = conn.execute(
+                    text("""
+                        INSERT INTO biotopes (name_ua, name_en) VALUES (:ua, :en)
+                        ON CONFLICT (name_ua) DO NOTHING
+                    """),
+                    {"ua": name_ua, "en": name_en},
+                )
+                if (res.rowcount or 0) == 1:
+                    print(f"    + biotope '{name_ua}' / '{name_en}'")
+                    created_biotopes += 1
+        print(f"  Biotopes created: {created_biotopes} "
+              f"(of {len(DEFAULT_LANDCOVER_BIOTOPES)}; rest already existed)")
+
+        # 3. Seed defaults by biotope name_ua.
         seeded, skipped_missing_biotope, skipped_existing = 0, 0, 0
         with engine.begin() as conn:
             for wc_class, name_ua in DEFAULT_SEED_BY_NAME_UA.items():

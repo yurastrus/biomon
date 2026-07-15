@@ -122,3 +122,20 @@ def test_seed_classes_are_known_worldcover_classes():
 def test_defaults_are_sane():
     assert ba.DEFAULT_RADIUS_M == 100
     assert ba.DEFAULT_TOP_N == 3
+
+
+def test_seed_names_are_creatable_or_preexisting():
+    # Every seeded biotope name must either be created by the init script
+    # (DEFAULT_LANDCOVER_BIOTOPES) or be a known pre-existing standard biotope.
+    creatable = {ua for ua, _en in ba.DEFAULT_LANDCOVER_BIOTOPES}
+    preexisting = {'Лука'}
+    for wc_class, name_ua in ba.DEFAULT_SEED_BY_NAME_UA.items():
+        assert name_ua in creatable or name_ua in preexisting, \
+            f'seed name {name_ua!r} (class {wc_class}) is neither creatable nor pre-existing'
+
+
+def test_landcover_biotopes_have_unique_names():
+    ua_names = [ua for ua, _ in ba.DEFAULT_LANDCOVER_BIOTOPES]
+    en_names = [en for _, en in ba.DEFAULT_LANDCOVER_BIOTOPES]
+    assert len(ua_names) == len(set(ua_names))
+    assert len(en_names) == len(set(en_names))
