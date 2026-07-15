@@ -82,6 +82,16 @@ Start (s),End (s),Scientific name,Common name,File
 6.0,9.0,Turdus merula,Eurasian Blackbird,F:\\path\\SITE_20260305_170100.wav
 """
 
+# Real-world regression: BirdNET writes the absolute audio path UNQUOTED into
+# the trailing 'File' column. A localised folder name with a comma
+# ("…, головний канал @ …") splits the path across csv overflow fields, so the
+# basename collapses to the folder fragment and every recording merges into one.
+BIRDNET_CSV_COMMA_IN_PATH = """\
+Start (s),End (s),Scientific name,Common name,Confidence,File
+0.0,3.0,Curruca curruca,Lesser Whitethroat,0.2602,/mnt/f/1_Acoustic_recordings/Дубляни/ТО @ долина Яричівки, головний канал @ 49.92291 @ 24.05894 @/Data GRYBOVYCHI1/GRYBOVYCHI1_20260515_124000.wav
+0.0,3.0,Curruca communis,Greater Whitethroat,0.2029,/mnt/f/1_Acoustic_recordings/Дубляни/ТО @ долина Яричівки, головний канал @ 49.92291 @ 24.05894 @/Data GRYBOVYCHI1/GRYBOVYCHI1_20260515_130000.wav
+"""
+
 
 # ─── Raven Selection Table fixtures (tab-separated) ───────────────────────────
 
@@ -349,6 +359,22 @@ class TestBirdNETParseCSV(unittest.TestCase):
         rows = self.imp.parse_csv(BIRDNET_CSV_TWO_RECORDINGS)
         filenames = {r.recording_filename for r in rows}
         self.assertEqual(len(filenames), 2)
+
+    def test_comma_in_path_recovers_true_basename(self):
+        # Regression: a comma inside the unquoted File path must not truncate the
+        # basename to the folder fragment.
+        rows = self.imp.parse_csv(BIRDNET_CSV_COMMA_IN_PATH)
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(
+            [r.recording_filename for r in rows],
+            ['GRYBOVYCHI1_20260515_124000.wav',
+             'GRYBOVYCHI1_20260515_130000.wav'],
+        )
+
+    def test_comma_in_path_keeps_recordings_distinct(self):
+        # Two different audio files must stay two recordings, not merge into one.
+        rows = self.imp.parse_csv(BIRDNET_CSV_COMMA_IN_PATH)
+        self.assertEqual(len({r.recording_filename for r in rows}), 2)
 
     # ── old R-exported format ─────────────────────────────────────────────────
 
