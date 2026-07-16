@@ -41,8 +41,10 @@ def _submit_conn(unknown_votes, meaningful_votes, existing=None):
     return conn
 
 
-def _post_submit(auth_client, result, conn):
-    cl = auth_client(role='pam_verifier')
+def _post_submit(auth_client, result, conn, role='admin'):
+    # Default role='admin' bypasses the institution-access check so these tests
+    # exercise the discard logic in isolation (access is covered separately).
+    cl = auth_client(role=role)
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         return cl.post('/uk/api/verification/submit',
                        data=json.dumps({'segment_id': 42, 'verification_result': result}),
@@ -78,13 +80,39 @@ def test_submit_unknown_no_discard_if_meaningful_votes_exist(auth_client):
 
 
 def test_submit_rejects_invalid_result(auth_client):
-    cl = auth_client(role='pam_verifier')
+    cl = auth_client(role='admin')
     conn = MagicMock()
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         resp = cl.post('/uk/api/verification/submit',
                        data=json.dumps({'segment_id': 42, 'verification_result': 5}),
                        content_type='application/json')
     assert resp.status_code == 400
+
+
+def test_submit_denied_without_institution_access(auth_client):
+    # A verifier with NO institutions must not verify any segment (403).
+    conn = _submit_conn(unknown_votes=0, meaningful_votes=0)  # access SELECT → None
+    resp = _post_submit(auth_client, 1, conn, role='pam_verifier')
+    assert resp.status_code == 403
+
+
+def test_next_segment_applies_access_baseline_for_non_admin(auth_client):
+    # Non-admin with no institutions → access baseline denies all ('FALSE').
+    cl = auth_client(role='pam_verifier')
+    conn = MagicMock()
+    captured = {}
+
+    def _ex(sql, params=None):
+        captured['sql'] = str(sql)
+        res = MagicMock()
+        res.fetchone.return_value = None
+        return res
+    conn.execute.side_effect = _ex
+
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        cl.get('/uk/api/verification/next-segment')
+
+    assert 'FALSE' in captured['sql']
 
 
 # ── next-segment: institution filter ────────────────────────────────────────────
