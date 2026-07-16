@@ -126,3 +126,50 @@ def test_next_segment_no_institution_filter_when_absent(auth_client):
         cl.get('/uk/api/verification/next-segment')
 
     assert 'location_institutions' not in captured['sql']
+
+
+# ── filter-options (mutual cascade) ─────────────────────────────────────────────
+
+def _mapping_result(rows):
+    res = MagicMock()
+    res.mappings.return_value.fetchall.return_value = rows
+    return res
+
+
+def test_filter_options_returns_species_and_institutions(auth_client):
+    cl = auth_client(role='admin')  # admin: no institution restriction
+    conn = MagicMock()
+
+    def _ex(sql, params=None):
+        s = str(sql)
+        if 'FROM segments seg' in s and 'JOIN species s' in s:
+            return _mapping_result([{'species_id': 5, 'scientific_name': 'Bufo bufo',
+                                     'common_name_uk': 'Ропуха', 'common_name_en': 'Toad'}])
+        return _mapping_result([{'id': 3, 'name_uk': 'Установа А', 'name_en': 'Inst A'}])
+    conn.execute.side_effect = _ex
+
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = cl.get('/uk/api/verification/filter-options?institution_ids=3')
+    body = json.loads(resp.data)
+    assert resp.status_code == 200
+    assert body['species'][0]['id'] == 5
+    assert body['institutions'][0]['id'] == 3
+
+
+def test_filter_options_species_query_filtered_by_institution(auth_client):
+    cl = auth_client(role='admin')
+    conn = MagicMock()
+    seen = []
+
+    def _ex(sql, params=None):
+        seen.append((str(sql), params))
+        if 'JOIN species s' in str(sql):
+            return _mapping_result([])
+        return _mapping_result([])
+    conn.execute.side_effect = _ex
+
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        cl.get('/uk/api/verification/filter-options?institution_ids=3,4')
+
+    species_sql = next(s for s, p in seen if 'JOIN species s' in s)
+    assert 'location_institutions' in species_sql
