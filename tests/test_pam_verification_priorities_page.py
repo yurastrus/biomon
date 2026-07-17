@@ -78,6 +78,20 @@ def test_priorities_includes_detection_only_species(auth_client):
     assert 'LEFT JOIN' in main_sql
 
 
+def test_priorities_has_order_index_column(auth_client):
+    """The original priority order is exposed as a sortable # column so users
+    can restore it after re-sorting by another column."""
+    cl = auth_client(role='manager')
+    with patch('app.pam.routes.get_pam_db_connection',
+               return_value=_mock_conn([])):
+        resp = cl.get('/uk/pam/verification/priorities')
+
+    html = resp.get_data(as_text=True)
+    assert 'order-cell' in html
+    # One numbered cell per species row (1..N in render order).
+    assert 'data-sort="1"' in html and 'data-sort="3"' in html
+
+
 def test_priorities_colour_flags(auth_client):
     """Each row carries the right colour class for its state."""
     cl = auth_client(role='manager')
