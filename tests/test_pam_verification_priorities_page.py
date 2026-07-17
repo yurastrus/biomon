@@ -105,6 +105,38 @@ def test_priorities_non_verifier_has_no_verify_column(auth_client):
     assert not any('GROUP BY seg.species_id' in s for s in captured)
 
 
+def test_priorities_default_sort_order(auth_client):
+    """Default order: actionable (orange, has segments, under-verified) first,
+    ascending segment count within status; then detection-only (red); then
+    fully-verified (green) last."""
+    # Intentionally shuffled input so only the server-side sort can fix it.
+    shuffled = [
+        _row(10, 'Green done', 300, 300, 280, 400),   # green   -> last
+        _row(11, 'Orange many', 20, 1, 0, 50),        # orange, 20 segs
+        _row(12, 'Red nosegs', 0, 0, 0, 90),          # red     -> middle
+        _row(13, 'Orange few', 5, 0, 0, 30),          # orange, 5 segs -> first
+    ]
+
+    conn = MagicMock()
+
+    def _execute(query, params=None):
+        res = MagicMock()
+        # manager also triggers the per-user pending query -> return no rows.
+        res.fetchall.return_value = (
+            [] if 'GROUP BY seg.species_id' in str(query) else shuffled)
+        return res
+    conn.execute.side_effect = _execute
+
+    cl = auth_client(role='manager')
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = cl.get('/uk/pam/verification/priorities')
+
+    html = resp.get_data(as_text=True)
+    order = [html.index(name) for name in
+             ('Orange few', 'Orange many', 'Red nosegs', 'Green done')]
+    assert order == sorted(order), f'unexpected row order: {order}'
+
+
 def test_priorities_verifier_gets_deep_link(auth_client):
     """A pam_verifier gets a species-filtered verify link for verifiable rows."""
     cl = auth_client(role='pam_verifier')
