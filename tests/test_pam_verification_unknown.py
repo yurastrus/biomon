@@ -2,6 +2,7 @@
 """Tests for the "don't know" verification vote, auto-discard, and the
 institution filter on the verification queue."""
 import json
+from datetime import date, time
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -322,3 +323,61 @@ def test_stats_class_filter_applies_subquery(auth_client):
     assert any('SELECT species_id FROM species WHERE class = :class_name' in s
                for s, p in seen)
     assert any(p and p.get('class_name') == 'Aves' for s, p in seen)
+
+
+# ── next-segment: bilingual location from the locations registry ─────────────────
+
+def _next_segment_row(loc_uk, loc_en, seg_loc='FILE_LOC'):
+    """A full next-segment result tuple (12 cols): ...seg.location_name(3)...,
+    l.location_name(10, uk), l.location_name_en(11, en)."""
+    return (
+        7, 'seg.wav', 0.912, seg_loc,
+        date(2024, 10, 11), time(10, 51, 2), '/path/seg.wav',
+        'Pelobates fuscus', 'Часничниця', 'Common spadefoot toad',
+        loc_uk, loc_en,
+    )
+
+
+def _next_segment_conn(row):
+    conn = MagicMock()
+
+    def _ex(sql, params=None):
+        res = MagicMock()
+        res.fetchone.return_value = row
+        return res
+    conn.execute.side_effect = _ex
+    return conn
+
+
+def test_next_segment_location_from_registry_uk(auth_client):
+    cl = auth_client(role='admin')
+    conn = _next_segment_conn(_next_segment_row('Дніпро', 'Dnipro'))
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = cl.get('/uk/api/verification/next-segment')
+    assert json.loads(resp.data)['location_name'] == 'Дніпро'
+
+
+def test_next_segment_location_from_registry_en(auth_client):
+    cl = auth_client(role='admin')
+    conn = _next_segment_conn(_next_segment_row('Дніпро', 'Dnipro'))
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = cl.get('/en/api/verification/next-segment')
+    assert json.loads(resp.data)['location_name'] == 'Dnipro'
+
+
+def test_next_segment_location_en_falls_back_to_uk(auth_client):
+    # English UI but no English registry name → fall back to the UK registry name.
+    cl = auth_client(role='admin')
+    conn = _next_segment_conn(_next_segment_row('Дніпро', None))
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = cl.get('/en/api/verification/next-segment')
+    assert json.loads(resp.data)['location_name'] == 'Дніпро'
+
+
+def test_next_segment_location_falls_back_to_filename_when_unlinked(auth_client):
+    # No registry link (LEFT JOIN → NULLs) → the filename-parsed name is used.
+    cl = auth_client(role='admin')
+    conn = _next_segment_conn(_next_segment_row(None, None, seg_loc='DAY'))
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = cl.get('/uk/api/verification/next-segment')
+    assert json.loads(resp.data)['location_name'] == 'DAY'
