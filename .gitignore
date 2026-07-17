@@ -18,3 +18,4 @@ app.db
 CT_LocationARD_Dataset.xlsx
 # Working notes / handoff for deferred tasks (not versioned)
 auto_habitat/
+scratch/
