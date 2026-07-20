@@ -295,7 +295,7 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
         rows = [(i, 0.9, 1.0) for i in range(4)]  # 4 < 5
         with patch('app.pam.pam_evaluation_utils.get_pam_db_connection',
                    return_value=self._conn_with_rows(rows)):
-            result = calculate_species_metrics(species_id=1)
+            result = calculate_species_metrics(species_id=1, model_id=1)
         self.assertIsNone(result)
 
     def test_returns_none_when_no_consensus(self):
@@ -305,7 +305,7 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
         rows = [(i, 0.9, 0.5) for i in range(6)]
         with patch('app.pam.pam_evaluation_utils.get_pam_db_connection',
                    return_value=self._conn_with_rows(rows)):
-            result = calculate_species_metrics(species_id=1, consensus_threshold=2/3)
+            result = calculate_species_metrics(species_id=1, model_id=1, consensus_threshold=2/3)
         self.assertIsNone(result)
 
     def test_returns_dict_with_required_keys(self):
@@ -324,7 +324,7 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
              patch('app.pam.pam_evaluation_utils.calculate_logistic_regression',
                    return_value=fake_logistic), \
              patch('numpy.random.choice', return_value=np.array([1, 1, 1, 1, 1, 1])):
-            result = calculate_species_metrics(species_id=1)
+            result = calculate_species_metrics(species_id=1, model_id=1)
 
         self.assertIsNotNone(result)
         for key in ('species_id', 'precision_score', 'precision_lower_ci',
@@ -345,7 +345,7 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
              patch('app.pam.pam_evaluation_utils.calculate_logistic_regression',
                    return_value=fake_logistic), \
              patch('numpy.random.choice', return_value=np.array([1]*6)):
-            result = calculate_species_metrics(species_id=1)
+            result = calculate_species_metrics(species_id=1, model_id=1)
         self.assertEqual(result['precision_score'], 1.0)
         self.assertEqual(result['total_samples'], 6)
 
@@ -362,7 +362,7 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
              patch('app.pam.pam_evaluation_utils.calculate_logistic_regression',
                    return_value=fake_logistic), \
              patch('numpy.random.choice', return_value=np.array([0]*6)):
-            result = calculate_species_metrics(species_id=1)
+            result = calculate_species_metrics(species_id=1, model_id=1)
         self.assertEqual(result['precision_score'], 0.0)
 
     def test_species_id_echoed_to_result(self):
@@ -377,8 +377,9 @@ class TestCalculateSpeciesMetrics(unittest.TestCase):
              patch('app.pam.pam_evaluation_utils.calculate_logistic_regression',
                    return_value=fake_logistic), \
              patch('numpy.random.choice', return_value=np.array([1]*6)):
-            result = calculate_species_metrics(species_id=123)
+            result = calculate_species_metrics(species_id=123, model_id=7)
         self.assertEqual(result['species_id'], 123)
+        self.assertEqual(result['model_id'], 7)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -463,11 +464,11 @@ class TestRecalculateAllMetrics(unittest.TestCase):
         conn = MagicMock()
         # base_query returns 1 species
         base_result = MagicMock()
-        base_result.fetchall.return_value = [(1, 'Test sp')]
+        base_result.fetchall.return_value = [(1, 10, 'Test sp')]
         conn.execute.return_value = base_result
 
         fake_metrics = {
-            'species_id': 1, 'precision_score': 0.9,
+            'species_id': 1, 'model_id': 10, 'precision_score': 0.9,
             'precision_lower_ci': 0.85, 'precision_upper_ci': 0.95,
             'total_samples': 10,
             'logistic_beta0': 0.5, 'logistic_beta1': 1.0,
@@ -499,14 +500,14 @@ class TestRecalculateAllMetrics(unittest.TestCase):
 
         # 1st call — base_query (fetchall), the rest — for diag (fetchone)
         base_result = MagicMock()
-        base_result.fetchall.return_value = [(5, 'Spinus spinus')]
+        base_result.fetchall.return_value = [(5, 10, 'Spinus spinus')]
         diag_result = MagicMock()
         diag_result.fetchone.return_value = diag
 
         # Call sequence: base_query, UPDATE is_current=false, diag query
         # Simplified here — any execute() returns an object with both fetchall and fetchone
         combined = MagicMock()
-        combined.fetchall.return_value = [(5, 'Spinus spinus')]
+        combined.fetchall.return_value = [(5, 10, 'Spinus spinus')]
         combined.fetchone.return_value = diag
         conn.execute.return_value = combined
 
@@ -566,10 +567,10 @@ class TestRecalculateAllMetrics(unittest.TestCase):
         # Let's test success path instead by providing data
         conn2 = MagicMock()
         combined = MagicMock()
-        combined.fetchall.return_value = [(1, 'X')]
+        combined.fetchall.return_value = [(1, 10, 'X')]
         combined.fetchone.return_value = None
         conn2.execute.return_value = combined
-        fake = {'species_id': 1, 'precision_score': 0.5,
+        fake = {'species_id': 1, 'model_id': 10, 'precision_score': 0.5,
                 'precision_lower_ci': 0.4, 'precision_upper_ci': 0.6,
                 'total_samples': 5,
                 'logistic_beta0': 0, 'logistic_beta1': 0, 'logistic_r_squared': 0,
@@ -587,10 +588,10 @@ class TestRecalculateAllMetrics(unittest.TestCase):
         from app.pam.pam_evaluation_utils import recalculate_all_metrics
         conn = MagicMock()
         combined = MagicMock()
-        combined.fetchall.return_value = [(1, 'X')]
+        combined.fetchall.return_value = [(1, 10, 'X')]
         combined.fetchone.return_value = None
         conn.execute.return_value = combined
-        fake = {'species_id': 1, 'precision_score': 0.5,
+        fake = {'species_id': 1, 'model_id': 10, 'precision_score': 0.5,
                 'precision_lower_ci': 0.4, 'precision_upper_ci': 0.6,
                 'total_samples': 5,
                 'logistic_beta0': 0, 'logistic_beta1': 0, 'logistic_r_squared': 0,
@@ -662,9 +663,9 @@ class TestRecalculateReturnContract(unittest.TestCase):
         combined.fetchall.return_value = []
         combined.fetchone.return_value = None
         # Empty base list → no_eligible — switch to actually populated
-        combined.fetchall.return_value = [(1, 'X')]
+        combined.fetchall.return_value = [(1, 10, 'X')]
         conn.execute.return_value = combined
-        fake = {'species_id': 1, 'precision_score': 0.5,
+        fake = {'species_id': 1, 'model_id': 10, 'precision_score': 0.5,
                 'precision_lower_ci': 0.4, 'precision_upper_ci': 0.6, 'total_samples': 5,
                 'logistic_beta0': 0, 'logistic_beta1': 0, 'logistic_r_squared': 0,
                 'logistic_n_samples': 5, 'logistic_status': 'calculated',
