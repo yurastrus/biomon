@@ -175,28 +175,39 @@ class TestGetModelsList:
 # Mirrors the 2/3 consensus rule in migration 0004 but also surfaces single votes.
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("total, positive, expected", [
-    # No meaningful votes -> blue.
-    (0, 0, 'unverified'),
-    (None, None, 'unverified'),
-    # Exactly one vote -> single_* (visible even without consensus).
-    (1, 1, 'single_confirmed'),
-    (1, 0, 'single_rejected'),
-    # Two votes: unanimous -> consensus; 1/1 split -> conflict -> blue.
-    (2, 2, 'consensus_confirmed'),
-    (2, 0, 'consensus_rejected'),
-    (2, 1, 'unverified'),
-    # Three votes: 2/3 threshold boundary both directions.
-    (3, 2, 'consensus_confirmed'),   # 2/3 >= threshold
-    (3, 1, 'consensus_rejected'),    # 1/3 <= (1 - threshold)
-    (3, 3, 'consensus_confirmed'),
-    (3, 0, 'consensus_rejected'),
+# Signature: _verification_display_status(consensus_result, total_votes, positive_votes)
+@pytest.mark.parametrize("consensus, total, positive, expected", [
+    # dvm authoritative result wins regardless of live counts.
+    (1, 1, 1, 'consensus_confirmed'),   # legacy hand-verified single vote -> dark
+    (0, 1, 0, 'consensus_rejected'),    # legacy authoritative rejection -> dark
+    (1, 0, 0, 'consensus_confirmed'),   # dvm set even with no live counts
+    # dvm NULL: derive from live votes.
+    (None, 0, 0, 'unverified'),
+    (None, None, None, 'unverified'),
+    # Exactly one live vote, no consensus recorded -> single_* (light, visible).
+    (None, 1, 1, 'single_confirmed'),
+    (None, 1, 0, 'single_rejected'),
+    # Two live votes, dvm not yet upserted: unanimous -> consensus; split -> blue.
+    (None, 2, 2, 'consensus_confirmed'),
+    (None, 2, 0, 'consensus_rejected'),
+    (None, 2, 1, 'unverified'),
+    # 2/3 threshold boundary both directions (dvm NULL, stale-fix path).
+    (None, 3, 2, 'consensus_confirmed'),   # 2/3 >= threshold
+    (None, 3, 1, 'consensus_rejected'),    # 1/3 <= (1 - threshold)
+    (None, 3, 3, 'consensus_confirmed'),
+    (None, 3, 0, 'consensus_rejected'),
 ])
-def test_verification_display_status(total, positive, expected):
-    assert _verification_display_status(total, positive) == expected
+def test_verification_display_status(consensus, total, positive, expected):
+    assert _verification_display_status(consensus, total, positive) == expected
 
 
 def test_verification_display_status_single_positive_not_hidden():
-    """The reported bug: one person's verification must not read as 'unverified'."""
-    assert _verification_display_status(1, 1) == 'single_confirmed'
-    assert _verification_display_status(1, 0) == 'single_rejected'
+    """The reported bug: one in-app verification must not read as 'unverified'."""
+    assert _verification_display_status(None, 1, 1) == 'single_confirmed'
+    assert _verification_display_status(None, 1, 0) == 'single_rejected'
+
+
+def test_verification_display_status_legacy_authoritative_stays_dark():
+    """Legacy hand-verified single-vote segments (dvm set) render as consensus (dark)."""
+    assert _verification_display_status(1, 1, 1) == 'consensus_confirmed'
+    assert _verification_display_status(0, 1, 0) == 'consensus_rejected'
