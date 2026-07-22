@@ -12,6 +12,7 @@ from app.pam.utils import (
     _normalize_model_mode,
     _confidence_filter_sql,
     _confidence_value_sql,
+    _verification_display_status,
 )
 
 
@@ -167,3 +168,35 @@ class TestGetModelsList:
         with app.test_request_context('/'):
             with patch('app.pam.utils.get_pam_db_connection', return_value=conn):
                 assert get_models_list() == []
+
+
+# ---------------------------------------------------------------------------
+# _verification_display_status — chart colour status derived from segment votes.
+# Mirrors the 2/3 consensus rule in migration 0004 but also surfaces single votes.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("total, positive, expected", [
+    # No meaningful votes -> blue.
+    (0, 0, 'unverified'),
+    (None, None, 'unverified'),
+    # Exactly one vote -> single_* (visible even without consensus).
+    (1, 1, 'single_confirmed'),
+    (1, 0, 'single_rejected'),
+    # Two votes: unanimous -> consensus; 1/1 split -> conflict -> blue.
+    (2, 2, 'consensus_confirmed'),
+    (2, 0, 'consensus_rejected'),
+    (2, 1, 'unverified'),
+    # Three votes: 2/3 threshold boundary both directions.
+    (3, 2, 'consensus_confirmed'),   # 2/3 >= threshold
+    (3, 1, 'consensus_rejected'),    # 1/3 <= (1 - threshold)
+    (3, 3, 'consensus_confirmed'),
+    (3, 0, 'consensus_rejected'),
+])
+def test_verification_display_status(total, positive, expected):
+    assert _verification_display_status(total, positive) == expected
+
+
+def test_verification_display_status_single_positive_not_hidden():
+    """The reported bug: one person's verification must not read as 'unverified'."""
+    assert _verification_display_status(1, 1) == 'single_confirmed'
+    assert _verification_display_status(1, 0) == 'single_rejected'
