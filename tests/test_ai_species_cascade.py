@@ -153,54 +153,60 @@ class TestGetSpeciesWithAiPredictionsScope(unittest.TestCase):
         params_arg = sess.execute.call_args.args[1]
         self.assertEqual(params_arg.get('scope_inst_id'), 20)
 
-    def test_scope_ecoregion_filters_to_user_institutions(self):
-        """Non-admin: eco_inst_ids ∩ user_inst_ids — only those remain."""
+    def test_scope_institution_ids_passes_expanding_param(self):
+        """A pre-resolved list of institutions (e.g. an ecoregion expanded by
+        the caller) becomes an IN clause — and the helper never queries the
+        `institutions` table itself (it lives in the main DB, not ct_db)."""
         from app.camera_traps.ai_runner import get_species_with_ai_predictions
 
-        # The DB returns institutions [10, 20, 30] for the ecoregion;
-        # the user only has [10, 99] → intersection = [10].
         rows = [(4, 'Козуля', 'Roe Deer', 'Capreolus capreolus', 2)]
-        sess = self._make_mock_session(rows=rows, eco_inst_ids=[10, 20, 30])
+        sess = self._make_mock_session(rows=rows)
 
         with self._patch_session(sess):
             result = get_species_with_ai_predictions(
                 user_id=1, user_inst_ids=[10, 99], is_admin=False,
-                scope_ecoregion='Карпати',
+                scope_institution_ids=[10],
             )
 
         self.assertEqual(len(result), 1)
-        # Two executes: first eco resolution, then the main one.
-        self.assertEqual(sess.execute.call_count, 2)
-        main_call = sess.execute.call_args_list[1]
-        params_arg = main_call.args[1]
+        # Exactly one execute — no eco-resolution query against `institutions`.
+        self.assertEqual(sess.execute.call_count, 1)
+        sql_arg = str(sess.execute.call_args.args[0])
+        # Expanding bindparam renders as `IN (__[POSTCOMPILE_scope_inst_ids])`.
+        self.assertIn('li_sc.institution_id IN', sql_arg)
+        self.assertIn('scope_inst_ids', sql_arg)
+        # Regression guard for the ct_db bug: the helper must not touch the
+        # institutions table (that lookup belongs to the caller / main DB).
+        self.assertNotIn('FROM institutions', sql_arg)
+        params_arg = sess.execute.call_args.args[1]
         self.assertEqual(params_arg.get('scope_inst_ids'), (10,))
 
-    def test_scope_ecoregion_no_overlap_returns_empty(self):
+    def test_scope_institution_ids_empty_returns_empty(self):
         from app.camera_traps.ai_runner import get_species_with_ai_predictions
 
-        sess = self._make_mock_session(rows=[], eco_inst_ids=[100, 200])
+        sess = self._make_mock_session(rows=[])
         with self._patch_session(sess):
             result = get_species_with_ai_predictions(
                 user_id=1, user_inst_ids=[10], is_admin=False,
-                scope_ecoregion='Полісся',
+                scope_institution_ids=[],
             )
         self.assertEqual(result, [])
-        # Eco resolution happened, but the main SQL did not.
-        self.assertEqual(sess.execute.call_count, 1)
+        # Empty scope → short-circuit before any SQL.
+        sess.execute.assert_not_called()
 
-    def test_scope_ecoregion_admin_uses_all_institutions(self):
+    def test_scope_institution_ids_admin_multiple(self):
         from app.camera_traps.ai_runner import get_species_with_ai_predictions
 
         rows = [(4, 'Козуля', 'Roe Deer', 'Capreolus capreolus', 1)]
-        sess = self._make_mock_session(rows=rows, eco_inst_ids=[10, 20, 30])
+        sess = self._make_mock_session(rows=rows)
         with self._patch_session(sess):
             result = get_species_with_ai_predictions(
                 user_id=1, user_inst_ids=[], is_admin=True,
-                scope_ecoregion='Карпати',
+                scope_institution_ids=[10, 20, 30],
             )
         self.assertEqual(len(result), 1)
-        main_call = sess.execute.call_args_list[1]
-        params_arg = main_call.args[1]
+        self.assertEqual(sess.execute.call_count, 1)
+        params_arg = sess.execute.call_args.args[1]
         self.assertEqual(set(params_arg.get('scope_inst_ids')), {10, 20, 30})
 
     def test_no_model_returns_empty(self):
@@ -295,9 +301,11 @@ class TestIdentifyAiSpeciesEndpoint(unittest.TestCase):
 
         self.inst_a = Institution(
             name_uk='Заповідник А', name_en='Reserve A', code='res_a',
+            ecoregion_uk='Карпати', ecoregion_en='Carpathians',
         )
         self.inst_b = Institution(
             name_uk='Заповідник Б', name_en='Reserve B', code='res_b',
+            ecoregion_uk='Розточчя', ecoregion_en='Roztochia',
         )
         db.session.add_all([self.inst_a, self.inst_b])
         db.session.flush()
@@ -403,15 +411,43 @@ class TestIdentifyAiSpeciesEndpoint(unittest.TestCase):
         self.assertEqual(kwargs.get('scope_institution_id'), self.inst_b.id)
         self.assertTrue(kwargs.get('is_admin'))
 
-    def test_admin_with_scope_ecoregion_passes_param(self):
+    def test_admin_with_scope_ecoregion_resolves_to_institution_ids(self):
+        """The route expands the ecoregion to its institution IDs (main-DB
+        Institution model) and passes them as `scope_institution_ids` — it must
+        NOT forward a raw `scope_ecoregion` to the CT-only helper."""
         _login(self.client, self.admin.id)
         with self._patched(items_return=[]) as mock_get:
-            r = self.client.get(
-                self.URL + '?scope_ecoregion=' + 'Карпати'
-            )
+            r = self.client.get(self.URL + '?scope_ecoregion=' + 'Карпати')
         self.assertEqual(r.status_code, 200)
         kwargs = mock_get.call_args.kwargs
-        self.assertEqual(kwargs.get('scope_ecoregion'), 'Карпати')
+        self.assertNotIn('scope_ecoregion', kwargs)
+        self.assertEqual(kwargs.get('scope_institution_ids'), [self.inst_a.id])
+
+    def test_admin_scope_ecoregion_unknown_returns_empty_without_helper(self):
+        _login(self.client, self.admin.id)
+        with self._patched(items_return=[{'id': 1, 'text': 'x'}]) as mock_get:
+            r = self.client.get(self.URL + '?scope_ecoregion=' + 'Неіснуючий')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.get_json()['items'], [])
+        mock_get.assert_not_called()
+
+    def test_verifier_scope_ecoregion_intersects_own_institutions(self):
+        """A verifier picking their own ecoregion gets their institution(s);
+        picking an ecoregion they have no institution in → empty, no helper."""
+        _login(self.client, self.verifier.id)
+        # verifier is a member of inst_a (ecoregion 'Карпати').
+        with self._patched(items_return=[{'id': 4, 'text': 'Козуля (1)'}]) as mock_get:
+            r = self.client.get(self.URL + '?scope_ecoregion=' + 'Карпати')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(mock_get.call_args.kwargs.get('scope_institution_ids'),
+                         [self.inst_a.id])
+
+        # 'Розточчя' belongs to inst_b, which the verifier is NOT a member of.
+        with self._patched(items_return=[{'id': 4, 'text': 'nope'}]) as mock_get:
+            r = self.client.get(self.URL + '?scope_ecoregion=' + 'Розточчя')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.get_json()['items'], [])
+        mock_get.assert_not_called()
 
     def test_no_scope_params_pass_none(self):
         _login(self.client, self.verifier.id)
