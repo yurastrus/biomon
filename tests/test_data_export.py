@@ -31,6 +31,10 @@ def _make_mock_row(**kwargs):
         'state_province': 'Kyiv Oblast',
         'max_quantity': 2,
         'identifier_user_ids': None,
+        'species_id': 101,
+        'row_kind': 'human_consensus',
+        'ai_confidence': None,
+        'ai_model_name': None,
     }
     defaults.update(kwargs)
     return defaults
@@ -424,6 +428,120 @@ class TestQcExclusionHelperContract(unittest.TestCase):
         frag = _build_qc_exclusion_cond(['qc_stolen', 'not_a_flag'])
         self.assertIn('qc_stolen = TRUE', frag)
         self.assertNotIn('not_a_flag', frag)
+
+
+class TestExportModes(unittest.TestCase):
+    """The 'Повнота визначення' filter (export_mode): consensus / human_any / human_ai."""
+
+    def setUp(self):
+        from app import create_app
+        self.app = create_app('testing')
+        self.ctx = self.app.app_context()
+        self.ctx.push()
+
+    def tearDown(self):
+        self.ctx.pop()
+
+    def _sql(self, export_mode=None, **extra):
+        """Return (count_sql, data_sql) for the given export_mode."""
+        mock_engine, mock_conn = _make_engine_mock()
+        base = {'start_date': '2024-01-01', 'end_date': '2024-12-31'}
+        base.update(extra)
+        if export_mode is not None:
+            base['export_mode'] = export_mode
+        with patch('app.camera_traps.data_export.get_ct_engine', return_value=mock_engine), \
+             patch('app.camera_traps.data_export.User') as mu:
+            mu.query.filter.return_value.all.return_value = []
+            from app.camera_traps.data_export import get_ct_occurrence_data
+            get_ct_occurrence_data(base)
+        count_sql = str(mock_conn.execute.call_args_list[0][0][0])
+        data_sql = str(mock_conn.execute.call_args_list[1][0][0])
+        return count_sql, data_sql
+
+    def _result(self, rows, export_mode='consensus'):
+        mock_engine, _ = _make_engine_mock(rows=rows, count_result=len(rows))
+        with patch('app.camera_traps.data_export.get_ct_engine', return_value=mock_engine), \
+             patch('app.camera_traps.data_export.User') as mu:
+            mu.query.filter.return_value.all.return_value = []
+            from app.camera_traps.data_export import get_ct_occurrence_data
+            return get_ct_occurrence_data(
+                {'start_date': '2024-01-01', 'end_date': '2024-12-31', 'export_mode': export_mode}
+            )
+
+    # ── SQL producer selection ─────────────────────────────────────────────────
+    def test_default_mode_is_consensus_only(self):
+        count_sql, _ = self._sql(None)
+        self.assertIn("o.status IN ('completed', 'archived')", count_sql)
+        self.assertNotIn("o.status = 'pending'", count_sql)
+        self.assertNotIn('AIPick', count_sql)
+
+    def test_invalid_mode_falls_back_to_consensus(self):
+        count_sql, _ = self._sql('garbage')
+        self.assertIn("o.status IN ('completed', 'archived')", count_sql)
+        self.assertNotIn("o.status = 'pending'", count_sql)
+
+    def test_human_any_adds_conflict_producer(self):
+        count_sql, _ = self._sql('human_any')
+        self.assertIn("o.status IN ('completed', 'archived')", count_sql)  # consensus still there
+        self.assertIn("o.status = 'pending'", count_sql)                   # + conflict producer
+        self.assertNotIn('AIPick', count_sql)                             # but no AI
+
+    def test_human_ai_adds_ai_producer(self):
+        count_sql, _ = self._sql('human_ai')
+        self.assertIn("o.status = 'pending'", count_sql)
+        self.assertIn('AIPick', count_sql)
+        self.assertIn('ai_predictions', count_sql)
+        self.assertIn('accuracy_rank', count_sql)
+        # AI-only path must exclude series that already have human input.
+        self.assertIn('NOT EXISTS', count_sql)
+
+    # ── Variant A: aggregation only in consensus mode ──────────────────────────
+    def test_aggregation_applied_in_consensus_mode(self):
+        _, data_sql = self._sql('consensus', aggregation='location_day')
+        self.assertIn('RankedAggregatedData', data_sql)
+
+    def test_aggregation_forced_off_in_human_any(self):
+        _, data_sql = self._sql('human_any', aggregation='location_day')
+        self.assertNotIn('RankedAggregatedData', data_sql)
+
+    def test_aggregation_forced_off_in_human_ai(self):
+        _, data_sql = self._sql('human_ai', aggregation='location_timewindow')
+        self.assertNotIn('EventTagged', data_sql)
+
+    # ── Post-processing per row_kind ───────────────────────────────────────────
+    def test_consensus_row_has_observation_id(self):
+        res = self._result([_make_mock_row(observation_id=42)], 'consensus')
+        occ = res['data'][0]
+        self.assertEqual(occ['observationID'], 42)
+        self.assertEqual(occ['identificationVerificationStatus'], 'verified by human')
+        self.assertEqual(occ['identificationConfidence'], '')
+
+    def test_conflict_rows_share_observation_id_unique_occurrence(self):
+        rows = [
+            _make_mock_row(observation_id=7, species_id=11, scientific_name='Canis lupus',
+                           row_kind='human_conflict', identifier_user_ids='1'),
+            _make_mock_row(observation_id=7, species_id=22, scientific_name='Vulpes vulpes',
+                           row_kind='human_conflict', identifier_user_ids='2'),
+        ]
+        res = self._result(rows, 'human_any')
+        a, b = res['data']
+        self.assertEqual(a['observationID'], 7)
+        self.assertEqual(b['observationID'], 7)                     # shared grouping key
+        self.assertNotEqual(a['occurrenceID'], b['occurrenceID'])   # but unique per row
+        self.assertIn(':taxon:11', a['occurrenceID'])
+        self.assertIn(':taxon:22', b['occurrenceID'])
+        self.assertIn('unresolved', a['identificationVerificationStatus'])
+
+    def test_ai_row_uses_model_name_and_confidence(self):
+        row = _make_mock_row(observation_id=99, row_kind='ai', identifier_user_ids=None,
+                             ai_confidence=0.8123, ai_model_name='DeepFaune 1.4.1 (DF+MDS)')
+        res = self._result([row], 'human_ai')
+        occ = res['data'][0]
+        self.assertEqual(occ['identifiedBy'], 'DeepFaune 1.4.1 (DF+MDS)')
+        self.assertEqual(occ['identificationVerificationStatus'], 'unverified (AI)')
+        self.assertEqual(occ['identificationConfidence'], 0.812)
+        self.assertIn('confidence: 0.81', occ['identificationRemarks'])
+        self.assertEqual(occ['observationID'], 99)
 
 
 if __name__ == '__main__':
