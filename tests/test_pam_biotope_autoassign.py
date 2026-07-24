@@ -100,11 +100,18 @@ def test_seed_classes_are_known_worldcover_classes():
         assert wc_class in ba.WORLDCOVER_CLASSES
 
 
-def test_only_forest_is_created_rest_map_to_existing():
-    # PAM's biotope set is rich; only the general "Ліс" is added, everything
-    # else maps to a pre-existing PAM biotope.
-    assert [ua for ua, _ in ba.DEFAULT_LANDCOVER_BIOTOPES] == ['Ліс']
+def test_general_biotopes_created_rest_map_to_existing():
+    # PAM's biotope set is rich; only the general biotopes with no good existing
+    # match are added (forest, bare ground, wetland). Everything else maps to a
+    # pre-existing PAM biotope.
+    created = [ua for ua, _ in ba.DEFAULT_LANDCOVER_BIOTOPES]
+    assert created == ['Ліс', 'Оголений ґрунт', 'Водно-болотне угіддя']
     assert ba.DEFAULT_SEED_BY_NAME_UA.get(10) == 'Ліс'
+    assert ba.DEFAULT_SEED_BY_NAME_UA.get(60) == 'Оголений ґрунт'
+    assert ba.DEFAULT_SEED_BY_NAME_UA.get(90) == 'Водно-болотне угіддя'
+    # Every created biotope must be referenced by the seed mapping.
+    for ua in created:
+        assert ua in ba.DEFAULT_SEED_BY_NAME_UA.values()
 
 
 def test_defaults_are_sane():
