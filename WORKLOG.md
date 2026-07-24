@@ -1,5 +1,34 @@
 # WORKLOG — biomon
 
+## 2026-07-24 — Автопризначення біотопів у PAM (порт із CT)
+
+Порт CT-фічі автопризначення біотопів у модуль PAM (сабмодуль `shared-pam`,
+окрема `pam_db`). PAM структурно дзеркалить CT (locations lat/lon + geom,
+biotopes, location_biotopes M2M), тож логіка перенесена майже 1:1.
+
+- **`app/pam/biotope_autoassign.py`** — самодостатній порт (через `get_pam_engine`,
+  колонки `location_id/lat/lon`; свій GEE-init на `GEE_SERVICE_ACCOUNT_KEY`;
+  `frequencyHistogram` над `Point.buffer`; аддитивний `ON CONFLICT`;
+  `start_async_assign` threading). tz-aware статус, stuck-cutoff рахується в SQL.
+- **Адмін-хаб**: новий `GET /<lang>/pam/admin` + `pam_admin.html` (лише біотопна
+  секція; старі адмін-дії PAM не чіпав — на потім). Посилання-картка додана в
+  «Управління» на `pam_home.html` (admin-only). Роути: `POST .../auto-assign`
+  (202/409/503), `GET .../status`. Повідомлення роуту — хардкод-українська
+  (стиль PAM), рядки шаблону — через `_()` (домен pam).
+- **Таблиці в pam_db**: `biotope_landcover_map` + generic `pam_calculation_log`
+  (для статусу/polling). Створюються `ensure_schema()` ідемпотентно —
+  **без committed init-скрипта** (на прохання користувача); DDL у докстрінгу модуля.
+- **Сід (одноразово, напряму в pam_db)**: PAM має 16 біотопів, тож додано лише
+  загальний **«Ліс»** (id 17); решта класів змаплено на наявні (20→Кущі, 30→Лука,
+  40→C/г поля, 50→Населені пункти, 60→Скелі та урвища, 80→Озера та водосховища,
+  90→Очерети). Мапінг керується лише в БД.
+- **Верифікація**: 14 тестів (топ-N, gating, 503, admin-only) — pass; повний набір
+  — pass. Наскрізь на pam_db: `gee_landcover_available()=True`, гістограми Розточчя
+  логічні (ліс/стави), write-path `unnest`+`ON CONFLICT` (rollback-тест, 2 нові
+  звʼязки). Масовий прогін по 42 точках без біотопів — НЕ запускав (кнопкою).
+
+
+
 ## 2026-07-15 — Автопризначення біотопів з лендковеру (Beta)
 
 ### Задача
