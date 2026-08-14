@@ -194,6 +194,41 @@ def test_admin_can_still_assign_admin(db_session):
     assert 'admin' in {r.name for r in new_user.roles}
 
 
+# ── F2: ProxyFix trusts only XFF/Proto, not client-supplied Host ────────────
+def test_proxyfix_trusts_xff_not_forwarded_host(monkeypatch):
+    monkeypatch.setenv('TRUSTED_PROXY_COUNT', '1')
+    from app import create_app
+    a = create_app('testing')
+
+    @a.route('/__whoami')
+    def _whoami():
+        from flask import request, jsonify
+        return jsonify(addr=request.remote_addr, host=request.host)
+
+    c = a.test_client()
+    r = c.get('/__whoami', base_url='http://real.host',
+              headers={'X-Forwarded-For': '9.9.9.9', 'X-Forwarded-Host': 'evil.com'})
+    data = r.get_json()
+    assert data['addr'] == '9.9.9.9'          # X-Forwarded-For IS honoured
+    assert 'evil.com' not in data['host']     # X-Forwarded-Host is NOT trusted
+
+
+def test_proxyfix_off_by_default(monkeypatch):
+    monkeypatch.delenv('TRUSTED_PROXY_COUNT', raising=False)
+    from app import create_app
+    a = create_app('testing')
+
+    @a.route('/__whoami2')
+    def _whoami2():
+        from flask import request, jsonify
+        return jsonify(addr=request.remote_addr)
+
+    c = a.test_client()
+    r = c.get('/__whoami2', headers={'X-Forwarded-For': '9.9.9.9'})
+    # Without TRUSTED_PROXY_COUNT, XFF must be ignored (no spoofing).
+    assert r.get_json()['addr'] != '9.9.9.9'
+
+
 # ── F4: login-timing dummy hash ─────────────────────────────────────────────
 def test_dummy_password_hash_is_valid_and_cached(app):
     from app.routes.main import _dummy_password_hash

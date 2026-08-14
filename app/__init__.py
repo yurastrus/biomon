@@ -61,8 +61,12 @@ def create_app(config_name=None):
     trusted_hops = int(os.environ.get('TRUSTED_PROXY_COUNT', '0') or 0)
     if trusted_hops > 0:
         from werkzeug.middleware.proxy_fix import ProxyFix
-        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=trusted_hops,
-                                x_proto=trusted_hops, x_host=trusted_hops)
+        # Trust ONLY X-Forwarded-For and X-Forwarded-Proto — the two headers our
+        # nginx actually sets (see /etc/nginx/proxy_params). Do NOT trust
+        # X-Forwarded-Host/-Port/-Prefix: nginx forwards the client's Host as-is
+        # and does not manage those, so trusting them would let a client spoof
+        # request.host (host-header / open-redirect vectors).
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=trusted_hops, x_proto=trusted_hops)
 
     app.jinja_env.add_extension('jinja2.ext.do')
 
