@@ -1,7 +1,33 @@
-# WORKLOG — biomon
+﻿# WORKLOG — biomon
 
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
+
+## 2026-08-14 — CT gallery opens on "all species" and loads immediately
+
+### Symptom
+`/uk/camera-traps/gallery` opened empty: the species select had no value,
+the "Show photos" button was disabled, and the user had to pick a species
+(or the "-- Всі види --" entry) and click before any photo appeared.
+
+### Fix
+- `app/camera_traps/templates/gallery.html` — the "all species" option
+  (`id == 0`) is now rendered with `selected`, and the page calls
+  `loadGalleryPhotos(speciesSelect.val())` once on init instead of waiting
+  for a click. The button state is synced at init so it stays enabled.
+- No backend change: `get_gallery_photos` already treats `species_id == 0`
+  as "all species" (`routes.py`), and `gallery()` already puts that entry
+  first in `available_species`.
+
+Clearing the select (select2 `allowClear`) still disables the button, so the
+manual path is unchanged.
+
+### Tests
+`tests/test_ct_pages_access.py::TestGalleryAccess` gained two cases: the
+`value="0" selected` option is present in the rendered HTML, and the auto-load
+call is emitted. Full file: 59 passed.
+
+Committed in submodule `shared-ct` as `d3b8515`.
 
 ## 2026-08-14 — PAM export authorisation aligned with the rest of the system
 
@@ -168,3 +194,4 @@ biotopes, location_biotopes M2M), тож логіка перенесена ма�
 - Деплой: коміт shared-ct → оновити посилання в biomon і myproject → на проді
   запустити `init_biotope_autoassign` (створить таблицю + засіє).
 - Далі (опційно): Celery замість threading; уточнити відповідності лісів вручну.
+

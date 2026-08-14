@@ -320,6 +320,16 @@ class TestGalleryAccess(PageAccessBase):
     def test_admin_gets_200(self):
         self.assertEqual(self._get(self.URL, self.admin.id).status_code, 200)
 
+    def test_all_species_option_is_preselected(self):
+        """Gallery opens on "-- Всі види --" so photos load without a click."""
+        html = self._get(self.URL).get_data(as_text=True)
+        self.assertIn('<option value="0" selected', html)
+
+    def test_photos_load_without_pressing_the_button(self):
+        """The page auto-fetches on load instead of waiting for the button."""
+        html = self._get(self.URL).get_data(as_text=True)
+        self.assertIn('loadGalleryPhotos(speciesSelect.val())', html)
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 # 7. UPLOAD — manager+ only
