@@ -53,6 +53,17 @@ def create_app(config_name=None):
 
     app.config.from_object(config[config_name])
 
+    # SEC: trust X-Forwarded-* only when explicitly told how many proxies sit in
+    # front (TRUSTED_PROXY_COUNT). Default 0 = disabled → remote_addr stays the
+    # direct peer, no behaviour change, no spoofing risk. Set to 1 (nginx) ONLY
+    # after nginx sets `X-Forwarded-For` for the app upstream — otherwise a client
+    # could forge the header and defeat rate-limiting / poison audit logs.
+    trusted_hops = int(os.environ.get('TRUSTED_PROXY_COUNT', '0') or 0)
+    if trusted_hops > 0:
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=trusted_hops,
+                                x_proto=trusted_hops, x_host=trusted_hops)
+
     app.jinja_env.add_extension('jinja2.ext.do')
 
     from app.extensions import init_extensions, db, limiter

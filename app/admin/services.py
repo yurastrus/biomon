@@ -108,6 +108,12 @@ class UserService:
             created_by_id=creator.id,
         )
 
+        # SEC: never grant a role the creator isn't allowed to assign, even if a
+        # crafted request supplies its id directly (the form's allow-list is not a
+        # security boundary — the route reads request.form.getlist('roles') raw).
+        allowed_role_ids = {str(r.id) for r in UserService.get_available_roles(creator)}
+        selected_role_ids = [rid for rid in selected_role_ids if str(rid) in allowed_role_ids]
+
         role_names = UserService._role_names_for_ids(selected_role_ids)
         will_have_export = bool(role_names & EXPORT_ROLES)
 
@@ -140,6 +146,14 @@ class UserService:
             available_roles: roles visible to the requester in the form — needed
                 to avoid accidentally removing hidden roles (e.g. admin).
         """
+        # SEC: only (re)assign roles the requester is allowed to grant. The
+        # roles_to_keep logic below preserves hidden roles the user already has;
+        # this filter blocks ADDING a hidden role (e.g. a manager crafting a POST
+        # with roles=<admin id>). Non-numeric/garbage ids are dropped too.
+        _allowed_role_ids = {r.id for r in available_roles}
+        selected_role_ids = [rid for rid in selected_role_ids
+                             if str(rid).isdigit() and int(rid) in _allowed_role_ids]
+
         user.username = username
         user.email = email or None
         user.phone = phone or None

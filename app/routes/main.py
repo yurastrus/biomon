@@ -14,6 +14,20 @@ from markupsafe import escape
 from werkzeug.security import check_password_hash
 
 
+_DUMMY_HASH_CACHE = None
+
+
+def _dummy_password_hash():
+    """A throwaway bcrypt hash used to keep failed-login timing roughly constant
+    when the username does not exist — otherwise the missing bcrypt comparison
+    makes unknown-user responses measurably faster (username enumeration).
+    Computed once, lazily (needs an app/bcrypt context)."""
+    global _DUMMY_HASH_CACHE
+    if _DUMMY_HASH_CACHE is None:
+        _DUMMY_HASH_CACHE = bcrypt.generate_password_hash('not-a-real-account').decode('utf-8')
+    return _DUMMY_HASH_CACHE
+
+
 @bp.route('/')
 def root():
     """Redirect to the homepage with language prefix."""
@@ -107,6 +121,10 @@ def login(lang_code):
                 return redirect(url_for('main.index', lang_code=g.lang_code))
             return redirect(next_page)
         else:
+            if user is None:
+                # Constant-ish timing: run a bcrypt comparison even for unknown
+                # usernames so response time can't reveal which logins exist.
+                bcrypt.check_password_hash(_dummy_password_hash(), form.password.data)
             current_app.logger.warning(
                 f"Failed login: username={form.username.data!r} "
                 f"from {request.remote_addr} UA={request.user_agent.string[:100]!r}"
