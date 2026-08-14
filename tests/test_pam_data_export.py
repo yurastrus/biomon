@@ -147,7 +147,8 @@ class _ExportRouteBase(unittest.TestCase):
         from app.extensions import db, bcrypt
         from app.models import User, Role, Institution, UserInstitution
 
-        roles = {n: Role(name=n) for n in ('admin', 'manager', 'viewer')}
+        roles = {n: Role(name=n)
+                 for n in ('admin', 'manager', 'analyst', 'pam_verifier', 'viewer')}
         db.session.add_all(roles.values())
         db.session.flush()
 
@@ -163,14 +164,41 @@ class _ExportRouteBase(unittest.TestCase):
         self.admin.roles.append(roles['admin'])
         db.session.add(self.admin)
 
-        # Manager has only inst_a and inst_b (NOT inst_c)
+        # Manager: can_export on inst_a/inst_b, member of inst_c WITHOUT export.
+        # inst_c pins the rule that membership alone grants nothing.
         self.manager = User(username='exp_manager', password_hash=pw)
         self.manager.roles.append(roles['manager'])
         self.manager.institution_links.extend([
             UserInstitution(institution_id=self.inst_a.id, can_export=True),
             UserInstitution(institution_id=self.inst_b.id, can_export=True),
+            UserInstitution(institution_id=self.inst_c.id, can_export=False),
         ])
         db.session.add(self.manager)
+
+        # Analyst with export rights on inst_a only — the vasylyna case.
+        self.analyst = User(username='exp_analyst', password_hash=pw)
+        self.analyst.roles.extend([roles['analyst'], roles['pam_verifier']])
+        self.analyst.institution_links.extend([
+            UserInstitution(institution_id=self.inst_a.id, can_export=True),
+            UserInstitution(institution_id=self.inst_b.id, can_export=False),
+        ])
+        db.session.add(self.analyst)
+
+        # Analyst role but can_export nowhere → must stay blocked.
+        self.analyst_noexport = User(username='exp_analyst_noexp', password_hash=pw)
+        self.analyst_noexport.roles.append(roles['analyst'])
+        self.analyst_noexport.institution_links.append(
+            UserInstitution(institution_id=self.inst_a.id, can_export=False)
+        )
+        db.session.add(self.analyst_noexport)
+
+        # pam_verifier only — below the analyst level, no export.
+        self.verifier = User(username='exp_verifier', password_hash=pw)
+        self.verifier.roles.append(roles['pam_verifier'])
+        self.verifier.institution_links.append(
+            UserInstitution(institution_id=self.inst_a.id, can_export=True)
+        )
+        db.session.add(self.verifier)
 
         self.viewer = User(username='exp_viewer', password_hash=pw)
         self.viewer.roles.append(roles['viewer'])
@@ -204,14 +232,41 @@ class TestPamDataExportPage(_ExportRouteBase):
         resp = self.client.get('/uk/pam/data-export')
         self.assertEqual(resp.status_code, 200)
 
-    def test_manager_sees_only_own_institutions(self):
-        """Manager gets only inst_a/inst_b, NOT inst_c."""
+    def test_manager_sees_only_export_flagged_institutions(self):
+        """Manager gets inst_a/inst_b (can_export=True) but NOT inst_c,
+        where they are a member with can_export=False."""
         self._login(self.manager.id)
         resp = self.client.get('/uk/pam/data-export')
         html = resp.get_data(as_text=True)
         self.assertIn('Парк А', html)
         self.assertIn('Парк Б', html)
         self.assertNotIn('Парк В', html)
+
+    def test_analyst_with_export_rights_gets_200(self):
+        self._login(self.analyst.id)
+        resp = self.client.get('/uk/pam/data-export')
+        self.assertEqual(resp.status_code, 200)
+
+    def test_analyst_sees_only_export_flagged_institutions(self):
+        """Analyst has can_export on inst_a only — inst_b membership is not enough."""
+        self._login(self.analyst.id)
+        resp = self.client.get('/uk/pam/data-export')
+        html = resp.get_data(as_text=True)
+        self.assertIn('Парк А', html)
+        self.assertNotIn('Парк Б', html)
+        self.assertNotIn('Парк В', html)
+
+    def test_analyst_without_export_flag_blocked(self):
+        """Analyst role but can_export nowhere → redirected off the page."""
+        self._login(self.analyst_noexport.id)
+        resp = self.client.get('/uk/pam/data-export')
+        self.assertIn(resp.status_code, (302, 401, 403))
+
+    def test_pam_verifier_blocked(self):
+        """pam_verifier sits below analyst in the hierarchy — no export."""
+        self._login(self.verifier.id)
+        resp = self.client.get('/uk/pam/data-export')
+        self.assertIn(resp.status_code, (302, 401, 403))
 
     def test_admin_sees_all_institutions(self):
         self._login(self.admin.id)
@@ -290,6 +345,24 @@ class TestDataPreviewAPI(_ExportRouteBase):
         resp = self.client.get('/uk/api/pam/data-preview?institution_ids=1')
         self.assertIn(resp.status_code, (302, 401, 403))
 
+    def test_analyst_with_export_rights_allowed(self):
+        self._login(self.analyst.id)
+        with self._stub_get_occurrence_data():
+            resp = self.client.get('/uk/api/pam/data-preview')
+        self.assertEqual(resp.status_code, 200)
+
+    def test_analyst_without_export_flag_blocked(self):
+        self._login(self.analyst_noexport.id)
+        with self._stub_get_occurrence_data():
+            resp = self.client.get('/uk/api/pam/data-preview')
+        self.assertIn(resp.status_code, (302, 401, 403))
+
+    def test_pam_verifier_blocked(self):
+        self._login(self.verifier.id)
+        with self._stub_get_occurrence_data():
+            resp = self.client.get('/uk/api/pam/data-preview')
+        self.assertIn(resp.status_code, (302, 401, 403))
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 4. API /api/pam/data-download — the same parsing
@@ -326,6 +399,42 @@ class TestDataDownloadAPI(_ExportRouteBase):
         body = resp.get_data(as_text=True)
         self.assertIn('occurrenceID', body)
         self.assertIn('Test sp', body)
+
+    # --- authorisation (the endpoint used to carry no decorators at all) ---
+
+    def test_anonymous_blocked(self):
+        fake_row = {'occurrenceID': 'abc'}
+        with self._stub_get_occurrence_data(data=[fake_row]):
+            resp = self.client.get('/uk/api/pam/data-download')
+        self.assertIn(resp.status_code, (302, 401, 403))
+        self.assertNotEqual(resp.mimetype, 'text/csv')
+
+    def test_viewer_blocked(self):
+        self._login(self.viewer.id)
+        fake_row = {'occurrenceID': 'abc'}
+        with self._stub_get_occurrence_data(data=[fake_row]):
+            resp = self.client.get('/uk/api/pam/data-download')
+        self.assertIn(resp.status_code, (302, 401, 403))
+        self.assertNotEqual(resp.mimetype, 'text/csv')
+
+    def test_pam_verifier_blocked(self):
+        self._login(self.verifier.id)
+        with self._stub_get_occurrence_data(data=[{'occurrenceID': 'abc'}]):
+            resp = self.client.get('/uk/api/pam/data-download')
+        self.assertIn(resp.status_code, (302, 401, 403))
+
+    def test_analyst_without_export_flag_blocked(self):
+        self._login(self.analyst_noexport.id)
+        with self._stub_get_occurrence_data(data=[{'occurrenceID': 'abc'}]):
+            resp = self.client.get('/uk/api/pam/data-download')
+        self.assertIn(resp.status_code, (302, 401, 403))
+
+    def test_analyst_with_export_rights_gets_csv(self):
+        self._login(self.analyst.id)
+        with self._stub_get_occurrence_data(data=[{'occurrenceID': 'abc'}]):
+            resp = self.client.get('/uk/api/pam/data-download')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.mimetype, 'text/csv')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -400,6 +509,102 @@ class TestGetOccurrenceDataFilterPlumbing(_ExportRouteBase):
             kw = mock_filter.call_args.kwargs
             # Empty list → falsy → passed as None
             self.assertIsNone(kw.get('selected_inst_id'))
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 6. get_occurrence_data — access baseline is can_export, not membership
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestOccurrenceDataExportScope(_ExportRouteBase):
+
+    def _call_as(self, user_id, filters=None):
+        """Run get_occurrence_data as user_id, returning the captured
+        get_institution_filter call plus the function's own result."""
+        from app.pam.utils import get_occurrence_data
+        with patch('app.pam.utils.get_institution_filter',
+                   return_value=("1=1", {})) as mock_filter, \
+             patch('app.pam.utils.get_pam_db_connection') as mock_conn:
+            conn = MagicMock()
+            conn.execute.return_value.fetchall.return_value = []
+            conn.execute.return_value.fetchone.return_value = (0,)
+            mock_conn.return_value = conn
+
+            with self.app.test_request_context('/uk/pam/data-export'):
+                from flask_login import login_user
+                from app.models import User
+                login_user(User.query.get(user_id))
+                result = None
+                try:
+                    result = get_occurrence_data({
+                        'start_date': '2025-01-01',
+                        'end_date': '2025-12-31',
+                        **(filters or {}),
+                    })
+                except Exception:
+                    pass  # SQL fails under mocks; we only inspect the filter call
+            return mock_filter, result
+
+    def test_baseline_uses_export_institutions_only(self):
+        """Manager is a member of inst_c but without can_export → inst_c must
+        not appear in the access baseline."""
+        mock_filter, _ = self._call_as(self.manager.id)
+        self.assertTrue(mock_filter.called)
+        user_inst_ids = mock_filter.call_args[0][0]
+        self.assertEqual(set(user_inst_ids), {self.inst_a.id, self.inst_b.id})
+        self.assertNotIn(self.inst_c.id, user_inst_ids)
+
+    def test_analyst_baseline_limited_to_flagged_institution(self):
+        mock_filter, _ = self._call_as(self.analyst.id)
+        user_inst_ids = mock_filter.call_args[0][0]
+        self.assertEqual(list(user_inst_ids), [self.inst_a.id])
+
+    def test_no_export_rights_returns_empty_without_querying(self):
+        """A non-admin with can_export nowhere gets nothing — it must NOT fall
+        back to public (visibility_level = 0) locations."""
+        mock_filter, result = self._call_as(self.analyst_noexport.id)
+        self.assertEqual(result, {'data': [], 'total_count': 0})
+        self.assertFalse(mock_filter.called)
+
+    def test_admin_baseline_is_admin_flag(self):
+        mock_filter, _ = self._call_as(self.admin.id)
+        self.assertTrue(mock_filter.called)
+        self.assertTrue(mock_filter.call_args[0][1])  # is_admin
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 7. PAM hub — export card visibility
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestPamHomeExportCard(_ExportRouteBase):
+
+    EXPORT_HREF = '/pam/data-export'
+
+    def _hub_html(self, user_id=None):
+        if user_id is not None:
+            self._login(user_id)
+        return self.client.get('/uk/pam').get_data(as_text=True)
+
+    def test_card_hidden_for_anonymous(self):
+        self.assertNotIn(self.EXPORT_HREF, self._hub_html())
+
+    def test_card_hidden_for_viewer(self):
+        self.assertNotIn(self.EXPORT_HREF, self._hub_html(self.viewer.id))
+
+    def test_card_hidden_for_pam_verifier(self):
+        self.assertNotIn(self.EXPORT_HREF, self._hub_html(self.verifier.id))
+
+    def test_card_hidden_for_analyst_without_export_flag(self):
+        self.assertNotIn(self.EXPORT_HREF, self._hub_html(self.analyst_noexport.id))
+
+    def test_card_visible_for_analyst_with_export_flag(self):
+        """The regression this whole change is about."""
+        self.assertIn(self.EXPORT_HREF, self._hub_html(self.analyst.id))
+
+    def test_card_visible_for_manager(self):
+        self.assertIn(self.EXPORT_HREF, self._hub_html(self.manager.id))
+
+    def test_card_visible_for_admin(self):
+        self.assertIn(self.EXPORT_HREF, self._hub_html(self.admin.id))
 
 
 if __name__ == '__main__':

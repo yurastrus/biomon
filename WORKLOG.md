@@ -1,5 +1,78 @@
 # WORKLOG — biomon
 
+> Note: entries from 2026-08-14 on are written in English per the global
+> documentation-language rule; earlier entries stay in Ukrainian as written.
+
+## 2026-08-14 — PAM export authorisation aligned with the rest of the system
+
+### Symptom
+User `vasylyna` (roles `analyst, ct_verifier, pam_verifier`, `can_export=true`
+on 6 institutions) could not see the data-export card on `/uk/pam`, while the
+same account exports camera-traps data fine.
+
+### Root cause
+PAM was the only module gating export on the `manager` role:
+- `pam_home` computed `can_export = has_role('manager', 'roztochya_user')`.
+  `has_role` expands the hierarchy downward only, so `analyst` never reaches
+  `manager` → card hidden.
+- `roztochya_user` does not exist in the `role` table at all → dead branch, so
+  the gate was effectively manager-only (6 users) + admin.
+- `pam_data_export` and `api_data_preview` carried `@role_required('manager')`.
+
+This contradicted `EXPORT_ROLES = {analyst, manager, admin}`
+(`app/admin/services.py:13`) — the set the admin panel uses to decide who may
+be given `can_export` — and `ct_data_export`, which uses
+`@role_required('analyst')` + `current_user.export_institutions`.
+
+Two further defects found while tracing it:
+- **`api_data_download` had no decorators at all** — no `@login_required`, no
+  `@role_required`. Any authenticated user of any role could pull the CSV for
+  their institutions by hitting the URL directly; anonymous callers got
+  public-visibility rows (`get_occurrence_data` falls back to
+  `visibility_level = 0`). This is why vasylyna could technically already
+  download PAM data — the UI just offered no path to it.
+- Export scoping used `current_user.institutions` (plain membership, 28 rows for
+  vasylyna) and ignored the `can_export` flag entirely.
+
+### Change (submodule `shared-pam`)
+- New `has_pam_export_access()` helper in `routes.py`: `analyst` privilege level
+  AND at least one `can_export` institution; admin unrestricted. Single source
+  of truth for the three endpoints and the hub card.
+- `pam_home`: `can_export=has_pam_export_access()`; dead `roztochya_user` gone.
+- `pam_data_export`: `@role_required('analyst')` + access guard (flash+redirect),
+  institution dropdown now built from `export_institutions`, not `institutions`.
+- `api_data_preview`: `@role_required('analyst')` + guard → 403.
+- `api_data_download`: `@login_required` + `@role_required('analyst')` + guard.
+- `utils.get_occurrence_data`: access baseline switched from `institutions` to
+  `export_institutions`; non-admin with an empty export scope now returns
+  `{'data': [], 'total_count': 0}` instead of silently falling back to public
+  locations.
+
+### Decision
+Per-institution `can_export` is authoritative for **everyone** except admin,
+managers included. A manager who is a member of an institution without the flag
+no longer sees or exports its data — deliberate, confirmed with the user; it
+narrows what the 6 existing managers see.
+
+### Tests
+`tests/test_pam_data_export.py`: 34 → 51. Seed gained an analyst with
+`can_export` on one of two institutions (the vasylyna case), an analyst with the
+role but no flag, a `pam_verifier`, and a manager membership with
+`can_export=False`. New coverage: hub card visibility per role, page/preview/
+download authorisation (incl. anonymous and viewer on `data-download` — the
+regression for the missing decorators), and `get_occurrence_data` baseline
+using export institutions and short-circuiting on an empty scope.
+
+Full suite: 1402 passed, 3 failed, 36 skipped. The 3 failures are in
+`tests/test_pam_verification_priority.py` (`next verification segment: tuple
+index out of range`, HTTP 500) and **pre-exist this change** — verified by
+stashing the submodule edits and re-running. Not touched here.
+
+### Next step
+Deploy: commit `shared-pam` → bump the pointer in `biomon` → `git pull` +
+reload gunicorn on prod. No migration, no data change. Separately: the
+`test_pam_verification_priority` 500 needs its own fix.
+
 ## 2026-07-24 — Автопризначення біотопів у PAM (порт із CT)
 
 Порт CT-фічі автопризначення біотопів у модуль PAM (сабмодуль `shared-pam`,
