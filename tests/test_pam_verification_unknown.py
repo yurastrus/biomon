@@ -140,7 +140,78 @@ def test_next_segment_institution_filter_adds_join(auth_client):
 
 
 def test_next_segment_no_institution_filter_when_absent(auth_client):
+    """No ?institution_ids → no *optional* institution filter.
+
+    Asserted on the optional filter's own markers (`:institution_ids` and the
+    `li` alias), not on the table name: the mandatory ACCESS baseline
+    (`_segment_access_sql`, alias `li_acc`, param `:access_inst_ids`) joins the
+    same table and MUST stay. The earlier version asserted
+    `'location_institutions' not in sql`, which conflated the two — it only held
+    while this verifier happened to have no institutions, and would have gone
+    off if the access clause was ever exercised here.
+    """
     cl = auth_client(role='pam_verifier')
+    conn = MagicMock()
+    captured = {}
+
+    def _ex(sql, params=None):
+        captured['sql'] = str(sql)
+        captured['params'] = params or {}
+        res = MagicMock()
+        res.fetchone.return_value = None
+        return res
+    conn.execute.side_effect = _ex
+
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        cl.get('/uk/api/verification/next-segment')
+
+    assert 'institution_ids' not in captured['params']
+    assert 'li.institution_id' not in captured['sql']
+
+
+# ── next-segment: ACCESS baseline (institution scoping, not a UI filter) ────────
+# SEC: a verifier must never be served segments outside their own institutions,
+# with or without a UI filter. These two tests pin both halves of that.
+
+def test_next_segment_access_baseline_scopes_verifier_to_own_institutions(
+        auth_client, db_session):
+    from app.models import Institution, UserInstitution
+
+    inst = Institution(name_uk='Тестова установа', code='TST-ACC')
+    db_session.add(inst)
+    db_session.flush()
+
+    cl = auth_client(role='pam_verifier', username='verifier_with_inst')
+    from app.models import User
+    user = db_session.query(User).filter_by(username='verifier_with_inst').one()
+    db_session.add(UserInstitution(user_id=user.id, institution_id=inst.id))
+    db_session.commit()
+
+    conn = MagicMock()
+    captured = {}
+
+    def _ex(sql, params=None):
+        captured['sql'] = str(sql)
+        captured['params'] = params or {}
+        res = MagicMock()
+        res.fetchone.return_value = None
+        return res
+    conn.execute.side_effect = _ex
+
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        cl.get('/uk/api/verification/next-segment')
+
+    # The access clause is present and bound to this user's institutions only.
+    assert 'li_acc.institution_id' in captured['sql']
+    assert captured['params']['access_inst_ids'] == [inst.id]
+    # And no optional UI filter leaked in.
+    assert 'institution_ids' not in captured['params']
+
+
+def test_next_segment_access_baseline_denies_verifier_without_institutions(
+        auth_client):
+    """A verifier with no institution link must match nothing — fail closed."""
+    cl = auth_client(role='pam_verifier', username='verifier_no_inst')
     conn = MagicMock()
     captured = {}
 
@@ -154,7 +225,8 @@ def test_next_segment_no_institution_filter_when_absent(auth_client):
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         cl.get('/uk/api/verification/next-segment')
 
-    assert 'location_institutions' not in captured['sql']
+    assert 'FALSE' in captured['sql']
+    assert 'li_acc.institution_id' not in captured['sql']
 
 
 # ── filter-options (mutual cascade) ─────────────────────────────────────────────

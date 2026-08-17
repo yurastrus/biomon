@@ -268,3 +268,57 @@ query variants were never indexed.
 - Open question for the owner (audit F7): the sitemap declares only the five
   landing hubs while 21 pages are indexed. If any biomon page is *content*
   rather than tooling, it belongs in `PUBLIC_ENDPOINTS`.
+
+## 2026-08-17 (later) — fixed the three long-standing PAM test failures
+
+### What was actually broken
+`tests/test_pam_verification_priority.py` had been failing on all three tests
+since the bilingual-location change to `api_next_verification_segment`. The
+route reads its row positionally; the SELECT list grew from 10 to 12 columns
+(`l.location_name`, `l.location_name_en` from the locations registry) but the
+test's `FAKE_ROW` mock stayed at 10:
+
+```
+IndexError: tuple index out of range
+  app/pam/routes.py:1613   loc_name_uk = result[10]
+```
+
+So the route was fine and the mock was stale — the tests reported a 500 with no
+hint at the cause.
+
+### Changes
+- `FAKE_ROW` extended to the full 12 columns, annotated index-by-index against
+  the SELECT list.
+- `test_fake_row_arity_matches_route_positional_reads` — parses the route source
+  (read-only; `app/pam` is a shared public submodule) for `result[N]` reads and
+  asserts the mock is long enough. The next drift fails with a message that says
+  what happened, instead of a mystery IndexError.
+- `test_next_segment_prefers_registry_location_over_filename` — exercises the two
+  columns that were missing, so they are covered rather than merely present.
+
+### Also: the flaky fourth test, and why it was a real defect
+`test_next_segment_no_institution_filter_when_absent` asserted
+`'location_institutions' not in sql`. Two different things join that table:
+
+- the **optional** UI filter (`?institution_ids=…`, alias `li`, param
+  `:institution_ids`) — which this test legitimately wants absent;
+- the **mandatory** ACCESS baseline (`_segment_access_sql`, alias `li_acc`,
+  param `:access_inst_ids`) — which restricts a verifier to their own
+  institutions and must **always** be there.
+
+The assertion conflated them, so it only held while that particular verifier
+happened to have no institution link (in which case the baseline degrades to
+`FALSE`). Any state that gave the user an institution flipped the test — that is
+the flakiness, and the assertion was also forbidding the security-relevant
+clause. Retargeted it to the optional filter's own markers, and added the two
+tests that pin the invariant instead:
+
+- verifier **with** an institution → `li_acc.institution_id` present and
+  `:access_inst_ids` bound to exactly that user's institutions, no UI filter;
+- verifier **without** one → `FALSE`, i.e. fails closed and matches nothing.
+
+No submodule files touched; `git submodule status` clean.
+
+### State
+Full suite: **1447 passed, 36 skipped, 0 failed**. The suite is green for the
+first time in this checkout's history.
