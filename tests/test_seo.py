@@ -99,3 +99,94 @@ def test_home_robots_is_index(client):
 def test_login_is_noindex(client):
     html = client.get('/uk/login').get_data(as_text=True)
     assert 'noindex' in html
+
+
+# ── Crawl control: X-Robots-Tag on tooling pages ─────────────────────────────
+# The camera_traps / pam templates are public submodules shared with
+# yurastrus.dev, so noindex is set from this repo as an HTTP header instead.
+# See C:/Temp/seo-coverage-audit-2026-08-17.md, finding F6.
+
+def test_ct_landing_is_indexable(client):
+    resp = client.get('/uk/camera-traps/')
+    assert resp.status_code == 200
+    assert 'noindex' not in resp.headers.get('X-Robots-Tag', '')
+
+
+def test_pam_landing_is_indexable(client):
+    resp = client.get('/uk/pam')
+    assert resp.status_code == 200
+    assert 'noindex' not in resp.headers.get('X-Robots-Tag', '')
+
+
+def test_landing_with_query_string_is_noindex(client):
+    """Any ?param variant of a landing is crawl noise, not a distinct page."""
+    resp = client.get('/uk/camera-traps/?species_id=1')
+    assert resp.headers.get('X-Robots-Tag') == 'noindex, follow'
+
+
+@pytest.mark.parametrize('path', [
+    '/uk/camera-traps/dashboard',
+    '/uk/camera-traps/gallery',
+    '/uk/pam/pam_overview',
+])
+def test_dashboards_are_noindex(client, path):
+    resp = client.get(path)
+    assert resp.headers.get('X-Robots-Tag') == 'noindex, follow'
+
+
+def test_own_pages_keep_no_x_robots_header(client):
+    """main.* is our own content — the header must not leak onto it."""
+    resp = client.get('/uk/')
+    assert resp.status_code == 200
+    assert 'X-Robots-Tag' not in resp.headers
+
+
+def test_indexable_endpoints_matches_sitemap():
+    """Regression: the header allowlist and the sitemap come from one list."""
+    from app.seo import INDEXABLE_ENDPOINTS, PUBLIC_ENDPOINTS
+
+    assert INDEXABLE_ENDPOINTS == {ep for ep, _ in PUBLIC_ENDPOINTS}
+    assert 'camera_traps.overview' in INDEXABLE_ENDPOINTS
+    assert 'pam.pam_home' in INDEXABLE_ENDPOINTS
+
+
+# ── robots.txt hardening ─────────────────────────────────────────────────────
+
+@pytest.mark.parametrize('rule', [
+    'Disallow: /*/api/',
+    'Disallow: /*/camera-traps/api/',
+    'Disallow: /thumbnails/',
+    'Disallow: /photos/raw/',
+    'Disallow: /*/camera-traps/upload',
+    'Disallow: /*?',
+])
+def test_robots_txt_blocks_crawl_sinks(client, rule):
+    active = [
+        ln for ln in client.get('/robots.txt').get_data(as_text=True).splitlines()
+        if ln.startswith('Disallow:')
+    ]
+    assert rule in active
+
+
+def test_robots_txt_keeps_dashboards_crawlable_for_now(client):
+    """Stage 2 stays off: blocking a URL hides its noindex header, so the
+    dashboards must stay reachable until Search Console shows them dropping."""
+    active = [
+        ln for ln in client.get('/robots.txt').get_data(as_text=True).splitlines()
+        if ln.startswith('Disallow:')
+    ]
+    assert 'Disallow: /*/camera-traps/dashboard' not in active
+    assert 'Disallow: /*/pam/pam_overview' not in active
+
+
+# ── Canonical host ───────────────────────────────────────────────────────────
+
+def test_www_host_redirects_to_apex(client):
+    resp = client.get('/uk/', base_url='http://www.example.com')
+    assert resp.status_code == 301
+    assert resp.headers['Location'] == 'http://example.com/uk/'
+
+
+def test_apex_host_is_served_normally(client):
+    resp = client.get('/uk/', base_url='http://example.com')
+    assert resp.status_code == 200

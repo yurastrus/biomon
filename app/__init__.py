@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-from flask import Flask
+from flask import Flask, redirect, request
 from config import config
 import os
 
@@ -42,6 +42,42 @@ def _init_talisman(app):
         session_cookie_secure=False,
         force_https=False,
     )
+
+
+# Blueprints whose pages are tooling, not content: parameterised dashboards,
+# galleries, exports. Everything under them is noindex except the landing hubs
+# listed in app/seo.py::INDEXABLE_ENDPOINTS.
+_NOINDEX_BLUEPRINTS = ('camera_traps', 'pam', 'sdm')
+
+
+def _register_seo_hooks(app, indexable_endpoints):
+    """Host-level crawl control: canonical host + noindex on tooling pages.
+
+    Why a header and not a `<meta>` tag: the camera_traps and pam templates live
+    in public git submodules shared with the sibling site (yurastrus.dev), so we
+    must not edit them. `X-Robots-Tag` is equivalent to meta robots for Google,
+    is set entirely from this repo, and also covers JSON endpoints where a meta
+    tag would do nothing.
+    """
+
+    @app.before_request
+    def _redirect_www_to_apex():
+        # www.biomon.app served a complete second copy of the site, each page
+        # canonicalising to itself → "duplicate without user-selected canonical"
+        # in Search Console, and double the crawl budget.
+        if request.host.split(':')[0].startswith('www.'):
+            return redirect(request.url.replace('://www.', '://', 1), code=301)
+
+    @app.after_request
+    def _set_x_robots_tag(response):
+        if request.blueprint in _NOINDEX_BLUEPRINTS:
+            is_clean_landing = (
+                request.endpoint in indexable_endpoints
+                and not request.query_string
+            )
+            if not is_clean_landing:
+                response.headers['X-Robots-Tag'] = 'noindex, follow'
+        return response
 
 
 def create_app(config_name=None):
@@ -94,8 +130,10 @@ def create_app(config_name=None):
     app.register_blueprint(sdm_bp, url_prefix='/<lang_code>/sdm')
 
     # SEO: /robots.txt and /sitemap.xml at the domain root (no lang prefix).
-    from app.seo import seo_bp
+    from app.seo import seo_bp, INDEXABLE_ENDPOINTS
     app.register_blueprint(seo_bp)
+
+    _register_seo_hooks(app, INDEXABLE_ENDPOINTS)
 
     from app.commands import register_commands
     register_commands(app)

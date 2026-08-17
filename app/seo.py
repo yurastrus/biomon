@@ -24,6 +24,11 @@ PUBLIC_ENDPOINTS = [
     ('camera_traps.overview', '0.8'),
 ]
 
+# Single source of truth for "may be indexed". `app/__init__.py` imports this to
+# decide which CT/PAM/SDM responses get an `X-Robots-Tag: noindex, follow`
+# header — keeping the sitemap and the header from ever disagreeing.
+INDEXABLE_ENDPOINTS = frozenset(endpoint for endpoint, _priority in PUBLIC_ENDPOINTS)
+
 
 @seo_bp.route('/robots.txt')
 def robots_txt():
@@ -40,6 +45,38 @@ def robots_txt():
         'Disallow: /*/profile',
         'Disallow: /*/logout',
         'Disallow: /csp-report',
+        # JSON APIs — never indexable, and the biggest crawl-budget sink.
+        'Disallow: /*/api/',
+        'Disallow: /*/camera-traps/api/',
+        # Media and static trees served by the app.
+        'Disallow: /ct-static/',
+        'Disallow: /*/pam-static/',
+        'Disallow: /thumbnails/',
+        'Disallow: /photos/raw/',
+        'Disallow: /*/audio/',
+        # Auth-walled trees: they 302 to the sign-in page, which is how the
+        # sibling property (yurastrus.dev) accumulated 691 "page with redirect".
+        'Disallow: /*/camera-traps/upload',
+        'Disallow: /*/camera-traps/import-classification',
+        'Disallow: /*/camera-traps/manage-',
+        'Disallow: /*/camera-traps/identify',
+        'Disallow: /*/camera-traps/data-export',
+        'Disallow: /*/pam/verification/',
+        'Disallow: /*/pam/manage-',
+        'Disallow: /*/pam/data-export',
+        # Parameterised dashboards: an effectively infinite URL space. They also
+        # carry X-Robots-Tag: noindex (app/__init__.py) for anything already
+        # known to Google; this stops new crawling of the filter combinations.
+        'Disallow: /*?',
+        '',
+        '# Stage 2 — do NOT enable yet. The clean dashboard URLs are still in',
+        '# the index; blocking them here would hide the noindex header and',
+        '# freeze them there. Enable once Search Console shows them dropping.',
+        '# Disallow: /*/camera-traps/dashboard',
+        '# Disallow: /*/camera-traps/analysis/',
+        '# Disallow: /*/camera-traps/gallery',
+        '# Disallow: /*/pam/pam_overview',
+        '# Disallow: /*/pam/pam_detailed',
         # NOTE: /<lang>/login is deliberately NOT blocked here — it carries a
         # `noindex` meta instead. Blocking it would stop crawlers from seeing
         # that meta, and the bare URL could still get indexed.

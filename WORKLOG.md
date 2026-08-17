@@ -195,3 +195,76 @@ biotopes, location_biotopes M2M), тож логіка перенесена ма�
   запустити `init_biotope_autoassign` (створить таблицю + засіє).
 - Далі (опційно): Celery замість threading; уточнити відповідності лісів вручну.
 
+
+## 2026-08-17 — SEO: crawl control for CT/PAM/SDM + canonical host
+
+*(Note: this WORKLOG is historically in Ukrainian; per the current global
+convention new entries are written in English.)*
+
+### Context
+Google Search Console coverage export for biomon.app (2026-08-17) showed 21
+pages indexed against 43 not indexed, with the not-indexed count climbing
+steadily since the property was added (13 on 30.06 → 43 on 14.08). The reason
+breakdown was mild (30 "excluded by noindex" — all `/login?next=…` variants,
+5 "Google chose a different canonical", 4 redirects), but the *shape* matched
+the sibling property yurastrus.dev before its June rework, which had reached
+102 000 "crawled – currently not indexed".
+
+Full audit (both properties): `C:/Temp/seo-coverage-audit-2026-08-17.md`.
+
+### Findings acted on
+
+**F6 — no crawl control at all.** biomon serves the same shared camera_traps /
+pam submodules as yurastrus.dev, with the same query-parameterised dashboards,
+but none of the countermeasures. Verified live: `/uk/camera-traps/dashboard?…`,
+`/uk/camera-traps/gallery?page=2`, `/uk/pam/trends` and even
+`/uk/camera-traps/api/stats/top-species` all returned `200` + `index, follow`.
+That is an effectively infinite URL space offered to Googlebot.
+
+**F1 — `www.` served a full second copy.** `https://www.biomon.app/uk/`
+returned 200 with `canonical="https://www.biomon.app/uk/"` — every page existed
+twice, each canonicalising to itself. This is what produced "Google chose a
+different canonical", and it doubled the crawl budget.
+
+### Changes
+
+- `app/seo.py`: added `INDEXABLE_ENDPOINTS`, derived from `PUBLIC_ENDPOINTS`, so
+  the sitemap and the noindex allowlist cannot drift apart. (On the sibling site
+  those two lists *had* drifted and silently hid a whole new section.)
+- `app/seo.py::robots_txt`: `Disallow` for the JSON API trees, the media/static
+  trees (`/thumbnails/`, `/photos/raw/`, `/ct-static/`, `/*/pam-static/`,
+  `/*/audio/`), the auth-walled trees that 302 to sign-in, and `/*?`.
+- `app/__init__.py`: new `_register_seo_hooks()`, holding
+  - `before_request` → 301 `www.*` to the apex host;
+  - `after_request` → `X-Robots-Tag: noindex, follow` for every
+    camera_traps / pam / sdm response except the clean landing hubs.
+- `tests/test_seo.py`: +16 tests (landings indexable, dashboards noindex,
+  own pages untouched, robots rules present, stage-2 rules *absent*, www→apex).
+
+### Decision: why a header and not a `<meta>` tag
+`app/camera_traps` and `app/pam` are public git submodules shared with
+myproject/yurastrus.dev. Editing a template there would leak into the other site
+and require pushing to a public repo we do not own the release cadence of.
+`X-Robots-Tag` is equivalent to meta robots for Google, lives entirely in this
+repo, and additionally covers JSON endpoints where a meta tag does nothing.
+`git submodule status` is clean and stays clean.
+
+### Decision: robots stage 2 deliberately NOT enabled
+The clean dashboard URLs (`/uk/camera-traps/dashboard`, `/uk/pam/pam_overview`,
+…) are still *in* the index. A `Disallow` would stop Googlebot from reading the
+new `noindex` header and freeze them there. They stay crawlable until Search
+Console shows them dropping; the stage-2 lines sit commented in `robots_txt`
+with a test asserting they remain off. `/*?` is safe to block now because the
+query variants were never indexed.
+
+### State / next step
+- Tests: 1440 passed, 3 failed — the three failures are pre-existing and
+  order-dependent (`test_pam_verification_priority`), reproduced identically on
+  a clean checkout before these changes.
+- Not done here: the nginx-level `www` → apex 301. The Flask redirect above
+  covers it, but a server-level `return 301` is cheaper and should replace it.
+- After deploy: resubmit `sitemap.xml` in Search Console, then re-export
+  coverage in ~3 weeks and decide on stage 2.
+- Open question for the owner (audit F7): the sitemap declares only the five
+  landing hubs while 21 pages are indexed. If any biomon page is *content*
+  rather than tooling, it belongs in `PUBLIC_ENDPOINTS`.
