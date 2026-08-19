@@ -3,6 +3,53 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-08-19 — Incident: 500 after deploying self-service registration
+
+### Symptom
+Every page returned "Internal Server Error" right after `update_all.sh`.
+
+### Cause
+The production main database had **never been under Alembic**: no
+`alembic_version` table at all — the schema had been built with `create_all()`
+plus ad-hoc changes. So:
+
+* `update.sh` never ran `flask db upgrade` (only the SDM migrations), and
+* even if it had, the upgrade would have tried to replay the whole chain from the
+  root revision and failed on already-existing tables.
+
+The deployed code therefore expected `user.is_active` / `email_confirmed_at` /
+`self_registered` / `locale` and `verification_requests`, none of which existed →
+every request that loaded a user raised.
+
+### Fix applied on the server
+```bash
+venv/bin/flask db stamp b7d2e1a9c4f0   # declare the existing schema as the previous head
+venv/bin/flask db upgrade              # applies only d41a7c9e5b02
+```
+No gunicorn restart was needed: the code was already the new one, and the columns
+appeared underneath it. Verified afterwards: the four columns and the new table
+exist, `uq_user_email` is in place, 49 users are active, and `/uk/`, `/uk/pam`,
+`/uk/camera-traps/`, `/uk/login`, `/uk/register` (uk + en),
+`/uk/resend-confirmation`, `/robots.txt`, `/sitemap.xml` all return 200.
+
+Also smoke-tested the registration POST against production with a valid CSRF
+token but no captcha response: it re-renders the form with the captcha error and
+creates nothing (`user WHERE username LIKE 'smoketest%'` → 0,
+`verification_requests` → 0). reCAPTCHA renders with a real site key.
+
+### Note on the stamp
+`flask db stamp b7d2e1a9c4f0` also marks revision `1e9c5f810461` (the chain root:
+`issue` / `tag` / `journal_article*` tables) as applied. Those tables do not exist
+in production and have no models in this codebase any more — legacy from an
+earlier project. Stamping is the intended behaviour here: we do not want them
+created. Production tables are exactly: contact_submissions, institutions, role,
+site_text_content, user, user_institutions, user_roles, verification_requests.
+
+### Prevention
+`update.sh` now runs `venv/bin/flask db upgrade` (step 4) **before** the restart,
+without a `|| echo` fallback: with `set -e` a failed migration aborts the deploy
+instead of restarting gunicorn against a mismatched schema.
+
 ## 2026-08-19 — Self-service registration for verifiers
 
 ### Request
