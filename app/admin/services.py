@@ -208,6 +208,63 @@ class UserService:
 
 class InstitutionService:
 
+    #: value of the ecoregion <select> that means "I will type a new one"
+    ECOREGION_NEW = '__new__'
+
+    @staticmethod
+    def get_ecoregions():
+        """Distinct ecoregions currently in use, as [{'uk': ..., 'en': ...}].
+
+        The list IS the vocabulary: there is no separate ecoregions table, so the
+        dropdown offers what other institutions already use and a new value is
+        added simply by being typed. Keeping the uk/en pair together is the point
+        — picking "Полісся" must also store "Polissia", which two independent free
+        text fields would let drift apart.
+        """
+        rows = (db.session.query(Institution.ecoregion_uk, Institution.ecoregion_en)
+                .filter(Institution.ecoregion_uk.isnot(None),
+                        Institution.ecoregion_uk != '')
+                .distinct().all())
+        merged = {}
+        for uk, en in rows:
+            # if the same uk name appears with and without an en name, keep the en one
+            if uk not in merged or (en and not merged[uk]):
+                merged[uk] = en
+        return [{'uk': uk, 'en': merged[uk]} for uk in sorted(merged)]
+
+    @staticmethod
+    def resolve_ecoregion(choice, new_uk, new_en):
+        """Turn the form's (choice, new_uk, new_en) into the (uk, en) to store.
+
+        Args:
+            choice: selected <option> value — '' (none), an existing uk name, or
+                :data:`ECOREGION_NEW`.
+            new_uk / new_en: the free-text fields, used only for ECOREGION_NEW.
+
+        Returns:
+            tuple[str | None, str | None]
+
+        Raises:
+            ValueError: with a user-facing message, when a new region was chosen
+                without a Ukrainian name, or the selected value is not a known
+                ecoregion (a crafted POST).
+        """
+        choice = (choice or '').strip()
+        if not choice:
+            return None, None
+
+        if choice == InstitutionService.ECOREGION_NEW:
+            uk = (new_uk or '').strip()
+            en = (new_en or '').strip()
+            if not uk:
+                raise ValueError('Вкажіть назву нового природного регіону українською.')
+            return uk, (en or None)
+
+        for eco in InstitutionService.get_ecoregions():
+            if eco['uk'] == choice:
+                return eco['uk'], eco['en']
+        raise ValueError('Невідомий природний регіон.')
+
     @staticmethod
     def is_code_unique(code, exclude_id=None):
         """Return True if the institution code is unique (exclude_id for edit mode)."""
@@ -219,18 +276,22 @@ class InstitutionService:
         return False
 
     @staticmethod
-    def create(name_uk, name_en, code):
+    def create(name_uk, name_en, code, ecoregion_uk=None, ecoregion_en=None):
         """Create an institution and add it to the session (no commit)."""
-        inst = Institution(name_uk=name_uk, name_en=name_en or None, code=code)
+        inst = Institution(name_uk=name_uk, name_en=name_en or None, code=code,
+                           ecoregion_uk=ecoregion_uk or None,
+                           ecoregion_en=ecoregion_en or None)
         db.session.add(inst)
         return inst
 
     @staticmethod
-    def update(inst, name_uk, name_en, code):
+    def update(inst, name_uk, name_en, code, ecoregion_uk=None, ecoregion_en=None):
         """Update institution fields in place (no commit)."""
         inst.name_uk = name_uk
         inst.name_en = name_en or None
         inst.code = code
+        inst.ecoregion_uk = ecoregion_uk or None
+        inst.ecoregion_en = ecoregion_en or None
 
     @staticmethod
     def delete(inst):

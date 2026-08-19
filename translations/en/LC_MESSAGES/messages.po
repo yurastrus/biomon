@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-19 15:27+0300\n"
+"POT-Creation-Date: 2026-08-19 16:44+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -58,23 +58,31 @@ msgstr "A user with this name already exists."
 msgid "Новий пароль"
 msgstr "New password"
 
-#: app/admin/forms.py:70 app/templates/admin/admin_institutions_list.html:23
+#: app/admin/forms.py:77 app/templates/admin/admin_institutions_list.html:23
 msgid "Назва (Українською)"
 msgstr "Name (Ukrainian)"
 
-#: app/admin/forms.py:71 app/templates/admin/admin_institutions_list.html:24
+#: app/admin/forms.py:78 app/templates/admin/admin_institutions_list.html:24
 msgid "Назва (Англійською)"
 msgstr "Name (English)"
 
-#: app/admin/forms.py:72
+#: app/admin/forms.py:79
 msgid "Унікальний код"
 msgstr "Unique code"
 
-#: app/admin/forms.py:77
+#: app/admin/forms.py:80
+msgid "Природний регіон (Українською)"
+msgstr "Natural region (Ukrainian)"
+
+#: app/admin/forms.py:82
+msgid "Природний регіон (Англійською)"
+msgstr "Natural region (English)"
+
+#: app/admin/forms.py:88
 msgid "Системна назва"
 msgstr "System role name"
 
-#: app/admin/forms.py:78
+#: app/admin/forms.py:89
 msgid "Призначається"
 msgstr "Assignable"
 
@@ -94,35 +102,35 @@ msgstr "Edit institution"
 msgid "Додати установу"
 msgstr "Add institution"
 
-#: app/admin/routes.py:306
+#: app/admin/routes.py:318
 msgid "Редагувати роль"
 msgstr "Edit role"
 
-#: app/admin/routes.py:306 app/templates/admin/admin_roles_list.html:15
+#: app/admin/routes.py:318 app/templates/admin/admin_roles_list.html:15
 msgid "Додати роль"
 msgstr "Add role"
 
-#: app/admin/routes.py:400
+#: app/admin/routes.py:412
 msgid "Невідомий статус."
 msgstr "Unknown status."
 
-#: app/admin/routes.py:405
+#: app/admin/routes.py:417
 msgid "Статус оновлено."
 msgstr "Status updated."
 
-#: app/admin/routes.py:420
+#: app/admin/routes.py:432
 msgid "Звернення видалено."
 msgstr "Submission deleted."
 
-#: app/admin/routes.py:455
+#: app/admin/routes.py:467
 msgid "Невідома дія."
 msgstr "Unknown action."
 
-#: app/admin/routes.py:479
+#: app/admin/routes.py:491
 msgid "Запит підтверджено."
 msgstr "Request approved."
 
-#: app/admin/routes.py:479
+#: app/admin/routes.py:491
 msgid "Запит відхилено."
 msgstr "Request declined."
 
@@ -560,7 +568,7 @@ msgid "Статус"
 msgstr "Status"
 
 #: app/templates/admin/admin_contact_submissions.html:34
-#: app/templates/admin/admin_institutions_list.html:26
+#: app/templates/admin/admin_institutions_list.html:27
 #: app/templates/admin/admin_roles_list.html:25
 #: app/templates/admin/admin_users_list.html:88
 #: app/templates/admin/admin_verification_requests.html:38
@@ -581,7 +589,7 @@ msgid "Ця дія є незворотною."
 msgstr "This action is irreversible."
 
 #: app/templates/admin/admin_contact_submissions.html:73
-#: app/templates/admin/admin_institutions_list.html:49
+#: app/templates/admin/admin_institutions_list.html:57
 #: app/templates/admin/admin_roles_list.html:61
 #: app/templates/admin/admin_roles_list.html:66
 #: app/templates/admin/admin_users_list.html:124
@@ -677,17 +685,42 @@ msgstr ""
 "Used for system reference (e.g.: roztochya, fzs). Must be unique, Latin characters "
 "only, no spaces."
 
-#: app/templates/admin/admin_institution_form.html:62
+#: app/templates/admin/admin_institution_form.html:61
+#: app/templates/admin/admin_institutions_list.html:26
+msgid "Природний регіон"
+msgstr "Natural region"
+
+#: app/templates/admin/admin_institution_form.html:64
+msgid "— не вказано —"
+msgstr "— not set —"
+
+#: app/templates/admin/admin_institution_form.html:70
+msgid "+ Додати новий регіон…"
+msgstr "+ Add a new region…"
+
+#: app/templates/admin/admin_institution_form.html:73
+msgid "Використовується у фільтрах «Установа / Екорегіон» у модулях фотопасток і ПАМ."
+msgstr "Used by the \"Institution / Ecoregion\" filters in the camera-trap and PAM modules."
+
+#: app/templates/admin/admin_institution_form.html:81
+msgid "Новий регіон (Українською)"
+msgstr "New region (Ukrainian)"
+
+#: app/templates/admin/admin_institution_form.html:87
+msgid "Новий регіон (Англійською)"
+msgstr "New region (English)"
+
+#: app/templates/admin/admin_institution_form.html:96
 #: app/templates/admin/admin_role_form.html:71 app/templates/admin/admin_user_form.html:282
 msgid "Скасувати"
 msgstr "Cancel"
 
-#: app/templates/admin/admin_institution_form.html:65
+#: app/templates/admin/admin_institution_form.html:99
 #: app/templates/admin/admin_role_form.html:74 app/templates/admin/admin_user_form.html:285
 msgid "Зберегти дані"
 msgstr "Save data"
 
-#: app/templates/admin/admin_institution_form.html:65
+#: app/templates/admin/admin_institution_form.html:99
 msgid "Створити установу"
 msgstr "Create an institution"
 
@@ -699,23 +732,27 @@ msgstr "Manage institutions"
 msgid "Код"
 msgstr "Code"
 
-#: app/templates/admin/admin_institutions_list.html:39
+#: app/templates/admin/admin_institutions_list.html:41
+msgid "не вказано"
+msgstr "not set"
+
+#: app/templates/admin/admin_institutions_list.html:47
 #: app/templates/admin/admin_roles_list.html:50
 #: app/templates/admin/admin_users_list.html:115
 msgid "Редагувати"
 msgstr "Edit"
 
-#: app/templates/admin/admin_institutions_list.html:45
+#: app/templates/admin/admin_institutions_list.html:53
 msgid "Ви впевнені, що хочете видалити установу:"
 msgstr "Are you sure you want to delete an institution:"
 
-#: app/templates/admin/admin_institutions_list.html:45
+#: app/templates/admin/admin_institutions_list.html:53
 msgid "Увага: Це видалить її з профілів користувачів. Дані в модулі PAM не постраждають."
 msgstr ""
 "Warning: This will remove it from user profiles. Data in the PAM module will not be "
 "affected."
 
-#: app/templates/admin/admin_institutions_list.html:57
+#: app/templates/admin/admin_institutions_list.html:65
 msgid "Установ не знайдено."
 msgstr "Institution not found."
 

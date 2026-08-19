@@ -248,11 +248,22 @@ def edit_institution(inst_id=None):
             return redirect(request.url)
 
         try:
+            eco_uk, eco_en = InstitutionService.resolve_ecoregion(
+                request.form.get('ecoregion_choice'),
+                form.ecoregion_uk.data, form.ecoregion_en.data)
+        except ValueError as e:
+            flash(str(e), 'danger')
+            return render_template('admin_institution_form.html', inst=inst, title=title,
+                                   ecoregions=InstitutionService.get_ecoregions())
+
+        try:
             if inst:
-                InstitutionService.update(inst, form.name_uk.data, form.name_en.data, code)
+                InstitutionService.update(inst, form.name_uk.data, form.name_en.data, code,
+                                          eco_uk, eco_en)
                 flash(f'Дані установи "{form.name_uk.data}" оновлено.', 'success')
             else:
-                InstitutionService.create(form.name_uk.data, form.name_en.data, code)
+                InstitutionService.create(form.name_uk.data, form.name_en.data, code,
+                                          eco_uk, eco_en)
                 flash(f'Установу "{form.name_uk.data}" успішно створено!', 'success')
             db.session.commit()
             return redirect(url_for('admin.institution_list', lang_code=g.lang_code))
@@ -265,7 +276,8 @@ def edit_institution(inst_id=None):
             for err in field_errors:
                 flash(err, 'danger')
 
-    return render_template('admin_institution_form.html', inst=inst, title=title)
+    return render_template('admin_institution_form.html', inst=inst, title=title,
+                           ecoregions=InstitutionService.get_ecoregions())
 
 
 @admin_bp.route('/institutions/delete/<int:inst_id>', methods=['POST'])

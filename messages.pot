@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-19 15:27+0300\n"
+"POT-Creation-Date: 2026-08-19 16:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,23 +60,31 @@ msgstr ""
 msgid "Новий пароль"
 msgstr ""
 
-#: app/admin/forms.py:70 app/templates/admin/admin_institutions_list.html:23
+#: app/admin/forms.py:77 app/templates/admin/admin_institutions_list.html:23
 msgid "Назва (Українською)"
 msgstr ""
 
-#: app/admin/forms.py:71 app/templates/admin/admin_institutions_list.html:24
+#: app/admin/forms.py:78 app/templates/admin/admin_institutions_list.html:24
 msgid "Назва (Англійською)"
 msgstr ""
 
-#: app/admin/forms.py:72
+#: app/admin/forms.py:79
 msgid "Унікальний код"
 msgstr ""
 
-#: app/admin/forms.py:77
+#: app/admin/forms.py:80
+msgid "Природний регіон (Українською)"
+msgstr ""
+
+#: app/admin/forms.py:82
+msgid "Природний регіон (Англійською)"
+msgstr ""
+
+#: app/admin/forms.py:88
 msgid "Системна назва"
 msgstr ""
 
-#: app/admin/forms.py:78
+#: app/admin/forms.py:89
 msgid "Призначається"
 msgstr ""
 
@@ -96,35 +104,35 @@ msgstr ""
 msgid "Додати установу"
 msgstr ""
 
-#: app/admin/routes.py:306
+#: app/admin/routes.py:318
 msgid "Редагувати роль"
 msgstr ""
 
-#: app/admin/routes.py:306 app/templates/admin/admin_roles_list.html:15
+#: app/admin/routes.py:318 app/templates/admin/admin_roles_list.html:15
 msgid "Додати роль"
 msgstr ""
 
-#: app/admin/routes.py:400
+#: app/admin/routes.py:412
 msgid "Невідомий статус."
 msgstr ""
 
-#: app/admin/routes.py:405
+#: app/admin/routes.py:417
 msgid "Статус оновлено."
 msgstr ""
 
-#: app/admin/routes.py:420
+#: app/admin/routes.py:432
 msgid "Звернення видалено."
 msgstr ""
 
-#: app/admin/routes.py:455
+#: app/admin/routes.py:467
 msgid "Невідома дія."
 msgstr ""
 
-#: app/admin/routes.py:479
+#: app/admin/routes.py:491
 msgid "Запит підтверджено."
 msgstr ""
 
-#: app/admin/routes.py:479
+#: app/admin/routes.py:491
 msgid "Запит відхилено."
 msgstr ""
 
@@ -551,7 +559,7 @@ msgid "Статус"
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:34
-#: app/templates/admin/admin_institutions_list.html:26
+#: app/templates/admin/admin_institutions_list.html:27
 #: app/templates/admin/admin_roles_list.html:25
 #: app/templates/admin/admin_users_list.html:88
 #: app/templates/admin/admin_verification_requests.html:38
@@ -572,7 +580,7 @@ msgid "Ця дія є незворотною."
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:73
-#: app/templates/admin/admin_institutions_list.html:49
+#: app/templates/admin/admin_institutions_list.html:57
 #: app/templates/admin/admin_roles_list.html:61
 #: app/templates/admin/admin_roles_list.html:66
 #: app/templates/admin/admin_users_list.html:124
@@ -671,19 +679,46 @@ msgid ""
 "бути унікальним, латиницею, без пробілів."
 msgstr ""
 
-#: app/templates/admin/admin_institution_form.html:62
+#: app/templates/admin/admin_institution_form.html:61
+#: app/templates/admin/admin_institutions_list.html:26
+msgid "Природний регіон"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:64
+msgid "— не вказано —"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:70
+msgid "+ Додати новий регіон…"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:73
+msgid ""
+"Використовується у фільтрах «Установа / Екорегіон» у модулях фотопасток і"
+" ПАМ."
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:81
+msgid "Новий регіон (Українською)"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:87
+msgid "Новий регіон (Англійською)"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:96
 #: app/templates/admin/admin_role_form.html:71
 #: app/templates/admin/admin_user_form.html:282
 msgid "Скасувати"
 msgstr ""
 
-#: app/templates/admin/admin_institution_form.html:65
+#: app/templates/admin/admin_institution_form.html:99
 #: app/templates/admin/admin_role_form.html:74
 #: app/templates/admin/admin_user_form.html:285
 msgid "Зберегти дані"
 msgstr ""
 
-#: app/templates/admin/admin_institution_form.html:65
+#: app/templates/admin/admin_institution_form.html:99
 msgid "Створити установу"
 msgstr ""
 
@@ -695,23 +730,27 @@ msgstr ""
 msgid "Код"
 msgstr ""
 
-#: app/templates/admin/admin_institutions_list.html:39
+#: app/templates/admin/admin_institutions_list.html:41
+msgid "не вказано"
+msgstr ""
+
+#: app/templates/admin/admin_institutions_list.html:47
 #: app/templates/admin/admin_roles_list.html:50
 #: app/templates/admin/admin_users_list.html:115
 msgid "Редагувати"
 msgstr ""
 
-#: app/templates/admin/admin_institutions_list.html:45
+#: app/templates/admin/admin_institutions_list.html:53
 msgid "Ви впевнені, що хочете видалити установу:"
 msgstr ""
 
-#: app/templates/admin/admin_institutions_list.html:45
+#: app/templates/admin/admin_institutions_list.html:53
 msgid ""
 "Увага: Це видалить її з профілів користувачів. Дані в модулі PAM не "
 "постраждають."
 msgstr ""
 
-#: app/templates/admin/admin_institutions_list.html:57
+#: app/templates/admin/admin_institutions_list.html:65
 msgid "Установ не знайдено."
 msgstr ""
 

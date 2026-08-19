@@ -352,6 +352,10 @@ def test_duplicate_email_is_rejected_case_insensitively(client, db_session, mail
 
 def test_registering_while_logged_in_redirects_to_profile(auth_client):
     cl = auth_client(role='viewer', username='already_in')
+    # Anonymous requests earlier in the run can leave an AnonymousUser cached on
+    # `g` (see the module docstring); without dropping it this assertion is
+    # order-dependent and fails intermittently in a full-suite run.
+    forget_cached_user()
     resp = cl.get('/uk/register')
     assert resp.status_code == 302
     assert '/profile' in resp.headers['Location']

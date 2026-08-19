@@ -3,6 +3,72 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-08-19 — Ecoregion editable in the institutions admin
+
+### Request
+`/uk/admin/institutions` could rename and add institutions but not assign them a
+natural region, so a newly added one (Рівненський ПЗ) had `ecoregion_uk = NULL`
+while the camera-trap and PAM "Institution / Ecoregion" filters read exactly that
+column. Wanted: a dropdown with the ability to add a value that is not in the list.
+
+### Data fix
+Set `ecoregion_uk = 'Полісся'`, `ecoregion_en = 'Polissia'` for `code = 'RVSNR'`
+(id 29) directly in production. Still without a region afterwards: id 28
+"Північні торфовища проект" — left alone, it was not part of the request and its
+region is a judgement call.
+
+### What the table actually holds
+`institutions` has exactly six columns — id, name_uk, name_en, code,
+ecoregion_uk, ecoregion_en — matching the model. So the ecoregion pair was the
+only thing missing from the form; nothing else hangs off an institution (the
+user link lives in `user_institutions`, with `can_export`, edited on the user
+form).
+
+### Design
+There is no ecoregions table, so **the vocabulary is the set of values already in
+use**: `InstitutionService.get_ecoregions()` returns the distinct (uk, en) pairs,
+the `<select>` offers them plus "+ Додати новий регіон…", and a new value becomes
+part of the vocabulary simply by being saved once.
+
+The pair is kept together on purpose: picking "Полісся" also stores "Polissia",
+resolved from the DB rather than retyped. Two independent free-text fields would
+let the uk and en names drift apart, and the CT/PAM filters group by
+`ecoregion_uk` while displaying `ecoregion_en` — a mismatch would show up as
+duplicate or unlabelled groups. The free-text pair is only reachable through the
+"new region" option, and `resolve_ecoregion()` rejects both an empty Ukrainian
+name and a selected value that is not a known region (crafted POST).
+
+### Files
+* `app/admin/services.py` — `ECOREGION_NEW`, `get_ecoregions()`,
+  `resolve_ecoregion()`; `create()` / `update()` take the ecoregion pair.
+* `app/admin/forms.py` — optional `ecoregion_uk` / `ecoregion_en` (length only);
+  the `<select>` stays out of WTForms because its options come from the DB, same
+  pattern as the institution/role checkbox lists.
+* `app/admin/routes.py` — resolves the choice, re-renders with the error instead
+  of saving when it is invalid.
+* `admin_institution_form.html` — dropdown + a collapsed free-text block toggled
+  by a five-line inline script.
+* `admin_institutions_list.html` — new column; institutions without a region are
+  flagged in red so this cannot silently happen again.
+
+### Tests
+`tests/test_admin_institution_ecoregion.py` — 15 cases: the vocabulary (including
+the same region entered once with and once without an English name), all four
+resolve paths, the rejected ones, preselection on the edit page, saving an
+existing / brand-new region, clearing it, "nothing is saved on a rejected submit",
+and that renaming an institution keeps its region.
+
+Full suite: 1527 passed, 36 skipped. No migration needed — the columns already
+existed.
+
+One pre-existing flake surfaced during this run:
+`test_registration.py::test_registering_while_logged_in_redirects_to_profile`
+failed once in a full-suite run and passed everywhere in isolation. Cause is the
+Flask-Login identity cache on `g`: an earlier test that leaves an app context
+pushed lets an AnonymousUser cached by an anonymous request survive into the next
+test, so the authenticated GET saw an anonymous user. Fixed by dropping the cache
+in that test, like the others that switch identity.
+
 ## 2026-08-19 — Incident: 500 after deploying self-service registration
 
 ### Symptom

@@ -66,10 +66,21 @@ class UserEditForm(FlaskForm):
 
 
 class InstitutionForm(FlaskForm):
-    """Institution create/edit form."""
+    """Institution create/edit form.
+
+    The ecoregion is picked from a dropdown of values already in use, with a
+    "new one" option; the two free-text fields below carry that new value. The
+    dropdown itself is rendered in the template (its options come from the DB),
+    and the choice is read from request.form in the route — same pattern as the
+    institutions/roles checkbox lists noted in the module docstring.
+    """
     name_uk = StringField(_l('Назва (Українською)'), validators=[DataRequired(), Length(max=255)])
     name_en = StringField(_l('Назва (Англійською)'), validators=[Optional(), Length(max=255)])
     code    = StringField(_l('Унікальний код'),       validators=[DataRequired(), Length(max=50)])
+    ecoregion_uk = StringField(_l('Природний регіон (Українською)'),
+                               validators=[Optional(), Length(max=100)])
+    ecoregion_en = StringField(_l('Природний регіон (Англійською)'),
+                               validators=[Optional(), Length(max=100)])
 
 
 class RoleForm(FlaskForm):

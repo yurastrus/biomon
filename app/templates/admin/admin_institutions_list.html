@@ -23,6 +23,7 @@
                 <th>{{ _('Назва (Українською)') }}</th>
                 <th>{{ _('Назва (Англійською)') }}</th>
                 <th>{{ _('Код') }}</th>
+                <th>{{ _('Природний регіон') }}</th>
                 <th style="text-align: right;">{{ _('Дії') }}</th>
             </tr>
         </thead>
@@ -33,6 +34,13 @@
                 <td><strong>{{ inst.name_uk }}</strong></td>
                 <td>{{ inst.name_en or '<span style="color: gray;">---</span>'|safe }}</td>
                 <td><span style="font-family: monospace; background: #eee; padding: 2px 6px; border-radius: 4px;">{{ inst.code }}</span></td>
+                <td>
+                    {% if inst.ecoregion_uk %}
+                        {{ inst.ecoregion_uk if g.lang_code != 'en' else (inst.ecoregion_en or inst.ecoregion_uk) }}
+                    {% else %}
+                        <span style="color: #c00;">{{ _('не вказано') }}</span>
+                    {% endif %}
+                </td>
                 
                 <td style="text-align: right; white-space: nowrap;">
                     <a href="{{ url_for('admin.edit_institution', lang_code=g.lang_code, inst_id=inst.id) }}" class="button-small">
