@@ -11,7 +11,8 @@ from app.extensions import bcrypt
 
 CT_STATS = {'series': 5, 'identifications': 12, 'species_count': 3,
             'top_species': [{'name': 'Лисиця', 'count': 4}]}
-PAM_STATS = {'verifications': 7, 'positive': 5, 'positive_rate': 71.4, 'species_count': 2}
+PAM_STATS = {'verifications': 7, 'positive': 5, 'positive_rate': 71.4, 'species_count': 2,
+             'top_species': [{'name': 'Зозуля', 'count': 3}, {'name': 'Вивільга', 'count': 2}]}
 
 
 @pytest.fixture
@@ -31,6 +32,26 @@ def test_profile_get_renders_username_and_stats(auth_client, db_session, stats_p
     resp = cl.get('/uk/profile')
     assert resp.status_code == 200
     assert b'profuser' in resp.data
+
+
+def test_profile_renders_top_species_for_both_modules(auth_client, db_session, stats_patched):
+    """The PAM block shows a top-species list just like the camera-traps one."""
+    cl = auth_client(role='viewer', username='topuser')
+    resp = cl.get('/uk/profile')
+    assert resp.status_code == 200
+    body = resp.data.decode('utf-8')
+    assert 'Лисиця' in body          # CT top species
+    assert 'Зозуля' in body          # PAM top species
+    assert 'Вивільга' in body
+
+
+def test_profile_passes_language_to_pam_stats(auth_client, db_session):
+    """PAM stats must be localised like CT stats (species names come from the DB)."""
+    with patch('app.camera_traps.utils.get_user_ct_stats', return_value=CT_STATS),          patch('app.pam.utils.get_user_pam_stats', return_value=PAM_STATS) as pam_mock:
+        cl = auth_client(role='viewer', username='languser')
+        resp = cl.get('/en/profile')
+    assert resp.status_code == 200
+    assert pam_mock.call_args.kwargs.get('lang') == 'en'
 
 
 def test_password_change_success(auth_client, db_session, stats_patched):

@@ -167,6 +167,14 @@
                 <span class="stat-label">{{ _('Унікальних видів') }}</span>
                 <span class="stat-num">{{ pam_stats.species_count }}</span>
             </div>
+            {% if pam_stats.top_species %}
+            <p class="top-species-title">{{ _('Топ види (за підтвердженими сегментами)') }}</p>
+            <ol class="top-species">
+                {% for s in pam_stats.top_species %}
+                <li><span class="sp-name">{{ s.name }}</span><span class="sp-count">{{ s.count }}</span></li>
+                {% endfor %}
+            </ol>
+            {% endif %}
             {% else %}
             <div class="info-message">{{ _('Статистика тимчасово недоступна.') }}</div>
             {% endif %}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-25 11:55+0300\n"
+"POT-Creation-Date: 2026-08-19 13:08+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -103,31 +103,51 @@ msgstr ""
 msgid "Додати роль"
 msgstr ""
 
-#: app/routes/main.py:74
+#: app/admin/routes.py:395
+msgid "Невідомий статус."
+msgstr ""
+
+#: app/admin/routes.py:400
+msgid "Статус оновлено."
+msgstr ""
+
+#: app/admin/routes.py:415
+msgid "Звернення видалено."
+msgstr ""
+
+#: app/routes/main.py:88
+msgid "Сталася помилка при відправці. Спробуйте пізніше."
+msgstr ""
+
+#: app/routes/main.py:101
+msgid "Ваше повідомлення надіслано! Ми звʼяжемося з вами найближчим часом."
+msgstr ""
+
+#: app/routes/main.py:132
 msgid "Неправильний логін або пароль. Спробуйте ще раз."
 msgstr ""
 
-#: app/routes/main.py:76 app/templates/base.html:90 app/templates/login.html:2
+#: app/routes/main.py:134 app/templates/base.html:97 app/templates/login.html:2
 msgid "Увійти"
 msgstr ""
 
-#: app/routes/main.py:100
+#: app/routes/main.py:158
 msgid "Поточний пароль невірний."
 msgstr ""
 
-#: app/routes/main.py:106
+#: app/routes/main.py:164
 msgid "Пароль успішно змінено."
 msgstr ""
 
-#: app/routes/main.py:113
+#: app/routes/main.py:171
 msgid "Це ваш поточний логін."
 msgstr ""
 
-#: app/routes/main.py:116
+#: app/routes/main.py:174
 msgid "Цей логін уже зайнятий."
 msgstr ""
 
-#: app/routes/main.py:123
+#: app/routes/main.py:181
 msgid "Логін успішно змінено."
 msgstr ""
 
@@ -159,49 +179,53 @@ msgstr ""
 msgid "БіоМон"
 msgstr ""
 
-#: app/templates/base.html:71
-msgid "ГОЛОВНА"
-msgstr ""
-
-#: app/templates/base.html:72
-msgid "ПАМ"
-msgstr ""
-
-#: app/templates/base.html:73
-msgid "ФОТОПАСТКИ"
-msgstr ""
-
-#: app/templates/base.html:74
-msgid "ПРО ПРОЕКТ"
-msgstr ""
-
-#: app/templates/base.html:76
-msgid "SDM"
+#: app/templates/base.html:69
+msgid "Меню"
 msgstr ""
 
 #: app/templates/base.html:78
-msgid "КОНТАКТИ"
+msgid "ГОЛОВНА"
+msgstr ""
+
+#: app/templates/base.html:79
+msgid "ПАМ"
 msgstr ""
 
 #: app/templates/base.html:80
+msgid "ФОТОПАСТКИ"
+msgstr ""
+
+#: app/templates/base.html:81
+msgid "ПРО ПРОЕКТ"
+msgstr ""
+
+#: app/templates/base.html:83
+msgid "SDM"
+msgstr ""
+
+#: app/templates/base.html:85
+msgid "КОНТАКТИ"
+msgstr ""
+
+#: app/templates/base.html:87
 msgid "АДМІН"
 msgstr ""
 
-#: app/templates/base.html:87 app/templates/profile.html:2
+#: app/templates/base.html:94 app/templates/profile.html:2
 #: app/templates/profile.html:69
 msgid "Мій профіль"
 msgstr ""
 
-#: app/templates/base.html:88
+#: app/templates/base.html:95
 msgid "Вийти"
 msgstr ""
 
-#: app/templates/base.html:128
+#: app/templates/base.html:136
 msgid "Проект БіоМон, ©"
 msgstr ""
 
-#: app/templates/contacts.html:3
-msgid "Заголовок сторінки"
+#: app/templates/contacts.html:3 app/templates/contacts.html:26
+msgid "Зворотний зв’язок"
 msgstr ""
 
 #: app/templates/contacts.html:5
@@ -210,18 +234,10 @@ msgid ""
 "моніторингу фауни щодо співпраці та доступу до даних фотопасток і PAM."
 msgstr ""
 
-#: app/templates/contacts.html:9
-msgid "Зв’язок з автором"
-msgstr ""
-
-#: app/templates/contacts.html:13
+#: app/templates/contacts.html:28
 msgid ""
-"Якщо у вас є запитання, або пропозиції щодо проекту, ви можете задати їх "
-"через форму на персональному сайті автора "
-msgstr ""
-
-#: app/templates/contacts.html:16
-msgid "Форма"
+"Маєте запитання чи пропозицію щодо проєкту? Заповніть форму — ми "
+"звʼяжемося з вами."
 msgstr ""
 
 #: app/templates/index.html:7
@@ -283,7 +299,7 @@ msgstr ""
 msgid "Топ види (за серіями)"
 msgstr ""
 
-#: app/templates/profile.html:151 app/templates/profile.html:171
+#: app/templates/profile.html:151 app/templates/profile.html:179
 msgid "Статистика тимчасово недоступна."
 msgstr ""
 
@@ -299,6 +315,27 @@ msgstr ""
 msgid "Підтверджень"
 msgstr ""
 
+#: app/templates/profile.html:171
+msgid "Топ види (за підтвердженими сегментами)"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:3
+#: app/templates/admin/admin_contact_submissions.html:58
+msgid "Нове"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:3
+#: app/templates/admin/admin_contact_submissions.html:58
+msgid "Прочитане"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:3
+#: app/templates/admin/admin_contact_submissions.html:17
+#: app/templates/admin/admin_contact_submissions.html:58
+msgid "Відповіли"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:10
 #: app/templates/admin/admin_home.html:7
 #: app/templates/admin/admin_institution_form.html:7
 #: app/templates/admin/admin_institutions_list.html:7
@@ -307,6 +344,76 @@ msgstr ""
 #: app/templates/admin/admin_user_form.html:7
 #: app/templates/admin/admin_users_list.html:7
 msgid "Адмін-панель"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:11
+#: app/templates/admin/admin_home.html:57
+msgid "Звернення"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:14
+msgid "Звернення з форми зворотного зв’язку"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:17
+msgid "Усі"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:17
+msgid "Нові"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:17
+msgid "Прочитані"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:30
+msgid "Дата"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:31
+msgid "Від"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:32
+msgid "Тема / повідомлення"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:33
+msgid "Статус"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:34
+#: app/templates/admin/admin_institutions_list.html:26
+#: app/templates/admin/admin_roles_list.html:25
+#: app/templates/admin/admin_users_list.html:88
+msgid "Дії"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:45
+msgid "Ваше звернення на biomon.app"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:70
+msgid "Видалити це звернення?"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:70
+#: app/templates/admin/admin_users_list.html:121
+msgid "Ця дія є незворотною."
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:73
+#: app/templates/admin/admin_institutions_list.html:49
+#: app/templates/admin/admin_roles_list.html:61
+#: app/templates/admin/admin_roles_list.html:66
+#: app/templates/admin/admin_users_list.html:124
+#: app/templates/admin/admin_users_list.html:129
+msgid "Видалити"
+msgstr ""
+
+#: app/templates/admin/admin_contact_submissions.html:81
+msgid "Звернень поки немає."
 msgstr ""
 
 #: app/templates/admin/admin_home.html:10
@@ -326,6 +433,7 @@ msgstr ""
 #: app/templates/admin/admin_home.html:23
 #: app/templates/admin/admin_home.html:37
 #: app/templates/admin/admin_home.html:50
+#: app/templates/admin/admin_home.html:63
 msgid "Переглянути"
 msgstr ""
 
@@ -349,6 +457,10 @@ msgstr ""
 
 #: app/templates/admin/admin_home.html:46
 msgid "Глобальне налаштування системних ролей та їх видимості для менеджерів."
+msgstr ""
+
+#: app/templates/admin/admin_home.html:59
+msgid "Повідомлення з форми зворотного зв’язку: перегляд, статуси, видалення."
 msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:18
@@ -403,12 +515,6 @@ msgstr ""
 msgid "Код"
 msgstr ""
 
-#: app/templates/admin/admin_institutions_list.html:26
-#: app/templates/admin/admin_roles_list.html:25
-#: app/templates/admin/admin_users_list.html:88
-msgid "Дії"
-msgstr ""
-
 #: app/templates/admin/admin_institutions_list.html:39
 #: app/templates/admin/admin_roles_list.html:50
 #: app/templates/admin/admin_users_list.html:115
@@ -423,14 +529,6 @@ msgstr ""
 msgid ""
 "Увага: Це видалить її з профілів користувачів. Дані в модулі PAM не "
 "постраждають."
-msgstr ""
-
-#: app/templates/admin/admin_institutions_list.html:49
-#: app/templates/admin/admin_roles_list.html:61
-#: app/templates/admin/admin_roles_list.html:66
-#: app/templates/admin/admin_users_list.html:124
-#: app/templates/admin/admin_users_list.html:129
-msgid "Видалити"
 msgstr ""
 
 #: app/templates/admin/admin_institutions_list.html:57
@@ -618,10 +716,6 @@ msgstr ""
 
 #: app/templates/admin/admin_users_list.html:121
 msgid "Ви впевнені, що хочете видалити користувача:"
-msgstr ""
-
-#: app/templates/admin/admin_users_list.html:121
-msgid "Ця дія є незворотною."
 msgstr ""
 
 #: app/templates/admin/admin_users_list.html:128

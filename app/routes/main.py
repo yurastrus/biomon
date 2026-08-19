@@ -190,7 +190,7 @@ def profile(lang_code):
         current_app.logger.warning(f"profile: CT stats unavailable: {e}")
     try:
         from app.pam.utils import get_user_pam_stats
-        pam_stats = get_user_pam_stats(current_user.id)
+        pam_stats = get_user_pam_stats(current_user.id, lang=lang_code)
     except Exception as e:
         current_app.logger.warning(f"profile: PAM stats unavailable: {e}")
 

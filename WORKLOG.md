@@ -3,6 +3,40 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-08-19 — PAM top-5 species on the profile page
+
+### Request
+`/en/profile` showed a top-species list for camera traps only. The PAM block
+listed verifications / confirmations / unique species but no top species.
+
+### Change
+- `app/pam/utils.py::get_user_pam_stats` (submodule `shared-pam`) now takes
+  `lang='uk'` and returns `top_species` — top-5 `[{name, count}]`. Species names
+  come from `species.common_name_uk` / `common_name_en` with a
+  `scientific_name` fallback. NOTE the column naming differs from ct_db, which
+  uses `common_name_ua`.
+- Counting rule: only CONFIRMED verifications (`verification_result = 1`), i.e.
+  "species this person confirmed". A rejection is not a statement of interest in
+  a taxon, unlike a camera-trap identification, where every row is positive —
+  hence the two blocks carry different labels in the UI.
+- `app/routes/main.py` passes `lang=lang_code` (the function previously had no
+  language parameter at all, so PAM names could not be localised).
+- `app/templates/profile.html` renders the PAM top-species list with the same
+  markup as the CT one; new string "Топ види (за підтвердженими сегментами)" →
+  "Top species (by confirmed segments)". pybabel rejected a fuzzy match to the
+  CT string ("by series") — corrected manually before compiling.
+
+The signature stays backward compatible (`lang` defaults to `uk`, existing keys
+untouched) because `shared-pam` is also checked out by `myproject`.
+
+### Tests
+`tests/test_profile.py` — two new cases: both modules render their top-species
+list, and `/en/profile` passes `lang='en'` into the PAM stats call. File: 10
+passed. Full suite: 1449 passed, 36 skipped.
+
+Read-only smoke test against the real pam_db confirmed both languages return
+sensible data (e.g. Деркач / Corn Crake).
+
 ## 2026-08-14 — CT gallery opens on "all species" and loads immediately
 
 ### Symptom

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-25 17:21+0300\n"
+"POT-Creation-Date: 2026-08-19 13:08+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -116,39 +116,39 @@ msgstr "Status updated."
 msgid "Звернення видалено."
 msgstr "Submission deleted."
 
-#: app/routes/main.py:74
+#: app/routes/main.py:88
 msgid "Сталася помилка при відправці. Спробуйте пізніше."
 msgstr "An error occurred while sending. Please try again later."
 
-#: app/routes/main.py:87
+#: app/routes/main.py:101
 msgid "Ваше повідомлення надіслано! Ми звʼяжемося з вами найближчим часом."
 msgstr "Your message has been sent! We will get back to you soon."
 
-#: app/routes/main.py:114
+#: app/routes/main.py:132
 msgid "Неправильний логін або пароль. Спробуйте ще раз."
 msgstr "Incorrect login or password. Please try again."
 
-#: app/routes/main.py:116 app/templates/base.html:90 app/templates/login.html:2
+#: app/routes/main.py:134 app/templates/base.html:97 app/templates/login.html:2
 msgid "Увійти"
 msgstr "Log in"
 
-#: app/routes/main.py:140
+#: app/routes/main.py:158
 msgid "Поточний пароль невірний."
 msgstr "Current password is incorrect."
 
-#: app/routes/main.py:146
+#: app/routes/main.py:164
 msgid "Пароль успішно змінено."
 msgstr "Password changed successfully."
 
-#: app/routes/main.py:153
+#: app/routes/main.py:171
 msgid "Це ваш поточний логін."
 msgstr "This is your current username."
 
-#: app/routes/main.py:156
+#: app/routes/main.py:174
 msgid "Цей логін уже зайнятий."
 msgstr "This username is already taken."
 
-#: app/routes/main.py:163
+#: app/routes/main.py:181
 msgid "Логін успішно змінено."
 msgstr "Username changed successfully."
 
@@ -185,44 +185,48 @@ msgstr ""
 msgid "БіоМон"
 msgstr "BioMon"
 
-#: app/templates/base.html:71
+#: app/templates/base.html:69
+msgid "Меню"
+msgstr ""
+
+#: app/templates/base.html:78
 msgid "ГОЛОВНА"
 msgstr "HOME"
 
-#: app/templates/base.html:72
+#: app/templates/base.html:79
 msgid "ПАМ"
 msgstr "PAM"
 
-#: app/templates/base.html:73
+#: app/templates/base.html:80
 msgid "ФОТОПАСТКИ"
 msgstr "CAMERA TRAPS"
 
-#: app/templates/base.html:74
+#: app/templates/base.html:81
 msgid "ПРО ПРОЕКТ"
 msgstr "ABOUT"
 
-#: app/templates/base.html:76
+#: app/templates/base.html:83
 msgid "SDM"
 msgstr "SDM"
 
-#: app/templates/base.html:78
+#: app/templates/base.html:85
 msgid "КОНТАКТИ"
 msgstr "CONTACTS"
 
-#: app/templates/base.html:80
+#: app/templates/base.html:87
 msgid "АДМІН"
 msgstr "ADMIN"
 
-#: app/templates/base.html:87 app/templates/profile.html:2
+#: app/templates/base.html:94 app/templates/profile.html:2
 #: app/templates/profile.html:69
 msgid "Мій профіль"
 msgstr "My profile"
 
-#: app/templates/base.html:88
+#: app/templates/base.html:95
 msgid "Вийти"
 msgstr "Log out"
 
-#: app/templates/base.html:128
+#: app/templates/base.html:136
 msgid "Проект БіоМон, ©"
 msgstr "BioMon Project, ©"
 
@@ -310,7 +314,7 @@ msgstr "Unique species"
 msgid "Топ види (за серіями)"
 msgstr "Top species (by series)"
 
-#: app/templates/profile.html:151 app/templates/profile.html:171
+#: app/templates/profile.html:151 app/templates/profile.html:179
 msgid "Статистика тимчасово недоступна."
 msgstr "Statistics temporarily unavailable."
 
@@ -325,6 +329,10 @@ msgstr "Verifications"
 #: app/templates/profile.html:163
 msgid "Підтверджень"
 msgstr "Positive"
+
+#: app/templates/profile.html:171
+msgid "Топ види (за підтвердженими сегментами)"
+msgstr "Top species (by confirmed segments)"
 
 #: app/templates/admin/admin_contact_submissions.html:3
 #: app/templates/admin/admin_contact_submissions.html:58
