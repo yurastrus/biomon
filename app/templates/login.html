@@ -9,8 +9,9 @@
     <h2>{{ _('Увійти в систему') }}</h2>
     
     <p>
-    {{ _('Вхід лише за запрошенням. Самостійна реєстрація на сайті відсутня. Для отримання доступу, 
-    будь ласка,') }} <a href="{{ url_for('main.contacts', lang_code=g.lang_code) }}">{{ _('зв`яжіться з автором') }}</a>.
+        {{ _('Немаєте акаунта?') }}
+        <a href="{{ url_for('main.register', lang_code=g.lang_code) }}">{{ _('Зареєструйтеся') }}</a>
+        {{ _('— щоб допомагати визначати тварин на фото та звукозаписах.') }}
     </p>
 
     <form method="POST" action="">
@@ -27,6 +28,10 @@
             {{ form.submit(class="button") }}
         </div>
     </form>
+
+    <p style="margin-top: 18px; font-size: 0.9em;">
+        <a href="{{ url_for('main.resend_confirmation', lang_code=g.lang_code) }}">{{ _('Не надійшов лист із підтвердженням?') }}</a>
+    </p>
 </div>
 
 <style>

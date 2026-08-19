@@ -3,6 +3,130 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-08-19 — Self-service registration for verifiers
+
+### Request
+Let people register themselves at biomon.app instead of being created by hand:
+confirm the address by email (anti-bot), tick what they want to verify (photos /
+sounds / both). Registration automatic; verification rights approved by an admin
+(managers later). Approval must apply to public locations immediately; other
+territories stay a manual grant.
+
+### Design — two independent gates
+* **Can this account log in?** `user.is_active`, flipped by the emailed
+  confirmation link. `is_active` deliberately overrides `UserMixin.is_active`, so
+  Flask-Login refuses the login itself, and `load_user()` now drops the session of
+  an account disabled mid-session (Flask-Login only checks at login time).
+* **What may it do?** One `verification_requests` row per (user, module), decided
+  by an admin. A table rather than flags on the user: "photos + sounds" is two
+  independently decidable requests, and each decision keeps who/when/why.
+
+Approval adds `ct_verifier` / `pam_verifier` and **no institution** — which is
+what makes the existing access model resolve to public locations only. That
+turned out to be the load-bearing part; see the security section below.
+
+### Files
+* `app/models/__init__.py` — `User.is_active` / `email_confirmed_at` /
+  `self_registered` / `locale`, `VerificationRequest`, guarded `load_user`.
+* `migrations/versions/d41a7c9e5b02_add_self_registration.py` — new columns,
+  UNIQUE index on `user.email`, the new table.
+* `app/utils/registration.py` — account creation, confirmation, purge of stale
+  signups, `get_or_create_role`.
+* `app/utils/tokens.py` — signed, salted, expiring confirmation tokens (no token
+  is stored in the DB; the payload is the address, so a token cannot be replayed
+  after an email change).
+* `app/utils/emails.py` — confirmation / decision / admin-notification mail, in
+  the user's `locale`, delivered in a background thread (Flask-Mail 0.10 has no
+  SMTP timeout — sending inline could hold a gunicorn worker).
+* `app/utils/forms.py` — `RegistrationForm` (honeypot + reCAPTCHA + consent +
+  "at least one module"), `ResendConfirmationForm`; password rules deduplicated
+  into `_PASSWORD_VALIDATORS`.
+* `app/routes/main.py` — `/register`, `/confirm/<token>`, `/resend-confirmation`,
+  login gate, profile context.
+* `app/admin/{routes,services}.py` — `VerificationRequestService` + the queue and
+  decide endpoints (admin-only; the manager step is documented in
+  `can_decide()`).
+* Templates: `register.html`, `resend_confirmation.html`,
+  `admin/admin_verification_requests.html`; login/nav/profile/admin-home updates.
+* `app/commands.py` — `flask purge-unconfirmed [--days N] [--dry-run]`.
+* `app/seo.py` — `/register` is indexable on purpose (it is a public call for
+  volunteers, and QR posters will point at it); `/*/confirm/` and
+  `/*/resend-confirmation` are disallowed.
+
+### Security consequences (the real work)
+Opening registration changes what `@login_required` means: it used to imply a
+hand-created account and now means "anybody who confirmed an address". Audit of
+every login-only endpoint found four real holes, fixed in the submodules:
+
+* `shared-ct` `get_location_details` — returned name/coordinates/description for
+  ANY location id. Now enforces visibility (404, not 403, so restricted locations
+  stay undiscoverable). New shared helper `utils.can_access_location`.
+* `shared-ct` `submit_identification` — accepted a client-supplied
+  `observation_id` with no scope check: a verifier could write identifications
+  for series they may not even view. Now guarded by `_can_access_observation`,
+  which also replaced an inline copy of the same rule in the queue endpoint.
+* `shared-ct` `api/next-observation-for-identification` — login-only; now
+  `role_required('ct_verifier')`.
+* `shared-ct` `api/stats/daily-activity/download` — with `scope_type=global` and
+  no institutions it aggregated over EVERY location. Now public locations only
+  for such accounts (users with institutions keep their previous numbers).
+* `shared-pam` `api/verification/segments` — login-only and completely unscoped:
+  it listed every segment's filename, location name and date. Now
+  `role_required('pam_verifier')` plus the access baseline applied to all four
+  queries in the endpoint (rows, total, per-status counts, average confidence),
+  so the counters cannot advertise segments the user cannot open.
+* `shared-pam` `api/verification/stats`, `api/top-verifiers`,
+  `api/get-taxonomic-filters` — gated to `pam_verifier`.
+
+**Deliberate semantic change:** `_segment_access_sql` used to return `FALSE` for
+a user with no institutions. It now returns the public-locations branch
+(`locations.visibility_level = 0`), OR-ed with the institution branch when there
+are institutions. Without this an approved self-registered verifier would see an
+empty queue — the public pool is exactly what their approval grants. This
+supersedes the "fail closed to nothing" rule pinned in
+`tests/test_pam_verification_unknown.py`, whose test and docstring were updated
+rather than deleted. Checked against production pam_db (read-only): 20 903 of
+29 724 segments are pending on public locations, so a new verifier has work; 1 256
+segments remain outside the public pool.
+
+### Migration notes
+* The chain up to `b7d2e1a9c4f0` creates `user` WITHOUT `email` / `phone` /
+  `created_at` / `created_by_id` — production acquired them outside Alembic, so
+  `flask db upgrade` from scratch produced a schema that did not match the model.
+  This migration backfills the two columns it needs (`email`, `created_at`) when
+  absent; the rest of that historical gap is still open.
+* `user.email` becomes UNIQUE. The upgrade aborts with the offending addresses
+  listed if duplicates exist, rather than mangling data. Production checked
+  (read-only): 47 users, 24 with an address, no duplicates — it will apply cleanly.
+* Verified upgrade → downgrade → upgrade on a throwaway SQLite DB, including that
+  the unique index rejects a duplicate and still allows several NULLs.
+
+### Tests
+* `tests/test_registration.py` — 46 cases: the flow end to end, both gates,
+  idempotent confirmation, tampered / expired / wrong-salt tokens, confirmation
+  for a deleted account, honeypot, per-IP rate limit, duplicate username/email
+  (case-insensitive), enumeration-safe resend, admin approve/reject/re-decide,
+  role gates on the queue, profile status, purge, `get_or_create_role`.
+* `tests/test_public_scope_access.py` — 17 cases pinning "no institutions ⇒
+  public only" for `can_access_location`, location details, identification
+  writes, the daily-activity CSV, and the PAM access baseline + segment listing.
+* `tests/conftest.py` — the CT in-memory fixture now creates `location_biotopes`
+  (missing table made location-detail tests fail for the wrong reason).
+* `tests/test_ct_identification_comment.py` — now builds its photo on a PUBLIC
+  location: `Location.visibility_level` defaults to 1, so those four tests were
+  relying on the missing scope check.
+* Full suite: **1512 passed, 36 skipped** (63 new cases on top of the 1449 baseline).
+
+### Not done / next steps
+* Managers cannot decide requests yet (`assignable_by` is ready; the open
+  question is what "their" applicant means when no institution is attached).
+* A privacy-policy page and account deletion on request — we now collect personal
+  data from the general public.
+* SPF/DKIM/DMARC for biomon.app should be verified before announcing the feature,
+  or confirmation mail will land in spam.
+* Deploy needs `bash ~/update_all.sh` (interactive sudo) plus `flask db upgrade`
+  and a cron entry for `flask purge-unconfirmed`.
+
 ## 2026-08-19 — PAM top-5 species on the profile page
 
 ### Request

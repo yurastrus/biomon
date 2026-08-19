@@ -45,6 +45,18 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
 
+    # ── Self-service registration (#registration) ─────────────────────────────
+    # is_active overrides UserMixin.is_active on purpose: Flask-Login refuses to
+    # log in a user for which it is False, and load_user() below drops the
+    # session of an account deactivated mid-session. A self-registered account
+    # starts inactive and is activated by clicking the emailed confirmation link.
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    email_confirmed_at = db.Column(db.DateTime, nullable=True)
+    self_registered = db.Column(db.Boolean, default=False, nullable=False)
+    # Language the person registered in — emails are sent in it (they are not
+    # generated inside a request, so there is no g.lang_code to fall back on).
+    locale = db.Column(db.String(5), nullable=True)
+
     # viewonly=True: read-only join; mutations go through institution_links
     institutions = db.relationship('Institution', secondary=lambda: UserInstitution.__table__, viewonly=True)
     institution_links = db.relationship('UserInstitution', cascade='all, delete-orphan')
@@ -94,6 +106,17 @@ class User(db.Model, UserMixin):
 
         return False
     
+    @property
+    def is_email_confirmed(self):
+        return self.email_confirmed_at is not None
+
+    def verification_request(self, module):
+        """Return this user's request for the given module, or None."""
+        for req in self.verification_requests:
+            if req.module == module:
+                return req
+        return None
+
     def is_local_admin(self):
         """Return True if the user is an institution admin (manager)."""
         return self.has_role('manager')
@@ -134,6 +157,62 @@ class Role(db.Model):
     def __repr__(self):
         return f"Role('{self.name}')"
 
+class VerificationRequest(db.Model):
+    """A self-registered user's request for verification rights in one module.
+
+    One row per (user, module) so that "photos + sounds" is two independently
+    decidable requests, and so the decision keeps an audit trail (who, when,
+    why) instead of a boolean on the user.
+
+    Approving a request grants the matching role and nothing else: no
+    institutions are attached, which — by the existing access model in
+    camera_traps/pam — means the person sees public locations only
+    (``visibility_level == 0``). Wider territory access stays a manual,
+    per-institution grant in the admin panel.
+    """
+    __tablename__ = 'verification_requests'
+
+    MODULE_CT = 'ct'
+    MODULE_PAM = 'pam'
+    MODULES = (MODULE_CT, MODULE_PAM)
+    #: role granted on approval, per module
+    ROLE_BY_MODULE = {MODULE_CT: 'ct_verifier', MODULE_PAM: 'pam_verifier'}
+
+    STATUS_PENDING = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+    STATUSES = (STATUS_PENDING, STATUS_APPROVED, STATUS_REJECTED)
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'),
+                        nullable=False, index=True)
+    module = db.Column(db.String(10), nullable=False)
+    status = db.Column(db.String(10), nullable=False, default=STATUS_PENDING, index=True)
+    requested_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    decided_at = db.Column(db.DateTime, nullable=True)
+    decided_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    note = db.Column(db.Text, nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id],
+                           backref=db.backref('verification_requests',
+                                              cascade='all, delete-orphan'))
+    decided_by = db.relationship('User', foreign_keys=[decided_by_id])
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'module', name='uq_verification_request_user_module'),
+        CheckConstraint("module IN ('ct', 'pam')", name='ck_verification_request_module'),
+        CheckConstraint("status IN ('pending', 'approved', 'rejected')",
+                        name='ck_verification_request_status'),
+    )
+
+    @property
+    def role_name(self):
+        return self.ROLE_BY_MODULE[self.module]
+
+    def __repr__(self):
+        return f'<VerificationRequest user={self.user_id} {self.module} [{self.status}]>'
+
+
 class ContactSubmission(db.Model):
     """A message sent through the public contact form.
 
@@ -173,4 +252,13 @@ from app.extensions import login_manager
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    """Load the session's user, dropping the session if the account is disabled.
+
+    Flask-Login only consults ``is_active`` when logging in, so without this
+    check a user deactivated (or not yet email-confirmed) mid-session would keep
+    their access until the cookie expired.
+    """
+    user = User.query.get(int(user_id))
+    if user is None or not user.is_active:
+        return None
+    return user

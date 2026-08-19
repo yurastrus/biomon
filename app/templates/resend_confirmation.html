@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Повторне підтвердження email') }}{% endblock %}
+
+{# Utility page for people mid-registration: useful, but must not rank. #}
+{% block robots %}noindex, follow{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 520px; padding: 40px 0; text-align: center;">
+    <h2>{{ _('Надіслати посилання ще раз') }}</h2>
+    <p>
+        {{ _('Якщо лист із підтвердженням не надійшов або посилання прострочене — вкажіть свою адресу, і ми надішлемо новий лист.') }}
+    </p>
+
+    <form method="POST" action="{{ url_for('main.resend_confirmation', lang_code=g.lang_code) }}"
+          novalidate style="text-align: left;">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(type="email", class="form-control", style="width: 100%; padding: 8px;") }}
+            {% for error in form.email.errors %}
+            <div style="color:#dc3545; font-size:0.9em; margin-top:4px;">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        {% if form.recaptcha %}
+        <div style="display:flex; justify-content:center; margin: 18px 0;">
+            {{ form.recaptcha() }}
+            {% for error in form.recaptcha.errors %}
+            <div style="color:#dc3545; font-size:0.9em;">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-group" style="text-align: center;">
+            {{ form.submit(class="button") }}
+        </div>
+    </form>
+
+    <p style="margin-top: 20px;">
+        <a href="{{ url_for('main.login', lang_code=g.lang_code) }}">{{ _('Повернутися до входу') }}</a>
+    </p>
+</div>
+
+<style>
+.form-label { display: block; margin-bottom: .5rem; }
+</style>
+{% endblock %}

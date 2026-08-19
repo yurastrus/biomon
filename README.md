@@ -153,6 +153,17 @@ MAIL_DEFAULT_SENDER=noreply@example.com
 # Public URL used in email links
 SITE_URL=https://biomon.app
 
+# ── Self-service registration ─────────────────────────────────────────────────
+# Where new-registration notifications are emailed (Telegram is notified too)
+ADMIN_EMAIL=admin@example.com
+# Lifetime of an email-confirmation link, seconds (default 86400 = 24 h)
+EMAIL_CONFIRM_TOKEN_MAX_AGE=86400
+# `flask purge-unconfirmed` deletes never-confirmed signups older than this
+UNCONFIRMED_ACCOUNT_MAX_AGE_DAYS=7
+# reCAPTCHA v2 — used by the contact form AND the registration form
+RECAPTCHA_PUBLIC_KEY=<site key>
+RECAPTCHA_PRIVATE_KEY=<secret key>
+
 # ── AI runner (DeepFaune classifier — optional) ───────────────────────────────
 # Set to false on machines without the classifier worker
 AI_RUNNER_ENABLED=false
@@ -227,6 +238,35 @@ The `scripts/` directory contains idempotent initialisation scripts for optional
 venv/Scripts/python -m scripts.init_fast_upload   # Windows
 venv/bin/python -m scripts.init_fast_upload       # Linux
 ```
+
+## Self-service registration
+
+Anyone can create an account at `/<lang>/register`; two independent gates decide
+what happens next.
+
+1. **Email confirmation — automatic.** The account is created inactive
+   (`user.is_active = False`) with the `viewer` role and **no institutions**, and
+   a signed, expiring link is emailed (`itsdangerous`, salt
+   `biomon-email-confirm`). Following it activates sign-in. Bot defences: hidden
+   honeypot field, reCAPTCHA v2, and a per-IP rate limit (5/hour).
+2. **Verification rights — granted by an administrator.** During registration the
+   person ticks what they want to do (camera-trap photos / sound recordings);
+   each tick becomes a row in `verification_requests`. The queue lives at
+   `/<lang>/admin/verification-requests` and lists confirmed applicants only.
+   Approval adds `ct_verifier` / `pam_verifier` and nothing else.
+
+Because approval attaches **no institution**, a new verifier works on public
+locations only (`visibility_level = 0`) — in both modules. Access to an
+institution's territories stays a manual grant under admin → Users.
+
+Housekeeping (cron, daily):
+
+```bash
+cd /var/www/biomon && venv/bin/flask purge-unconfirmed
+```
+
+Deletes self-registered accounts that never confirmed their address, freeing the
+username and email again. `--dry-run` reports without deleting.
 
 ## Running the application
 

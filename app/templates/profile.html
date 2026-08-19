@@ -122,6 +122,28 @@
 
     </div>
 
+    {% if verification_requests %}
+    <div style="margin-bottom: 25px;">
+        <section class="dashboard-section">
+            <h2 class="section-title">{{ _('Права верифікації') }}</h2>
+            {% set module_labels = {'ct': _('Фото з фотопасток'), 'pam': _('Звукозаписи')} %}
+            {% set status_labels = {'pending': _('Очікує розгляду'), 'approved': _('Надано'), 'rejected': _('Відхилено')} %}
+            {% for req in verification_requests %}
+            <div class="stat-line">
+                <span class="stat-label">{{ module_labels.get(req.module, req.module) }}</span>
+                <span class="stat-num" style="font-size: 1rem;">{{ status_labels.get(req.status, req.status) }}</span>
+            </div>
+            {% if req.note %}
+            <p style="color: #666; font-size: 0.85em; margin: 0 0 10px;">{{ req.note }}</p>
+            {% endif %}
+            {% endfor %}
+            <p style="color: #666; font-size: 0.85em; margin-top: 10px;">
+                {{ _('Надані права діють на публічні локації. Доступ до інших територій надають їхні установи.') }}
+            </p>
+        </section>
+    </div>
+    {% endif %}
+
     <div class="dashboard-grid">
 
         <section class="dashboard-section">

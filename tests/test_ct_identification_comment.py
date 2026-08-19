@@ -23,6 +23,20 @@ def ct_route_session(ct_session):
         yield ct_session
 
 
+@pytest.fixture
+def public_photo(make_ct_location, make_ct_observation, make_ct_photo):
+    """A photo on a PUBLIC location.
+
+    Location.visibility_level defaults to 1 (restricted), and submitting an
+    identification now requires access to the series' location — a verifier with
+    no institutions may only work on public locations. These tests are about the
+    comment field, so they use the pool such a verifier actually gets.
+    """
+    loc = make_ct_location(name='Публічна', visibility_level=0)
+    obs = make_ct_observation(location=loc)
+    return make_ct_photo(observation=obs)
+
+
 def _submit(cl, obs_id, species_id, comment=...):
     payload = {'observation_id': obs_id, 'species_id': species_id, 'quantity': 1}
     if comment is not ...:                     # ... = key omitted entirely
@@ -41,9 +55,9 @@ def test_form_has_comment_field():
 
 
 def test_comment_saved(auth_client, db_session, ct_route_session,
-                       make_ct_photo, make_ct_species):
+                       public_photo, make_ct_species):
     sp = make_ct_species()
-    photo = make_ct_photo()
+    photo = public_photo
     cl = auth_client(role='ct_verifier')
     resp = _submit(cl, photo.observation_id, sp.id, comment='розмите фото, не певен')
     assert resp.status_code == 201, resp.get_data(as_text=True)
@@ -53,9 +67,9 @@ def test_comment_saved(auth_client, db_session, ct_route_session,
 
 
 def test_comment_truncated_to_200(auth_client, db_session, ct_route_session,
-                                  make_ct_photo, make_ct_species):
+                                  public_photo, make_ct_species):
     sp = make_ct_species()
-    photo = make_ct_photo()
+    photo = public_photo
     cl = auth_client(role='ct_verifier')
     resp = _submit(cl, photo.observation_id, sp.id, comment='я' * 350)
     assert resp.status_code == 201
@@ -64,9 +78,9 @@ def test_comment_truncated_to_200(auth_client, db_session, ct_route_session,
 
 
 def test_blank_comment_is_none(auth_client, db_session, ct_route_session,
-                               make_ct_photo, make_ct_species):
+                               public_photo, make_ct_species):
     sp = make_ct_species()
-    photo = make_ct_photo()
+    photo = public_photo
     cl = auth_client(role='ct_verifier')
     resp = _submit(cl, photo.observation_id, sp.id, comment='   ')
     assert resp.status_code == 201
@@ -74,9 +88,9 @@ def test_blank_comment_is_none(auth_client, db_session, ct_route_session,
 
 
 def test_missing_comment_is_none(auth_client, db_session, ct_route_session,
-                                 make_ct_photo, make_ct_species):
+                                 public_photo, make_ct_species):
     sp = make_ct_species()
-    photo = make_ct_photo()
+    photo = public_photo
     cl = auth_client(role='ct_verifier')
     resp = _submit(cl, photo.observation_id, sp.id)   # comment key missing
     assert resp.status_code == 201

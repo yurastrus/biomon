@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% set module_labels = {'ct': _('Фото з фотопасток'), 'pam': _('Звукозаписи')} %}
+{% set status_labels = {'pending': _('Очікує'), 'approved': _('Підтверджено'), 'rejected': _('Відхилено')} %}
+{% set status_badge = {'pending': 'badge-success', 'approved': 'badge-secondary', 'rejected': 'badge-secondary'} %}
+
+{% block content %}
+<div class="container" style="margin-top: 20px; margin-bottom: 50px;">
+
+    <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
+        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a>
+        &raquo; <strong>{{ _('Запити на верифікацію') }}</strong>
+    </div>
+
+    <h2 style="text-align: left; margin-bottom: 10px;">{{ _('Запити на права верифікації') }}</h2>
+    <p style="color: #666; margin-bottom: 20px; max-width: 760px;">
+        {{ _('Це користувачі, які зареєструвалися самостійно і підтвердили email. Підтвердження надає лише роль верифікатора: доступні будуть публічні локації. Доступ до територій установи надається окремо в розділі «Користувачі».') }}
+    </p>
+
+    <div style="text-align: left; margin-bottom: 20px;">
+        {% set filters = [('pending', _('Очікують')), ('approved', _('Підтверджені')), ('rejected', _('Відхилені')), ('all', _('Усі'))] %}
+        {% for value, label in filters %}
+            <a href="{{ url_for('admin.verification_requests', lang_code=g.lang_code, status=value) }}"
+               class="button-small"
+               style="{{ 'background-color:#0779e4;color:#fff;' if (active_status == value) or (value == 'all' and not active_status) else '' }}">
+                {{ label }}{% if value == 'pending' and pending_count %} ({{ pending_count }}){% endif %}
+            </a>
+        {% endfor %}
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th style="width: 130px;">{{ _('Дата') }}</th>
+                <th>{{ _('Користувач') }}</th>
+                <th>{{ _('Просить') }}</th>
+                <th style="width: 120px;">{{ _('Статус') }}</th>
+                <th style="text-align: right;">{{ _('Дії') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td style="white-space: nowrap; font-size: 0.85em; color: #666;">
+                    {{ req.requested_at.strftime('%Y-%m-%d %H:%M') if req.requested_at else '' }}
+                </td>
+                <td>
+                    <strong>{{ req.user.full_name }}</strong><br>
+                    <span style="font-size: 0.85em; color: #666;">{{ req.user.username }}</span><br>
+                    <a href="mailto:{{ req.user.email }}" style="font-size: 0.85em;">{{ req.user.email }}</a>
+                </td>
+                <td>{{ module_labels.get(req.module, req.module) }}</td>
+                <td>
+                    <span class="badge {{ status_badge.get(req.status, 'badge-secondary') }}">
+                        {{ status_labels.get(req.status, req.status) }}
+                    </span>
+                    {% if req.decided_at %}
+                    <div style="font-size: 0.8em; color: #666; margin-top: 4px;">
+                        {{ req.decided_at.strftime('%Y-%m-%d') }}
+                        {% if req.decided_by %}— {{ req.decided_by.username }}{% endif %}
+                    </div>
+                    {% endif %}
+                    {% if req.note %}
+                    <div style="font-size: 0.8em; color: #666; margin-top: 4px; white-space: pre-wrap;">{{ req.note }}</div>
+                    {% endif %}
+                </td>
+                <td style="text-align: right; white-space: nowrap;">
+                    {% if req.status == 'pending' %}
+                    <form action="{{ url_for('admin.decide_verification_request', lang_code=g.lang_code, request_id=req.id) }}"
+                          method="POST" style="margin: 0; padding: 0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="text" name="note" placeholder="{{ _('Коментар (необовʼязково)') }}"
+                               style="width: 190px; padding: 5px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 3px;">
+                        <br>
+                        <button type="submit" name="action" value="approve" class="button-small">
+                            {{ _('Підтвердити') }}
+                        </button>
+                        <button type="submit" name="action" value="reject" class="button-danger"
+                                style="border: none; cursor: pointer; font-family: inherit;">
+                            {{ _('Відхилити') }}
+                        </button>
+                    </form>
+                    {% else %}
+                    <span style="color: #999;">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 30px; color: gray;">
+                    {{ _('Запитів немає.') }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

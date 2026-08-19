@@ -27,6 +27,38 @@ def register_commands(app):
         sent, skipped = send_identification_reminders()
         click.echo(f"Done: {sent} emails sent, {skipped} users skipped (no series).")
 
+    @app.cli.command('purge-unconfirmed')
+    @click.option('--days', default=None, type=int,
+                  help='Age threshold in days (default: UNCONFIRMED_ACCOUNT_MAX_AGE_DAYS).')
+    @click.option('--dry-run', is_flag=True, help='Only report what would be deleted.')
+    def purge_unconfirmed(days, dry_run):
+        """Delete self-registered accounts that never confirmed their email.
+
+        Usage:
+            flask purge-unconfirmed [--days 7] [--dry-run]
+
+        Cron schedule (daily at 04:30):
+            30 4 * * * cd /var/www/biomon && venv/bin/flask purge-unconfirmed >> /var/log/biomon_purge.log 2>&1
+        """
+        from datetime import datetime, timedelta
+        from app.models import User
+        from app.utils.registration import purge_unconfirmed_users
+
+        max_age = days if days is not None else app.config['UNCONFIRMED_ACCOUNT_MAX_AGE_DAYS']
+        if dry_run:
+            cutoff = datetime.utcnow() - timedelta(days=max_age)
+            stale = User.query.filter(
+                User.self_registered.is_(True),
+                User.email_confirmed_at.is_(None),
+                User.created_at < cutoff,
+            ).all()
+            for u in stale:
+                click.echo(f"would delete: {u.username} <{u.email}> created {u.created_at}")
+            click.echo(f"{len(stale)} account(s) would be deleted (older than {max_age} d).")
+            return
+        deleted = purge_unconfirmed_users(max_age_days=max_age)
+        click.echo(f"Deleted {deleted} unconfirmed account(s) older than {max_age} days.")
+
     # ──────────────────────────────────────────────────────────────
     # SDM CLI commands (flask sdm check / build-grid / ...)
     # ──────────────────────────────────────────────────────────────

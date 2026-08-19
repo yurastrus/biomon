@@ -5,9 +5,11 @@ Each service contains pure functions/methods with no knowledge of request/respon
 All methods return data or raise exceptions; flush/commit is performed in routes.py.
 """
 
+from datetime import datetime
+
 from sqlalchemy import or_
 from app.extensions import db, bcrypt
-from app.models import User, Role, Institution, UserInstitution
+from app.models import User, Role, Institution, UserInstitution, VerificationRequest
 
 # Roles that grant export rights
 EXPORT_ROLES = frozenset({'analyst', 'manager', 'admin'})
@@ -274,3 +276,78 @@ class RoleService:
     def delete(role):
         """Delete the role from the session (no commit)."""
         db.session.delete(role)
+
+
+# ===========================================================================
+# Verification-request service
+# ===========================================================================
+
+class VerificationRequestService:
+    """Decisions on self-registered users' requests for verification rights.
+
+    Approval grants exactly one role and no institutions, so the new verifier
+    sees public locations only. Territory access remains a separate, manual
+    grant — see the module docstring of app/utils/registration.py.
+    """
+
+    @staticmethod
+    def can_decide(requester):
+        """Return True if ``requester`` may approve/reject requests.
+
+        Admin-only for now. Managers are the intended next step: they would be
+        limited to requests they can see, which requires deciding what "their"
+        applicants means (no institution is attached at this point) — so the
+        rule stays deliberately narrow instead of guessing.
+        """
+        return requester.has_role('admin')
+
+    @staticmethod
+    def list_requests(status=None, only_confirmed=True):
+        """Requests newest-first, optionally filtered by status.
+
+        ``only_confirmed`` hides applicants who have not clicked the email link
+        yet: their request is not actionable and would otherwise let anyone fill
+        the admin's queue with unverified addresses.
+        """
+        query = VerificationRequest.query.join(
+            User, VerificationRequest.user_id == User.id)
+        if status in VerificationRequest.STATUSES:
+            query = query.filter(VerificationRequest.status == status)
+        if only_confirmed:
+            query = query.filter(User.email_confirmed_at.isnot(None))
+        return query.order_by(VerificationRequest.requested_at.desc()).all()
+
+    @staticmethod
+    def pending_count():
+        return VerificationRequest.query.join(
+            User, VerificationRequest.user_id == User.id
+        ).filter(
+            VerificationRequest.status == VerificationRequest.STATUS_PENDING,
+            User.email_confirmed_at.isnot(None),
+        ).count()
+
+    @staticmethod
+    def decide(request_obj, decider, approve, note=None):
+        """Approve or reject one request (no commit).
+
+        Returns:
+            Tuple of (True, None) on success or (False, error_message).
+        """
+        if request_obj.status != VerificationRequest.STATUS_PENDING:
+            return False, 'Цей запит уже опрацьовано.'
+        if not request_obj.user.is_email_confirmed:
+            return False, 'Користувач ще не підтвердив email-адресу.'
+
+        if approve:
+            from app.utils.registration import get_or_create_role
+            role = get_or_create_role(request_obj.role_name)
+            if role not in request_obj.user.roles:
+                request_obj.user.roles.append(role)
+            request_obj.status = VerificationRequest.STATUS_APPROVED
+        else:
+            request_obj.status = VerificationRequest.STATUS_REJECTED
+
+        request_obj.decided_at = datetime.utcnow()
+        request_obj.decided_by_id = decider.id
+        request_obj.note = (note or '').strip() or None
+        return True, None

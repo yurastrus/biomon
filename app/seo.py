@@ -20,6 +20,9 @@ PUBLIC_ENDPOINTS = [
     ('main.index', '1.0'),
     ('main.about', '0.8'),
     ('main.contacts', '0.8'),
+    # Public call for volunteers — the whole point is that people find it
+    # (including by QR posters in the field), so it is indexable.
+    ('main.register', '0.7'),
     ('pam.pam_home', '0.8'),
     ('camera_traps.overview', '0.8'),
 ]
@@ -43,6 +46,9 @@ def robots_txt():
         'Disallow: /*/admin',
         'Disallow: /*/sdm',
         'Disallow: /*/profile',
+        # One-shot signed links from confirmation emails — never crawlable.
+        'Disallow: /*/confirm/',
+        'Disallow: /*/resend-confirmation',
         'Disallow: /*/logout',
         'Disallow: /csp-report',
         # JSON APIs — never indexable, and the biggest crawl-budget sink.

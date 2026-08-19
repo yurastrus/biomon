@@ -25,6 +25,21 @@
         </div>
 
         {% if current_user.has_role('admin') %}
+        <div class="stat-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; border-top: 4px solid #6f42c1;">
+            <div>
+                <i class="fas fa-user-check" style="font-size: 3em; color: #6f42c1; margin-bottom: 20px;"></i>
+                <h5 style="font-size: 20px; color: #333; margin-bottom: 10px;">
+                    {{ _('Запити на верифікацію') }}{% if pending_requests %} <span class="badge badge-success">{{ pending_requests }}</span>{% endif %}
+                </h5>
+                <p style="color: #666; font-size: 14px; margin-bottom: 25px; line-height: 1.4;">
+                    {{ _('Заявки користувачів, які зареєструвалися самостійно: надання прав на визначення фото та звуків.') }}
+                </p>
+            </div>
+            <a href="{{ url_for('admin.verification_requests', lang_code=g.lang_code) }}" class="button" style="margin: 0; min-width: auto; width: 100%;">
+                {{ _('Переглянути') }}
+            </a>
+        </div>
+
         <div class="stat-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; border-top: 4px solid #ffc107;">
             <div>
                 <i class="fas fa-university" style="font-size: 3em; color: #ffc107; margin-bottom: 20px;"></i>

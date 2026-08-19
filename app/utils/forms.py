@@ -2,12 +2,22 @@
 # /app/utils/forms.py
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, Length, Regexp, EqualTo
+from wtforms import (StringField, PasswordField, SubmitField, TextAreaField,
+                     BooleanField)
+from wtforms.validators import (DataRequired, Email, Length, Regexp, EqualTo,
+                                Optional, ValidationError)
 from flask_babel import lazy_gettext as _l
 from flask_wtf.recaptcha import RecaptchaField
 
 from config import Config
+
+#: Password rules shared by every form that sets a password.
+_PASSWORD_VALIDATORS = [
+    DataRequired(),
+    Length(min=Config.PASSWORD_MIN_LENGTH, max=128),
+    Regexp(r'(?=.*[A-Za-z])(?=.*\d)',
+           message=_l('Пароль має містити і літери, і цифри.')),
+]
 
 class LoginForm(FlaskForm):
     username = StringField(_l('Ім\'я користувача'), validators=[DataRequired()])
@@ -26,15 +36,7 @@ class ContactForm(FlaskForm):
 class ChangePasswordForm(FlaskForm):
     """Password change form. Minimum length from Config; requires letters and digits."""
     current_password = PasswordField(_l('Поточний пароль'), validators=[DataRequired()])
-    new_password = PasswordField(
-        _l('Новий пароль'),
-        validators=[
-            DataRequired(),
-            Length(min=Config.PASSWORD_MIN_LENGTH, max=128),
-            Regexp(r'(?=.*[A-Za-z])(?=.*\d)',
-                   message=_l('Пароль має містити і літери, і цифри.')),
-        ]
-    )
+    new_password = PasswordField(_l('Новий пароль'), validators=_PASSWORD_VALIDATORS)
     confirm_password = PasswordField(
         _l('Підтвердити новий пароль'),
         validators=[DataRequired(), EqualTo('new_password', message=_l('Паролі не співпадають.'))]
@@ -47,3 +49,64 @@ class ChangeUsernameForm(FlaskForm):
     new_username = StringField(_l('Новий логін'),
                                validators=[DataRequired(), Length(min=3, max=20)])
     submit_username = SubmitField(_l('Змінити логін'))
+
+class RegistrationForm(FlaskForm):
+    """Public self-service registration.
+
+    Bot defences, in order of cost to a legitimate person: a hidden honeypot
+    field (free), reCAPTCHA (one click, same widget as the contact form), and a
+    per-IP rate limit in the route. Uniqueness of username/email is checked in
+    the route, which owns the DB session.
+    """
+    username = StringField(
+        _l("Ім'я користувача"),
+        validators=[DataRequired(), Length(min=3, max=20),
+                    Regexp(r'^[A-Za-z0-9_.\-]+$',
+                           message=_l('Лише латинські літери, цифри, «_», «.» та «-».'))])
+    email = StringField(_l('Email'), validators=[DataRequired(), Email(), Length(max=120)])
+    first_name = StringField(_l("Ім'я"), validators=[DataRequired(), Length(max=50)])
+    last_name = StringField(_l('Прізвище'), validators=[DataRequired(), Length(max=50)])
+    password = PasswordField(_l('Пароль'), validators=_PASSWORD_VALIDATORS)
+    confirm_password = PasswordField(
+        _l('Підтвердити пароль'),
+        validators=[DataRequired(), EqualTo('password', message=_l('Паролі не співпадають.'))])
+
+    wants_ct = BooleanField(_l('Визначати тварин на фото з фотопасток'))
+    wants_pam = BooleanField(_l('Визначати голоси тварин на звукозаписах'))
+
+    consent = BooleanField(
+        _l('Погоджуюся на обробку вказаних даних для роботи в системі'),
+        validators=[DataRequired(message=_l('Без цієї згоди ми не можемо створити акаунт.'))])
+
+    # Honeypot: invisible to people, irresistible to naive bots. Any value = spam.
+    website = StringField('Website', validators=[Optional()])
+
+    recaptcha = RecaptchaField()
+    submit = SubmitField(_l('Зареєструватися'))
+
+    def validate_website(self, field):
+        if field.data:
+            raise ValidationError(_l('Помилка перевірки форми.'))
+
+    def validate_wants_pam(self, field):
+        # Attached to the last checkbox so the message renders next to them.
+        if not (self.wants_ct.data or field.data):
+            raise ValidationError(_l('Виберіть хоча б один вид роботи.'))
+
+    @property
+    def selected_modules(self):
+        """Requested module codes, in the order shown in the form."""
+        from app.models import VerificationRequest
+        modules = []
+        if self.wants_ct.data:
+            modules.append(VerificationRequest.MODULE_CT)
+        if self.wants_pam.data:
+            modules.append(VerificationRequest.MODULE_PAM)
+        return modules
+
+
+class ResendConfirmationForm(FlaskForm):
+    """Ask for a fresh confirmation link (the old one expired or never arrived)."""
+    email = StringField(_l('Email'), validators=[DataRequired(), Email(), Length(max=120)])
+    recaptcha = RecaptchaField()
+    submit = SubmitField(_l('Надіслати посилання ще раз'))

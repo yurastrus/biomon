@@ -3,12 +3,17 @@ import json
 
 from flask import render_template, session, redirect, url_for, current_app, request, g, jsonify, flash
 from flask_login import login_required, current_user, login_user, logout_user
-from app.utils.forms import LoginForm, ContactForm, ChangePasswordForm, ChangeUsernameForm
+from app.utils.forms import (LoginForm, ContactForm, ChangePasswordForm,
+                            ChangeUsernameForm, RegistrationForm,
+                            ResendConfirmationForm)
 from app.utils.utils import is_safe_url
 from flask_babel import lazy_gettext as _l
 from app.routes import bp
-from app.models import User, SiteTextContent, ContactSubmission
+from app.models import User, SiteTextContent, ContactSubmission, VerificationRequest
 from app.utils.notifications import send_telegram_notification
+from app.utils import registration as reg
+from app.utils.emails import (send_confirmation_email, notify_admin_new_requests)
+from app.utils.tokens import generate_email_token, verify_email_token
 from app.extensions import bcrypt, limiter, csrf, db
 from markupsafe import escape
 from werkzeug.security import check_password_hash
@@ -114,6 +119,16 @@ def login(lang_code):
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and bcrypt.check_password_hash(user.password_hash, form.password.data):
+            # Correct credentials, but the account may not be usable yet. Checked
+            # here rather than relying on login_user()'s silent False so the
+            # person is told which of the two situations they are in.
+            if not user.is_active:
+                if user.self_registered and not user.is_email_confirmed:
+                    flash(_l('Підтвердіть, будь ласка, свою email-адресу. '
+                             'Не отримали листа? Надішліть посилання ще раз.'), 'warning')
+                    return redirect(url_for('main.resend_confirmation', lang_code=g.lang_code))
+                flash(_l('Цей акаунт деактивовано. Зверніться до адміністратора.'), 'danger')
+                return render_template('login.html', title=_l('Увійти'), form=form)
             session.clear()
             login_user(user)
             next_page = request.args.get('next')
@@ -132,6 +147,140 @@ def login(lang_code):
             flash(_l('Неправильний логін або пароль. Спробуйте ще раз.'), 'danger')
 
     return render_template('login.html', title=_l('Увійти'), form=form)
+
+@bp.route('/<lang_code>/register', methods=['GET', 'POST'])
+@limiter.limit("5/hour;20/day", methods=["POST"])
+def register(lang_code):
+    """Public self-service registration.
+
+    Creates an INACTIVE account plus one pending verification request per module
+    the person picked, and emails a confirmation link. Nothing is granted here:
+    logging in needs the address confirmed, and verifying needs an
+    administrator's approval (see app/utils/registration.py for the split).
+    """
+    if lang_code not in current_app.config['LANGUAGES']:
+        return redirect(url_for('main.root'))
+    if current_user.is_authenticated:
+        return redirect(url_for('main.profile', lang_code=g.lang_code))
+
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        username = form.username.data.strip()
+        email = form.email.data.strip().lower()
+
+        # Uniqueness is enforced in the DB too (unique index on user.email); this
+        # check exists to produce a field-level message instead of a 500.
+        if reg.username_taken(username):
+            form.username.errors.append(_l('Це імʼя користувача вже зайняте.'))
+        if reg.email_taken(email):
+            form.email.errors.append(_l('Ця email-адреса вже зареєстрована.'))
+
+        if not form.username.errors and not form.email.errors:
+            try:
+                user = reg.create_self_registered_user(
+                    username=username,
+                    email=email,
+                    password=form.password.data,
+                    first_name=form.first_name.data.strip(),
+                    last_name=form.last_name.data.strip(),
+                    modules=form.selected_modules,
+                    locale=lang_code,
+                )
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                current_app.logger.error(f"Registration failed for {email!r}: {e}")
+                flash(_l('Не вдалося створити акаунт. Спробуйте пізніше.'), 'danger')
+                return render_template('register.html', form=form)
+
+            current_app.logger.info(
+                "Self-registration: user_id=%s username=%r modules=%s from %s",
+                user.id, user.username, form.selected_modules, request.remote_addr)
+            send_confirmation_email(user, generate_email_token(user.email))
+
+            flash(_l('Акаунт створено. Ми надіслали лист із посиланням для '
+                     'підтвердження — перейдіть за ним, щоб активувати вхід.'), 'success')
+            return redirect(url_for('main.login', lang_code=lang_code))
+
+    return render_template('register.html', form=form)
+
+
+@bp.route('/<lang_code>/confirm/<token>')
+@limiter.limit("20/hour")
+def confirm_email(lang_code, token):
+    """Activate the account whose address this signed token proves.
+
+    Idempotent by design: a second click says "already confirmed" instead of
+    failing, because mail clients pre-fetch links.
+    """
+    if lang_code not in current_app.config['LANGUAGES']:
+        return redirect(url_for('main.root'))
+
+    email = verify_email_token(token)
+    if not email:
+        flash(_l('Посилання недійсне або прострочене. Запросіть новий лист.'), 'danger')
+        return redirect(url_for('main.resend_confirmation', lang_code=lang_code))
+
+    user = User.query.filter(db.func.lower(User.email) == email.lower()).first()
+    if user is None:
+        # Address confirmed but the account is gone (purged as unconfirmed, or
+        # deleted). Nothing to activate; do not hint at whether it ever existed.
+        flash(_l('Посилання недійсне або прострочене. Запросіть новий лист.'), 'danger')
+        return redirect(url_for('main.resend_confirmation', lang_code=lang_code))
+
+    if not reg.confirm_email(user):
+        flash(_l('Ця адреса вже підтверджена — можете входити.'), 'info')
+        return redirect(url_for('main.login', lang_code=lang_code))
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Email confirmation failed for user {user.id}: {e}")
+        flash(_l('Сталася помилка. Спробуйте пізніше.'), 'danger')
+        return redirect(url_for('main.login', lang_code=lang_code))
+
+    current_app.logger.info("Email confirmed: user_id=%s", user.id)
+
+    # The admin is notified only now — unconfirmed signups never reach the inbox.
+    pending = [r.module for r in user.verification_requests
+               if r.status == VerificationRequest.STATUS_PENDING]
+    if pending:
+        notify_admin_new_requests(user, pending)
+
+    flash(_l('Адресу підтверджено. Тепер можете увійти. Запит на права '
+             'верифікації надіслано адміністратору.'), 'success')
+    return redirect(url_for('main.login', lang_code=lang_code))
+
+
+@bp.route('/<lang_code>/resend-confirmation', methods=['GET', 'POST'])
+@limiter.limit("3/hour;10/day", methods=["POST"])
+def resend_confirmation(lang_code):
+    """Re-send a confirmation link.
+
+    Always reports success: telling the visitor whether an address is registered
+    (or already confirmed) would turn this into an account-enumeration oracle.
+    """
+    if lang_code not in current_app.config['LANGUAGES']:
+        return redirect(url_for('main.root'))
+
+    form = ResendConfirmationForm()
+    if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+        user = User.query.filter(db.func.lower(User.email) == email).first()
+        if user is not None and user.self_registered and not user.is_email_confirmed:
+            send_confirmation_email(user, generate_email_token(user.email))
+            current_app.logger.info("Confirmation email re-sent: user_id=%s", user.id)
+        else:
+            current_app.logger.info(
+                "Resend-confirmation requested for a non-eligible address from %s",
+                request.remote_addr)
+        flash(_l('Якщо ця адреса очікує підтвердження, ми надіслали лист ще раз.'),
+              'info')
+        return redirect(url_for('main.login', lang_code=lang_code))
+
+    return render_template('resend_confirmation.html', form=form)
+
 
 @bp.route('/<lang_code>/logout')
 @login_required
@@ -200,7 +349,10 @@ def profile(lang_code):
     return render_template('profile.html', lang_code=lang_code,
                            password_form=password_form,
                            username_form=username_form,
-                           ct_stats=ct_stats, pam_stats=pam_stats)
+                           ct_stats=ct_stats, pam_stats=pam_stats,
+                           verification_requests=sorted(
+                               current_user.verification_requests,
+                               key=lambda r: r.module))
 
 
 @bp.route('/csp-report', methods=['POST'])

@@ -94,6 +94,7 @@
                             <a href="{{ url_for('main.profile', lang_code=g.lang_code or 'uk') }}" class="lang-link" style="margin-right: 10px;" title="{{ _('Мій профіль') }}">{{ current_user.username }}</a>
                             <a href="{{ url_for('main.logout', lang_code=g.lang_code or 'uk') }}" class="lang-link">{{ _('Вийти') }}</a>
                         {% else %}
+                            <a href="{{ url_for('main.register', lang_code=g.lang_code or 'uk') }}" class="lang-link" style="margin-right: 10px;">{{ _('Реєстрація') }}</a>
                             <a href="{{ url_for('main.login', lang_code=g.lang_code or 'uk', next=request.path) }}" class="lang-link">{{ _('Увійти') }}</a>
                         {% endif %}
                     </div>

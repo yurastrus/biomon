@@ -24,7 +24,12 @@ def _init_talisman(app):
                 'https://cdn.plot.ly',
                 'https://unpkg.com',
                 'https://cdnjs.cloudflare.com',
+                # reCAPTCHA v2 — contact form and registration form depend on it,
+                # so it must survive the day this policy stops being report-only.
+                'https://www.google.com',
+                'https://www.gstatic.com',
             ],
+            'frame-src': ["'self'", 'https://www.google.com'],
             'style-src': [
                 "'self'",
                 "'unsafe-inline'",

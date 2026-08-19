@@ -121,6 +121,17 @@ class Config:
     # Public site URL (used in email links)
     SITE_URL = os.environ.get('SITE_URL', 'http://localhost:5000')
 
+    # Where notifications about new registrations go (Telegram is used too).
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
+
+    # How long an email-confirmation link stays valid (seconds).
+    EMAIL_CONFIRM_TOKEN_MAX_AGE = int(os.environ.get('EMAIL_CONFIRM_TOKEN_MAX_AGE') or 86400)
+
+    # Self-registered accounts that never confirmed their address are deleted
+    # after this many days by `flask purge-unconfirmed`.
+    UNCONFIRMED_ACCOUNT_MAX_AGE_DAYS = int(
+        os.environ.get('UNCONFIRMED_ACCOUNT_MAX_AGE_DAYS') or 7)
+
     LANGUAGES = {'en': 'English', 'uk': 'Українська'}
     BABEL_DEFAULT_LOCALE = 'uk'
     BABEL_DEFAULT_TIMEZONE = 'Europe/Kiev'

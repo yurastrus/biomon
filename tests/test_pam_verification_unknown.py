@@ -98,7 +98,8 @@ def test_submit_denied_without_institution_access(auth_client):
 
 
 def test_next_segment_applies_access_baseline_for_non_admin(auth_client):
-    # Non-admin with no institutions → access baseline denies all ('FALSE').
+    # Non-admin with no institutions → access baseline narrows to public
+    # locations (it used to deny everything; see the dedicated test below).
     cl = auth_client(role='pam_verifier')
     conn = MagicMock()
     captured = {}
@@ -113,7 +114,7 @@ def test_next_segment_applies_access_baseline_for_non_admin(auth_client):
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         cl.get('/uk/api/verification/next-segment')
 
-    assert 'FALSE' in captured['sql']
+    assert 'l_pub.visibility_level = 0' in captured['sql']
 
 
 # ── next-segment: institution filter ────────────────────────────────────────────
@@ -201,22 +202,32 @@ def test_next_segment_access_baseline_scopes_verifier_to_own_institutions(
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         cl.get('/uk/api/verification/next-segment')
 
-    # The access clause is present and bound to this user's institutions only.
+    # The access clause is present and bound to this user's institutions only,
+    # OR-ed with the public-locations branch that every verifier gets.
     assert 'li_acc.institution_id' in captured['sql']
+    assert 'l_pub.visibility_level = 0' in captured['sql']
     assert captured['params']['access_inst_ids'] == [inst.id]
     # And no optional UI filter leaked in.
     assert 'institution_ids' not in captured['params']
 
 
-def test_next_segment_access_baseline_denies_verifier_without_institutions(
+def test_next_segment_access_baseline_gives_public_pool_without_institutions(
         auth_client):
-    """A verifier with no institution link must match nothing — fail closed."""
+    """A verifier with no institution link gets the PUBLIC pool — and only it.
+
+    Superseded the earlier "must match nothing (FALSE)" rule when self-service
+    registration landed: an approved self-registered verifier is deliberately
+    created with no institution, and public locations
+    (``locations.visibility_level = 0``) are exactly what their approval grants.
+    Institution-owned segments still require an institution link.
+    """
     cl = auth_client(role='pam_verifier', username='verifier_no_inst')
     conn = MagicMock()
     captured = {}
 
     def _ex(sql, params=None):
         captured['sql'] = str(sql)
+        captured['params'] = params or {}
         res = MagicMock()
         res.fetchone.return_value = None
         return res
@@ -225,8 +236,9 @@ def test_next_segment_access_baseline_denies_verifier_without_institutions(
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         cl.get('/uk/api/verification/next-segment')
 
-    assert 'FALSE' in captured['sql']
+    assert 'l_pub.visibility_level = 0' in captured['sql']
     assert 'li_acc.institution_id' not in captured['sql']
+    assert 'access_inst_ids' not in captured['params']
 
 
 # ── filter-options (mutual cascade) ─────────────────────────────────────────────

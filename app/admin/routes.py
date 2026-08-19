@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 from collections import OrderedDict
 
-from flask import render_template, g, request, redirect, url_for, flash
+from flask import render_template, g, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 
 from app.extensions import db
-from app.models import User, Institution, Role, ContactSubmission
+from app.models import (User, Institution, Role, ContactSubmission,
+                        VerificationRequest)
 from app.utils.decorators import role_required
 from app.admin.forms import UserCreateForm, UserEditForm, InstitutionForm, RoleForm
-from app.admin.services import UserService, InstitutionService, RoleService
+from app.admin.services import (UserService, InstitutionService, RoleService,
+                                VerificationRequestService)
+from app.utils.emails import send_decision_email
 from . import admin_bp
 
 
@@ -47,7 +50,9 @@ def _build_inst_groups(institutions, lang):
 @login_required
 @role_required('admin', 'manager')
 def home():
-    return render_template('admin_home.html')
+    pending_requests = (VerificationRequestService.pending_count()
+                        if VerificationRequestService.can_decide(current_user) else 0)
+    return render_template('admin_home.html', pending_requests=pending_requests)
 
 
 # ===========================================================================
@@ -417,3 +422,59 @@ def delete_submission(submission_id):
         db.session.rollback()
         flash(f'Помилка при видаленні: {str(e)}', 'danger')
     return redirect(url_for('admin.contact_submissions', lang_code=g.lang_code))
+
+
+# ===========================================================================
+# Verification requests (self-service registration)
+# ===========================================================================
+
+@admin_bp.route('/verification-requests')
+@login_required
+@role_required('admin')
+def verification_requests():
+    """Queue of self-registered users asking for verification rights."""
+    status = request.args.get('status', VerificationRequest.STATUS_PENDING)
+    if status == 'all':
+        status = None
+    requests_list = VerificationRequestService.list_requests(status=status)
+    return render_template('admin_verification_requests.html',
+                           requests=requests_list,
+                           active_status=status,
+                           pending_count=VerificationRequestService.pending_count())
+
+
+@admin_bp.route('/verification-requests/<int:request_id>/decide', methods=['POST'])
+@login_required
+@role_required('admin')
+def decide_verification_request(request_id):
+    """Approve or reject one request and email the applicant the outcome."""
+    req = VerificationRequest.query.get_or_404(request_id)
+
+    action = request.form.get('action')
+    if action not in ('approve', 'reject'):
+        flash(_('Невідома дія.'), 'danger')
+        return redirect(url_for('admin.verification_requests', lang_code=g.lang_code))
+
+    approve = (action == 'approve')
+    ok, error = VerificationRequestService.decide(
+        req, current_user, approve, note=request.form.get('note'))
+    if not ok:
+        flash(error, 'danger')
+        return redirect(url_for('admin.verification_requests', lang_code=g.lang_code))
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Помилка при збереженні: {e}', 'danger')
+        return redirect(url_for('admin.verification_requests', lang_code=g.lang_code))
+
+    current_app.logger.info(
+        "Verification request %s (%s) %s by user_id=%s",
+        req.id, req.module, 'approved' if approve else 'rejected', current_user.id)
+
+    if req.user.email:
+        send_decision_email(req.user, req.module, approve, note=req.note)
+
+    flash(_('Запит підтверджено.') if approve else _('Запит відхилено.'), 'success')
+    return redirect(url_for('admin.verification_requests', lang_code=g.lang_code))

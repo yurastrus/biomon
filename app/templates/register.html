@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Реєстрація') }}{% endblock %}
+
+{% block meta_description %}{{ _('Реєстрація на БіоМон: приєднайтеся до визначення тварин на фото з фотопасток та голосів на звукозаписах.') }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    .reg-form { max-width: 620px; margin: 0 auto; text-align: left; }
+    .reg-form .form-group { margin-bottom: 18px; }
+    .reg-form label { display: block; margin-bottom: 6px; font-weight: bold; }
+    .reg-form input[type="text"],
+    .reg-form input[type="email"],
+    .reg-form input[type="password"] {
+        width: 100%; padding: 10px; box-sizing: border-box;
+        border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;
+    }
+    .reg-form .field-error { color: #dc3545; font-size: 0.9em; margin-top: 4px; }
+    .reg-form .field-hint { color: #666; font-size: 0.85em; margin-top: 4px; }
+    .reg-form fieldset {
+        border: 1px solid #e0e0e0; border-radius: 4px; padding: 15px 18px; margin-bottom: 18px;
+    }
+    .reg-form legend { font-weight: bold; padding: 0 6px; font-size: 0.95em; }
+    .reg-form .check-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+    .reg-form .check-row label { font-weight: normal; margin: 0; }
+    .reg-form .check-row input[type="checkbox"] { margin-top: 3px; }
+    /* Honeypot: kept in the DOM for bots, out of reach for people and screen readers. */
+    .reg-form .hp-field { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
+    .captcha-container { display: flex; justify-content: center; margin: 20px 0; }
+    .captcha-container > div { max-width: 100%; overflow: hidden; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 0;">
+    <h1 style="text-align: center;">{{ _('Реєстрація') }}</h1>
+    <p style="text-align: center; max-width: 620px; margin: 0 auto 30px;">
+        {{ _('Створіть акаунт, щоб допомагати визначати тварин. Після реєстрації підтвердіть email-адресу, а права на верифікацію надасть адміністратор.') }}
+    </p>
+
+    <form method="POST" action="{{ url_for('main.register', lang_code=g.lang_code) }}"
+          class="reg-form" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.first_name.label }}
+            {{ form.first_name() }}
+            {% for error in form.first_name.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.last_name.label }}
+            {{ form.last_name() }}
+            {% for error in form.last_name.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.email.label }}
+            {{ form.email(type="email") }}
+            <div class="field-hint">{{ _('На цю адресу надійде лист із посиланням для підтвердження.') }}</div>
+            {% for error in form.email.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username() }}
+            <div class="field-hint">{{ _('3–20 символів: латинські літери, цифри, «_», «.», «-».') }}</div>
+            {% for error in form.username.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password() }}
+            <div class="field-hint">{{ _('Мінімум 8 символів, літери та цифри.') }}</div>
+            {% for error in form.password.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.confirm_password.label }}
+            {{ form.confirm_password() }}
+            {% for error in form.confirm_password.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <fieldset>
+            <legend>{{ _('Що ви хочете робити?') }}</legend>
+            <div class="check-row">
+                {{ form.wants_ct() }} {{ form.wants_ct.label }}
+            </div>
+            <div class="check-row">
+                {{ form.wants_pam() }} {{ form.wants_pam.label }}
+            </div>
+            {% for error in form.wants_pam.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+            <div class="field-hint">
+                {{ _('Спочатку вам будуть доступні лише публічні локації. Доступ до інших територій надають окремо їхні установи.') }}
+            </div>
+        </fieldset>
+
+        <div class="check-row">
+            {{ form.consent() }} {{ form.consent.label }}
+        </div>
+        {% for error in form.consent.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+
+        <div class="hp-field" aria-hidden="true">
+            {{ form.website.label }}
+            {{ form.website(tabindex="-1", autocomplete="off") }}
+        </div>
+
+        {% if form.recaptcha %}
+        <div class="captcha-container">
+            {{ form.recaptcha() }}
+            {% for error in form.recaptcha.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-group" style="text-align: center;">
+            {{ form.submit(class="button") }}
+        </div>
+    </form>
+
+    <p style="text-align: center; margin-top: 20px;">
+        {{ _('Уже маєте акаунт?') }}
+        <a href="{{ url_for('main.login', lang_code=g.lang_code) }}">{{ _('Увійти') }}</a>
+    </p>
+</div>
+{% endblock %}
