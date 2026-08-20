@@ -3,6 +3,35 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-08-20 — AI prediction badge on /camera-traps/identify
+
+### Request
+Three tweaks to the AI badge above the species list: drop the robot pictogram,
+show the species in the interface language instead of the raw model label
+(`bear`) and with no Latin name, and put confidence and individual count on one
+line separated by a semicolon.
+
+### Changes
+- `ai_runner.get_observation_ai_prediction()` now takes `lang_code` and, when the
+  prediction is mapped to a `species` row, returns `common_name_ua` /
+  `common_name_en` (by locale) as `species_label`. Scientific name is used only
+  as a last resort if both common names are empty; the raw model label stays the
+  fallback for predictions with no `prediction_species_id`. Deliberately unlike
+  `get_species_with_ai_predictions()`, which appends `(Scientific name)` — the
+  badge was asked to carry no Latin.
+- Both callers in `routes.py` (`/identify` page load and the next-observation
+  JSON) pass `lang_code=g.lang_code`.
+- `identification.html`: removed the `.ai-pred-icon` span; the badge text is now
+  two block spans — `.ai-pred-species` ("AI пропонує: <name>") and
+  `.ai-pred-meta` ("впевненість: 99%; особин: 1"). Still built with jQuery
+  `.text()`, so the species name cannot inject markup.
+- `camera_traps.css`: dropped the now-unused `.ai-pred-icon` rule, added the
+  block display for the two spans, `flex: 1 1 auto` on `.ai-pred-text` so it
+  fills the badge now that nothing sits beside it.
+
+No new translatable strings — "AI пропонує" / "впевненість" / "особин" already
+exist in the uk and en catalogues, so no `.po` regeneration was needed.
+
 ## 2026-08-19 — Ecoregion editable in the institutions admin
 
 ### Request
