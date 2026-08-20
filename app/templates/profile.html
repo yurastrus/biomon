@@ -58,6 +58,15 @@
     .profile-page .top-species .sp-count { color: #888; font-size: .9em; }
 
     .profile-page .info-message { text-align: left; }
+
+    /* Notification opt-outs */
+    .profile-page .notify-row { margin-bottom: 14px; }
+    .profile-page .notify-label {
+        display: flex; align-items: flex-start; gap: 9px; margin: 0;
+        font-weight: 500; cursor: pointer;
+    }
+    .profile-page .notify-label input { margin-top: 3px; flex: 0 0 auto; }
+    .profile-page .notify-hint { margin: 4px 0 0 26px; }
 </style>
 {% endblock %}
 
@@ -120,6 +129,35 @@
             </form>
         </section>
 
+    </div>
+
+    <div style="margin-bottom: 25px;">
+        <section class="dashboard-section">
+            <h2 class="section-title">{{ _('Сповіщення') }}</h2>
+            <p class="form-hint" style="margin: 0 0 14px;">
+                {{ _('Листи надходять на вашу email-адресу. Зніміть галочку, щоб більше їх не отримувати — на доступ до системи це не впливає.') }}
+            </p>
+            <form method="POST" action="{{ url_for('main.profile', lang_code=lang_code) }}">
+                {{ notifications_form.hidden_tag() }}
+                {% for pref in notification_prefs %}
+                <div class="notify-row">
+                    <label class="notify-label">
+                        <input type="checkbox"
+                               name="{{ notification_field_prefix }}{{ pref.key }}"
+                               {% if current_user|attr(pref.column) %}checked{% endif %}>
+                        <span>{{ pref.label }}</span>
+                    </label>
+                    <small class="form-hint notify-hint">{{ pref.hint }}</small>
+                </div>
+                {% endfor %}
+                {% if not current_user.email %}
+                <p class="form-hint" style="margin: 0 0 12px;">
+                    {{ _('У вашому профілі не вказано email, тож листи й так не надходять. Адресу додає адміністратор.') }}
+                </p>
+                {% endif %}
+                {{ notifications_form.submit_notifications(class="btn") }}
+            </form>
+        </section>
     </div>
 
     {% if verification_requests %}

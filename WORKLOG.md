@@ -3,6 +3,100 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-08-20 — Opt-out for the weekly identification reminder
+
+### Request
+`flask send-id-reminders` (cron, Mondays 09:00) mails every `ct_verifier` with an
+email address and 10+ pending series. There was no way to stop receiving it short
+of an admin deleting the address. Wanted: a checkbox in the personal profile,
+on by default, editable by the account owner and by an admin only; the mail
+itself should explain where the checkbox is; and the design should anticipate a
+future PAM notification that does not exist yet.
+
+### Mechanism as found
+`app/commands.py` → `flask send-id-reminders` → `app.camera_traps.notifications.
+send_identification_reminders()`. It walks the `ct_verifier` role, counts pending
+series per user with the same logic as `/api/identification-stats`, and sends to
+anyone at 10 or more. No preference storage of any kind; cron is on the server
+(`0 9 * * 1`, logged to `/var/log/biomon_reminders.log`), not in this repo.
+
+### Design
+**A registry, not a bare column check.** `app/utils/notification_prefs.py` holds
+`NOTIFICATION_PREFS` — key, `User` column, label, hint — and the profile page,
+the admin user form and both POST handlers iterate it. Adding the PAM digest is
+then a migration plus one tuple, with no template or route edits. The module
+docstring spells out the three steps.
+
+**Only CT is listed.** A checkbox that unsubscribes from something nobody sends
+is worse than no checkbox, so the PAM entry is a comment, not a disabled row.
+The column for it lands with the digest.
+
+**Opt-OUT, not opt-in.** `notify_ct_pending` is `default=True` /
+`server_default=true` (migration `e5c31b8a7d94`), so the migration cannot
+silently unsubscribe the existing verifiers.
+
+**Absence means off.** An unchecked HTML checkbox sends nothing, so
+`apply_form()` reads absence as False. That is only safe where the whole section
+is rendered — hence the manager case below.
+
+### Permissions
+The owner edits their own on `/uk/profile`. `/uk/admin/users/edit/<id>` is open
+to admin **and** manager, but the request was admin-only, so the block is gated
+on `current_user.has_role('admin')` in both the route and the template. A
+manager's POST carries no `notify_*` fields, and had the route applied the form
+unconditionally that absence would have unsubscribed the user on every unrelated
+edit — so the route skips `apply_form()` entirely for them. There is a test for
+exactly that.
+
+### The email
+No one-click unsubscribe link: that needs a signed token and a public route, and
+the letter goes to a handful of verifiers. Instead the body now spells out the
+three clicks (log in → Мій профіль → «Сповіщення» → зняти галочку → зберегти),
+links `/uk/profile`, and says the opt-out does not touch access or rights. The
+letter stays Ukrainian-only, as it already was — localising it by `user.locale`
+is a separate job and was not part of this request.
+
+Opted-out users are filtered out *before* the pending-series count, so an
+unsubscribe holds no matter how large the backlog is; the count is the expensive
+part anyway.
+
+### shared-ct coupling
+`notifications.py` lives in the shared-ct submodule, which other host apps may
+use. The import of the registry is soft — `try/except ImportError` with a
+`getattr(user, 'notify_<key>', True)` fallback — so a host without the registry
+keeps working and treats "no preference" as subscribed.
+
+### Verification
+`tests/test_notification_prefs.py` (11 tests): default is on; the registry keys
+map to real columns; the profile round-trips both directions; an unrelated
+username change does not unsubscribe; admin sees and can clear the box; manager
+sees nothing and their POST is a no-op; the sender skips opted-out users without
+even counting their series; a subscribed user still gets the mail; the body names
+the profile URL, the section and the checkbox. Full suite: 1538 passed, 36
+skipped. Migration applied to a copy of `app.db` — column lands as
+`BOOLEAN DEFAULT 1 NOT NULL`.
+
+### Migration applied to production ahead of the code (2026-08-20)
+`DATABASE_URL` in `.env` reaches the production Postgres through the SSH tunnel
+on `localhost:5433` — worth knowing before running anything from a workstation.
+Production was at `d41a7c9e5b02`, exactly this migration's `down_revision`, so
+`flask db upgrade` ran a single step. Offline preview (`--sql`) confirmed one
+statement, `ALTER TABLE "user" ADD COLUMN notify_ct_pending BOOLEAN DEFAULT true
+NOT NULL` — additive, no data rewrite, and the deployed code never references the
+column, so the schema stayed compatible with the running build. After: 67 users,
+all 67 subscribed, none opted out. Log in `logs/db_upgrade_notification_prefs_20260820.log`.
+
+Generating that preview exposed a defect in the migration: the
+already-applied guard called `sa.inspect(op.get_bind())`, which has no live
+connection in offline mode and raised `NoInspectionAvailable`. Guarded with
+`context.is_offline_mode()` — offline runs now just emit the ADD COLUMN.
+
+Nine new UI strings extracted and translated into English; `pybabel update`
+fuzzy-matched three of them onto unrelated entries ("Сповіщення" → "Message",
+"Зберегти налаштування сповіщень" → "Role settings"), which were corrected by
+hand. `.mo` files recompiled — `update.sh` does not run `pybabel compile`, so
+they must be committed.
+
 ## 2026-08-20 — AI prediction badge on /camera-traps/identify
 
 ### Request

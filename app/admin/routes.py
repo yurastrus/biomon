@@ -13,6 +13,7 @@ from app.admin.forms import UserCreateForm, UserEditForm, InstitutionForm, RoleF
 from app.admin.services import (UserService, InstitutionService, RoleService,
                                 VerificationRequestService)
 from app.utils.emails import send_decision_email
+from app.utils import notification_prefs as notif_prefs
 from . import admin_bp
 
 
@@ -126,6 +127,9 @@ def add_user():
                            selected_inst_ids=selected_inst_ids,
                            selected_export_ids=selected_export_ids,
                            selected_role_ids=selected_role_ids,
+                           notification_prefs=notif_prefs.NOTIFICATION_PREFS,
+                           notification_field_prefix=notif_prefs.FIELD_PREFIX,
+                           can_edit_notifications=False,
                            title=_('Додати користувача'))
 
 
@@ -144,6 +148,10 @@ def edit_user(user_id):
     available_roles        = UserService.get_available_roles(current_user)
 
     form = UserEditForm(user_id=user.id)
+
+    # Only the account owner (on their own profile page) and an admin may edit
+    # the notification opt-outs — a manager can edit everything else here.
+    can_edit_notifications = current_user.has_role('admin')
 
     # On POST preserve what was submitted; on GET seed from the saved user data.
     if request.method == 'POST':
@@ -170,6 +178,15 @@ def edit_user(user_id):
                 can_export_ids=selected_export_ids,
                 selected_role_ids=list(selected_role_ids),
             )
+            # Notification opt-outs belong to the person; only they and an admin
+            # may flip them, so a manager's POST never touches these columns
+            # (the section is not rendered for them either).
+            if can_edit_notifications:
+                changed = notif_prefs.apply_form(user, request.form)
+                if changed:
+                    current_app.logger.info(
+                        f"Notification prefs for user_id={user.id} changed by "
+                        f"admin user_id={current_user.id}: {', '.join(changed)}")
             db.session.commit()
             flash(f'Дані користувача {user.username} успішно оновлено!', 'success')
             return redirect(url_for('admin.user_list', lang_code=g.lang_code))
@@ -192,6 +209,9 @@ def edit_user(user_id):
                            selected_inst_ids=selected_inst_ids,
                            selected_export_ids=selected_export_ids,
                            selected_role_ids=selected_role_ids,
+                           notification_prefs=notif_prefs.NOTIFICATION_PREFS,
+                           notification_field_prefix=notif_prefs.FIELD_PREFIX,
+                           can_edit_notifications=can_edit_notifications,
                            title=_('Редагувати користувача'))
 
 

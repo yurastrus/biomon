@@ -94,6 +94,34 @@
                     </div>
                 </div>
 
+                {% if user and can_edit_notifications %}
+                {# Opt-outs are the person's own setting; only an admin may change
+                   them from here, so the whole block is hidden from managers and
+                   their POST therefore never carries the fields. #}
+                <div class="stat-card" style="text-align: left; grid-column: 1 / -1;">
+                    <h5 style="color: #0779e4; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _('Сповіщення') }}</h5>
+                    <small style="color: #666; display: block; margin-bottom: 12px;">
+                        {{ _('Користувач може змінити це сам у своєму профілі. Знята галочка — листи не надсилаються.') }}
+                    </small>
+                    {% for pref in notification_prefs %}
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: flex-start; gap: 9px; margin: 0; font-weight: 500; cursor: pointer;">
+                            <input type="checkbox" style="margin-top: 3px;"
+                                   name="{{ notification_field_prefix }}{{ pref.key }}"
+                                   {% if user|attr(pref.column) %}checked{% endif %}>
+                            <span>{{ pref.label }}</span>
+                        </label>
+                        <small style="color: #666; display: block; margin: 4px 0 0 26px;">{{ pref.hint }}</small>
+                    </div>
+                    {% endfor %}
+                    {% if not user.email %}
+                    <small style="color: #666; display: block;">
+                        {{ _('У цього користувача не вказано email — листи не надсилаються незалежно від галочок.') }}
+                    </small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
                 <div class="stat-card" style="text-align: left; grid-column: 1 / -1;">
                     <h5 style="color: #28a745; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _("Прив'язка до установ") }}</h5>
                     <small style="color: #666; display: block; margin-bottom: 12px;">

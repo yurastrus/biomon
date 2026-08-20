@@ -50,6 +50,17 @@ class ChangeUsernameForm(FlaskForm):
                                validators=[DataRequired(), Length(min=3, max=20)])
     submit_username = SubmitField(_l('Змінити логін'))
 
+class NotificationPrefsForm(FlaskForm):
+    """Email notification opt-outs.
+
+    Carries only CSRF and the submit button: the checkboxes themselves are
+    generated from app.utils.notifications.NOTIFICATION_PREFS in the template
+    and read back with request.form, so a new notification type needs no change
+    here. Same pattern as the admin institution/role checkbox lists.
+    """
+    submit_notifications = SubmitField(_l('Зберегти налаштування сповіщень'))
+
+
 class RegistrationForm(FlaskForm):
     """Public self-service registration.
 

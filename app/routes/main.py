@@ -5,12 +5,13 @@ from flask import render_template, session, redirect, url_for, current_app, requ
 from flask_login import login_required, current_user, login_user, logout_user
 from app.utils.forms import (LoginForm, ContactForm, ChangePasswordForm,
                             ChangeUsernameForm, RegistrationForm,
-                            ResendConfirmationForm)
+                            ResendConfirmationForm, NotificationPrefsForm)
 from app.utils.utils import is_safe_url
 from flask_babel import lazy_gettext as _l
 from app.routes import bp
 from app.models import User, SiteTextContent, ContactSubmission, VerificationRequest
 from app.utils.notifications import send_telegram_notification
+from app.utils import notification_prefs as notif_prefs
 from app.utils import registration as reg
 from app.utils.emails import (send_confirmation_email, notify_admin_new_requests)
 from app.utils.tokens import generate_email_token, verify_email_token
@@ -299,6 +300,7 @@ def profile(lang_code):
 
     password_form = ChangePasswordForm()
     username_form = ChangeUsernameForm()
+    notifications_form = NotificationPrefsForm()
 
     # Password change
     if password_form.submit_password.data and password_form.validate_on_submit():
@@ -330,6 +332,19 @@ def profile(lang_code):
             flash(_l('Логін успішно змінено.'), 'success')
             return redirect(url_for('main.profile', lang_code=lang_code))
 
+    # Email notification opt-outs. Everyone may edit their own; admins edit
+    # other people's from the admin user form.
+    if (notifications_form.submit_notifications.data
+            and notifications_form.validate_on_submit()):
+        changed = notif_prefs.apply_form(current_user, request.form)
+        db.session.commit()
+        if changed:
+            current_app.logger.info(
+                f"Notification prefs changed by user_id={current_user.id}: "
+                f"{', '.join(changed)}")
+        flash(_l('Налаштування сповіщень збережено.'), 'success')
+        return redirect(url_for('main.profile', lang_code=lang_code))
+
     # Stats — read-only; module errors must not break the page
     ct_stats = pam_stats = None
     try:
@@ -349,6 +364,9 @@ def profile(lang_code):
     return render_template('profile.html', lang_code=lang_code,
                            password_form=password_form,
                            username_form=username_form,
+                           notifications_form=notifications_form,
+                           notification_prefs=notif_prefs.NOTIFICATION_PREFS,
+                           notification_field_prefix=notif_prefs.FIELD_PREFIX,
                            ct_stats=ct_stats, pam_stats=pam_stats,
                            verification_requests=sorted(
                                current_user.verification_requests,

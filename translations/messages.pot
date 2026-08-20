@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-25 17:21+0300\n"
+"POT-Creation-Date: 2026-08-20 14:05+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app/admin/forms.py:25 app/utils/forms.py:35
+#: app/admin/forms.py:25 app/utils/forms.py:19
 msgid "Пароль має містити і літери, і цифри."
 msgstr ""
 
@@ -27,12 +27,13 @@ msgid "Логін"
 msgstr ""
 
 #: app/admin/forms.py:32 app/templates/admin/admin_user_form.html:40
-#: app/utils/forms.py:14
+#: app/utils/forms.py:24 app/utils/forms.py:80
 msgid "Пароль"
 msgstr ""
 
 #: app/admin/forms.py:33 app/admin/forms.py:52
-#: app/templates/admin/admin_user_form.html:65
+#: app/templates/admin/admin_user_form.html:65 app/utils/forms.py:77
+#: app/utils/forms.py:121
 msgid "Email"
 msgstr ""
 
@@ -42,12 +43,12 @@ msgid "Телефон"
 msgstr ""
 
 #: app/admin/forms.py:35 app/admin/forms.py:54
-#: app/templates/admin/admin_user_form.html:81
+#: app/templates/admin/admin_user_form.html:81 app/utils/forms.py:78
 msgid "Ім'я"
 msgstr ""
 
 #: app/admin/forms.py:36 app/admin/forms.py:55
-#: app/templates/admin/admin_user_form.html:87
+#: app/templates/admin/admin_user_form.html:87 app/utils/forms.py:79
 msgid "Прізвище"
 msgstr ""
 
@@ -55,100 +56,175 @@ msgstr ""
 msgid "Користувач з таким іменем вже існує."
 msgstr ""
 
-#: app/admin/forms.py:51 app/utils/forms.py:30
+#: app/admin/forms.py:51 app/utils/forms.py:39
 msgid "Новий пароль"
 msgstr ""
 
-#: app/admin/forms.py:70 app/templates/admin/admin_institutions_list.html:23
+#: app/admin/forms.py:77 app/templates/admin/admin_institutions_list.html:23
 msgid "Назва (Українською)"
 msgstr ""
 
-#: app/admin/forms.py:71 app/templates/admin/admin_institutions_list.html:24
+#: app/admin/forms.py:78 app/templates/admin/admin_institutions_list.html:24
 msgid "Назва (Англійською)"
 msgstr ""
 
-#: app/admin/forms.py:72
+#: app/admin/forms.py:79
 msgid "Унікальний код"
 msgstr ""
 
-#: app/admin/forms.py:77
+#: app/admin/forms.py:80
+msgid "Природний регіон (Українською)"
+msgstr ""
+
+#: app/admin/forms.py:82
+msgid "Природний регіон (Англійською)"
+msgstr ""
+
+#: app/admin/forms.py:88
 msgid "Системна назва"
 msgstr ""
 
-#: app/admin/forms.py:78
+#: app/admin/forms.py:89
 msgid "Призначається"
 msgstr ""
 
-#: app/admin/routes.py:124 app/templates/admin/admin_users_list.html:15
+#: app/admin/routes.py:133 app/templates/admin/admin_users_list.html:15
 msgid "Додати користувача"
 msgstr ""
 
-#: app/admin/routes.py:190
+#: app/admin/routes.py:215
 msgid "Редагувати користувача"
 msgstr ""
 
-#: app/admin/routes.py:234
+#: app/admin/routes.py:259
 msgid "Редагувати установу"
 msgstr ""
 
-#: app/admin/routes.py:234 app/templates/admin/admin_institutions_list.html:15
+#: app/admin/routes.py:259 app/templates/admin/admin_institutions_list.html:15
 msgid "Додати установу"
 msgstr ""
 
-#: app/admin/routes.py:301
+#: app/admin/routes.py:338
 msgid "Редагувати роль"
 msgstr ""
 
-#: app/admin/routes.py:301 app/templates/admin/admin_roles_list.html:15
+#: app/admin/routes.py:338 app/templates/admin/admin_roles_list.html:15
 msgid "Додати роль"
 msgstr ""
 
-#: app/admin/routes.py:395
+#: app/admin/routes.py:432
 msgid "Невідомий статус."
 msgstr ""
 
-#: app/admin/routes.py:400
+#: app/admin/routes.py:437
 msgid "Статус оновлено."
 msgstr ""
 
-#: app/admin/routes.py:415
+#: app/admin/routes.py:452
 msgid "Звернення видалено."
 msgstr ""
 
-#: app/routes/main.py:74
+#: app/admin/routes.py:487
+msgid "Невідома дія."
+msgstr ""
+
+#: app/admin/routes.py:511
+msgid "Запит підтверджено."
+msgstr ""
+
+#: app/admin/routes.py:511
+msgid "Запит відхилено."
+msgstr ""
+
+#: app/routes/main.py:94
 msgid "Сталася помилка при відправці. Спробуйте пізніше."
 msgstr ""
 
-#: app/routes/main.py:87
+#: app/routes/main.py:107
 msgid "Ваше повідомлення надіслано! Ми звʼяжемося з вами найближчим часом."
 msgstr ""
 
-#: app/routes/main.py:114
-msgid "Неправильний логін або пароль. Спробуйте ще раз."
+#: app/routes/main.py:128
+msgid ""
+"Підтвердіть, будь ласка, свою email-адресу. Не отримали листа? Надішліть "
+"посилання ще раз."
 msgstr ""
 
-#: app/routes/main.py:116 app/templates/base.html:90 app/templates/login.html:2
+#: app/routes/main.py:131
+msgid "Цей акаунт деактивовано. Зверніться до адміністратора."
+msgstr ""
+
+#: app/routes/main.py:132 app/routes/main.py:150 app/templates/base.html:98
+#: app/templates/login.html:2 app/templates/register.html:121
 msgid "Увійти"
 msgstr ""
 
-#: app/routes/main.py:140
+#: app/routes/main.py:148
+msgid "Неправильний логін або пароль. Спробуйте ще раз."
+msgstr ""
+
+#: app/routes/main.py:175
+msgid "Це імʼя користувача вже зайняте."
+msgstr ""
+
+#: app/routes/main.py:177
+msgid "Ця email-адреса вже зареєстрована."
+msgstr ""
+
+#: app/routes/main.py:194
+msgid "Не вдалося створити акаунт. Спробуйте пізніше."
+msgstr ""
+
+#: app/routes/main.py:202
+msgid ""
+"Акаунт створено. Ми надіслали лист із посиланням для підтвердження — "
+"перейдіть за ним, щоб активувати вхід."
+msgstr ""
+
+#: app/routes/main.py:222 app/routes/main.py:229
+msgid "Посилання недійсне або прострочене. Запросіть новий лист."
+msgstr ""
+
+#: app/routes/main.py:233
+msgid "Ця адреса вже підтверджена — можете входити."
+msgstr ""
+
+#: app/routes/main.py:241
+msgid "Сталася помилка. Спробуйте пізніше."
+msgstr ""
+
+#: app/routes/main.py:252
+msgid ""
+"Адресу підтверджено. Тепер можете увійти. Запит на права верифікації "
+"надіслано адміністратору."
+msgstr ""
+
+#: app/routes/main.py:279
+msgid "Якщо ця адреса очікує підтвердження, ми надіслали лист ще раз."
+msgstr ""
+
+#: app/routes/main.py:309
 msgid "Поточний пароль невірний."
 msgstr ""
 
-#: app/routes/main.py:146
+#: app/routes/main.py:315
 msgid "Пароль успішно змінено."
 msgstr ""
 
-#: app/routes/main.py:153
+#: app/routes/main.py:322
 msgid "Це ваш поточний логін."
 msgstr ""
 
-#: app/routes/main.py:156
+#: app/routes/main.py:325
 msgid "Цей логін уже зайнятий."
 msgstr ""
 
-#: app/routes/main.py:163
+#: app/routes/main.py:332
 msgid "Логін успішно змінено."
+msgstr ""
+
+#: app/routes/main.py:345
+msgid "Налаштування сповіщень збережено."
 msgstr ""
 
 #: app/templates/about.html:7
@@ -179,44 +255,53 @@ msgstr ""
 msgid "БіоМон"
 msgstr ""
 
-#: app/templates/base.html:71
-msgid "ГОЛОВНА"
-msgstr ""
-
-#: app/templates/base.html:72
-msgid "ПАМ"
-msgstr ""
-
-#: app/templates/base.html:73
-msgid "ФОТОПАСТКИ"
-msgstr ""
-
-#: app/templates/base.html:74
-msgid "ПРО ПРОЕКТ"
-msgstr ""
-
-#: app/templates/base.html:76
-msgid "SDM"
+#: app/templates/base.html:69
+msgid "Меню"
 msgstr ""
 
 #: app/templates/base.html:78
-msgid "КОНТАКТИ"
+msgid "ГОЛОВНА"
+msgstr ""
+
+#: app/templates/base.html:79
+msgid "ПАМ"
 msgstr ""
 
 #: app/templates/base.html:80
+msgid "ФОТОПАСТКИ"
+msgstr ""
+
+#: app/templates/base.html:81
+msgid "ПРО ПРОЕКТ"
+msgstr ""
+
+#: app/templates/base.html:83
+msgid "SDM"
+msgstr ""
+
+#: app/templates/base.html:85
+msgid "КОНТАКТИ"
+msgstr ""
+
+#: app/templates/base.html:87
 msgid "АДМІН"
 msgstr ""
 
-#: app/templates/base.html:87 app/templates/profile.html:2
-#: app/templates/profile.html:69
+#: app/templates/base.html:94 app/templates/profile.html:2
+#: app/templates/profile.html:78
 msgid "Мій профіль"
 msgstr ""
 
-#: app/templates/base.html:88
+#: app/templates/base.html:95
 msgid "Вийти"
 msgstr ""
 
-#: app/templates/base.html:128
+#: app/templates/base.html:97 app/templates/register.html:2
+#: app/templates/register.html:35
+msgid "Реєстрація"
+msgstr ""
+
+#: app/templates/base.html:137
 msgid "Проект БіоМон, ©"
 msgstr ""
 
@@ -243,72 +328,186 @@ msgid ""
 "платформі."
 msgstr ""
 
-#: app/templates/login.html:9 app/utils/forms.py:15
+#: app/templates/login.html:9 app/utils/forms.py:25
 msgid "Увійти в систему"
 msgstr ""
 
 #: app/templates/login.html:12
-msgid ""
-"Вхід лише за запрошенням. Самостійна реєстрація на сайті відсутня. Для "
-"отримання доступу, \n"
-"    будь ласка,"
+msgid "Немаєте акаунта?"
 msgstr ""
 
 #: app/templates/login.html:13
-msgid "зв`яжіться з автором"
+msgid "Зареєструйтеся"
 msgstr ""
 
-#: app/templates/profile.html:76
+#: app/templates/login.html:14
+msgid "— щоб допомагати визначати тварин на фото та звукозаписах."
+msgstr ""
+
+#: app/templates/login.html:33
+msgid "Не надійшов лист із підтвердженням?"
+msgstr ""
+
+#: app/templates/profile.html:85
 msgid "Обліковий запис"
 msgstr ""
 
-#: app/templates/profile.html:77
+#: app/templates/profile.html:86
 msgid "Поточний логін"
 msgstr ""
 
-#: app/templates/profile.html:92
+#: app/templates/profile.html:101
 msgid "Зміна пароля"
 msgstr ""
 
-#: app/templates/profile.html:117
+#: app/templates/profile.html:126
 #, python-format
 msgid "Мінімум %(n)d символів; потрібні і літери, і цифри."
 msgstr ""
 
-#: app/templates/profile.html:128
+#: app/templates/admin/admin_user_form.html:102 app/templates/profile.html:136
+msgid "Сповіщення"
+msgstr ""
+
+#: app/templates/profile.html:138
+msgid ""
+"Листи надходять на вашу email-адресу. Зніміть галочку, щоб більше їх не "
+"отримувати — на доступ до системи це не впливає."
+msgstr ""
+
+#: app/templates/profile.html:155
+msgid ""
+"У вашому профілі не вказано email, тож листи й так не надходять. Адресу "
+"додає адміністратор."
+msgstr ""
+
+#: app/templates/profile.html:166
+msgid "Права верифікації"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:3
+#: app/templates/profile.html:167
+msgid "Фото з фотопасток"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:3
+#: app/templates/profile.html:167
+msgid "Звукозаписи"
+msgstr ""
+
+#: app/templates/profile.html:168
+msgid "Очікує розгляду"
+msgstr ""
+
+#: app/templates/profile.html:168
+msgid "Надано"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:4
+#: app/templates/profile.html:168
+msgid "Відхилено"
+msgstr ""
+
+#: app/templates/profile.html:179
+msgid ""
+"Надані права діють на публічні локації. Доступ до інших територій надають"
+" їхні установи."
+msgstr ""
+
+#: app/templates/profile.html:188
 msgid "Моя статистика — Фотопастки"
 msgstr ""
 
-#: app/templates/profile.html:131
+#: app/templates/profile.html:191
 msgid "Опрацьовано серій"
 msgstr ""
 
-#: app/templates/profile.html:135
+#: app/templates/profile.html:195
 msgid "Усього визначень"
 msgstr ""
 
-#: app/templates/profile.html:139 app/templates/profile.html:167
+#: app/templates/profile.html:199 app/templates/profile.html:227
 msgid "Унікальних видів"
 msgstr ""
 
-#: app/templates/profile.html:143
+#: app/templates/profile.html:203
 msgid "Топ види (за серіями)"
 msgstr ""
 
-#: app/templates/profile.html:151 app/templates/profile.html:171
+#: app/templates/profile.html:211 app/templates/profile.html:239
 msgid "Статистика тимчасово недоступна."
 msgstr ""
 
-#: app/templates/profile.html:156
+#: app/templates/profile.html:216
 msgid "Моя статистика — ПАМ"
 msgstr ""
 
-#: app/templates/profile.html:159
+#: app/templates/profile.html:219
 msgid "Верифікацій"
 msgstr ""
 
-#: app/templates/profile.html:163
+#: app/templates/profile.html:223
 msgid "Підтверджень"
+msgstr ""
+
+#: app/templates/profile.html:231
+msgid "Топ види (за підтвердженими сегментами)"
+msgstr ""
+
+#: app/templates/register.html:4
+msgid ""
+"Реєстрація на БіоМон: приєднайтеся до визначення тварин на фото з "
+"фотопасток та голосів на звукозаписах."
+msgstr ""
+
+#: app/templates/register.html:37
+msgid ""
+"Створіть акаунт, щоб допомагати визначати тварин. Після реєстрації "
+"підтвердіть email-адресу, а права на верифікацію надасть адміністратор."
+msgstr ""
+
+#: app/templates/register.html:59
+msgid "На цю адресу надійде лист із посиланням для підтвердження."
+msgstr ""
+
+#: app/templates/register.html:66
+msgid "3–20 символів: латинські літери, цифри, «_», «.», «-»."
+msgstr ""
+
+#: app/templates/register.html:73
+msgid "Мінімум 8 символів, літери та цифри."
+msgstr ""
+
+#: app/templates/register.html:84
+msgid "Що ви хочете робити?"
+msgstr ""
+
+#: app/templates/register.html:93
+msgid ""
+"Спочатку вам будуть доступні лише публічні локації. Доступ до інших "
+"територій надають окремо їхні установи."
+msgstr ""
+
+#: app/templates/register.html:120
+msgid "Уже маєте акаунт?"
+msgstr ""
+
+#: app/templates/resend_confirmation.html:2
+msgid "Повторне підтвердження email"
+msgstr ""
+
+#: app/templates/resend_confirmation.html:9 app/utils/forms.py:123
+msgid "Надіслати посилання ще раз"
+msgstr ""
+
+#: app/templates/resend_confirmation.html:11
+msgid ""
+"Якщо лист із підтвердженням не надійшов або посилання прострочене — "
+"вкажіть свою адресу, і ми надішлемо новий лист."
+msgstr ""
+
+#: app/templates/resend_confirmation.html:41
+msgid "Повернутися до входу"
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:3
@@ -335,11 +534,12 @@ msgstr ""
 #: app/templates/admin/admin_roles_list.html:7
 #: app/templates/admin/admin_user_form.html:7
 #: app/templates/admin/admin_users_list.html:7
+#: app/templates/admin/admin_verification_requests.html:11
 msgid "Адмін-панель"
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:11
-#: app/templates/admin/admin_home.html:57
+#: app/templates/admin/admin_home.html:72
 msgid "Звернення"
 msgstr ""
 
@@ -348,6 +548,7 @@ msgid "Звернення з форми зворотного зв’язку"
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:17
+#: app/templates/admin/admin_verification_requests.html:21
 msgid "Усі"
 msgstr ""
 
@@ -360,6 +561,7 @@ msgid "Прочитані"
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:30
+#: app/templates/admin/admin_verification_requests.html:34
 msgid "Дата"
 msgstr ""
 
@@ -372,13 +574,15 @@ msgid "Тема / повідомлення"
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:33
+#: app/templates/admin/admin_verification_requests.html:37
 msgid "Статус"
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:34
-#: app/templates/admin/admin_institutions_list.html:26
+#: app/templates/admin/admin_institutions_list.html:27
 #: app/templates/admin/admin_roles_list.html:25
 #: app/templates/admin/admin_users_list.html:88
+#: app/templates/admin/admin_verification_requests.html:38
 msgid "Дії"
 msgstr ""
 
@@ -396,7 +600,7 @@ msgid "Ця дія є незворотною."
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:73
-#: app/templates/admin/admin_institutions_list.html:49
+#: app/templates/admin/admin_institutions_list.html:57
 #: app/templates/admin/admin_roles_list.html:61
 #: app/templates/admin/admin_roles_list.html:66
 #: app/templates/admin/admin_users_list.html:124
@@ -423,35 +627,47 @@ msgid "Керування обліковими записами, зміна па
 msgstr ""
 
 #: app/templates/admin/admin_home.html:23
-#: app/templates/admin/admin_home.html:37
-#: app/templates/admin/admin_home.html:50
-#: app/templates/admin/admin_home.html:63
+#: app/templates/admin/admin_home.html:39
+#: app/templates/admin/admin_home.html:52
+#: app/templates/admin/admin_home.html:65
+#: app/templates/admin/admin_home.html:78
 msgid "Переглянути"
 msgstr ""
 
-#: app/templates/admin/admin_home.html:31
+#: app/templates/admin/admin_home.html:32
+#: app/templates/admin/admin_verification_requests.html:12
+msgid "Запити на верифікацію"
+msgstr ""
+
+#: app/templates/admin/admin_home.html:35
+msgid ""
+"Заявки користувачів, які зареєструвалися самостійно: надання прав на "
+"визначення фото та звуків."
+msgstr ""
+
+#: app/templates/admin/admin_home.html:46
 #: app/templates/admin/admin_institution_form.html:8
 #: app/templates/admin/admin_institutions_list.html:8
 #: app/templates/admin/admin_users_list.html:86
 msgid "Установи"
 msgstr ""
 
-#: app/templates/admin/admin_home.html:33
+#: app/templates/admin/admin_home.html:48
 msgid "Додавання нових організацій та редагування їх ідентифікаційних кодів."
 msgstr ""
 
-#: app/templates/admin/admin_home.html:44
+#: app/templates/admin/admin_home.html:59
 #: app/templates/admin/admin_role_form.html:8
 #: app/templates/admin/admin_roles_list.html:8
 #: app/templates/admin/admin_users_list.html:87
 msgid "Ролі"
 msgstr ""
 
-#: app/templates/admin/admin_home.html:46
+#: app/templates/admin/admin_home.html:61
 msgid "Глобальне налаштування системних ролей та їх видимості для менеджерів."
 msgstr ""
 
-#: app/templates/admin/admin_home.html:59
+#: app/templates/admin/admin_home.html:74
 msgid "Повідомлення з форми зворотного зв’язку: перегляд, статуси, видалення."
 msgstr ""
 
@@ -483,19 +699,46 @@ msgid ""
 "бути унікальним, латиницею, без пробілів."
 msgstr ""
 
-#: app/templates/admin/admin_institution_form.html:62
+#: app/templates/admin/admin_institution_form.html:61
+#: app/templates/admin/admin_institutions_list.html:26
+msgid "Природний регіон"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:64
+msgid "— не вказано —"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:70
+msgid "+ Додати новий регіон…"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:73
+msgid ""
+"Використовується у фільтрах «Установа / Екорегіон» у модулях фотопасток і"
+" ПАМ."
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:81
+msgid "Новий регіон (Українською)"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:87
+msgid "Новий регіон (Англійською)"
+msgstr ""
+
+#: app/templates/admin/admin_institution_form.html:96
 #: app/templates/admin/admin_role_form.html:71
-#: app/templates/admin/admin_user_form.html:282
+#: app/templates/admin/admin_user_form.html:310
 msgid "Скасувати"
 msgstr ""
 
-#: app/templates/admin/admin_institution_form.html:65
+#: app/templates/admin/admin_institution_form.html:99
 #: app/templates/admin/admin_role_form.html:74
-#: app/templates/admin/admin_user_form.html:285
+#: app/templates/admin/admin_user_form.html:313
 msgid "Зберегти дані"
 msgstr ""
 
-#: app/templates/admin/admin_institution_form.html:65
+#: app/templates/admin/admin_institution_form.html:99
 msgid "Створити установу"
 msgstr ""
 
@@ -507,23 +750,27 @@ msgstr ""
 msgid "Код"
 msgstr ""
 
-#: app/templates/admin/admin_institutions_list.html:39
+#: app/templates/admin/admin_institutions_list.html:41
+msgid "не вказано"
+msgstr ""
+
+#: app/templates/admin/admin_institutions_list.html:47
 #: app/templates/admin/admin_roles_list.html:50
 #: app/templates/admin/admin_users_list.html:115
 msgid "Редагувати"
 msgstr ""
 
-#: app/templates/admin/admin_institutions_list.html:45
+#: app/templates/admin/admin_institutions_list.html:53
 msgid "Ви впевнені, що хочете видалити установу:"
 msgstr ""
 
-#: app/templates/admin/admin_institutions_list.html:45
+#: app/templates/admin/admin_institutions_list.html:53
 msgid ""
 "Увага: Це видалить її з профілів користувачів. Дані в модулі PAM не "
 "постраждають."
 msgstr ""
 
-#: app/templates/admin/admin_institutions_list.html:57
+#: app/templates/admin/admin_institutions_list.html:65
 msgid "Установ не знайдено."
 msgstr ""
 
@@ -630,46 +877,58 @@ msgstr ""
 msgid "Ці дані будуть відображатися в звітах та журналі верифікації."
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:98
+#: app/templates/admin/admin_user_form.html:104
+msgid ""
+"Користувач може змінити це сам у своєму профілі. Знята галочка — листи не"
+" надсилаються."
+msgstr ""
+
+#: app/templates/admin/admin_user_form.html:119
+msgid ""
+"У цього користувача не вказано email — листи не надсилаються незалежно "
+"від галочок."
+msgstr ""
+
+#: app/templates/admin/admin_user_form.html:126
 msgid "Прив'язка до установ"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:100
+#: app/templates/admin/admin_user_form.html:128
 msgid ""
 "Відмітьте установи та налаштуйте права доступу. «Доступ» — може "
 "переглядати та ідентифікувати; «Експорт» — може завантажувати дані."
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:107
+#: app/templates/admin/admin_user_form.html:135
 #: app/templates/admin/admin_users_list.html:49
 msgid "Установа"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:108
+#: app/templates/admin/admin_user_form.html:136
 msgid "Доступ"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:109
+#: app/templates/admin/admin_user_form.html:137
 msgid "Експорт"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:151
+#: app/templates/admin/admin_user_form.html:179
 msgid "Немає доступних установ."
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:254
+#: app/templates/admin/admin_user_form.html:282
 msgid "Призначення ролей"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:255
+#: app/templates/admin/admin_user_form.html:283
 msgid "Визначте рівень доступу"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:273
+#: app/templates/admin/admin_user_form.html:301
 msgid "Немає доступних ролей."
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:285
+#: app/templates/admin/admin_user_form.html:313
 msgid "Створити користувача"
 msgstr ""
 
@@ -722,51 +981,157 @@ msgstr ""
 msgid "Жодного користувача не відповідає фільтру."
 msgstr ""
 
-#: app/utils/forms.py:13
+#: app/templates/admin/admin_verification_requests.html:4
+msgid "Очікує"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:4
+msgid "Підтверджено"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:15
+msgid "Запити на права верифікації"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:17
+msgid ""
+"Це користувачі, які зареєструвалися самостійно і підтвердили email. "
+"Підтвердження надає лише роль верифікатора: доступні будуть публічні "
+"локації. Доступ до територій установи надається окремо в розділі "
+"«Користувачі»."
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:21
+msgid "Очікують"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:21
+msgid "Підтверджені"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:21
+msgid "Відхилені"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:35
+msgid "Користувач"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:36
+msgid "Просить"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:72
+msgid "Коментар (необовʼязково)"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:76
+msgid "Підтвердити"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:80
+msgid "Відхилити"
+msgstr ""
+
+#: app/templates/admin/admin_verification_requests.html:91
+msgid "Запитів немає."
+msgstr ""
+
+#: app/utils/forms.py:23 app/utils/forms.py:73
 msgid "Ім'я користувача"
 msgstr ""
 
-#: app/utils/forms.py:18
+#: app/utils/forms.py:28
 msgid "Ваше ім'я"
 msgstr ""
 
-#: app/utils/forms.py:19
+#: app/utils/forms.py:29
 msgid "Ваш Email"
 msgstr ""
 
-#: app/utils/forms.py:20
+#: app/utils/forms.py:30
 msgid "Тема"
 msgstr ""
 
-#: app/utils/forms.py:21
+#: app/utils/forms.py:31
 msgid "Повідомлення"
 msgstr ""
 
-#: app/utils/forms.py:23
+#: app/utils/forms.py:33
 msgid "Надіслати"
 msgstr ""
 
-#: app/utils/forms.py:28
+#: app/utils/forms.py:38
 msgid "Поточний пароль"
 msgstr ""
 
-#: app/utils/forms.py:39
+#: app/utils/forms.py:41
 msgid "Підтвердити новий пароль"
 msgstr ""
 
-#: app/utils/forms.py:40
+#: app/utils/forms.py:42 app/utils/forms.py:83
 msgid "Паролі не співпадають."
 msgstr ""
 
-#: app/utils/forms.py:42
+#: app/utils/forms.py:44
 msgid "Змінити пароль"
 msgstr ""
 
-#: app/utils/forms.py:47
+#: app/utils/forms.py:49
 msgid "Новий логін"
 msgstr ""
 
-#: app/utils/forms.py:49
+#: app/utils/forms.py:51
 msgid "Змінити логін"
+msgstr ""
+
+#: app/utils/forms.py:61
+msgid "Зберегти налаштування сповіщень"
+msgstr ""
+
+#: app/utils/forms.py:76
+msgid "Лише латинські літери, цифри, «_», «.» та «-»."
+msgstr ""
+
+#: app/utils/forms.py:82
+msgid "Підтвердити пароль"
+msgstr ""
+
+#: app/utils/forms.py:85
+msgid "Визначати тварин на фото з фотопасток"
+msgstr ""
+
+#: app/utils/forms.py:86
+msgid "Визначати голоси тварин на звукозаписах"
+msgstr ""
+
+#: app/utils/forms.py:89
+msgid "Погоджуюся на обробку вказаних даних для роботи в системі"
+msgstr ""
+
+#: app/utils/forms.py:90
+msgid "Без цієї згоди ми не можемо створити акаунт."
+msgstr ""
+
+#: app/utils/forms.py:96
+msgid "Зареєструватися"
+msgstr ""
+
+#: app/utils/forms.py:100
+msgid "Помилка перевірки форми."
+msgstr ""
+
+#: app/utils/forms.py:105
+msgid "Виберіть хоча б один вид роботи."
+msgstr ""
+
+#: app/utils/notification_prefs.py:35
+msgid "Фотопастки: нагадування про серії, що чекають на визначення"
+msgstr ""
+
+#: app/utils/notification_prefs.py:36
+msgid ""
+"Лист раз на тиждень, і лише якщо на вас чекає щонайменше 10 серій. Знята "
+"галочка вимикає його повністю."
 msgstr ""
 

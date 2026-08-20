@@ -57,6 +57,14 @@ class User(db.Model, UserMixin):
     # generated inside a request, so there is no g.lang_code to fall back on).
     locale = db.Column(db.String(5), nullable=True)
 
+    # ── Email notification opt-outs ───────────────────────────────────────────
+    # Default True: an account is subscribed until the person says otherwise, so
+    # adding a notification type never silently misses existing users. The set of
+    # these columns is described by app/utils/notifications.NOTIFICATION_PREFS —
+    # add the PAM one there together with its column.
+    notify_ct_pending = db.Column(db.Boolean, default=True, nullable=False,
+                                  server_default=db.true())
+
     # viewonly=True: read-only join; mutations go through institution_links
     institutions = db.relationship('Institution', secondary=lambda: UserInstitution.__table__, viewonly=True)
     institution_links = db.relationship('UserInstitution', cascade='all, delete-orphan')
