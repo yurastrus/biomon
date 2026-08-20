@@ -10,7 +10,7 @@ from app.utils.utils import is_safe_url
 from flask_babel import lazy_gettext as _l
 from app.routes import bp
 from app.models import User, SiteTextContent, ContactSubmission, VerificationRequest
-from app.utils.notifications import send_telegram_notification
+from app.utils.notifications import CH_BIOMON, send_notification
 from app.utils import notification_prefs as notif_prefs
 from app.utils import registration as reg
 from app.utils.emails import (send_confirmation_email, notify_admin_new_requests)
@@ -94,7 +94,7 @@ def contacts(lang_code):
             flash(_l('Сталася помилка при відправці. Спробуйте пізніше.'), 'danger')
             return render_template('contacts.html', form=form)
 
-        # Telegram is best-effort: the message is already safely in the DB.
+        # Notifying is best-effort: the message is already safely in the DB.
         text = (
             "📨 <b>Нове звернення з biomon.app</b>\n\n"
             f"<b>Імʼя:</b> {escape(submission.name)}\n"
@@ -102,7 +102,7 @@ def contacts(lang_code):
             f"<b>Тема:</b> {escape(submission.subject or '—')}\n\n"
             f"{escape(submission.message)}"
         )
-        send_telegram_notification(text)
+        send_notification(text, channel=CH_BIOMON)
 
         flash(_l('Ваше повідомлення надіслано! Ми звʼяжемося з вами найближчим часом.'), 'success')
         # PRG pattern: redirect after POST to avoid duplicate submits on refresh.

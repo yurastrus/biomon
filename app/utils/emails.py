@@ -140,16 +140,17 @@ def notify_admin_new_requests(user, modules):
     Called only AFTER the address is confirmed, so unconfirmed bot signups never
     reach the admin's inbox.
     """
-    from app.utils.notifications import send_telegram_notification
+    from app.utils.notifications import CH_BIOMON, send_notification
     from markupsafe import escape
 
     labels = ', '.join(_MODULE_LABEL[m]['uk'] for m in modules)
-    send_telegram_notification(
+    send_notification(
         "🙋 <b>Новий запит на верифікацію — biomon.app</b>\n\n"
         f"<b>Користувач:</b> {escape(user.full_name)} ({escape(user.username)})\n"
         f"<b>Email:</b> {escape(user.email)}\n"
         f"<b>Просить:</b> {escape(labels)}\n\n"
-        f"{_site_url()}/uk/admin/verification-requests"
+        f"{_site_url()}/uk/admin/verification-requests",
+        channel=CH_BIOMON,
     )
 
     admin_email = current_app.config.get('ADMIN_EMAIL')

@@ -68,7 +68,7 @@ def mail_out():
         return True
 
     with patch('app.utils.emails.send_email', side_effect=_fake), \
-         patch('app.utils.notifications.send_telegram_notification'):
+         patch('app.utils.notifications.send_notification'):
         yield sent
 
 

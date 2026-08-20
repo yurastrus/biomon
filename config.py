@@ -113,6 +113,10 @@ class Config:
     # Token/chat kept in .env only (never committed); empty = notifications disabled.
     TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
     TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
+    # Discord incoming webhooks (per channel): #server = technical events,
+    # #biomon = messages written by humans on the site. See app/utils/notifications.py
+    DISCORD_WEBHOOK_SERVER = os.environ.get('DISCORD_WEBHOOK_SERVER')
+    DISCORD_WEBHOOK_BIOMON = os.environ.get('DISCORD_WEBHOOK_BIOMON')
 
     # Google reCAPTCHA v2 keys for the public contact form.
     RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
