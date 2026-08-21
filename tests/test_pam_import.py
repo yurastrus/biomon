@@ -1070,6 +1070,24 @@ class TestPAMImportPage(PamImportRouteBase):
             resp = self.client.get('/uk/pam/import')
         self.assertEqual(resp.status_code, 200)
 
+    def test_model_dropdown_query_excludes_disabled_models(self):
+        """The page must not offer a model that cannot store scores.
+
+        Regression: this route builds the dropdown with its OWN inline query
+        rather than get_models_list(), so filtering conf_column there was not
+        enough - Nocmig stayed selectable on the form while the POST route
+        rejected it with 400.
+        """
+        self._login(self.manager.id)
+        conn = self._pam_page_conn()
+        with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+            self.client.get('/uk/pam/import')
+        model_queries = [str(c[0][0]) for c in conn.execute.call_args_list
+                         if 'FROM models' in str(c[0][0])]
+        self.assertTrue(model_queries, "the page never queried the models table")
+        for sql in model_queries:
+            self.assertIn('conf_column IS NOT NULL', sql)
+
     def test_response_contains_importer_key(self):
         self._login(self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=self._pam_page_conn()):
