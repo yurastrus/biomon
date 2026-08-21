@@ -175,21 +175,22 @@ class FakeConn:
                                                assigning fresh detection_ids and
                                                flagging the first `new_detection_count`
                                                as inserted (rest = duplicate)
-      * INSERT INTO detection_models … (CTE) → fetchone (new_links, total_links)
 
-    Counts are driven by `new_detection_count` / `new_link_count` (None = all new).
+    There is no longer a second phase: since migration 0006 an import writes the
+    model's score straight into its own `detections` column, so the whole insert
+    is one statement.
+
+    Counts are driven by `new_detection_count` (None = all new).
     """
 
     def __init__(self, species_map=None, common_map=None, recording_id=1,
-                 recording_existed=False, new_detection_count=None,
-                 new_link_count=None):
+                 recording_existed=False, new_detection_count=None):
         self.species_map = species_map if species_map is not None else \
             {'Turdus merula': 1, 'Strix aluco': 2, 'Turdus iliacus': 3}
         self.common_map = common_map or {}
         self.recording_id = recording_id
         self.recording_existed = recording_existed
         self.new_detection_count = new_detection_count
-        self.new_link_count = new_link_count
         self.calls = []
         self._next_det_id = 1000
 
@@ -239,16 +240,6 @@ class FakeConn:
             res.fetchall.return_value = rows
             return res
 
-        if 'INTO detection_models' in s:
-            total, i = 0, 0
-            while f'd{i}' in (params or {}):
-                total += 1
-                i += 1
-            new = total if self.new_link_count is None else self.new_link_count
-            res = MagicMock()
-            res.fetchone.return_value = (new, total)
-            return res
-
         return MagicMock()
 
 
@@ -263,8 +254,13 @@ def _make_engine(conn):
 _REF_MODEL = 1
 
 
+# Score column per model, as models.conf_column holds it on production.
+_REF_COLUMN = 'confidence'          # BirdNET 2.4 keeps the historical name
+_PERCH_COLUMN = 'conf_perch_v2'
+
+
 def _make_processor(engine=None, importer=None, location_id=1,
-                    model_id=_REF_MODEL, reference_model_id=_REF_MODEL,
+                    model_id=_REF_MODEL, conf_column=_REF_COLUMN,
                     duration_minutes=5):
     from app.pam.pam_import_utils import PAMImportProcessor, BirdNETImporter
     if engine is None:
@@ -273,7 +269,7 @@ def _make_processor(engine=None, importer=None, location_id=1,
         importer = BirdNETImporter()
     return PAMImportProcessor(engine, location_id=location_id, importer=importer,
                               duration_minutes=duration_minutes, model_id=model_id,
-                              reference_model_id=reference_model_id)
+                              conf_column=conf_column)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -662,12 +658,12 @@ class TestPAMProcessorFileHandling(unittest.TestCase):
 class TestPAMProcessorDatabase(unittest.TestCase):
 
     def _run(self, csv_content, conn=None, location_id=42, model_id=_REF_MODEL,
-             reference_model_id=_REF_MODEL):
+             conf_column=_REF_COLUMN):
         if conn is None:
             conn = FakeConn()
         engine = _make_engine(conn)
         proc = _make_processor(engine=engine, location_id=location_id,
-                               model_id=model_id, reference_model_id=reference_model_id)
+                               model_id=model_id, conf_column=conf_column)
         stats = proc.process_batch([MockFileStorage(csv_content, 'test.csv')])
         return stats, conn
 
@@ -691,47 +687,75 @@ class TestPAMProcessorDatabase(unittest.TestCase):
         self.assertEqual(stats['detections_inserted'], 1)
         self.assertEqual(stats['detections_duplicate'], 2)
 
-    def test_model_links_counted(self):
-        stats, _ = self._run(BIRDNET_CSV_VALID)
-        # every new detection gets a fresh model link
-        self.assertEqual(stats['model_links_new'], 3)
-        self.assertEqual(stats['model_links_existing'], 0)
+    def test_no_link_table_statement_is_issued(self):
+        # Regression guard for migration 0007: the link table is gone, so an
+        # import must never reference it.
+        _, conn = self._run(BIRDNET_CSV_VALID)
+        self.assertFalse(any('detection_models' in c[0] for c in conn.calls),
+                         "import must not touch the dropped detection_models table")
 
-    def test_existing_model_links_counted(self):
-        stats, _ = self._run(BIRDNET_CSV_VALID, conn=FakeConn(new_link_count=0))
-        self.assertEqual(stats['model_links_new'], 0)
-        self.assertEqual(stats['model_links_existing'], 3)
+    def test_link_count_stats_are_gone(self):
+        stats, _ = self._run(BIRDNET_CSV_VALID)
+        self.assertNotIn('model_links_new', stats)
+        self.assertNotIn('model_links_existing', stats)
 
     def test_species_count(self):
         stats, _ = self._run(BIRDNET_CSV_VALID)
         self.assertEqual(stats['species_count'], 3)
 
-    def test_reference_model_writes_detection_confidence(self):
-        """For the reference model, the detections INSERT carries real confidence values."""
+    def _det_call(self, conn):
+        return [c for c in conn.calls if 'INSERT INTO detections' in c[0]][0]
+
+    def test_reference_model_writes_the_confidence_column(self):
         conn = FakeConn()
-        proc = _make_processor(engine=_make_engine(conn), model_id=1, reference_model_id=1)
-        proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
-        det_call = [c for c in conn.calls if 'INSERT INTO detections' in c[0]][0]
-        params = det_call[1]
+        _make_processor(engine=_make_engine(conn), model_id=1,
+                       conf_column=_REF_COLUMN
+                       ).process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+        sql, params = self._det_call(conn)
+        self.assertIn('confidence', sql)
+        self.assertIn('SET confidence = EXCLUDED.confidence', sql)
         conf_values = [v for k, v in params.items() if k.startswith('c')]
         self.assertTrue(any(v is not None for v in conf_values),
-                        "reference model must write confidence into detections")
+                        "reference model must write its scores")
 
-    def test_non_reference_model_writes_null_detection_confidence(self):
-        """A non-reference model must NOT write into detections.confidence (NULL on insert)."""
+    def test_non_reference_model_writes_its_own_column(self):
+        """A second model stores real scores too - in ITS column, not confidence."""
         conn = FakeConn()
-        proc = _make_processor(engine=_make_engine(conn), model_id=2, reference_model_id=1)
-        proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
-        det_call = [c for c in conn.calls if 'INSERT INTO detections' in c[0]][0]
-        params = det_call[1]
+        _make_processor(engine=_make_engine(conn), model_id=2,
+                       conf_column=_PERCH_COLUMN
+                       ).process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+        sql, params = self._det_call(conn)
+        self.assertIn(_PERCH_COLUMN, sql)
+        self.assertIn(f'SET {_PERCH_COLUMN} = EXCLUDED.{_PERCH_COLUMN}', sql)
         conf_values = [v for k, v in params.items() if k.startswith('c')]
-        self.assertTrue(all(v is None for v in conf_values),
-                        "non-reference model must leave detections.confidence NULL")
-        # …but per-model confidence still flows into detection_models:
-        dm_call = [c for c in conn.calls if 'INTO detection_models' in c[0]][0]
-        dm_conf = [v for k, v in dm_call[1].items() if k.startswith('dc')]
-        self.assertTrue(any(v is not None for v in dm_conf),
-                        "detection_models must store per-model confidence")
+        self.assertTrue(any(v is not None for v in conf_values),
+                        "a non-reference model must store its own scores, not NULL")
+
+    def test_non_reference_import_never_updates_the_reference_column(self):
+        """Importing Perch must not disturb BirdNET scores on the same events."""
+        conn = FakeConn()
+        _make_processor(engine=_make_engine(conn), model_id=2,
+                       conf_column=_PERCH_COLUMN
+                       ).process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+        sql, _ = self._det_call(conn)
+        set_clause = sql.split('DO UPDATE', 1)[1]
+        self.assertNotIn('SET confidence', set_clause)
+        self.assertNotIn('confidence = EXCLUDED.confidence', set_clause)
+
+    def test_model_without_conf_column_is_refused(self):
+        """A disabled model (Nocmig: conf_column IS NULL) has nowhere to store
+        scores, so the import must fail loudly instead of dropping them."""
+        proc = _make_processor(engine=_make_engine(FakeConn()), model_id=3,
+                              conf_column=None)
+        with self.assertRaises(ValueError):
+            proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
+
+    def test_malformed_conf_column_is_refused(self):
+        """conf_column is interpolated into SQL, so it must be validated."""
+        proc = _make_processor(engine=_make_engine(FakeConn()), model_id=2,
+                              conf_column='conf; DROP TABLE detections--')
+        with self.assertRaises(ValueError):
+            proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
 
     def test_detection_upsert_targets_real_unique_key(self):
         """The detections upsert must target (recording_id, species_id, start_s, end_s)."""
@@ -742,13 +766,14 @@ class TestPAMProcessorDatabase(unittest.TestCase):
         self.assertIn('ON CONFLICT (recording_id, species_id, start_s, end_s)', det_sql)
         self.assertIn('RETURNING', det_sql)
 
-    def test_detection_models_upsert_present(self):
+    def test_detection_insert_is_single_phase(self):
+        """One statement per batch: the score rides on the detection row, so the
+        old second phase into the link table is gone."""
         conn = FakeConn()
         proc = _make_processor(engine=_make_engine(conn))
         proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
-        dm_sql = [c[0] for c in conn.calls if 'INTO detection_models' in c[0]]
-        self.assertTrue(dm_sql, "no detection_models upsert issued")
-        self.assertIn('ON CONFLICT (detection_id, model_id)', dm_sql[0])
+        inserts = [c[0] for c in conn.calls if 'INSERT INTO detections' in c[0]]
+        self.assertEqual(len(inserts), 1, "expected exactly one detections upsert")
 
     def test_engine_connect_called_once_per_batch(self):
         conn = FakeConn()
@@ -806,7 +831,7 @@ class TestPAMProcessorConfidenceThreshold(unittest.TestCase):
         conn = FakeConn()
         proc = PAMImportProcessor(
             _make_engine(conn), location_id=1, importer=BirdNETImporter(),
-            model_id=_REF_MODEL, reference_model_id=_REF_MODEL,
+            model_id=_REF_MODEL, conf_column=_REF_COLUMN,
             confidence_threshold=threshold)
         stats = proc.process_batch([MockFileStorage(csv, 'test.csv')])
         return stats, conn
@@ -851,11 +876,11 @@ class TestPAMProcessorConfidenceThreshold(unittest.TestCase):
 
 class TestPAMProcessorRavenCommonName(unittest.TestCase):
 
-    def _proc(self, conn, model_id=2, reference_model_id=1):
+    def _proc(self, conn, model_id=2, conf_column=_PERCH_COLUMN):
         from app.pam.pam_import_utils import RavenSelectionTableImporter
         return _make_processor(engine=_make_engine(conn),
                                importer=RavenSelectionTableImporter(),
-                               model_id=model_id, reference_model_id=reference_model_id)
+                               model_id=model_id, conf_column=conf_column)
 
     def test_resolves_by_common_name(self):
         # DB has these common names (lower-cased); 'Eurasian Blackbird' is missing.
@@ -891,8 +916,8 @@ class TestPAMProcessorRavenCommonName(unittest.TestCase):
 class TestPAMProcessorIdempotency(unittest.TestCase):
 
     def _existing_conn(self):
-        """DB state where the recording, all detections and all links already exist."""
-        return FakeConn(recording_existed=True, new_detection_count=0, new_link_count=0)
+        """DB state where the recording and all detections already exist."""
+        return FakeConn(recording_existed=True, new_detection_count=0)
 
     def test_second_import_reports_existing_recording(self):
         proc = _make_processor(engine=_make_engine(self._existing_conn()))
@@ -906,12 +931,6 @@ class TestPAMProcessorIdempotency(unittest.TestCase):
         self.assertEqual(stats['detections_inserted'], 0)
         self.assertEqual(stats['detections_duplicate'], 3)
 
-    def test_second_import_adds_no_new_model_links(self):
-        proc = _make_processor(engine=_make_engine(self._existing_conn()))
-        stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
-        self.assertEqual(stats['model_links_new'], 0)
-        self.assertEqual(stats['model_links_existing'], 3)
-
     def test_second_import_does_not_change_species_count(self):
         proc = _make_processor(engine=_make_engine(self._existing_conn()))
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
@@ -922,13 +941,17 @@ class TestPAMProcessorIdempotency(unittest.TestCase):
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
         self.assertEqual(stats['files_processed'], 1)
 
-    def test_second_model_on_existing_events_adds_links_not_detections(self):
-        """A different model over events that already exist: 0 new detections, new links."""
-        conn = FakeConn(recording_existed=True, new_detection_count=0, new_link_count=3)
-        proc = _make_processor(engine=_make_engine(conn), model_id=2, reference_model_id=1)
+    def test_second_model_on_existing_events_fills_its_column_not_new_rows(self):
+        """A different model over events that already exist creates no new
+        detections - it only fills in its own score column."""
+        conn = FakeConn(recording_existed=True, new_detection_count=0)
+        proc = _make_processor(engine=_make_engine(conn), model_id=2,
+                               conf_column=_PERCH_COLUMN)
         stats = proc.process_batch([MockFileStorage(BIRDNET_CSV_VALID)])
         self.assertEqual(stats['detections_inserted'], 0)
-        self.assertEqual(stats['model_links_new'], 3)
+        self.assertEqual(stats['detections_duplicate'], 3)
+        sql = [c[0] for c in conn.calls if 'INSERT INTO detections' in c[0]][0]
+        self.assertIn(f'SET {_PERCH_COLUMN} = EXCLUDED.{_PERCH_COLUMN}', sql)
 
     def test_partial_duplicate_partial_new(self):
         """1 new detection + 2 duplicates in the same batch."""
@@ -1070,12 +1093,12 @@ class TestPAMImportPage(PamImportRouteBase):
 # 8. Flask route: POST /<lang>/api/pam/import
 # ══════════════════════════════════════════════════════════════════════════════
 
-_RouteModel = namedtuple('_RouteModel', 'model_id name version')
+# The route selects only models with a conf_column, so Nocmig (3, 4) - which has
+# none, and therefore nowhere to store scores - is absent by construction.
+_RouteModel = namedtuple('_RouteModel', 'model_id conf_column')
 _ROUTE_MODELS = [
-    _RouteModel(1, 'BirdNET', '2.4'),
-    _RouteModel(2, 'Perch', 'v2'),
-    _RouteModel(3, 'Nocmig', ''),
-    _RouteModel(4, 'Nocmig', 'V2 Beta'),
+    _RouteModel(1, 'confidence'),
+    _RouteModel(2, 'conf_perch_v2'),
 ]
 
 
@@ -1116,7 +1139,6 @@ class TestPAMImportAPI(PamImportRouteBase):
             'files_processed': 1, 'files_empty': 0, 'files_failed': 0,
             'recordings_new': 1, 'recordings_existing': 0,
             'detections_inserted': 3, 'detections_duplicate': 0,
-            'model_links_new': 3, 'model_links_existing': 0,
             'rows_skipped_unknown_species': 0, 'skipped_species': {},
             'species_count': 2,
         }
@@ -1315,7 +1337,7 @@ class TestPAMImportAPI(PamImportRouteBase):
             )
         kwargs = mock_cls.call_args.kwargs
         self.assertEqual(kwargs['model_id'], 2)
-        self.assertEqual(kwargs['reference_model_id'], 1)   # BirdNET 2.4
+        self.assertEqual(kwargs['conf_column'], 'conf_perch_v2')
 
     def test_processor_called_with_correct_location(self):
         LOCATION_ID = 77

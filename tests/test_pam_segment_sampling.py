@@ -80,6 +80,50 @@ def test_build_sampling_query_clamps_strata_minimum():
     assert 'ntile(1)' in str(pss.build_sampling_query(0))
 
 
+def test_build_sampling_query_defaults_to_the_reference_column():
+    # Legacy behaviour must be reproduced exactly for BirdNET 2.4.
+    sql = str(pss.build_sampling_query(5))
+    assert 'd.confidence' in sql
+    assert 'detection_models' not in sql  # link table dropped in migration 0007
+
+
+def test_build_sampling_query_stratifies_by_the_given_model_column():
+    # Since migration 0006 every model's score is a column on `detections`, so
+    # one code path serves all models - no join, no is_reference branch.
+    sql = str(pss.build_sampling_query(5, conf_column='conf_perch_v2'))
+    assert 'd.conf_perch_v2' in sql
+    assert 'ntile(5) OVER (ORDER BY d.conf_perch_v2)' in sql
+    assert 'JOIN detection_models' not in sql
+
+
+@pytest.mark.parametrize('bad', [
+    'conf; DROP TABLE detections--',
+    'conf_perch_v2, (SELECT 1)',
+    'Confidence',      # uppercase cannot be a real conf_column
+    '1conf',
+    '',
+    None,
+])
+def test_build_sampling_query_rejects_unsafe_column_names(bad):
+    # conf_column is interpolated into SQL text, so anything that did not come
+    # from models.conf_column must be refused rather than quoted-and-hoped.
+    with pytest.raises(ValueError):
+        pss.build_sampling_query(5, conf_column=bad)
+
+
+def test_run_stratified_sample_passes_the_column_through():
+    conn = _mock_conn_returning([])
+    pss.run_stratified_sample('Bufo bufo', [10], conn=conn, model_id=2,
+                              conf_column='conf_perch_v2')
+    sql = str(conn.execute.call_args[0][0])
+    assert 'd.conf_perch_v2' in sql
+    # The model is only tagged onto the sample; it is no longer a bind param
+    # used for scoring, because the column already identifies the model.
+    params = conn.execute.call_args[0][1]
+    assert params['seg_model_id'] == 2
+    assert 'model_id' not in params
+
+
 # ── run_stratified_sample ───────────────────────────────────────────────────────
 
 def _mock_conn_returning(rows):

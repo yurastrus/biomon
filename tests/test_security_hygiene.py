@@ -54,13 +54,15 @@ def _pam_models_conn():
     """get_pam_db_connection() stand-in returning the models catalogue (so the
     route's model_id validation passes and execution reaches the processor)."""
     from collections import namedtuple
-    M = namedtuple('M', 'model_id name version')
+    # The route selects (model_id, conf_column) for models that can store a
+    # score — see migration 0006.
+    M = namedtuple('M', 'model_id conf_column')
     conn = MagicMock()
 
     def _ex(sql, params=None):
         res = MagicMock()
         if 'FROM models' in str(sql):
-            res.fetchall.return_value = [M(1, 'BirdNET', '2.4'), M(2, 'Perch', 'v2')]
+            res.fetchall.return_value = [M(1, 'confidence'), M(2, 'conf_perch_v2')]
         else:
             res.fetchone.return_value = (1,)
         return res
