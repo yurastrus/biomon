@@ -134,6 +134,40 @@ def send_decision_email(user, module, approved, note=None):
     return send_email(subject, [user.email], body)
 
 
+def send_rights_granted_email(user, modules):
+    """Tell the user that verification rights were granted from the user form.
+
+    Separate from :func:`send_decision_email` because the two are different
+    events: that one answers a request the person filed ("your request was
+    approved"), this one announces rights an administrator granted directly,
+    which the recipient may never have asked for. One letter lists every module
+    granted in the same save.
+    """
+    lang = _lang(user)
+    labels = ', '.join(_MODULE_LABEL[m][lang] for m in modules if m in _MODULE_LABEL)
+    if not labels:
+        return False
+
+    if lang == 'en':
+        subject = "Verification rights granted — biomon"
+        body = (
+            f"Hello, {user.full_name}!\n\n"
+            f"An administrator has granted you verification rights: {labels}.\n\n"
+            "Access to a territory's data is granted separately by its "
+            "institution.\n\n"
+            f"Start here: {_site_url()}/en/profile\n"
+        )
+    else:
+        subject = "Права верифікації надано — biomon"
+        body = (
+            f"Вітаємо, {user.full_name}!\n\n"
+            f"Адміністратор надав вам права верифікації: {labels}.\n\n"
+            "Доступ до даних конкретної території надають окремо її установи.\n\n"
+            f"Почати: {_site_url()}/uk/profile\n"
+        )
+    return send_email(subject, [user.email], body)
+
+
 def notify_admin_new_requests(user, modules):
     """Ping the admin (Telegram + email) about a confirmed registration.
 

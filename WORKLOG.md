@@ -806,3 +806,72 @@ five columns in a six-column table.
 ### State
 Full suite: **1569 passed, 36 skipped**. Not yet deployed — `update.sh` needs
 interactive sudo on the server.
+
+
+## 2026-08-28 (later) — Telling the user when verification rights are granted
+
+### What was actually missing
+Reported as "no letter arrives after a verification request is approved". The
+queue path already sends one and has since 2026-08-19:
+`admin.decide_verification_request` → `send_decision_email()`. Exercised it
+through the test client with the mail boundary patched, and the letter is
+produced correctly (uk/en, approve/reject, with the admin's note).
+
+The gap is the *other* way rights are granted. `admin.edit_user` — ticking
+`ct_verifier` / `pam_verifier` in Користувачі → Редагувати — changed the roles
+and sent nothing. That is how a queue applicant is often approved in practice,
+and in that case:
+
+- the person gets the rights but is never told, which is the reported symptom;
+- their `verification_requests` row stays `pending` forever, so the queue keeps
+  showing work that is already done — and approving it there later would send a
+  second letter for the same grant.
+
+Neither path had a single test, so a regression in either was invisible.
+
+### Changes
+- `send_rights_granted_email(user, modules)` in `app/utils/emails.py`. Kept
+  separate from `send_decision_email` because the events differ: that one
+  answers a request the person filed ("your request was approved"), this one
+  announces rights an admin granted directly, which the recipient may never have
+  asked for. One letter lists every module granted in the same save.
+- `VerificationRequestService.resolve_pending_for_roles()` marks the matching
+  pending requests approved against the same decider, so the queue stays truthful
+  and no duplicate letter can follow.
+- `admin.edit_user` diffs the role names around `UserService.update_user()`,
+  resolves the pending rows before the commit, and emails after it.
+- `tests/test_verification_decision_email.py` — 11 tests covering both paths:
+  approve/reject wording, the admin's note, the English letter, no second letter
+  on a re-decide or a re-save, unrelated roles sending nothing, both modules in
+  one letter, and a user without an address neither crashing nor blocking the
+  grant.
+
+### Decisions
+- **Two letters, not one reused.** Reusing "Ваш запит підтверджено" for someone
+  who never filed a request reads as a reply to nothing.
+- **Closing the pending row is part of this, not scope creep.** Without it the
+  admin who granted by hand still sees the request in the queue and approving it
+  there sends the applicant a second letter about rights they already have.
+- **No opt-out preference.** These are transactional letters about the
+  recipient's own access, not a digest; `NOTIFICATION_PREFS` stays for the
+  weekly reminders.
+- The email is sent after the commit, so a failed save cannot announce a grant
+  that did not happen. Delivery is already fire-and-forget in a thread and never
+  raises into the request.
+
+### Verification
+Mutation-checked the new tests: stubbing out the `send_rights_granted_email`
+call makes exactly the three letter-asserting manual-path tests fail, so they
+are not passing vacuously.
+
+Full suite run twice: **1580 passed, 36 skipped**.
+
+⚠️ The first of those two runs also had one failure,
+`tests/test_pam_verification_unknown.py::test_submit_unknown_no_discard_if_meaningful_votes_exist`,
+which passed on its own and passed on the second full run. Order-dependent flake
+in PAM vote handling, unrelated to anything here (this change touches only the
+admin blueprint) — but it is real and worth chasing separately, since the suite
+is otherwise expected to be reliably green.
+
+### State
+Committed and pushed. Not deployed — `update.sh` needs interactive sudo.

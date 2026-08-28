@@ -388,6 +388,35 @@ class VerificationRequestService:
         ).count()
 
     @staticmethod
+    def resolve_pending_for_roles(user, decider, role_names):
+        """Close pending requests that a manual role grant has just satisfied.
+
+        When an admin ticks ``ct_verifier`` in the user form for someone who had
+        applied through the queue, the request row stayed ``pending`` forever:
+        the queue kept showing work that was already done, and approving it there
+        later would send the applicant a second letter. Mark those rows approved
+        against the same decider instead (no commit).
+
+        Returns:
+            list[str]: modules whose pending request was closed.
+        """
+        modules = [m for m, role in VerificationRequest.ROLE_BY_MODULE.items()
+                   if role in role_names]
+        if not modules:
+            return []
+
+        closed = []
+        for req in VerificationRequest.query.filter(
+                VerificationRequest.user_id == user.id,
+                VerificationRequest.module.in_(modules),
+                VerificationRequest.status == VerificationRequest.STATUS_PENDING).all():
+            req.status = VerificationRequest.STATUS_APPROVED
+            req.decided_at = datetime.utcnow()
+            req.decided_by_id = decider.id
+            closed.append(req.module)
+        return closed
+
+    @staticmethod
     def decide(request_obj, decider, approve, note=None):
         """Approve or reject one request (no commit).
 

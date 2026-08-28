@@ -12,7 +12,7 @@ from app.utils.decorators import role_required
 from app.admin.forms import UserCreateForm, UserEditForm, InstitutionForm, RoleForm
 from app.admin.services import (UserService, InstitutionService, RoleService,
                                 VerificationRequestService)
-from app.utils.emails import send_decision_email
+from app.utils.emails import send_decision_email, send_rights_granted_email
 from app.utils import notification_prefs as notif_prefs
 from . import admin_bp
 
@@ -165,6 +165,7 @@ def edit_user(user_id):
 
     if form.validate_on_submit():
         try:
+            roles_before = {r.name for r in user.roles}
             UserService.update_user(
                 user=user,
                 available_roles=available_roles,
@@ -187,7 +188,24 @@ def edit_user(user_id):
                     current_app.logger.info(
                         f"Notification prefs for user_id={user.id} changed by "
                         f"admin user_id={current_user.id}: {', '.join(changed)}")
+
+            # Granting verification rights here must tell the person, exactly as
+            # approving their request in the queue does — otherwise a
+            # self-registered applicant approved from this form never learns it.
+            new_roles = {r.name for r in user.roles} - roles_before
+            granted_modules = [m for m, role in VerificationRequest.ROLE_BY_MODULE.items()
+                               if role in new_roles]
+            VerificationRequestService.resolve_pending_for_roles(
+                user, current_user, new_roles)
+
             db.session.commit()
+
+            if granted_modules and user.email:
+                current_app.logger.info(
+                    "Verification rights %s granted to user_id=%s by user_id=%s",
+                    ','.join(sorted(granted_modules)), user.id, current_user.id)
+                send_rights_granted_email(user, sorted(granted_modules))
+
             flash(f'Дані користувача {user.username} успішно оновлено!', 'success')
             return redirect(url_for('admin.user_list', lang_code=g.lang_code))
         except Exception as e:
