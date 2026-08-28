@@ -74,8 +74,14 @@ def test_submit_unknown_no_discard_if_meaningful_votes_exist(auth_client):
     # 3 unknowns but also a real yes/no vote → must NOT discard
     conn = _submit_conn(unknown_votes=3, meaningful_votes=1)
     resp = _post_submit(auth_client, 2, conn)
+    # Check the status first, as the sibling tests do. Any non-200 (403 from the
+    # access check, 500 from the route's broad except) returns a body with no
+    # 'discarded' key, so going straight to the payload failed with a bare
+    # KeyError that said nothing about the cause — which is exactly what
+    # happened when this test flaked once on 2026-08-28.
+    assert resp.status_code == 200, f'unexpected response: {resp.data!r}'
     body = json.loads(resp.data)
-    assert body['discarded'] is False
+    assert body['discarded'] is False, resp.data
     sqls = [str(c.args[0]) for c in conn.execute.call_args_list]
     assert not any('discarded' in s for s in sqls)
 

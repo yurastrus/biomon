@@ -186,6 +186,16 @@ class TestingConfig(Config):
     DEBUG = True
     WTF_CSRF_ENABLED = False
 
+    # config.py load_dotenv()s the real .env, so MAIL_SERVER is set during the
+    # test run and nothing suppressed delivery: any code path that reaches
+    # send_email() without being patched would spawn its delivery thread and
+    # talk to the PRODUCTION mail server — possibly delivering real mail to
+    # whatever address a fixture invented. Tests that care about mail assert at
+    # the send_email() boundary instead (see tests/test_registration.py), so
+    # unsetting the server here costs nothing and closes the hole.
+    MAIL_SERVER = None
+    MAIL_SUPPRESS_SEND = True
+
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,

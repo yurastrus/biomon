@@ -99,9 +99,16 @@ def make_user(db_session, make_role):
     def _make(username='testuser', password='pass', roles=()):
         pw = bcrypt.generate_password_hash(password).decode()
         u = User(username=username, password_hash=pw)
+        # Add BEFORE appending roles. make_role() queries, which triggers an
+        # autoflush; with the user still detached, that flush warns "Object of
+        # type <User> not in session, add operation along 'Role.users' won't
+        # proceed". The roles do persist (the commit below saves them), so the
+        # warning is harmless — but it is emitted once per multi-role user and
+        # reads exactly like a dropped-role bug, which is a costly red herring
+        # when chasing an order-dependent failure.
+        db_session.add(u)
         for rname in roles:
             u.roles.append(make_role(rname))
-        db_session.add(u)
         db_session.commit()
         return u
     return _make

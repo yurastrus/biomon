@@ -875,3 +875,63 @@ is otherwise expected to be reliably green.
 
 ### State
 Committed and pushed. Deployed 2026-08-28 and confirmed working by Iurii.
+
+
+## 2026-08-28 (later still) — chasing the flaky PAM unknown-vote test
+
+`test_pam_verification_unknown.py::test_submit_unknown_no_discard_if_meaningful_votes_exist`
+failed once during a full-suite run earlier today, then passed on its own and on
+the next full run. **Not reproduced, not fixed.** What follows is the evidence,
+so the next person does not repeat it.
+
+### What was ruled out
+- **Not intrinsic to the route or the mock.** Driving the exact request 400
+  times inside one process — same fixtures, same mock connection — produced 400
+  correct responses.
+- **Not a pairwise interaction.** Ran every other test file followed by this
+  single test (≈90 combinations). No file breaks it.
+- **Not ordering or hash-seed dependent.** 9 full-suite runs: 5 on an idle
+  machine, 4 under saturating CPU load (13 busy cores) with PYTHONHASHSEED
+  1–4. All 1580 passed. Load was worth trying because the one failing run took
+  6:39 while an idle run takes ~3:00 — the failure happened on a busy box.
+- **Not the "role silently dropped" theory.** `make_user` triggers a SQLAlchemy
+  autoflush warning ("Object of type <User> not in session, add operation along
+  'Role.users' won't proceed"), which reads exactly like a dropped role — and a
+  user without the admin role would 403 on this endpoint. Tested it directly:
+  the roles do persist, before and after a reload. Red herring.
+- **Not stray-thread contamination of the mock.** The assertion
+  `not any('discarded' in s for s in sqls)` is a substring match over every SQL
+  executed on the mock, so a leaked background thread calling the patched
+  `get_pam_db_connection` could in principle poison it. But the only PAM SQL
+  containing the word is the discard UPDATE inside this very route
+  (`app/pam/routes.py:1776`), and no test exercises the one route that spawns a
+  PAM thread.
+
+### What changed
+Nothing that pretends to fix the flake. Three things found on the way:
+
+1. **The test now says what went wrong.** It went straight from the response to
+   `body['discarded']`, so any non-200 (403 from the access check, 500 from the
+   route's broad `except Exception`) failed with a bare `KeyError: 'discarded'`
+   that named no cause — which is why the one occurrence taught us nothing. It
+   now asserts `resp.status_code == 200` with the body in the message, as its
+   three sibling tests already did. The assertions themselves are unchanged.
+2. **`MAIL_SUPPRESS_SEND` / `MAIL_SERVER = None` in `TestingConfig`.** Real
+   hazard: `config.py` `load_dotenv()`s the actual `.env`, so the suite ran with
+   the production mail server configured and nothing suppressing delivery. Any
+   unpatched path reaching `send_email()` would spawn its delivery thread and
+   talk to that server, possibly mailing whatever address a fixture invented.
+   Nothing exercises such a path today, but the `edit_user` change earlier
+   today added one more way to reach it.
+3. **`make_user` adds the user before appending roles**, silencing the
+   misleading autoflush warning above (12+ per run).
+
+### If it comes back
+The status assertion will name the cause. A 403 means the admin role was not in
+effect for that request; a 500 means the route raised and the traceback is in
+the captured log.
+
+### State
+Full suite: **1580 passed, 36 skipped**. Note this leaves a known, unexplained
+one-in-many flake in the suite — it is not an accepted baseline failure, just an
+unresolved one.
