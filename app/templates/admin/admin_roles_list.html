@@ -10,7 +10,7 @@
 
     <h2 style="text-align: left; margin-bottom: 15px;">{{ _('Керування ролями') }}</h2>
 
-    <div style="text-align: left; margin-bottom: 20px;">
+    <div class="admin-toolbar">
         <a href="{{ url_for('admin.edit_role', lang_code=g.lang_code) }}" class="button" style="min-width: 200px; margin-top: 0; background-color: #28a745;">
             + {{ _('Додати роль') }}
         </a>
@@ -28,8 +28,8 @@
         <tbody>
             {% for role in roles %}
             <tr>
-                <td style="text-align: center; color: gray;">{{ role.id }}</td>
-                <td>
+                <td data-label="ID" style="text-align: center; color: gray;">{{ role.id }}</td>
+                <td data-label="{{ _('Назва Ролі (Системна)') }}">
                     <strong>{{ role.name }}</strong>
                     {% if role.name == 'admin' %}
                         <span class="badge badge-success" style="background-color: #dc3545; margin-left: 10px;">{{ _('Недоторкана') }}</span>
@@ -37,7 +37,7 @@
                         <span class="badge badge-success" style="background-color: #ffc107; color: #000; margin-left: 10px;">{{ _('Недоторкана') }}</span>
                     {% endif %}
                 </td>
-                <td>
+                <td data-label="{{ _('Хто може призначати цю роль') }}">
                     {% if role.assignable_by == 'admin' %}
                         <span style="color: #dc3545; font-weight: bold;"><i class="fas fa-lock me-1"></i> {{ _('Тільки Глобальний Адмін') }}</span>
                     {% else %}
@@ -45,7 +45,7 @@
                     {% endif %}
                 </td>
                 
-                <td style="text-align: right; white-space: nowrap;">
+                <td class="admin-cell-actions" data-label="{{ _('Дії') }}">
                     <a href="{{ url_for('admin.edit_role', lang_code=g.lang_code, role_id=role.id) }}" class="button-small">
                         {{ _('Редагувати') }}
                     </a>

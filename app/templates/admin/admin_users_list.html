@@ -10,7 +10,7 @@
 
     <h2 style="text-align: left; margin-bottom: 15px;">{{ _('Керування користувачами') }}</h2>
 
-    <div style="text-align: left; margin-bottom: 20px;">
+    <div class="admin-toolbar">
         <a href="{{ url_for('admin.add_user', lang_code=g.lang_code) }}" class="button" style="min-width: 200px; margin-top: 0;">
             + {{ _('Додати користувача') }}
         </a>
@@ -37,17 +37,17 @@
     {% endfor %}
 
     <div class="dashboard-section" style="padding: 16px 20px; margin-bottom: 20px;">
-        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+        <div class="admin-filter-bar">
 
             <div style="flex: 1; min-width: 180px;">
-                <label style="display: block; font-size: 13px; color: #666; margin-bottom: 4px;">{{ _('Пошук') }}</label>
+                <label class="admin-filter-label">{{ _('Пошук') }}</label>
                 <input type="text" id="filter-search" placeholder="{{ _('Логін або ПІБ...') }}"
-                       style="width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+                       class="admin-filter-input">
             </div>
 
             <div style="flex: 1; min-width: 180px;">
-                <label style="display: block; font-size: 13px; color: #666; margin-bottom: 4px;">{{ _('Установа') }}</label>
-                <select id="filter-institution" style="width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+                <label class="admin-filter-label">{{ _('Установа') }}</label>
+                <select id="filter-institution" class="admin-filter-input">
                     <option value="">— {{ _('всі') }} —</option>
                     {% for inst in filter_institutions.v | sort(attribute='name_uk') %}
                         <option value="{{ inst.id }}">{{ inst.name_uk }}</option>
@@ -56,8 +56,8 @@
             </div>
 
             <div style="flex: 0 0 160px;">
-                <label style="display: block; font-size: 13px; color: #666; margin-bottom: 4px;">{{ _('Роль') }}</label>
-                <select id="filter-role" style="width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+                <label class="admin-filter-label">{{ _('Роль') }}</label>
+                <select id="filter-role" class="admin-filter-input">
                     <option value="">— {{ _('всі') }} —</option>
                     {% for role in filter_roles.v | sort(attribute='name') %}
                         <option value="{{ role.name }}">{{ role.name }}</option>
@@ -93,24 +93,24 @@
             <tr data-search="{{ user.username }} {{ user.full_name }}"
                 data-institution="{{ user.institutions | map(attribute='id') | join('|') }}"
                 data-role="{{ user.roles | map(attribute='name') | join('|') }}">
-                <td>
+                <td data-label="{{ _('Логін') }}">
                     <strong>{{ user.username }}</strong><br>
                     <span style="font-size: 0.85em; color: gray;">{{ user.email or '' }}</span>
                 </td>
-                <td>{{ user.full_name }}</td>
-                <td>
+                <td data-label="{{ _('Прізвище та ім\'я') }}">{{ user.full_name }}</td>
+                <td data-label="{{ _('Установи') }}">
                     {% for inst in user.institutions %}
                         <span class="badge badge-success" style="margin-bottom: 2px;">{{ inst.name_uk }}</span>
                     {% else %}
                         <span style="color: gray;">---</span>
                     {% endfor %}
                 </td>
-                <td>
+                <td data-label="{{ _('Ролі') }}">
                     {% for role in user.roles %}
                         <span class="badge badge-secondary" style="margin-bottom: 2px;">{{ role.name }}</span>
                     {% endfor %}
                 </td>
-                <td style="text-align: right; white-space: nowrap;">
+                <td class="admin-cell-actions" data-label="{{ _('Дії') }}">
                     <a href="{{ url_for('admin.edit_user', lang_code=g.lang_code, user_id=user.id) }}" class="button-small">
                         {{ _('Редагувати') }}
                     </a>

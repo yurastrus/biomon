@@ -13,7 +13,7 @@
 
     <h2 style="text-align: left; margin-bottom: 15px;">{{ _('Звернення з форми зворотного зв’язку') }}</h2>
 
-    <div style="text-align: left; margin-bottom: 20px;">
+    <div class="admin-toolbar">
         {% set filters = [(None, _('Усі')), ('new', _('Нові')), ('read', _('Прочитані')), ('replied', _('Відповіли'))] %}
         {% for value, label in filters %}
             <a href="{{ url_for('admin.contact_submissions', lang_code=g.lang_code, status=value) }}"
@@ -37,24 +37,24 @@
         <tbody>
             {% for s in submissions %}
             <tr>
-                <td style="white-space: nowrap; font-size: 0.85em; color: #666;">
+                <td data-label="{{ _('Дата') }}" style="white-space: nowrap; font-size: 0.85em; color: #666;">
                     {{ s.submitted_at.strftime('%Y-%m-%d %H:%M') if s.submitted_at else '' }}
                 </td>
-                <td>
+                <td data-label="{{ _('Від') }}">
                     <strong>{{ s.name }}</strong><br>
                     <a href="mailto:{{ s.email }}?subject=Re: {{ s.subject or _('Ваше звернення на biomon.app') }}"
                        style="font-size: 0.85em;">{{ s.email }}</a>
                 </td>
-                <td>
+                <td data-label="{{ _('Тема / повідомлення') }}">
                     {% if s.subject %}<strong>{{ s.subject }}</strong><br>{% endif %}
                     <span style="white-space: pre-wrap;">{{ s.message }}</span>
                 </td>
-                <td>
+                <td data-label="{{ _('Статус') }}">
                     <span class="badge {{ status_badge.get(s.status, 'badge-secondary') }}">
                         {{ status_labels.get(s.status, s.status) }}
                     </span>
                 </td>
-                <td style="text-align: right; white-space: nowrap;">
+                <td class="admin-cell-actions" data-label="{{ _('Дії') }}">
                     {% for value, label in [('read', _('Прочитане')), ('replied', _('Відповіли')), ('new', _('Нове'))] %}
                         {% if s.status != value %}
                         <form action="{{ url_for('admin.update_submission_status', lang_code=g.lang_code, submission_id=s.id) }}"

@@ -716,3 +716,93 @@ No submodule files touched; `git submodule status` clean.
 ### State
 Full suite: **1447 passed, 36 skipped, 0 failed**. The suite is green for the
 first time in this checkout's history.
+
+
+## 2026-08-28 — Admin panel made usable on a phone
+
+### Problem
+Reported from the field: the admin pages are unusable on a phone — "неможливо
+нічого редагувати". The site itself has been responsive for a while (viewport
+meta, collapsible header nav, dashboard grids collapsing at 992px), but nothing
+below that had ever been applied to `/admin`. Those pages are five data tables
+plus three dense forms, and at ~375px:
+
+- a `<table>` either overflowed the viewport or crushed every column to one word
+  per line. The overflow was not even scrollable: `.container` sets
+  `overflow: hidden`, so anything past the right edge was clipped and gone.
+- `main .container:not(.maplistcontainer)` is a **centred flex column**, so the
+  admin blocks shrank to their content width — 234px of a 356px viewport.
+- the action buttons were 12px links about 24px tall, well under a usable tap
+  target, and the row of filter controls kept its desktop `flex` basis.
+
+### Approach
+Same shape as the camera-traps module (`app/camera_traps/static/css/camera_traps.css`,
+section 21): one documented block of overrides at the bottom of the stylesheet
+rather than inline styles scattered across templates. Where a template carried
+an inline `style="display:flex; …"` that the media query would have to fight,
+the inline blob was replaced by a class hook (`.admin-toolbar`,
+`.admin-filter-bar`, `.admin-form-actions`, `.admin-cell-actions`,
+`.inst-access-scroll`) defined next to the other admin rules.
+
+Below 768px each table becomes a stack of cards: one card per row, one labelled
+line per cell. The label is `content: attr(data-label)` on `td::before`, so every
+`<td>` in the five list templates gained a `data-label`. `<thead>` is visually
+hidden (clip rect, not `display:none`) so it stays in the accessibility tree.
+Cells without a `data-label` — the "nothing found" `colspan` rows — render plain.
+
+### Changes
+- `app/static/css/style.css`
+  - `.button-small` / `.button-danger` were only defined as `.admin-table td a.…`,
+    so every `<button class="button-small">` in an action cell and every status
+    filter pill outside a table (verification requests, contact submissions) fell
+    back to the browser default. Added element-agnostic definitions; the in-table
+    anchor rules stay as the more specific override.
+  - New admin layout helpers (the class hooks listed above) + `.admin-filter-label`
+    / `.admin-filter-input` lifted out of the users-list template.
+  - New `@media (max-width: 768px)` admin section: tables → labelled cards,
+    action cells as a wrapping flex row of ≥42px targets, filter bar stacked,
+    form footers `column-reverse` (primary action first, under the thumb),
+    inputs at 16px so iOS Safari does not zoom on focus, and the admin blocks
+    `align-self: stretch` to undo the centred-flex shrink.
+- The nine `app/templates/admin/*.html`: `data-label` on every data cell, class
+  hooks in place of the inline flex blobs, `.admin-form-card` on the three form
+  containers.
+- `app/templates/base.html`: stylesheet cache-buster `v=2` → `v=3`.
+
+### Decisions
+- **Cards, not horizontal scroll.** The camera-traps precedent for a wide table
+  is `.table-scroll` (`overflow-x: auto`). That suits a read-only analytics
+  table, but the complaint here is about *editing*: side-scrolling to reach the
+  action column on every row is exactly what made it unusable. Cards keep each
+  record's actions on screen.
+- **Scoped, not global.** `.dashboard-section` is shared with the CT and PAM
+  dashboards, so the mobile padding override is keyed to `.admin-form-card`
+  instead. Likewise the `align-self: stretch` fix lists the admin blocks by
+  class rather than touching `main .container`, whose centring the rest of the
+  site depends on.
+- Two buttons inside one `<form>` (approve / reject on a verification request)
+  are left stacked full-width rather than squeezed side by side — the extra row
+  is cheap and mis-tapping "Відхилити" is not.
+
+### Verification
+Rendered all seven admin pages through the test client into static dumps and
+measured them in a headless browser at 375×812 and at 1280px:
+
+- 375px: no horizontal overflow on any page (`scrollWidth == innerWidth == 375`),
+  blocks full-width (336px of 375), rows as cards with the right labels, action
+  controls 149×43 / 307×42, inputs 42px tall at 16px.
+- 1280px: `display` still `table-row` / `table-cell`, `thead` visible, labels
+  suppressed, filter bar back in a row — desktop untouched.
+
+Two bugs surfaced while measuring and were fixed: a direct-child `<button>` in an
+action cell took `width: 100%` and so claimed a whole row (it is a flex item —
+it must flex), and `.site-input` is redefined in a per-template `<style>` block
+that comes after the stylesheet, so the mobile rule had to match on
+element+class to outrank it.
+
+Also fixed in passing: the empty state in `admin_institutions_list.html` spanned
+five columns in a six-column table.
+
+### State
+Full suite: **1569 passed, 36 skipped**. Not yet deployed — `update.sh` needs
+interactive sudo on the server.

@@ -17,7 +17,7 @@
         {{ _('Це користувачі, які зареєструвалися самостійно і підтвердили email. Підтвердження надає лише роль верифікатора: доступні будуть публічні локації. Доступ до територій установи надається окремо в розділі «Користувачі».') }}
     </p>
 
-    <div style="text-align: left; margin-bottom: 20px;">
+    <div class="admin-toolbar">
         {% set filters = [('pending', _('Очікують')), ('approved', _('Підтверджені')), ('rejected', _('Відхилені')), ('all', _('Усі'))] %}
         {% for value, label in filters %}
             <a href="{{ url_for('admin.verification_requests', lang_code=g.lang_code, status=value) }}"
@@ -41,16 +41,16 @@
         <tbody>
             {% for req in requests %}
             <tr>
-                <td style="white-space: nowrap; font-size: 0.85em; color: #666;">
+                <td data-label="{{ _('Дата') }}" style="white-space: nowrap; font-size: 0.85em; color: #666;">
                     {{ req.requested_at.strftime('%Y-%m-%d %H:%M') if req.requested_at else '' }}
                 </td>
-                <td>
+                <td data-label="{{ _('Користувач') }}">
                     <strong>{{ req.user.full_name }}</strong><br>
                     <span style="font-size: 0.85em; color: #666;">{{ req.user.username }}</span><br>
                     <a href="mailto:{{ req.user.email }}" style="font-size: 0.85em;">{{ req.user.email }}</a>
                 </td>
-                <td>{{ module_labels.get(req.module, req.module) }}</td>
-                <td>
+                <td data-label="{{ _('Просить') }}">{{ module_labels.get(req.module, req.module) }}</td>
+                <td data-label="{{ _('Статус') }}">
                     <span class="badge {{ status_badge.get(req.status, 'badge-secondary') }}">
                         {{ status_labels.get(req.status, req.status) }}
                     </span>
@@ -64,13 +64,13 @@
                     <div style="font-size: 0.8em; color: #666; margin-top: 4px; white-space: pre-wrap;">{{ req.note }}</div>
                     {% endif %}
                 </td>
-                <td style="text-align: right; white-space: nowrap;">
+                <td class="admin-cell-actions" data-label="{{ _('Дії') }}">
                     {% if req.status == 'pending' %}
                     <form action="{{ url_for('admin.decide_verification_request', lang_code=g.lang_code, request_id=req.id) }}"
                           method="POST" style="margin: 0; padding: 0;">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="text" name="note" placeholder="{{ _('Коментар (необовʼязково)') }}"
-                               style="width: 190px; padding: 5px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 3px;">
+                               style="width: 190px; max-width: 100%; box-sizing: border-box; padding: 5px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 3px;">
                         <br>
                         <button type="submit" name="action" value="approve" class="button-small">
                             {{ _('Підтвердити') }}

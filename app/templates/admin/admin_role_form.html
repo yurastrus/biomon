@@ -9,7 +9,7 @@
         &raquo; <strong>{{ title }}</strong>
     </div>
 
-    <div class="dashboard-section" style="padding: 30px; max-width: 700px; margin: 0 auto;">
+    <div class="dashboard-section admin-form-card" style="padding: 30px; max-width: 700px; margin: 0 auto;">
         
         <h2 class="section-title" style="text-align: left; border-bottom: none; margin-bottom: 30px;">
             {{ title }}
@@ -66,7 +66,7 @@
                 </div>
             </div>
 
-            <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; display: flex; justify-content: flex-end; gap: 15px;">
+            <div class="admin-form-actions">
                 <a href="{{ url_for('admin.role_list', lang_code=g.lang_code) }}" class="button cancel" style="margin: 0; min-width: 150px;">
                     {{ _('Скасувати') }}
                 </a>

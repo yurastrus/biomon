@@ -9,7 +9,7 @@
         &raquo; <strong>{{ title }}</strong>
     </div>
 
-    <div class="dashboard-section" style="padding: 30px;">
+    <div class="dashboard-section admin-form-card" style="padding: 30px;">
 
         <h2 class="section-title" style="text-align: left; border-bottom: none; margin-bottom: 30px;">
             {{ title }}
@@ -128,8 +128,8 @@
                         {{ _("Відмітьте установи та налаштуйте права доступу. «Доступ» — може переглядати та ідентифікувати; «Експорт» — може завантажувати дані.") }}
                     </small>
 
-                    <div style="border: 1px solid #dee2e6; border-radius: 4px; overflow: hidden; max-height: 340px; overflow-y: auto;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <div class="inst-access-scroll">
+                        <table class="inst-access-table">
                             <thead>
                                 <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; position: sticky; top: 0;">
                                     <th style="text-align: left; padding: 10px 14px; font-weight: 600;">{{ _("Установа") }}</th>
@@ -305,7 +305,7 @@
 
             </div>
 
-            <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; display: flex; justify-content: flex-end; gap: 15px;">
+            <div class="admin-form-actions">
                 <a href="{{ url_for('admin.user_list', lang_code=g.lang_code) }}" class="button cancel" style="margin: 0; min-width: 150px;">
                     {{ _('Скасувати') }}
                 </a>
