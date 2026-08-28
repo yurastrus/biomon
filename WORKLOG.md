@@ -804,8 +804,8 @@ Also fixed in passing: the empty state in `admin_institutions_list.html` spanned
 five columns in a six-column table.
 
 ### State
-Full suite: **1569 passed, 36 skipped**. Not yet deployed — `update.sh` needs
-interactive sudo on the server.
+Full suite: **1569 passed, 36 skipped**. Deployed 2026-08-28 and confirmed
+working on a phone by Iurii.
 
 
 ## 2026-08-28 (later) — Telling the user when verification rights are granted
@@ -874,4 +874,4 @@ admin blueprint) — but it is real and worth chasing separately, since the suit
 is otherwise expected to be reliably green.
 
 ### State
-Committed and pushed. Not deployed — `update.sh` needs interactive sudo.
+Committed and pushed. Deployed 2026-08-28 and confirmed working by Iurii.
