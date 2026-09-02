@@ -1108,3 +1108,114 @@ be killed by PID. Worth remembering for any long remote job started this way.
 
 ### Still open
 A full dry-run across all 24 institutions has not been done yet — only RSNR.
+
+## 2026-09-02 (later still) — Export query: scope before aggregating, and make it deterministic
+
+Triggered by the first full backup run: nine parks finished in 47 s, then one
+park hung for over nine minutes. The user pushed back on the obvious reading
+("Roztochya has the most data, why is a small park slower?"), which was right —
+both of my first two explanations were wrong, and each was abandoned only after
+a measurement contradicted it.
+
+### Two wrong guesses, for the record
+1. **"Too many locations in the EXISTS."** Carpathian BR has 108 locations, the
+   most of any institution. It finished in 3 s. Dead.
+2. **"Fixed cost of the shared CTEs dominates."** Timed standalone: 375 ms and
+   101 ms. Nowhere near the observed minutes. Dead.
+
+What settled it was per-park timing taken from file mtimes (free, no extra load)
+plus `pg_stat_activity`: nine parks at 3–11 s each, then the tenth — Tarutynskyi
+Step, **two locations** — stuck, CPU-bound, `wait_event` empty, cache hit ratio
+excellent. Smallest park, slowest query.
+
+### The actual cause
+`EXPLAIN` showed the order of operations. ObservationConsensus and
+WinningIdentifiers each aggregate the full `identifications x photos` join
+(≈500k x 750k) and AIPick windows over ≈760k `ai_predictions`. Only *after* all
+of that was the institution filter applied, as a trailing `Nested Loop Semi
+Join` on `location_institutions` estimated at `rows=1` — an estimate that pushed
+the planner into nested loops throughout.
+
+So every park paid for aggregating the entire archive, and the more selective
+the filter, the worse the plan.
+
+### Fix 1 — ScopedObs
+Everything depending only on the observation (date window, location validity,
+institution, QC exclusion) moved into a `ScopedObs` CTE evaluated once; the
+heavy CTEs join it. Species predicates stayed in the producers — `species` is
+not joined at that level.
+
+Measured on production ct_db:
+
+| | before | after |
+|---|---|---|
+| Tarutynskyi Step (2 locations) | 9+ min | **84 ms** |
+| Roztochya (22 383 series) | 23 s | **399 ms** |
+| all 24 institutions | never finished | **18 s** |
+
+Note the 23 s figure for Roztochya was itself measured on a warm cache right
+after a 2.5-minute scan of the same data — a bad benchmark that flattered the
+old code.
+
+### Fix 2 — determinism (found by A/B diffing the output)
+Re-running the export produced files that differed from the previous run.
+Row-level analysis across ten parks: **zero rows added or removed, and the only
+changed field anywhere was `individualCount`**, always on `unverified (AI)` rows
+— 147 in Hutsulshchyna, 77 in Roztochya, 73 in Carpathian BR.
+
+The user raised the obvious alternative: the site is live, someone may have been
+classifying. Checked rather than assumed — 94 new identifications had indeed
+arrived in that window, so the concern was well founded. But `ai_predictions`
+had not been written since 7 August, and a new human identification moves a
+series out of the AI branch entirely, changing `identifiedBy` and status. Those
+fields were untouched. So the AI-row differences could not be new data.
+
+The cause: none of the orderings was total.
+- **AIPick** picks one prediction per series, but a series has many photos and
+  therefore many predictions. Equal `accuracy_rank` and `prediction_score` left
+  the winner — and its `animal_count` — to the plan. Added `ap.id`.
+- **RankedConsensus** — equal votes and quantity, arbitrary species. Added
+  `species_id`.
+- **RankedAggregatedData** (both aggregation modes) — added `observation_id`.
+- **Final `ORDER BY series_start_time`** is not a total order. Added
+  `observation_id, species_id`.
+
+This matters beyond tidiness: the backup decides "nothing changed" by hashing
+the CSV. A non-deterministic query would rewrite every file every night and
+rotate the previous version away, defeating both the change check and the
+retention.
+
+Verified after the fix: two consecutive full runs, second reports
+`0 written, 23 unchanged, 0 failed`, and all 23 files compare byte-identical.
+
+### Validation
+- All **72** generated SQL variants (3 export modes x 2 filter types x 3
+  aggregations x with/without institution filter, QC flags on) pass `EXPLAIN`
+  against the real schema with zero errors.
+- Row-level equivalence checked against files produced by the old code and
+  against the user's own manual download: 674, 1253, 6090 rows — exact.
+- `tests/test_ct_export_scoping.py` — 25 tests reading the generated SQL: the
+  scope CTE exists in every mode, each heavy CTE joins it, the institution
+  filter appears exactly once, species predicates stay put, and every ordering
+  has a tie-break.
+- Full suite: **1634 passed, 36 skipped**.
+
+### End-to-end result
+23 institutions exported in 18 s, 8.3 MB total, synced to
+`gdrive_backup:backups/my_server/phototraps_data/` — 23 park folders next to the
+existing `postgres/` and `geoserver/`. One institution (YSSNR) has no occurrence
+rows and is correctly skipped.
+
+### Open
+- **myproject still points at the old shared-ct commit.** It uses the same
+  export code and would benefit identically. Bumping it is a separate change in
+  a separate repo.
+- The nightly `full_backup.sh` run has not yet exercised block `4b` in place;
+  check `full_backup.log` after 02:30 UTC.
+
+### Two operational lessons
+- Interrupting `ssh` locally does not kill the remote process; a stray full
+  export kept running and had to be killed by PID.
+- A waiter written as `while pgrep -f "flask ct-csv-backup"` matches **its own
+  command line** and never exits. It looked like the export was hanging when it
+  had finished minutes earlier.
