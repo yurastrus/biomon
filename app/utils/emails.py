@@ -196,12 +196,15 @@ def send_rights_granted_email(user, modules):
 
 
 def notify_admin_new_requests(user, modules):
-    """Ping the admin (Telegram + email) about a confirmed registration.
+    """Announce a confirmed registration: Telegram channel plus one email each
+    to every admin and to the managers of the institutions named in the request.
 
     Called only AFTER the address is confirmed, so unconfirmed bot signups never
-    reach the admin's inbox. Managers of the institutions the applicant named are
-    notified too — the request waits in their queue, and nobody else can answer
-    for their territory.
+    reach anybody's inbox. Recipients come from
+    :func:`new_request_recipients`; an account with no email is skipped there.
+
+    Returns:
+        list[str]: addresses the letter was queued for.
     """
     from app.utils.notifications import CH_BIOMON, send_notification
     from markupsafe import escape
@@ -239,43 +242,76 @@ def notify_admin_new_requests(user, modules):
         f"{email_note}\n"
         f"{_site_url()}/uk/admin/verification-requests\n"
     )
-    admin_email = current_app.config.get('ADMIN_EMAIL')
-    if admin_email:
-        send_email("Новий запит на верифікацію — biomon", [admin_email], body)
+    recipients = new_request_recipients(user)
+    if not recipients:
+        current_app.logger.warning(
+            "New verification request from user_id=%s: nobody to email "
+            "(no admin or institution manager has an email address)", user.id)
+        return []
 
-    for manager_email in _managers_to_notify(user, admin_email):
-        send_email("Новий запит на верифікацію — biomon", [manager_email], body)
+    current_app.logger.info(
+        "New verification request from user_id=%s: emailing %s",
+        user.id, ', '.join(recipients))
+    subject = "Новий запит на верифікацію — biomon"
+    for address in recipients:
+        # One message per address rather than one with many recipients: the
+        # people involved are from different institutions and need not see each
+        # other's addresses.
+        send_email(subject, [address], body)
+    return recipients
 
 
-def _managers_to_notify(user, admin_email=None):
-    """Addresses of managers who can act on this applicant's request.
+def new_request_recipients(user, admin_email=None):
+    """Everyone who should learn that this applicant is asking for rights.
 
-    A manager qualifies by holding the ``manager`` role and having access to one
-    of the institutions named in the request. Admins are excluded: they already
-    got the letter above.
+    Two groups, because two kinds of people can answer a request:
+
+    * **admins** — they may decide any request, so every one of them concerns
+      them (this is not read from ``ADMIN_EMAIL``: that config holds at most one
+      address and is unset on some deployments, which used to mean the letter
+      went nowhere);
+    * **managers of the institutions named in the request** — nobody else can
+      answer for their territory.
+
+    An account with no email address is skipped: there is nothing to send to,
+    and such a person sees the request in the admin queue anyway. Deactivated
+    accounts are skipped too.
+
+    ``admin_email`` may be given to add a mailbox that has no user account
+    (``config['ADMIN_EMAIL']`` when set); duplicates are collapsed
+    case-insensitively.
+
+    Returns:
+        list[str]: email addresses, admins first.
     """
+    from app.models import User as UserModel
+
     institution_ids = {inst.id
                        for req in user.verification_requests
                        for inst in req.requested_institutions}
-    if not institution_ids:
-        return []
 
-    from app.models import User as UserModel
-
+    admins, managers = [], []
     seen = set()
-    if admin_email:
-        seen.add(admin_email.lower())
-    addresses = []
-    for candidate in UserModel.query.filter(UserModel.is_active.is_(True)).all():
-        if not candidate.email or candidate.has_role('admin'):
-            continue
-        if not any(role.name == 'manager' for role in candidate.roles):
-            continue
-        if not institution_ids & {inst.id for inst in candidate.institutions}:
-            continue
-        key = candidate.email.lower()
+
+    def add(bucket, address):
+        key = address.lower()
         if key in seen:
-            continue
+            return
         seen.add(key)
-        addresses.append(candidate.email)
-    return addresses
+        bucket.append(address)
+
+    admin_email = admin_email or current_app.config.get('ADMIN_EMAIL')
+    if admin_email:
+        add(admins, admin_email)
+
+    for candidate in UserModel.query.filter(UserModel.is_active.is_(True)).all():
+        if not candidate.email:
+            continue
+        role_names = {role.name for role in candidate.roles}
+        if 'admin' in role_names:
+            add(admins, candidate.email)
+        elif 'manager' in role_names and institution_ids & {
+                inst.id for inst in candidate.institutions}:
+            add(managers, candidate.email)
+
+    return admins + managers

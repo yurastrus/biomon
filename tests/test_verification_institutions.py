@@ -66,6 +66,21 @@ def mail_out():
 
 
 @pytest.fixture
+def no_admin_email(app):
+    """Drop ADMIN_EMAIL for tests that assert the exact recipient list.
+
+    The testing config carries one; production does not (which is exactly the
+    case that used to leave the letter with nowhere to go).
+    """
+    saved = app.config.get('ADMIN_EMAIL')
+    app.config['ADMIN_EMAIL'] = None
+    try:
+        yield
+    finally:
+        app.config['ADMIN_EMAIL'] = saved
+
+
+@pytest.fixture
 def parks(db_session):
     """Two institutions, as in the Skole Beskids / Uzhanskyi example."""
     from app.models import Institution
@@ -447,6 +462,53 @@ def test_managers_of_the_named_parks_are_notified(client, db_session, parks,
     recipients = {addr for m in mail_out for addr in m['to']}
     assert 'uzh@example.com' in recipients
     assert 'other@example.com' not in recipients, 'no institution in common'
+
+
+def test_admins_are_notified_without_admin_email_configured(
+        client, db_session, parks, make_user, mail_out, no_admin_email):
+    """ADMIN_EMAIL holds at most one address and is unset on some deployments;
+    the letter must reach the admin accounts themselves."""
+    root = make_user(username='root_with_mail', roles=('admin',))
+    root.email = 'root@example.com'
+    db_session.commit()
+
+    _register(client, institution_ids=[parks[1].id])
+    client.get(_confirm_link_path(mail_out[0]))
+
+    recipients = {addr for m in mail_out for addr in m['to']}
+    assert 'root@example.com' in recipients
+
+
+def test_a_decider_without_an_email_is_skipped(client, db_session, parks,
+                                               manager_of, make_user, mail_out,
+                                               no_admin_email):
+    """Nothing to send to, and they see the request in the queue anyway."""
+    from app.utils.emails import new_request_recipients
+    from app.models import User
+
+    skole, uzh = parks
+    manager_of('silent_manager', [uzh], email=None)
+    manager_of('loud_manager', [uzh], email='loud@example.com')
+
+    _register(client, institution_ids=[uzh.id])
+    applicant = db_session.query(User).filter_by(username='ivan').one()
+    assert new_request_recipients(applicant) == ['loud@example.com']
+
+
+def test_a_deactivated_manager_is_not_notified(client, db_session, parks,
+                                               manager_of, mail_out,
+                                               no_admin_email):
+    from app.utils.emails import new_request_recipients
+    from app.models import User
+
+    skole, uzh = parks
+    gone = manager_of('gone_manager', [uzh], email='gone@example.com')
+    gone.is_active = False
+    db_session.commit()
+
+    _register(client, institution_ids=[uzh.id])
+    applicant = db_session.query(User).filter_by(username='ivan').one()
+    assert new_request_recipients(applicant) == []
 
 
 # ── the applicant's own note (motivation and experience) ───────────────────
