@@ -44,7 +44,11 @@ BACKUP_ROOT="${BACKUP_ROOT:-/home/yura/backups}"
 POSTGRES_DIR="$BACKUP_ROOT/postgres"
 GEOSERVER_DIR="$BACKUP_ROOT/geoserver"
 CSV_DIR="$BACKUP_ROOT/phototraps_data"
-STAMP_FILE="${BACKUP_STAMP_FILE:-$BACKUP_ROOT/.last_verified_backup}"
+# State lives OUTSIDE $BACKUP_ROOT on purpose: full_backup.sh mirrors the whole
+# backup root to Google Drive, so a stamp file kept in there gets uploaded with
+# the backups. Operational state is not a backup artefact.
+STATE_DIR="${BACKUP_STATE_DIR:-/home/yura/.backup-state}"
+STAMP_FILE="${BACKUP_STAMP_FILE:-$STATE_DIR/last_verified_backup}"
 BIOMON_ENV="${BIOMON_ENV:-/var/www/biomon/.env}"
 WEBHOOK_CONF="${WEBHOOK_CONF:-/etc/alert-webhook.conf}"
 
@@ -256,6 +260,7 @@ LINES+=("💾 Диск: $(echo "$VOL" | awk '{print $2" зайнято, "$3" в�
 
 # ── report ───────────────────────────────────────────────────────────────────
 if [ "${#PROBLEMS[@]}" -eq 0 ]; then
+    mkdir -p "$(dirname "$STAMP_FILE")"
     echo "$TODAY" > "$STAMP_FILE"
     send "✅ Бекап успішний на ${HOST} ($(date '+%Y-%m-%d %H:%M'))
 Разом: $(human "$TOTAL_BYTES")

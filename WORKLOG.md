@@ -1279,3 +1279,46 @@ shape reports itself instead of hiding.
 `pipefail` line and a section 6 that calls the report after the rclone sync.
 Section 6 deliberately does not touch `BACKUP_SUCCESS`: the backup is already
 made by then, and the report only says what came of it.
+
+## 2026-09-02 — Silencing the daily false "GeoServer не відповідає" alert
+
+`disk-alert.sh` runs every five minutes and checks GeoServer over HTTP.
+`geoserver_backup_helper.sh` stops the service to tar its data directory, so one
+of those runs lands inside the backup window every single night. The alert was
+correct about the symptom and useless as a signal.
+
+### Approach: maintenance flag, with an expiry
+`full_backup.sh` raises `/home/yura/.backup-state/geoserver-maintenance` around
+the helper call and clears it as soon as the service is confirmed back up (plus a
+`trap ... EXIT` in case the script dies in between). `disk-alert.sh` skips the
+HTTP check while that flag is fresh.
+
+The expiry is the part that matters. A flag with no age limit would mean a backup
+that died between raising and clearing it silences GeoServer monitoring
+permanently — trading a daily false positive for an indefinite false negative,
+which is strictly worse. A flag older than 30 minutes is therefore reported as
+its own problem and then removed, restoring the check.
+
+Rejected alternative: skipping the check between 02:25 and 02:45. It couples the
+monitor to the backup's schedule, and says nothing if the backup runs long.
+
+### Verified offline before touching the real files
+Patched copies in a mode-700 directory (`disk-alert.sh` carries the Telegram
+token inline, so it must not be copied anywhere world-readable), with
+`send_alert` stubbed to `echo` and the health URL pointed at a dead port:
+
+| flag | result |
+|---|---|
+| absent | 🔴 GeoServer не відповідає — as before |
+| fresh | nothing — check skipped |
+| 2 hours old | ⚠️ stale-flag alert **and** the GeoServer alert; flag removed |
+
+Both files pass `bash -n`, and the patcher is idempotent.
+
+### Side finding: operational state was being backed up
+`.last_verified_backup` (the report's success stamp) lived inside `$BACKUP_ROOT`,
+which `rclone sync` mirrors wholesale — so it had already been uploaded to Drive,
+and the maintenance flag would have followed. Operational state is not a backup
+artefact. Both moved to `/home/yura/.backup-state/`, outside the mirrored tree;
+`BACKUP_STATE_DIR` overrides it. The next sync removes the stray file from Drive
+on its own, because `sync` mirrors deletions.
