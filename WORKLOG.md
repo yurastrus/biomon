@@ -1414,3 +1414,39 @@ was touched, and their translation catalogs stay isolated.
 ### Deploy
 1. `flask db upgrade` (creates the table and the column, idempotent).
 2. No submodule commits needed — the change is entirely in the biomon root.
+
+
+## 2026-09-02 (later) — Who gets the "new request" letter
+
+`ADMIN_EMAIL` holds at most one address and is unset in production, so the
+letter announcing a confirmed registration reached nobody but the Telegram
+channel. Recipients now come from the database instead:
+
+* every active account with the `admin` role, plus
+* managers of the institutions named in the request.
+
+`ADMIN_EMAIL` still works as an extra mailbox without an account when set.
+An account with no email address is skipped — there is nothing to send to, and
+that person sees the request in the queue anyway (this is deliberate: two of the
+production managers have no address on file). Deactivated accounts are skipped.
+One message per recipient, not one with many To: addresses — the people involved
+work for different institutions and need not see each other's addresses. The
+recipient list is logged.
+
+### Verified on production
+A real test request (`test.zayavka.claude`, Yavorivskyi NNP, photos + sounds)
+produced three letters, all accepted by Resend:
+`yurastrus@gmail.com` (the only admin account with an address),
+`ira.shpakovska@fzs.org` and `despob@outlook.com` (managers holding YNNP).
+`admin_ynnp` and `daria.svidzinska` were skipped for having no address.
+
+The queue then showed the request to all four of those deciders, with only YNNP
+actionable for `admin_ynnp` and both parks actionable for the wide-access
+managers; `volodia.dovhanych` (KBR only) and `Prylutskaa` saw nothing.
+
+### Trap worth remembering
+`send_email` hands delivery to a **daemon** thread. That is fine under gunicorn,
+which keeps running, but a one-off `venv/bin/python -c …` script exits
+immediately and its daemon threads are killed mid-SMTP — the first run of the
+prod test queued three letters and delivered none. Any script that sends mail
+outside the web process must join the delivery threads before exiting.
