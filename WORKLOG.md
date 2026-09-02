@@ -1654,3 +1654,59 @@ Not touched, deliberately: `admin_users_list.html` still lists a person's parks
 without module badges, and `UserService.get_available_institutions` (which parks
 a manager may hand out) is still module-blind. Both are administration views,
 not data access.
+
+
+## 2026-09-02 (verification) — Did anybody's access change, page by page?
+
+Two levels, both read-only against the production database.
+
+### 1. Every user, old rule vs new
+`scratchpad/access_diff.py` compared, for all 72 accounts, what the OLD rule
+allowed (a row = access in both modules, `can_export` = export in both) against
+what the NEW one does.
+
+* 35 accounts answer differently, **all in the same direction**: they lose PAM
+  visibility for parks where they never had the right to verify sounds. 24 of
+  them also lose PAM export.
+* Nobody lost camera-trap access and nobody gained anything.
+* Largest: `tonya.tarasova` (18 parks) and `marichkamartsiv` (17), both
+  `analyst,ct_verifier`.
+* The admin is unaffected (their access comes from the role, not from rows).
+
+Worth stating plainly: before this change those 35 people could open the PAM
+data of their parks (and 24 could export it) although they could not verify
+sounds. Now they cannot. One tick in the new form gives it back.
+
+### 2. Every page, old code vs new
+A git worktree at the pre-phase-3 commit ran the same probe as the current tree,
+against the same database: 73 institution-sensitive GET pages (all PAM pages
+plus the camera-trap views that statically reference the access helpers) for
+three identities that bracket the change — somebody who loses PAM, somebody who
+keeps both modules, and an anonymous visitor.
+
+**213 of 219 fingerprints identical.** All six differences belong to
+`tonya.tarasova`, all on PAM endpoints:
+
+| page | before | after |
+|---|---|---|
+| `/uk/pam/data-export` | 200, four institutions in the filter | 302 (no rights) |
+| `/uk/api/pam/get-filters-data` | 6 institutions, 79 locations | 4 / 54 |
+| `/uk/api/pam/get-trends-filters` | 6 / 79 | 4 / 54 |
+| `/uk/api/pam/get-locations-map` | 37 points | 34 |
+| `/uk/api/pam/locations-with-status` | 83 rows | empty list |
+| `/uk/api/pam/data-preview` | **500** | 403 |
+
+Zero render errors, zero differences for the user who keeps both modules, zero
+for anonymous visitors.
+
+### Side finding, fixed: a 500 that predated all of this
+`/uk/api/pam/data-preview` (and `data-download`) answered 500 when called
+without dates, for everybody including admins: the bounds are interpolated into
+SQL, so a missing date reached PostgreSQL as `"None 00:00:00"`. Fixed in
+shared-pam `4fe44ff` — `_require_export_date` validates and normalises, an
+inverted range is refused too, and both endpoints answer 400 with the field
+name. Verified against production data: admin and manager now get
+`400 start_date is required (YYYY-MM-DD)`, a valid range still returns 200.
+Tests: `tests/test_pam_export_date_validation.py` (16).
+
+Full suite after everything: 1755 passed, 36 skipped.
