@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-02 16:39+0300\n"
+"POT-Creation-Date: 2026-09-02 18:37+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -131,25 +131,30 @@ msgstr ""
 msgid "Невідома дія."
 msgstr ""
 
-#: app/admin/routes.py:545
+#: app/admin/routes.py:548
 #, python-format
 msgid "Запит підтверджено для: %(names)s."
 msgstr ""
 
-#: app/admin/routes.py:548
+#: app/admin/routes.py:553
+#, python-format
+msgid "Галочок не залишилося, тож запит відхилено для: %(names)s."
+msgstr ""
+
+#: app/admin/routes.py:556
 msgid "Запит підтверджено."
 msgstr ""
 
-#: app/admin/routes.py:550
+#: app/admin/routes.py:558
 msgid "Запит відхилено."
 msgstr ""
 
-#: app/admin/routes.py:552
+#: app/admin/routes.py:560
 #, python-format
 msgid "Вилучено зі запиту: %(names)s."
 msgstr ""
 
-#: app/admin/routes.py:554
+#: app/admin/routes.py:562
 msgid "Запит залишається в черзі, бо очікує рішення інших установ."
 msgstr ""
 
@@ -1109,19 +1114,19 @@ msgstr ""
 msgid "не ваша установа"
 msgstr ""
 
-#: app/templates/admin/admin_verification_requests.html:119
+#: app/templates/admin/admin_verification_requests.html:126
 msgid "Коментар (необовʼязково)"
 msgstr ""
 
-#: app/templates/admin/admin_verification_requests.html:123
+#: app/templates/admin/admin_verification_requests.html:130
 msgid "Підтвердити"
 msgstr ""
 
-#: app/templates/admin/admin_verification_requests.html:127
+#: app/templates/admin/admin_verification_requests.html:134
 msgid "Відхилити"
 msgstr ""
 
-#: app/templates/admin/admin_verification_requests.html:138
+#: app/templates/admin/admin_verification_requests.html:145
 msgid "Запитів немає."
 msgstr ""
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-02 16:39+0300\n"
+"POT-Creation-Date: 2026-09-02 18:37+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -132,25 +132,30 @@ msgstr "Submission deleted."
 msgid "Невідома дія."
 msgstr "Unknown action."
 
-#: app/admin/routes.py:545
+#: app/admin/routes.py:548
 #, python-format
 msgid "Запит підтверджено для: %(names)s."
 msgstr "Request approved for: %(names)s."
 
-#: app/admin/routes.py:548
+#: app/admin/routes.py:553
+#, python-format
+msgid "Галочок не залишилося, тож запит відхилено для: %(names)s."
+msgstr "No institution was left ticked, so the request was declined for: %(names)s."
+
+#: app/admin/routes.py:556
 msgid "Запит підтверджено."
 msgstr "Request approved."
 
-#: app/admin/routes.py:550
+#: app/admin/routes.py:558
 msgid "Запит відхилено."
 msgstr "Request declined."
 
-#: app/admin/routes.py:552
+#: app/admin/routes.py:560
 #, python-format
 msgid "Вилучено зі запиту: %(names)s."
 msgstr "Removed from the request: %(names)s."
 
-#: app/admin/routes.py:554
+#: app/admin/routes.py:562
 msgid "Запит залишається в черзі, бо очікує рішення інших установ."
 msgstr "The request stays in the queue: other institutions have yet to decide."
 
@@ -1129,7 +1134,9 @@ msgstr ""
 
 #: app/templates/admin/admin_verification_requests.html:19
 msgid "Ви бачите лише запити щодо ваших установ і вирішуєте лише за них."
-msgstr "You see only requests naming your institutions, and you decide for those alone."
+msgstr ""
+"You see only requests naming your institutions, and you decide for those "
+"alone."
 
 #: app/templates/admin/admin_verification_requests.html:24
 msgid "Очікують"
@@ -1169,19 +1176,19 @@ msgstr "None given (public locations)"
 msgid "не ваша установа"
 msgstr "not your institution"
 
-#: app/templates/admin/admin_verification_requests.html:119
+#: app/templates/admin/admin_verification_requests.html:126
 msgid "Коментар (необовʼязково)"
 msgstr "Note (optional)"
 
-#: app/templates/admin/admin_verification_requests.html:123
+#: app/templates/admin/admin_verification_requests.html:130
 msgid "Підтвердити"
 msgstr "Approve"
 
-#: app/templates/admin/admin_verification_requests.html:127
+#: app/templates/admin/admin_verification_requests.html:134
 msgid "Відхилити"
 msgstr "Decline"
 
-#: app/templates/admin/admin_verification_requests.html:138
+#: app/templates/admin/admin_verification_requests.html:145
 msgid "Запитів немає."
 msgstr "No requests."
 

@@ -502,10 +502,13 @@ def decide_verification_request(request_id):
         flash(_('Невідома дія.'), 'danger')
         return redirect(url_for('admin.verification_requests', lang_code=g.lang_code))
 
-    # Absent field (a request naming no institution, or an older cached form) =>
-    # "everything in my scope"; present-but-empty => the decider unticked them
-    # all, which is a removal, not a full grant.
-    if 'institutions' in request.form:
+    # An all-unchecked checkbox group sends NOTHING, so the presence of
+    # `institutions` cannot distinguish "unticked everything" from "this form has
+    # no institutions at all". The form therefore carries a hidden marker: with
+    # it, the (possibly empty) list is the decider's answer; without it — a
+    # request naming no institution, or an older cached page — fall back to
+    # "everything in my scope".
+    if request.form.get('institutions_present'):
         institution_ids = request.form.getlist('institutions')
     else:
         institution_ids = None
@@ -544,11 +547,16 @@ def decide_verification_request(request_id):
     if approve and granted_names:
         flash(_('Запит підтверджено для: %(names)s.', names=', '.join(granted_names)),
               'success')
+    elif approve and removed_names:
+        # Approve with every institution unticked is a removal, not a grant —
+        # say so plainly instead of reporting a confirmation that granted nothing.
+        flash(_('Галочок не залишилося, тож запит відхилено для: %(names)s.',
+                names=', '.join(removed_names)), 'warning')
     elif approve:
         flash(_('Запит підтверджено.'), 'success')
     else:
         flash(_('Запит відхилено.'), 'success')
-    if removed_names and approve:
+    if removed_names and approve and granted_names:
         flash(_('Вилучено зі запиту: %(names)s.', names=', '.join(removed_names)), 'info')
     if not outcome['closed']:
         flash(_('Запит залишається в черзі, бо очікує рішення інших установ.'), 'info')

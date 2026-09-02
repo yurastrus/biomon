@@ -234,7 +234,8 @@ def test_manager_approval_grants_only_their_park_and_keeps_the_request(
     forget_cached_user()
 
     resp = cl.post(f'/uk/admin/verification-requests/{req_id}/decide',
-                   data={'action': 'approve', 'institutions': [str(uzh.id)]})
+                   data={'action': 'approve', 'institutions_present': '1',
+                  'institutions': [str(uzh.id)]})
     assert resp.status_code == 302
 
     db_session.expire_all()
@@ -272,7 +273,8 @@ def test_the_answered_request_leaves_that_managers_queue(
     forget_cached_user()
     client_for(uzh_manager).post(
         f'/uk/admin/verification-requests/{req_id}/decide',
-        data={'action': 'approve', 'institutions': [str(uzh.id)]})
+        data={'action': 'approve', 'institutions_present': '1',
+                  'institutions': [str(uzh.id)]})
 
     forget_cached_user()
     body = client_for(uzh_manager).get(
@@ -289,7 +291,8 @@ def test_the_answered_request_leaves_that_managers_queue(
     forget_cached_user()
     client_for(skole_manager).post(
         f'/uk/admin/verification-requests/{req_id}/decide',
-        data={'action': 'approve', 'institutions': [str(skole.id)]})
+        data={'action': 'approve', 'institutions_present': '1',
+                  'institutions': [str(skole.id)]})
 
     db_session.expire_all()
     req = db_session.query(VerificationRequest).get(req_id)
@@ -313,7 +316,7 @@ def test_manager_cannot_grant_a_park_that_is_not_theirs(
     forget_cached_user()
 
     cl.post(f'/uk/admin/verification-requests/{req_id}/decide',
-            data={'action': 'approve',
+            data={'action': 'approve', 'institutions_present': '1',
                   'institutions': [str(uzh.id), str(skole.id)]})
 
     db_session.expire_all()
@@ -338,7 +341,8 @@ def test_manager_rejection_closes_only_their_park(
     forget_cached_user()
 
     cl.post(f'/uk/admin/verification-requests/{req_id}/decide',
-            data={'action': 'reject', 'institutions': [str(uzh.id)]})
+            data={'action': 'reject', 'institutions_present': '1',
+                  'institutions': [str(uzh.id)]})
 
     db_session.expire_all()
     user = db_session.query(User).filter_by(username='ivan').one()
@@ -363,7 +367,7 @@ def test_admin_approves_every_institution_at_once(auth_client, db_session,
     cl = auth_client(role='admin', username='root')
     forget_cached_user()
     cl.post(f'/uk/admin/verification-requests/{req_id}/decide',
-            data={'action': 'approve',
+            data={'action': 'approve', 'institutions_present': '1',
                   'institutions': [str(skole.id), str(uzh.id)]})
 
     db_session.expire_all()
@@ -382,7 +386,8 @@ def test_unticking_an_institution_removes_it_from_the_request(
     cl = auth_client(role='admin', username='root')
     forget_cached_user()
     cl.post(f'/uk/admin/verification-requests/{req_id}/decide',
-            data={'action': 'approve', 'institutions': [str(uzh.id)]})
+            data={'action': 'approve', 'institutions_present': '1',
+                  'institutions': [str(uzh.id)]})
 
     db_session.expire_all()
     user = db_session.query(User).filter_by(username='ivan').one()
@@ -575,3 +580,106 @@ def test_the_note_reaches_the_admin_notification(client, db_session, parks,
 
     admin_mail = next(m for m in mail_out if m['to'] == ['root@example.com'])
     assert MOTIVATION in admin_mail['body']
+
+
+# ── unticking every institution ────────────────────────────────────────────
+# An all-unchecked checkbox group sends nothing at all, so "approve with no
+# institutions ticked" arrives at the route looking exactly like a request that
+# has no institutions. The form's hidden `institutions_present` marker is what
+# separates the two; these tests pin both sides of it.
+
+def test_approve_with_every_box_unticked_grants_nothing(
+        auth_client, db_session, applicant, parks, mail_out):
+    from app.models import User, VerificationRequest
+
+    req_id = _ct_request(db_session, applicant).id
+    cl = auth_client(role='admin', username='root')
+    forget_cached_user()
+    resp = cl.post(f'/uk/admin/verification-requests/{req_id}/decide',
+                   data={'action': 'approve', 'institutions_present': '1'})
+    assert resp.status_code == 302
+
+    db_session.expire_all()
+    user = db_session.query(User).filter_by(username='ivan').one()
+    assert user.institutions == [], 'nothing was ticked, nothing may be granted'
+    assert user.has_role('ct_verifier') is False, 'no institution approved, no role'
+
+    req = db_session.query(VerificationRequest).get(req_id)
+    assert req.status == 'rejected'
+    assert {r.status for r in req.institution_rows()} == {'rejected'}
+
+
+def test_one_module_approved_the_other_untouched(client, db_session, parks, mail_out,
+                                                 auth_client):
+    """The production report: photos approved with the park ticked, sounds
+    submitted with it unticked. The two modules are separate requests with
+    separate institution rows, and each decision must stay inside its own."""
+    from app.models import User, VerificationRequest
+
+    skole, uzh = parks
+    _register(client, wants_pam='y', institution_ids=[uzh.id])
+    client.get(_confirm_link_path(mail_out[0]))
+    db_session.expire_all()
+    user = db_session.query(User).filter_by(username='ivan').one()
+    ct = db_session.query(VerificationRequest).filter_by(user_id=user.id, module='ct').one()
+    pam = db_session.query(VerificationRequest).filter_by(user_id=user.id, module='pam').one()
+
+    cl = auth_client(role='admin', username='root')
+    forget_cached_user()
+    cl.post(f'/uk/admin/verification-requests/{ct.id}/decide',
+            data={'action': 'approve', 'institutions_present': '1',
+                  'institutions': [str(uzh.id)]})
+    forget_cached_user()
+    cl.post(f'/uk/admin/verification-requests/{pam.id}/decide',
+            data={'action': 'approve', 'institutions_present': '1'})
+
+    db_session.expire_all()
+    user = db_session.query(User).filter_by(username='ivan').one()
+    ct = db_session.query(VerificationRequest).get(ct.id)
+    pam = db_session.query(VerificationRequest).get(pam.id)
+
+    assert ct.status == 'approved'
+    assert [r.status for r in ct.institution_rows()] == ['approved']
+    assert pam.status == 'rejected', 'the park was unticked for sounds'
+    assert [r.status for r in pam.institution_rows()] == ['rejected']
+
+    assert user.has_role('ct_verifier') is True
+    assert user.has_role('pam_verifier') is False
+    assert [i.code for i in user.institutions] == ['UZH']
+
+
+def test_the_form_carries_the_marker(app, db_session, applicant, parks, manager_of):
+    """Without the hidden marker the fix cannot work, so the template is pinned."""
+    skole, uzh = parks
+    manager = manager_of('uzh_manager', [uzh])
+
+    cl = app.test_client()
+    with cl.session_transaction() as sess:
+        sess['_user_id'] = str(manager.id)
+        sess['_fresh'] = True
+    forget_cached_user()
+
+    body = cl.get('/uk/admin/verification-requests').get_data(as_text=True)
+    assert 'name="institutions_present"' in body
+
+
+def test_a_request_without_institutions_still_takes_a_plain_yes(
+        client, db_session, parks, mail_out, auth_client):
+    """No marker, no rows: the original one-click behaviour is unchanged."""
+    from app.models import User, VerificationRequest
+
+    _register(client)
+    client.get(_confirm_link_path(mail_out[0]))
+    db_session.expire_all()
+    user = db_session.query(User).filter_by(username='ivan').one()
+    req_id = _ct_request(db_session, user).id
+
+    cl = auth_client(role='admin', username='root')
+    forget_cached_user()
+    cl.post(f'/uk/admin/verification-requests/{req_id}/decide',
+            data={'action': 'approve'})
+
+    db_session.expire_all()
+    user = db_session.query(User).filter_by(username='ivan').one()
+    assert user.has_role('ct_verifier') is True
+    assert db_session.query(VerificationRequest).get(req_id).status == 'approved'

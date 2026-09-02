@@ -116,6 +116,13 @@
                           action="{{ url_for('admin.decide_verification_request', lang_code=g.lang_code, request_id=req.id) }}"
                           method="POST" style="margin: 0; padding: 0;">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% if my_rows | selectattr('status', 'equalto', 'pending') | list %}
+                        {# Marks the institution checkboxes as submitted. An
+                           all-unchecked group sends nothing, so without this the
+                           route cannot tell "removed every institution" from
+                           "this request has none". #}
+                        <input type="hidden" name="institutions_present" value="1">
+                        {% endif %}
                         <input type="text" name="note" placeholder="{{ _('Коментар (необовʼязково)') }}"
                                style="width: 190px; max-width: 100%; box-sizing: border-box; padding: 5px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 3px;">
                         <br>
