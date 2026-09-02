@@ -1486,3 +1486,57 @@ them PAM rights, the shared institution row lets them verify sounds in
 Yavorivskyi too. Making that precise needs a module dimension on the grant
 (a `can_ct` / `can_pam` pair on `user_institutions`, or a row per module) and a
 matching filter change in both submodules — see the report to the user.
+
+
+## 2026-09-02 (phase 1) — Per-module institution access: columns and backfill
+
+Decision: go with module-scoped grants (the "variant Б" of the report), rolled
+out in phases because the site is live. **This phase changes no behaviour**:
+every read path still uses the legacy columns.
+
+### What exists now
+`user_institutions` gained four nullable Booleans (migration `a7413fc85d21`):
+`can_view_ct`, `can_export_ct`, `can_view_pam`, `can_export_pam`. `can_export`
+and the row-means-access rule are untouched and still authoritative.
+
+Nullable is the point: NULL = "never decided". That is what lets the backfill be
+re-run later to fill rows written by code that predates the columns, without
+overwriting a real choice made in the admin form.
+`UserInstitution.module_flags(user)` reads a row with that fallback (camera traps
+on, export per `can_export`; PAM only for somebody holding `pam_verifier`, and
+conservatively off when the caller cannot say whose row it is).
+
+### The backfill rule (as agreed)
+`scripts/backfill_module_access.py`, pure rule in `target_flags()`:
+
+| | camera traps | PAM |
+|---|---|---|
+| access | on for every existing row | on only if the person holds `pam_verifier` (managers/admins do, through the hierarchy) |
+| export | copies `can_export` | `can_export` **and** PAM access — nobody gains an export right they lacked |
+
+`--dry-run` reports, the default fills only undecided flags, `--recompute` also
+overwrites decided ones (for undoing a bad manual edit, never routine). Every run
+writes a report to `logs/`.
+
+### Applied to production
+Migration and backfill were run against the DB **without reloading the app** —
+gunicorn kept serving the previous code, which is safe because the new columns
+are nullable and nothing reads them yet.
+
+    rows total=506  view_ct=506  export_ct=188  view_pam=436  export_pam=156
+    nulls=0  legacy can_export=188
+
+70 rows got no PAM access; they belong to `analyst,ct_verifier` accounts, exactly
+as intended. A second dry run reports `changed=0`, so the script is idempotent.
+Site checked after the change: all pages 200, workers untouched.
+
+### Next phases (not started)
+2. Admin user form: four checkboxes per institution in two groups (access +
+   export for camera traps, access + export for PAM), writing the new columns
+   and keeping `can_export` in sync for the still-legacy readers.
+3. Switch the reads: one helper "institutions allowed for module X", replacing 86
+   direct uses of `user.institutions` (63 in shared-ct, 19 in shared-pam, plus
+   the digest). Submodule commits go in separately, then the pointer is updated
+   in `biomon` and `/var/www/myproject`.
+4. Approving a verification request grants the module's flags only, not the
+   institution wholesale.
