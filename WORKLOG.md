@@ -1450,3 +1450,39 @@ which keeps running, but a one-off `venv/bin/python -c …` script exits
 immediately and its daemon threads are killed mid-SMTP — the first run of the
 prod test queued three letters and delivered none. Any script that sends mail
 outside the web process must join the delivery threads before exiting.
+
+
+## 2026-09-02 (fix) — An all-unchecked checkbox group sends nothing
+
+Reported from production: photos were approved with the park left ticked and
+sounds submitted with it unticked, yet both came out `approved`.
+
+Cause was in the route, not the data model. A checkbox group with every box
+unchecked sends **no field at all**, and `decide_verification_request` read a
+missing `institutions` as "no selection given, approve everything in my scope".
+So the sounds request, submitted with nothing ticked, was approved in full.
+
+The form now carries a hidden `institutions_present` marker, rendered only when
+the decider actually has actionable institution rows. With the marker, the
+(possibly empty) list is the answer; without it — a request naming no
+institution, or an older cached page — the previous fallback still applies.
+"Approve" with nothing ticked is also reported as a decline now, because that is
+what it does.
+
+Verified on production by resetting the test account and redoing both decisions
+through the real form: `ct` → approved + YNNP granted, `pam` → rejected, and no
+`pam_verifier` role. Tests: 4 new cases, and every decide POST in the suite now
+sends the marker so the tests match the real page.
+
+### Known limit of the access model (not a bug, a design boundary)
+`user_institutions` has no module column: one row means "this person may see
+this institution's data", in both camera traps and PAM. Both modules read
+`user.institutions` (86 call sites: 63 in shared-ct, 19 in shared-pam, plus the
+digest). What *is* per module is the role — `ct_verifier` / `pam_verifier`.
+
+So "photos in Yavorivskyi, but not sounds in Yavorivskyi" is expressible only
+while the person has no `pam_verifier` role at all. Once some other park grants
+them PAM rights, the shared institution row lets them verify sounds in
+Yavorivskyi too. Making that precise needs a module dimension on the grant
+(a `can_ct` / `can_pam` pair on `user_institutions`, or a row per module) and a
+matching filter change in both submodules — see the report to the user.
