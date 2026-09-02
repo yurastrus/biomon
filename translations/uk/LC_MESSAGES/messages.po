@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-02 18:37+0300\n"
+"POT-Creation-Date: 2026-09-02 21:44+0300\n"
 "PO-Revision-Date: 2025-08-05 22:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -93,70 +93,70 @@ msgstr ""
 msgid "Призначається"
 msgstr ""
 
-#: app/admin/routes.py:114 app/templates/admin/admin_users_list.html:15
+#: app/admin/routes.py:136 app/templates/admin/admin_users_list.html:15
 msgid "Додати користувача"
 msgstr ""
 
-#: app/admin/routes.py:214
+#: app/admin/routes.py:232
 msgid "Редагувати користувача"
 msgstr ""
 
-#: app/admin/routes.py:258
+#: app/admin/routes.py:276
 msgid "Редагувати установу"
 msgstr ""
 
-#: app/admin/routes.py:258 app/templates/admin/admin_institutions_list.html:15
+#: app/admin/routes.py:276 app/templates/admin/admin_institutions_list.html:15
 msgid "Додати установу"
 msgstr ""
 
-#: app/admin/routes.py:337
+#: app/admin/routes.py:355
 msgid "Редагувати роль"
 msgstr ""
 
-#: app/admin/routes.py:337 app/templates/admin/admin_roles_list.html:15
+#: app/admin/routes.py:355 app/templates/admin/admin_roles_list.html:15
 msgid "Додати роль"
 msgstr ""
 
-#: app/admin/routes.py:431
+#: app/admin/routes.py:449
 msgid "Невідомий статус."
 msgstr ""
 
-#: app/admin/routes.py:436
+#: app/admin/routes.py:454
 msgid "Статус оновлено."
 msgstr ""
 
-#: app/admin/routes.py:451
+#: app/admin/routes.py:469
 msgid "Звернення видалено."
 msgstr ""
 
-#: app/admin/routes.py:502
+#: app/admin/routes.py:520
 msgid "Невідома дія."
 msgstr ""
 
-#: app/admin/routes.py:548
+#: app/admin/routes.py:566
 #, python-format
 msgid "Запит підтверджено для: %(names)s."
 msgstr ""
 
-#: app/admin/routes.py:553
+#: app/admin/routes.py:571
 #, python-format
 msgid "Галочок не залишилося, тож запит відхилено для: %(names)s."
 msgstr ""
 
-#: app/admin/routes.py:556
+#: app/admin/routes.py:574
 msgid "Запит підтверджено."
 msgstr ""
 
-#: app/admin/routes.py:558
+#: app/admin/routes.py:576
 msgid "Запит відхилено."
 msgstr ""
 
-#: app/admin/routes.py:560
+#: app/admin/routes.py:578
 #, python-format
 msgid "Вилучено зі запиту: %(names)s."
 msgstr ""
 
-#: app/admin/routes.py:562
+#: app/admin/routes.py:580
 msgid "Запит залишається в черзі, бо очікує рішення інших установ."
 msgstr ""
 
@@ -287,7 +287,7 @@ msgstr ""
 msgid "ГОЛОВНА"
 msgstr ""
 
-#: app/templates/base.html:79
+#: app/templates/admin/admin_user_form.html:137 app/templates/base.html:79
 msgid "ПАМ"
 msgstr ""
 
@@ -798,13 +798,13 @@ msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:96
 #: app/templates/admin/admin_role_form.html:71
-#: app/templates/admin/admin_user_form.html:310
+#: app/templates/admin/admin_user_form.html:328
 msgid "Скасувати"
 msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:99
 #: app/templates/admin/admin_role_form.html:74
-#: app/templates/admin/admin_user_form.html:313
+#: app/templates/admin/admin_user_form.html:331
 msgid "Зберегти дані"
 msgstr ""
 
@@ -968,8 +968,10 @@ msgstr ""
 
 #: app/templates/admin/admin_user_form.html:128
 msgid ""
-"Відмітьте установи та налаштуйте права доступу. «Доступ» — може "
-"переглядати та ідентифікувати; «Експорт» — може завантажувати дані."
+"Права надаються окремо для фотопасток і для ПАМ. «Доступ» дозволяє "
+"переглядати й визначати, «Експорт» дозволяє завантажувати дані. Експорт "
+"без доступу неможливий, а установа без жодної галочки зникає зі списку "
+"прав."
 msgstr ""
 
 #: app/templates/admin/admin_user_form.html:135
@@ -978,30 +980,36 @@ msgid "Установа"
 msgstr ""
 
 #: app/templates/admin/admin_user_form.html:136
+msgid "Фотопастки"
+msgstr ""
+
+#: app/templates/admin/admin_user_form.html:140
+#: app/templates/admin/admin_user_form.html:142
 msgid "Доступ"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:137
+#: app/templates/admin/admin_user_form.html:141
+#: app/templates/admin/admin_user_form.html:143
 msgid "Експорт"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:179
+#: app/templates/admin/admin_user_form.html:191
 msgid "Немає доступних установ."
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:282
+#: app/templates/admin/admin_user_form.html:300
 msgid "Призначення ролей"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:283
+#: app/templates/admin/admin_user_form.html:301
 msgid "Визначте рівень доступу"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:301
+#: app/templates/admin/admin_user_form.html:319
 msgid "Немає доступних ролей."
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:313
+#: app/templates/admin/admin_user_form.html:331
 msgid "Створити користувача"
 msgstr ""
 
@@ -2465,5 +2473,21 @@ msgstr ""
 #~ " публічні локації. Доступ до територій "
 #~ "установи надається окремо в розділі "
 #~ "«Користувачі»."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Відмітьте установи та налаштуйте права "
+#~ "доступу. «Доступ» — може переглядати та"
+#~ " ідентифікувати; «Експорт» — може "
+#~ "завантажувати дані."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Права надаються окремо для фотопасток і"
+#~ " для ПАМ. «Доступ» — може переглядати"
+#~ " та визначати; «Експорт» — може "
+#~ "завантажувати дані. Експорт без доступу "
+#~ "неможливий, а установа без жодної "
+#~ "галочки просто зникає зі списку прав."
 #~ msgstr ""
 

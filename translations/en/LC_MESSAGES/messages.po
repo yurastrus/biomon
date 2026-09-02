@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-02 18:37+0300\n"
+"POT-Creation-Date: 2026-09-02 21:44+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -92,70 +92,72 @@ msgstr "System role name"
 msgid "Призначається"
 msgstr "Assignable"
 
-#: app/admin/routes.py:114 app/templates/admin/admin_users_list.html:15
+#: app/admin/routes.py:136 app/templates/admin/admin_users_list.html:15
 msgid "Додати користувача"
 msgstr "Add user"
 
-#: app/admin/routes.py:214
+#: app/admin/routes.py:232
 msgid "Редагувати користувача"
 msgstr "Edit user"
 
-#: app/admin/routes.py:258
+#: app/admin/routes.py:276
 msgid "Редагувати установу"
 msgstr "Edit institution"
 
-#: app/admin/routes.py:258 app/templates/admin/admin_institutions_list.html:15
+#: app/admin/routes.py:276 app/templates/admin/admin_institutions_list.html:15
 msgid "Додати установу"
 msgstr "Add institution"
 
-#: app/admin/routes.py:337
+#: app/admin/routes.py:355
 msgid "Редагувати роль"
 msgstr "Edit role"
 
-#: app/admin/routes.py:337 app/templates/admin/admin_roles_list.html:15
+#: app/admin/routes.py:355 app/templates/admin/admin_roles_list.html:15
 msgid "Додати роль"
 msgstr "Add role"
 
-#: app/admin/routes.py:431
+#: app/admin/routes.py:449
 msgid "Невідомий статус."
 msgstr "Unknown status."
 
-#: app/admin/routes.py:436
+#: app/admin/routes.py:454
 msgid "Статус оновлено."
 msgstr "Status updated."
 
-#: app/admin/routes.py:451
+#: app/admin/routes.py:469
 msgid "Звернення видалено."
 msgstr "Submission deleted."
 
-#: app/admin/routes.py:502
+#: app/admin/routes.py:520
 msgid "Невідома дія."
 msgstr "Unknown action."
 
-#: app/admin/routes.py:548
+#: app/admin/routes.py:566
 #, python-format
 msgid "Запит підтверджено для: %(names)s."
 msgstr "Request approved for: %(names)s."
 
-#: app/admin/routes.py:553
+#: app/admin/routes.py:571
 #, python-format
 msgid "Галочок не залишилося, тож запит відхилено для: %(names)s."
-msgstr "No institution was left ticked, so the request was declined for: %(names)s."
+msgstr ""
+"No institution was left ticked, so the request was declined for: "
+"%(names)s."
 
-#: app/admin/routes.py:556
+#: app/admin/routes.py:574
 msgid "Запит підтверджено."
 msgstr "Request approved."
 
-#: app/admin/routes.py:558
+#: app/admin/routes.py:576
 msgid "Запит відхилено."
 msgstr "Request declined."
 
-#: app/admin/routes.py:560
+#: app/admin/routes.py:578
 #, python-format
 msgid "Вилучено зі запиту: %(names)s."
 msgstr "Removed from the request: %(names)s."
 
-#: app/admin/routes.py:562
+#: app/admin/routes.py:580
 msgid "Запит залишається в черзі, бо очікує рішення інших установ."
 msgstr "The request stays in the queue: other institutions have yet to decide."
 
@@ -297,7 +299,7 @@ msgstr "Menu"
 msgid "ГОЛОВНА"
 msgstr "HOME"
 
-#: app/templates/base.html:79
+#: app/templates/admin/admin_user_form.html:137 app/templates/base.html:79
 msgid "ПАМ"
 msgstr "PAM"
 
@@ -843,13 +845,13 @@ msgstr "New region (English)"
 
 #: app/templates/admin/admin_institution_form.html:96
 #: app/templates/admin/admin_role_form.html:71
-#: app/templates/admin/admin_user_form.html:310
+#: app/templates/admin/admin_user_form.html:328
 msgid "Скасувати"
 msgstr "Cancel"
 
 #: app/templates/admin/admin_institution_form.html:99
 #: app/templates/admin/admin_role_form.html:74
-#: app/templates/admin/admin_user_form.html:313
+#: app/templates/admin/admin_user_form.html:331
 msgid "Зберегти дані"
 msgstr "Save data"
 
@@ -1021,11 +1023,15 @@ msgstr "Institution assignment"
 
 #: app/templates/admin/admin_user_form.html:128
 msgid ""
-"Відмітьте установи та налаштуйте права доступу. «Доступ» — може "
-"переглядати та ідентифікувати; «Експорт» — може завантажувати дані."
+"Права надаються окремо для фотопасток і для ПАМ. «Доступ» дозволяє "
+"переглядати й визначати, «Експорт» дозволяє завантажувати дані. Експорт "
+"без доступу неможливий, а установа без жодної галочки зникає зі списку "
+"прав."
 msgstr ""
-"Select institutions and configure access rights. \"Access\" — can view "
-"and identify; \"Export\" — can download data."
+"Rights are granted separately for camera traps and for PAM. \"Access\" "
+"allows viewing and identifying, \"Export\" allows downloading the data. "
+"Export needs access in the same module, and an institution with no box "
+"ticked drops off the list of rights."
 
 #: app/templates/admin/admin_user_form.html:135
 #: app/templates/admin/admin_users_list.html:49
@@ -1033,30 +1039,36 @@ msgid "Установа"
 msgstr "Institution"
 
 #: app/templates/admin/admin_user_form.html:136
+msgid "Фотопастки"
+msgstr "Camera traps"
+
+#: app/templates/admin/admin_user_form.html:140
+#: app/templates/admin/admin_user_form.html:142
 msgid "Доступ"
 msgstr "Access"
 
-#: app/templates/admin/admin_user_form.html:137
+#: app/templates/admin/admin_user_form.html:141
+#: app/templates/admin/admin_user_form.html:143
 msgid "Експорт"
 msgstr "Export"
 
-#: app/templates/admin/admin_user_form.html:179
+#: app/templates/admin/admin_user_form.html:191
 msgid "Немає доступних установ."
 msgstr "No available institutions."
 
-#: app/templates/admin/admin_user_form.html:282
+#: app/templates/admin/admin_user_form.html:300
 msgid "Призначення ролей"
 msgstr "Role assignment"
 
-#: app/templates/admin/admin_user_form.html:283
+#: app/templates/admin/admin_user_form.html:301
 msgid "Визначте рівень доступу"
 msgstr "Set access level"
 
-#: app/templates/admin/admin_user_form.html:301
+#: app/templates/admin/admin_user_form.html:319
 msgid "Немає доступних ролей."
 msgstr "No available roles."
 
-#: app/templates/admin/admin_user_form.html:313
+#: app/templates/admin/admin_user_form.html:331
 msgid "Створити користувача"
 msgstr "Create a user"
 
@@ -1934,4 +1946,24 @@ msgstr ""
 
 #~ msgid "зв`яжіться з автором"
 #~ msgstr "contact the author"
+
+#~ msgid ""
+#~ "Відмітьте установи та налаштуйте права "
+#~ "доступу. «Доступ» — може переглядати та"
+#~ " ідентифікувати; «Експорт» — може "
+#~ "завантажувати дані."
+#~ msgstr ""
+#~ "Select institutions and configure access "
+#~ "rights. \"Access\" — can view and "
+#~ "identify; \"Export\" — can download "
+#~ "data."
+
+#~ msgid ""
+#~ "Права надаються окремо для фотопасток і"
+#~ " для ПАМ. «Доступ» — може переглядати"
+#~ " та визначати; «Експорт» — може "
+#~ "завантажувати дані. Експорт без доступу "
+#~ "неможливий, а установа без жодної "
+#~ "галочки просто зникає зі списку прав."
+#~ msgstr ""
 

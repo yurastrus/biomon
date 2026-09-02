@@ -701,6 +701,16 @@ button.button-danger:disabled { opacity: 0.7; cursor: not-allowed; }
     font-size: 14px;
 }
 
+/* Two grant groups per row (camera traps / PAM). The tint is what tells the eye
+   which pair of checkboxes belongs to which module, so keep both shades. */
+.inst-access-table th.mod-ct { background: #f2f7fc; }
+.inst-access-table th.mod-pam { background: #f4f8f2; }
+.inst-access-table td.mod-ct { background: #fbfdff; }
+.inst-access-table td.mod-pam { background: #fbfdf9; }
+.inst-access-table th.mod-group { border-bottom: 1px solid #dee2e6; }
+.inst-access-table th.mod-pam:first-of-type,
+.inst-access-table td.mod-pam:nth-child(4) { border-left: 1px solid #e3e9e0; }
+
 /* =================================================================
    СТИЛІ ДЛЯ МОДУЛЯ ФОТОПАСТОК ТА ДАШБОРДІВ
    ================================================================= */
@@ -1237,7 +1247,13 @@ footer {
     .inst-access-table td { padding-left: 8px !important; padding-right: 8px !important; }
 
     .inst-access-table th:nth-child(2),
-    .inst-access-table th:nth-child(3) { width: 62px !important; font-size: 12px; }
+    .inst-access-table th:nth-child(3),
+    .inst-access-table th:nth-child(4),
+    .inst-access-table th:nth-child(5) { width: 54px !important; font-size: 11px; }
+
+    /* Four fixed columns plus a park name do not fit a phone; the wrapper
+       already scrolls horizontally, so let the name column keep its width. */
+    .inst-access-table tbody td:first-child { min-width: 150px; }
 
     .inst-access-table tbody td:first-child { padding-left: 20px !important; }
 

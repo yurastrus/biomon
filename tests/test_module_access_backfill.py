@@ -173,3 +173,120 @@ def test_the_legacy_columns_are_untouched(db_session, linked_user):
     row = db_session.query(UserInstitution).one()
     assert row.can_export is True, 'the legacy export flag stays as it was'
     assert [i.code for i in user.institutions] == ['UZH'], 'the row still grants access'
+
+
+# ── phase 2: the admin form writes the four grants ─────────────────────────
+# The form is the only place these columns are set by hand, so its POST shape
+# and its re-render are pinned here together with the writer's invariants.
+
+@pytest.fixture
+def admin_client(app, db_session, make_user):
+    from flask import g
+
+    def _login(user):
+        g.pop('_login_user', None)
+        cl = app.test_client()
+        with cl.session_transaction() as sess:
+            sess['_user_id'] = str(user.id)
+            sess['_fresh'] = True
+        return cl
+
+    admin = make_user(username='root_admin', roles=('admin',))
+    return _login(admin)
+
+
+def _edit(client, user, park, **fields):
+    """POST the user form the way the page does.
+
+    The rendered form pre-checks the roles the person already holds, so the
+    submission carries them; without that the save would look like a role
+    removal and the export columns would be preserved instead of rewritten.
+    """
+    data = {'username': user.username, 'email': user.email or '',
+            'first_name': '', 'last_name': '',
+            'roles': [str(r.id) for r in user.roles]}
+    data.update(fields)
+    return client.post(f'/uk/admin/users/edit/{user.id}', data=data)
+
+
+def test_form_writes_pam_only_access(db_session, linked_user, admin_client, park):
+    from app.models import UserInstitution
+
+    user, _ = linked_user('subject', roles=('ct_verifier', 'pam_verifier'))
+    resp = _edit(admin_client, user, park, view_pam=[str(park.id)])
+    assert resp.status_code in (200, 302)
+
+    db_session.expire_all()
+    link = db_session.query(UserInstitution).filter_by(user_id=user.id).one()
+    assert (link.can_view_ct, link.can_view_pam) == (False, True)
+
+
+def test_form_removes_the_row_when_nothing_is_ticked(db_session, linked_user,
+                                                     admin_client, park):
+    from app.models import UserInstitution
+
+    user, _ = linked_user('subject2', roles=('ct_verifier',))
+    _edit(admin_client, user, park)
+
+    db_session.expire_all()
+    assert db_session.query(UserInstitution).filter_by(user_id=user.id).count() == 0, \
+        'a park with no grant leaves no row'
+
+
+def test_form_keeps_the_legacy_export_column_in_sync(db_session, linked_user,
+                                                     admin_client, park, make_role):
+    """The live export paths still read can_export, so it must reflect
+    "may export in either module" until phase 3 switches them over."""
+    from app.models import UserInstitution
+
+    user, _ = linked_user('exporter', roles=('analyst', 'pam_verifier'))
+    _edit(admin_client, user, park,
+          view_pam=[str(park.id)], export_pam=[str(park.id)])
+
+    db_session.expire_all()
+    link = db_session.query(UserInstitution).filter_by(user_id=user.id).one()
+    assert link.can_export_pam is True
+    assert link.can_export_ct is False
+    assert link.can_export is True, 'legacy column follows either module'
+
+
+def test_form_drops_export_without_access_in_the_same_module(db_session, linked_user,
+                                                             admin_client, park):
+    from app.models import UserInstitution
+
+    user, _ = linked_user('crafted', roles=('analyst', 'pam_verifier'))
+    _edit(admin_client, user, park,
+          view_ct=[str(park.id)], export_pam=[str(park.id)])
+
+    db_session.expire_all()
+    link = db_session.query(UserInstitution).filter_by(user_id=user.id).one()
+    assert link.can_view_pam is False
+    assert link.can_export_pam is False, 'export needs access in its own module'
+
+
+def test_the_form_shows_four_columns_and_seeds_them(db_session, linked_user,
+                                                    admin_client, park):
+    user, link = linked_user('rendered', roles=('pam_verifier',),
+                             can_view_ct=True, can_export_ct=False,
+                             can_view_pam=True, can_export_pam=False)
+    body = admin_client.get(f'/uk/admin/users/edit/{user.id}').get_data(as_text=True)
+
+    for field in ('view_ct', 'export_ct', 'view_pam', 'export_pam'):
+        assert f'name="{field}"' in body, field
+    assert f'id="view_ct_{park.id}"' in body
+    # both access boxes seeded from the stored flags
+    assert body.count('checked') >= 2
+
+
+def test_a_legacy_row_renders_as_the_access_it_grants(db_session, linked_user,
+                                                      admin_client, park):
+    """All four columns NULL (written before phase 1): the form must show what
+    the row means today, not an empty line the next save would silently clear."""
+    user, link = linked_user('legacy_row', roles=('pam_verifier',), can_export=True)
+    assert link.can_view_ct is None
+
+    body = admin_client.get(f'/uk/admin/users/edit/{user.id}').get_data(as_text=True)
+    import re
+    for field in ('view_ct', 'view_pam', 'export_ct', 'export_pam'):
+        pattern = rf'name="{field}" value="{park.id}"[^>]*checked'
+        assert re.search(pattern, body), f'{field} should render as granted'

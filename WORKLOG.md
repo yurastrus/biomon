@@ -1540,3 +1540,51 @@ Site checked after the change: all pages 200, workers untouched.
    in `biomon` and `/var/www/myproject`.
 4. Approving a verification request grants the module's flags only, not the
    institution wholesale.
+
+
+## 2026-09-02 (phase 2) — The user form grants per module
+
+Committed, **not deployed** (owner's call: phase 3 changes the read paths, and
+the form should land together with them or after a look at it).
+
+### The form
+`admin_user_form.html` now has four checkbox columns in two labelled groups,
+camera traps and PAM, each with access and export. One row per institution as
+before; the old single "Доступ" / "Експорт" pair is gone. Field names:
+`view_ct`, `export_ct`, `view_pam`, `export_pam`, each carrying institution ids.
+
+The JS was per-institution and is now per (institution, module): an export box
+follows the access box of its own module plus the export-role gate, and the
+ecoregion header counts every access box in the group, both modules.
+
+### The writer
+`UserService._write_institution_links()` is the one place that turns a selection
+into rows, shared by create and update. Invariants it enforces (a crafted POST
+cannot bypass them, the template is not a security boundary):
+
+* export implies access **in the same module** — a lone export tick is dropped;
+* a row is written only when it grants access; a park with nothing ticked leaves
+  no row, which is the "no access" state the sparse table already used;
+* `can_export` (legacy, still read by the live export paths) is kept in sync as
+  "may export in either module";
+* without an export-capable role the export flags are not read from the form
+  (its boxes are disabled) — the stored ones are preserved, as before.
+
+`UserService.module_access_from_legacy()` keeps the old "institutions +
+can_export" input working through the same writer, and the routes seed the form
+from `UserInstitution.module_flags()`, so a row written before phase 1 (all four
+NULL) renders as the access it actually grants instead of an empty line the next
+save would clear.
+
+### Verified
+Full suite 1723 passed / 36 skipped. New form tests cover PAM-only access, row
+removal, legacy-column sync, export-without-access, the rendered columns and the
+NULL-row seeding. The page was rendered read-only against production data for a
+real user (29 parks, both access columns ticked, all 58 export boxes disabled
+because that account has no export role) and screenshotted; nothing was written
+and the site was not touched. i18n cycle run (root catalogs only).
+
+### Still to do (phase 3)
+Switch the reads to the new flags, then approving a verification request should
+grant its module only. Re-run the backfill first: rows created between phases by
+code that predates the columns still have NULLs.

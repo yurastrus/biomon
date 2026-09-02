@@ -271,13 +271,48 @@ class TestAddUser(AdminTestBase):
         self.assertIn(self.role_viewer, u.roles)
 
     def test_new_user_gets_assigned_institution(self):
+        """Access is granted per module now; ticking camera traps is enough to
+        create the row (see the four-column form)."""
         from app.models import User
         data = self._valid_data('with_inst')
-        data['institutions'] = [str(self.inst_a.id)]
+        data['view_ct'] = [str(self.inst_a.id)]
         self._post(self._add_url(), data, self.admin.id)
         u = User.query.filter_by(username='with_inst').first()
         self.assertIsNotNone(u)
         self.assertIn(self.inst_a, u.institutions)
+        link = next(l for l in u.institution_links
+                    if l.institution_id == self.inst_a.id)
+        self.assertTrue(link.can_view_ct)
+        self.assertFalse(link.can_view_pam, 'PAM was not ticked')
+
+    def test_new_user_can_get_pam_only_access(self):
+        """The whole point of the split: sounds without photos."""
+        from app.models import User
+        data = self._valid_data('pam_only')
+        data['view_pam'] = [str(self.inst_a.id)]
+        self._post(self._add_url(), data, self.admin.id)
+        u = User.query.filter_by(username='pam_only').first()
+        link = next(l for l in u.institution_links
+                    if l.institution_id == self.inst_a.id)
+        self.assertFalse(link.can_view_ct)
+        self.assertTrue(link.can_view_pam)
+
+    def test_export_without_access_is_dropped(self):
+        """A crafted POST must not produce export on a module with no access."""
+        from app.models import User
+        data = self._valid_data('sneaky')
+        data['export_pam'] = [str(self.inst_a.id)]
+        self._post(self._add_url(), data, self.admin.id)
+        u = User.query.filter_by(username='sneaky').first()
+        self.assertEqual(u.institution_links, [],
+                         'export alone grants nothing, so no row is written')
+
+    def test_a_park_with_no_boxes_leaves_no_row(self):
+        from app.models import User
+        data = self._valid_data('nothing_ticked')
+        self._post(self._add_url(), data, self.admin.id)
+        u = User.query.filter_by(username='nothing_ticked').first()
+        self.assertEqual(u.institution_links, [])
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -733,18 +768,19 @@ class TestAddUserFormRerender(AdminTestBase):
         self.assertIn(b'rerender_user', resp.data)
 
     def test_institution_checkbox_preserved_on_bad_password(self):
-        resp = self._post_bad_password({'institutions': [str(self.inst_a.id)]})
-        # The inst_a access checkbox must be checked
-        expected = f'name="institutions" value="{self.inst_a.id}"'.encode()
-        self.assertIn(expected, resp.data)
-        # Verify the checked attribute is present on the matching checkbox line
-        import re
-        pattern = (
-            rb'<input type="checkbox" name="institutions" value="' +
-            str(self.inst_a.id).encode() +
-            rb'"[^>]*checked'
+        resp = self._post_bad_password({'view_pam': [str(self.inst_a.id)]})
+        # The PAM access checkbox for inst_a must come back checked, and the
+        # camera-trap one must not — a re-render may not shuffle the columns.
+        pam_pattern = (
+            rb'<input type="checkbox" name="view_pam" value="' +
+            str(self.inst_a.id).encode() + rb'"[^>]*checked'
         )
-        self.assertRegex(resp.data, pattern)
+        self.assertRegex(resp.data, pam_pattern)
+        ct_pattern = (
+            rb'<input type="checkbox" name="view_ct" value="' +
+            str(self.inst_a.id).encode() + rb'"[^>]*checked'
+        )
+        self.assertNotRegex(resp.data, ct_pattern)
 
     def test_role_checkbox_preserved_on_bad_password(self):
         resp = self._post_bad_password({'roles': [str(self.role_viewer.id)]})

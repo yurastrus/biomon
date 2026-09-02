@@ -125,16 +125,22 @@
                 <div class="stat-card" style="text-align: left; grid-column: 1 / -1;">
                     <h5 style="color: #28a745; border-bottom: 1px solid #eee; padding-bottom: 10px;">{{ _("Прив'язка до установ") }}</h5>
                     <small style="color: #666; display: block; margin-bottom: 12px;">
-                        {{ _("Відмітьте установи та налаштуйте права доступу. «Доступ» — може переглядати та ідентифікувати; «Експорт» — може завантажувати дані.") }}
+                        {{ _("Права надаються окремо для фотопасток і для ПАМ. «Доступ» дозволяє переглядати й визначати, «Експорт» дозволяє завантажувати дані. Експорт без доступу неможливий, а установа без жодної галочки зникає зі списку прав.") }}
                     </small>
 
                     <div class="inst-access-scroll">
                         <table class="inst-access-table">
                             <thead>
-                                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; position: sticky; top: 0;">
-                                    <th style="text-align: left; padding: 10px 14px; font-weight: 600;">{{ _("Установа") }}</th>
-                                    <th style="text-align: center; padding: 10px 14px; width: 110px; font-weight: 600;">{{ _("Доступ") }}</th>
-                                    <th style="text-align: center; padding: 10px 14px; width: 110px; font-weight: 600;">{{ _("Експорт") }}</th>
+                                <tr style="background: #f8f9fa; border-bottom: 1px solid #dee2e6; position: sticky; top: 0; z-index: 2;">
+                                    <th rowspan="2" style="text-align: left; padding: 10px 14px; font-weight: 600; vertical-align: bottom;">{{ _("Установа") }}</th>
+                                    <th colspan="2" class="mod-group mod-ct" style="text-align: center; padding: 8px 14px; font-weight: 600;">{{ _("Фотопастки") }}</th>
+                                    <th colspan="2" class="mod-group mod-pam" style="text-align: center; padding: 8px 14px; font-weight: 600;">{{ _("ПАМ") }}</th>
+                                </tr>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; position: sticky; top: 34px; z-index: 2;">
+                                    <th class="mod-ct" style="text-align: center; padding: 8px 10px; width: 92px; font-weight: 600;">{{ _("Доступ") }}</th>
+                                    <th class="mod-ct" style="text-align: center; padding: 8px 10px; width: 92px; font-weight: 600;">{{ _("Експорт") }}</th>
+                                    <th class="mod-pam" style="text-align: center; padding: 8px 10px; width: 92px; font-weight: 600;">{{ _("Доступ") }}</th>
+                                    <th class="mod-pam" style="text-align: center; padding: 8px 10px; width: 92px; font-weight: 600;">{{ _("Експорт") }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -142,7 +148,7 @@
                                     {% for group in inst_groups %}
                                     {# Ecoregion header row with select-all checkbox #}
                                     <tr style="background: #eef4fb; border-bottom: 1px solid #d0dce8;">
-                                        <td colspan="3" style="padding: 7px 14px;">
+                                        <td colspan="5" style="padding: 7px 14px;">
                                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; font-weight: 600; color: #2c5f8a;">
                                                 <input type="checkbox" class="eco-select-all"
                                                        data-eco="{{ group.eco_key or '' }}"
@@ -151,32 +157,38 @@
                                             </label>
                                         </td>
                                     </tr>
-                                    {# Institution rows #}
+                                    {# Institution rows: one line per park, four grants #}
                                     {% for inst in group.institutions %}
-                                    {% set is_assigned = inst.id|string in selected_inst_ids %}
-                                    {% set can_exp = inst.id|string in selected_export_ids %}
+                                    {% set iid = inst.id|string %}
+                                    {% set view_ct = iid in module_access['view_ct'] %}
+                                    {% set view_pam = iid in module_access['view_pam'] %}
                                     <tr style="border-bottom: 1px solid #f0f0f0;" data-eco="{{ group.eco_key or '' }}">
                                         <td style="padding: 9px 14px 9px 32px;">
                                             {{ inst.name_uk if g.lang_code != 'en' else (inst.name_en or inst.name_uk) }}
                                         </td>
-                                        <td style="text-align: center; padding: 9px 14px;">
-                                            <input type="checkbox" name="institutions" value="{{ inst.id }}"
-                                                   id="inst_{{ inst.id }}"
-                                                   {% if is_assigned %}checked{% endif %}
-                                                   onchange="onInstChange(this)">
+                                        {% for module in ['ct', 'pam'] %}
+                                        {% set has_view = view_ct if module == 'ct' else view_pam %}
+                                        <td class="mod-{{ module }}" style="text-align: center; padding: 9px 10px;">
+                                            <input type="checkbox" name="view_{{ module }}" value="{{ inst.id }}"
+                                                   id="view_{{ module }}_{{ inst.id }}"
+                                                   class="mod-view" data-module="{{ module }}"
+                                                   {% if has_view %}checked{% endif %}
+                                                   onchange="onViewChange(this)">
                                         </td>
-                                        <td style="text-align: center; padding: 9px 14px;">
-                                            <input type="checkbox" name="can_export" value="{{ inst.id }}"
-                                                   id="export_{{ inst.id }}"
-                                                   {% if can_exp %}checked{% endif %}
-                                                   {% if not is_assigned %}disabled{% endif %}>
+                                        <td class="mod-{{ module }}" style="text-align: center; padding: 9px 10px;">
+                                            <input type="checkbox" name="export_{{ module }}" value="{{ inst.id }}"
+                                                   id="export_{{ module }}_{{ inst.id }}"
+                                                   class="mod-export" data-module="{{ module }}"
+                                                   {% if iid in module_access['export_' + module] %}checked{% endif %}
+                                                   {% if not has_view %}disabled{% endif %}>
                                         </td>
+                                        {% endfor %}
                                     </tr>
                                     {% endfor %}
                                     {% endfor %}
                                 {% else %}
                                 <tr>
-                                    <td colspan="3" style="padding: 14px; color: #999; text-align: center;">{{ _("Немає доступних установ.") }}</td>
+                                    <td colspan="5" style="padding: 14px; color: #999; text-align: center;">{{ _("Немає доступних установ.") }}</td>
                                 </tr>
                                 {% endif %}
                             </tbody>
@@ -197,19 +209,23 @@
                         return false;
                     }
 
+                    /* Export is per module: each export box follows the access box
+                       of its own module, and the role gate applies to both. */
                     function updateAllExportCheckboxes() {
                         var canExport = hasExportRole();
-                        var exportCbs = document.getElementsByName("can_export");
-                        for (var i = 0; i < exportCbs.length; i++) {
-                            var cb = exportCbs[i];
-                            var accessCb = document.getElementById("inst_" + cb.value);
+                        document.querySelectorAll('.mod-export').forEach(function(cb) {
+                            var module = cb.getAttribute('data-module');
+                            var accessCb = document.getElementById('view_' + module + '_' + cb.value);
                             cb.disabled = !canExport || !(accessCb && accessCb.checked);
-                        }
+                            if (cb.disabled && !(accessCb && accessCb.checked)) { cb.checked = false; }
+                        });
                     }
 
-                    function syncExport(checkbox) {
-                        var exportCb = document.getElementById("export_" + checkbox.value);
-                        if (!checkbox.checked) {
+                    function syncExport(viewCheckbox) {
+                        var module = viewCheckbox.getAttribute('data-module');
+                        var exportCb = document.getElementById('export_' + module + '_' + viewCheckbox.value);
+                        if (!exportCb) return;
+                        if (!viewCheckbox.checked) {
                             exportCb.checked = false;
                             exportCb.disabled = true;
                         } else if (hasExportRole()) {
@@ -217,14 +233,17 @@
                         }
                     }
 
+                    /* The ecoregion header counts every access box in the group,
+                       both modules, so it reads "everything in this region". */
                     function updateEcoCheckbox(ecoKey) {
                         var ecoSelector = document.querySelector('.eco-select-all[data-eco="' + ecoKey + '"]');
                         if (!ecoSelector) return;
                         var rows = document.querySelectorAll('tr[data-eco="' + ecoKey + '"]');
                         var total = 0, checked = 0;
                         rows.forEach(function(row) {
-                            var cb = row.querySelector('input[name="institutions"]');
-                            if (cb) { total++; if (cb.checked) checked++; }
+                            row.querySelectorAll('.mod-view').forEach(function(cb) {
+                                total++; if (cb.checked) checked++;
+                            });
                         });
                         if (total === 0) return;
                         if (checked === total) {
@@ -239,7 +258,7 @@
                         }
                     }
 
-                    function onInstChange(checkbox) {
+                    function onViewChange(checkbox) {
                         syncExport(checkbox);
                         var ecoKey = checkbox.closest('tr').getAttribute('data-eco') || '';
                         updateEcoCheckbox(ecoKey);
@@ -259,11 +278,10 @@
                                 var ecoKey = this.getAttribute('data-eco');
                                 var rows = document.querySelectorAll('tr[data-eco="' + ecoKey + '"]');
                                 rows.forEach(function(row) {
-                                    var accessCb = row.querySelector('input[name="institutions"]');
-                                    if (accessCb) {
+                                    row.querySelectorAll('.mod-view').forEach(function(accessCb) {
                                         accessCb.checked = ecoCb.checked;
                                         syncExport(accessCb);
-                                    }
+                                    });
                                 });
                                 // Ensure the header checkbox is not indeterminate after explicit click
                                 ecoCb.indeterminate = false;

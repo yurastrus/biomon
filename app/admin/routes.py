@@ -20,6 +20,32 @@ from . import admin_bp
 _build_inst_groups = build_institution_groups
 
 
+def _module_access_from_form(form):
+    """Read the four per-module checkbox columns of the user form.
+
+    Returns:
+        dict[str, set[str]]: institution ids per grant, keyed as in
+        :data:`UserService.ACCESS_FIELDS`.
+    """
+    return {name: set(form.getlist(name)) for name in UserService.ACCESS_FIELDS}
+
+
+def _module_access_from_user(user):
+    """Seed the same four columns from what the user currently has.
+
+    Goes through :meth:`UserInstitution.module_flags` so a row written before the
+    per-module columns existed (all four NULL) still renders as the access it
+    actually grants today, instead of appearing empty.
+    """
+    seeded = {name: set() for name in UserService.ACCESS_FIELDS}
+    for link in user.institution_links:
+        flags = link.module_flags(user)
+        for name in UserService.ACCESS_FIELDS:
+            if flags[name]:
+                seeded[name].add(str(link.institution_id))
+    return seeded
+
+
 # ===========================================================================
 # Admin panel home
 # ===========================================================================
@@ -65,13 +91,11 @@ def add_user():
     # Capture checkbox selections before validation so they survive a re-render on error.
     # On GET, all sets are empty (no pre-selection).
     if request.method == 'POST':
-        selected_inst_ids   = set(request.form.getlist('institutions'))
-        selected_export_ids = set(request.form.getlist('can_export'))
-        selected_role_ids   = set(request.form.getlist('roles'))
+        module_access     = _module_access_from_form(request.form)
+        selected_role_ids = set(request.form.getlist('roles'))
     else:
-        selected_inst_ids   = set()
-        selected_export_ids = set()
-        selected_role_ids   = set()
+        module_access     = {name: set() for name in UserService.ACCESS_FIELDS}
+        selected_role_ids = set()
 
     if form.validate_on_submit():
         try:
@@ -83,8 +107,7 @@ def add_user():
                 phone=form.phone.data,
                 first_name=form.first_name.data,
                 last_name=form.last_name.data,
-                selected_inst_ids=list(selected_inst_ids),
-                can_export_ids=selected_export_ids,
+                module_access=module_access,
                 selected_role_ids=list(selected_role_ids),
             )
             db.session.commit()
@@ -105,8 +128,7 @@ def add_user():
                            form=form,
                            inst_groups=inst_groups,
                            roles=available_roles,
-                           selected_inst_ids=selected_inst_ids,
-                           selected_export_ids=selected_export_ids,
+                           module_access=module_access,
                            selected_role_ids=selected_role_ids,
                            notification_prefs=notif_prefs.NOTIFICATION_PREFS,
                            notification_field_prefix=notif_prefs.FIELD_PREFIX,
@@ -136,13 +158,11 @@ def edit_user(user_id):
 
     # On POST preserve what was submitted; on GET seed from the saved user data.
     if request.method == 'POST':
-        selected_inst_ids   = set(request.form.getlist('institutions'))
-        selected_export_ids = set(request.form.getlist('can_export'))
-        selected_role_ids   = set(request.form.getlist('roles'))
+        module_access     = _module_access_from_form(request.form)
+        selected_role_ids = set(request.form.getlist('roles'))
     else:
-        selected_inst_ids   = {str(inst.id) for inst in user.institutions}
-        selected_export_ids = {str(link.institution_id) for link in user.institution_links if link.can_export}
-        selected_role_ids   = {str(role.id) for role in user.roles}
+        module_access     = _module_access_from_user(user)
+        selected_role_ids = {str(role.id) for role in user.roles}
 
     if form.validate_on_submit():
         try:
@@ -156,8 +176,7 @@ def edit_user(user_id):
                 first_name=form.first_name.data,
                 last_name=form.last_name.data,
                 new_password=form.password.data,
-                selected_inst_ids=list(selected_inst_ids),
-                can_export_ids=selected_export_ids,
+                module_access=module_access,
                 selected_role_ids=list(selected_role_ids),
             )
             # Notification opt-outs belong to the person; only they and an admin
@@ -205,8 +224,7 @@ def edit_user(user_id):
                            user=user,
                            inst_groups=inst_groups,
                            roles=available_roles,
-                           selected_inst_ids=selected_inst_ids,
-                           selected_export_ids=selected_export_ids,
+                           module_access=module_access,
                            selected_role_ids=selected_role_ids,
                            notification_prefs=notif_prefs.NOTIFICATION_PREFS,
                            notification_field_prefix=notif_prefs.FIELD_PREFIX,

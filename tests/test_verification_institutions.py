@@ -442,7 +442,7 @@ def test_granting_the_institution_by_hand_also_answers_the_row(
         'email': 'ivan@example.com',
         'first_name': 'Іван',
         'last_name': 'Франко',
-        'institutions': [str(uzh.id)],
+        'view_ct': [str(uzh.id)],
         'roles': [str(viewer_role.id), str(ct_role.id)],
     })
 
