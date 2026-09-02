@@ -155,3 +155,53 @@ def test_species_predicate_stays_with_the_producers(build_sql, ftype):
 def test_scoping_survives_every_aggregation_mode(build_sql, agg):
     for sql in build_sql(aggregation=agg):
         assert 'ScopedObs AS (' in sql
+
+
+# ── determinism ──────────────────────────────────────────────────────────────
+#
+# The backup layer decides "nothing changed" by hashing the rendered CSV. That
+# only works if identical data yields identical bytes. It did not: every
+# ROW_NUMBER and the final ORDER BY left ties to the plan, so two runs 20
+# minutes apart differed in `individualCount` on 73/147/77 rows across parks
+# while ai_predictions had not been touched since 7 August. Same data, different
+# file, a pointless rewrite every night and the previous version rotated away.
+
+def test_ai_pick_breaks_ties_deterministically(build_sql):
+    """One series has many photos, each with a prediction. Equal rank and score
+    used to leave the winner — and its animal_count — up to the query plan."""
+    sql = _normalise(build_sql(export_mode='human_ai')[0])
+    start = sql.index('AIPick AS (')
+    window = sql[start:start + 700]
+    assert 'ap.id' in window, 'AIPick picks an arbitrary row among tied predictions'
+
+
+def test_ranked_consensus_breaks_ties_deterministically(build_sql):
+    sql = _normalise(build_sql()[0])
+    start = sql.index('RankedConsensus AS (')
+    assert 'species_id' in sql[start:start + 400]
+
+
+@pytest.mark.parametrize('agg', ['none', 'location_day', 'location_timewindow'])
+def test_final_order_is_total(build_sql, agg):
+    """`series_start_time` alone is not a total order: two series can share a
+    timestamp, and their relative order then varies between runs."""
+    for sql in build_sql(aggregation=agg):
+        body = _normalise(sql)
+        if 'ORDER BY series_start_time' not in body:
+            continue  # the COUNT statement has no ordering
+        assert 'ORDER BY series_start_time, observation_id, species_id' in body, \
+            f'{agg}: row order is not fully determined'
+
+
+@pytest.mark.parametrize('agg', ['location_day', 'location_timewindow'])
+def test_aggregation_pick_is_deterministic(build_sql, agg):
+    """Aggregation keeps one series per group; the survivor must not depend on
+    the plan either."""
+    for sql in build_sql(aggregation=agg):
+        body = _normalise(sql)
+        if 'RankedAggregatedData AS (' not in body:
+            continue
+        start = body.index('RankedAggregatedData AS (')
+        window = body[start:start + 500]
+        assert 'ORDER BY max_quantity DESC, series_start_time ASC, observation_id' in window, \
+            f'{agg}: tie between equally-ranked series resolved arbitrarily'
