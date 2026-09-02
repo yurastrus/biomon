@@ -12,8 +12,17 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 
-def _make_user(role_names, inst_ids):
+def _make_user(role_names, inst_ids, pam_inst_ids=None):
+    """A stand-in for the host's User.
+
+    Since institution access was split per module, the export path asks for the
+    camera-trap grants specifically (``export_institution_ids('ct')``), so the
+    stub answers per module. ``pam_inst_ids`` lets a test give the person
+    different parks for sounds and prove the CT path ignores them.
+    """
     from app.models import User
+    pam_inst_ids = list(inst_ids) if pam_inst_ids is None else list(pam_inst_ids)
+
     user = MagicMock()
     user.roles = [MagicMock(name=n) for n in role_names]
     for role, name in zip(user.roles, role_names):
@@ -21,6 +30,17 @@ def _make_user(role_names, inst_ids):
     user.institutions = [MagicMock(id=i) for i in inst_ids]
     user.export_institutions = [MagicMock(id=i) for i in inst_ids]
     user.is_authenticated = True
+
+    def _per_module(ct_ids, pam_ids):
+        return lambda module='ct': list(pam_ids if module == 'pam' else ct_ids)
+
+    user.allowed_institution_ids.side_effect = _per_module(inst_ids, pam_inst_ids)
+    user.export_institution_ids.side_effect = _per_module(inst_ids, pam_inst_ids)
+    user.module_institutions.side_effect = (
+        lambda module='ct': [MagicMock(id=i)
+                             for i in (pam_inst_ids if module == 'pam' else inst_ids)])
+    user.export_institutions_for.side_effect = user.module_institutions.side_effect
+
     # Wire up the real has_role logic instead of the default MagicMock
     user.has_role.side_effect = lambda *args: User.has_role(user, *args)
     return user
@@ -93,6 +113,13 @@ class TestGetExportInstitutionIds(unittest.TestCase):
         user = _make_user(['analyst'], [10, 20])
         result = _call(self.app, user, '99')
         self.assertNotIn(99, result)
+
+    def test_export_ignores_parks_granted_for_sounds_only(self):
+        """The reason the split exists: a park the person may only listen to
+        must not appear in a camera-trap export."""
+        user = _make_user(['analyst'], [10], pam_inst_ids=[10, 99])
+        self.assertEqual(sorted(_call(self.app, user, '')), [10])
+        self.assertNotIn(99, _call(self.app, user, '10,99'))
 
     def test_non_admin_gets_intersection(self):
         """Returns the intersection: requested ∩ own."""

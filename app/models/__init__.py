@@ -126,9 +126,54 @@ class User(db.Model, UserMixin):
     institutions = db.relationship('Institution', secondary=lambda: UserInstitution.__table__, viewonly=True)
     institution_links = db.relationship('UserInstitution', cascade='all, delete-orphan')
 
+    #: Module codes used by the per-module access helpers below.
+    MODULE_CT = 'ct'
+    MODULE_PAM = 'pam'
+
+    def module_institutions(self, module):
+        """Institutions this person may work with **in one module**.
+
+        The single source of truth for "where may they see data" since access
+        was split per module (see WORKLOG 2026-09-02). Reads the four flags on
+        each link through :meth:`UserInstitution.module_flags`, so a row written
+        before those columns existed still resolves to what it used to mean.
+
+        An admin is unrestricted elsewhere in the code by an explicit
+        ``has_role('admin')`` check, so this returns their stored rows as-is and
+        does not silently mean "everything".
+
+        Args:
+            module: ``'ct'`` or ``'pam'``.
+        """
+        key = 'view_pam' if module == self.MODULE_PAM else 'view_ct'
+        return [link.institution for link in self.institution_links
+                if link.institution is not None and link.module_flags(self)[key]]
+
+    def allowed_institution_ids(self, module='ct'):
+        """Ids of :meth:`module_institutions` — the shape most filters want."""
+        key = 'view_pam' if module == self.MODULE_PAM else 'view_ct'
+        return [link.institution_id for link in self.institution_links
+                if link.module_flags(self)[key]]
+
+    def export_institutions_for(self, module):
+        """Institutions this person may download data from in one module."""
+        key = 'export_pam' if module == self.MODULE_PAM else 'export_ct'
+        return [link.institution for link in self.institution_links
+                if link.institution is not None and link.module_flags(self)[key]]
+
+    def export_institution_ids(self, module='ct'):
+        key = 'export_pam' if module == self.MODULE_PAM else 'export_ct'
+        return [link.institution_id for link in self.institution_links
+                if link.module_flags(self)[key]]
+
     @property
     def export_institutions(self):
-        """Institutions the user is allowed to export data from."""
+        """Institutions the user may export from, either module.
+
+        Kept for callers that are not module-aware (and for the legacy
+        ``can_export`` column's meaning). Prefer
+        :meth:`export_institutions_for`.
+        """
         return [link.institution for link in self.institution_links if link.can_export]
 
     @property

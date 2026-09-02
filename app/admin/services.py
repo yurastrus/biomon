@@ -432,19 +432,29 @@ class VerificationRequestService:
         return requester.has_role('admin') or requester.has_role('manager')
 
     @staticmethod
-    def _decider_institution_ids(decider):
-        """Institution ids a non-admin decider owns. ``None`` means "all"."""
+    def _decider_institution_ids(decider, module=None):
+        """Institution ids a non-admin decider owns. ``None`` means "all".
+
+        With ``module`` given, only the institutions they hold **in that module**
+        count: a manager who has a park for photos only must not be the one who
+        opens its sounds to somebody else. Without it (queue listings, which mix
+        modules) the union is used, and the per-request check narrows it later.
+        """
         if decider.has_role('admin'):
             return None
-        return {inst.id for inst in decider.institutions}
+        if module is None:
+            return {inst.id for inst in decider.institutions}
+        return set(decider.allowed_institution_ids(module))
 
     @staticmethod
     def scope_rows(request_obj, decider, status=None):
         """Institution rows of ``request_obj`` that ``decider`` may act on.
 
-        Admins get every row; a manager gets the rows for their institutions.
+        Admins get every row; a manager gets the rows for institutions they hold
+        in the request's own module.
         """
-        allowed = VerificationRequestService._decider_institution_ids(decider)
+        allowed = VerificationRequestService._decider_institution_ids(
+            decider, module=request_obj.module)
         rows = request_obj.institution_rows(status=status)
         if allowed is None:
             return rows
@@ -553,13 +563,48 @@ class VerificationRequestService:
         return closed
 
     @staticmethod
-    def _grant_institution(user, institution_id):
-        """Attach an institution to the user unless it is already attached."""
-        if any(link.institution_id == institution_id
-               for link in user.institution_links):
+    def _grant_institution(user, institution_id, module):
+        """Grant access to one institution **for one module**.
+
+        Approving a photo request must not hand over the sounds of the same park
+        (that was the whole point of splitting the grant per module), so only the
+        approved module's view flag is switched on. Export is never granted here:
+        it stays an explicit decision in the user form.
+
+        An existing row is extended rather than replaced, which is what lets the
+        two modules be approved by different people at different times.
+
+        Returns:
+            bool: True if anything changed.
+        """
+        view_field = ('can_view_pam' if module == VerificationRequest.MODULE_PAM
+                      else 'can_view_ct')
+        other_field = ('can_view_ct' if view_field == 'can_view_pam'
+                       else 'can_view_pam')
+
+        link = next((l for l in user.institution_links
+                     if l.institution_id == institution_id), None)
+        if link is None:
+            user.institution_links.append(UserInstitution(
+                institution_id=institution_id,
+                can_export=False,
+                **{view_field: True, other_field: False,
+                   'can_export_ct': False, 'can_export_pam': False}))
+            return True
+
+        if getattr(link, view_field):
             return False
-        user.institution_links.append(
-            UserInstitution(institution_id=institution_id, can_export=False))
+        setattr(link, view_field, True)
+        # A row written before the per-module columns existed has NULLs; resolve
+        # them now so the other module keeps exactly the access it had.
+        stored = link.module_flags(user)
+        if getattr(link, other_field) is None:
+            setattr(link, other_field,
+                    stored['view_pam'] if other_field == 'can_view_pam' else stored['view_ct'])
+        if link.can_export_ct is None:
+            link.can_export_ct = stored['export_ct']
+        if link.can_export_pam is None:
+            link.can_export_pam = stored['export_pam']
         return True
 
     @staticmethod
@@ -604,7 +649,8 @@ class VerificationRequestService:
             (granted if keep else removed).append(row.institution)
 
         for inst in granted:
-            VerificationRequestService._grant_institution(user, inst.id)
+            VerificationRequestService._grant_institution(
+                user, inst.id, request_obj.module)
 
         # The role is what makes verification possible at all, so it is granted
         # as soon as anything is approved — a person cleared for one park must

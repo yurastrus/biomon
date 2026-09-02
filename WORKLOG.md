@@ -1588,3 +1588,69 @@ and the site was not touched. i18n cycle run (root catalogs only).
 Switch the reads to the new flags, then approving a verification request should
 grant its module only. Re-run the backfill first: rows created between phases by
 code that predates the columns still have NULLs.
+
+
+## 2026-09-02 (phase 3) — The read paths ask per module
+
+Committed in all three repositories, **not deployed**.
+
+### One helper per module, asked by duck typing
+`app/camera_traps/access.py` and `app/pam/access.py` are now the only places
+that answer "which institutions may this person work with here":
+`allowed_institution_ids`, `allowed_institutions`, `export_institution_ids`,
+`export_institutions`, `has_module_access`.
+
+They ask the host's `User` through `getattr`, not an import, because shared-ct
+also runs in `/var/www/myproject`, whose `User` has no per-module methods. There
+the fallback is exactly the old meaning (`user.institutions` /
+`user.export_institutions`), so that host is unaffected by any of this.
+
+On the biomon side the answers come from `User.module_institutions`,
+`allowed_institution_ids`, `export_institutions_for`, `export_institution_ids`,
+all resolving each row through `UserInstitution.module_flags` — so a row written
+before phase 1 still means what it always meant.
+
+### What was replaced
+All 60 direct uses of `current_user.institutions` in `camera_traps/routes.py`,
+the one in `camera_traps/notifications.py` (the Monday digest no longer nags
+somebody who only has sounds about photo series), 19 in `pam/routes.py` and 10
+in `pam/utils.py`, including the export baseline. `grep current_user.institutions`
+over both submodules now returns nothing outside the two access modules.
+
+`User.export_institutions` (no module) is kept for callers that are not
+module-aware; it still means what the legacy `can_export` column says.
+
+### Approval grants one module
+`VerificationRequestService._grant_institution(user, institution_id, module)`
+switches on the approved module's view flag only, extending an existing row
+rather than replacing it — so photos and sounds for the same park can be
+approved by different people at different times. Export is never granted by an
+approval; it stays an explicit decision in the user form. NULLs on a legacy row
+are resolved at that moment so the other module keeps exactly the access it had.
+
+A manager now decides only within the module they themselves hold for that park
+(`_decider_institution_ids(decider, module)`): opening the sounds of a park you
+only have photos for is not a decision that should be available.
+
+### Verified
+Full suite 1739 passed / 36 skipped. New `tests/test_module_access_reads.py`
+(15) covers the model helpers, both submodule helpers, the anonymous and
+old-host fallbacks, PAM-only access having no camera-trap access, approval
+granting one module, a second approval extending the same row, and the manager
+module scope. `tests/test_export_filter.py`'s stub user became module-aware and
+gained a case proving a sounds-only park never appears in a camera-trap export.
+
+### Deploy order (when you decide to)
+1. `git pull` in biomon (brings both submodule pointers).
+2. Re-run `venv/bin/python -m scripts.backfill_module_access --dry-run`, then
+   without the flag: rows created between the phases by the old code still have
+   NULLs, and after the reads switch a NULL is resolved by role rather than by
+   an explicit grant.
+3. Reload gunicorn.
+4. `/var/www/myproject` keeps its current submodule pointer, or takes the new
+   one safely — the fallback covers it either way.
+
+Not touched, deliberately: `admin_users_list.html` still lists a person's parks
+without module badges, and `UserService.get_available_institutions` (which parks
+a manager may hand out) is still module-blind. Both are administration views,
+not data access.
