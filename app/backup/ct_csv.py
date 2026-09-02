@@ -21,7 +21,8 @@ Reuse, not reimplementation
 Rows come from ``app.camera_traps.data_export.get_ct_occurrence_data`` — the very
 function behind ``/api/data-download``. Column order and content therefore cannot
 drift from what the UI produces. The only thing decided here is which filters a
-*backup* should use: whole history, every institution, maximum completeness.
+*backup* should use: whole history, one file per institution, every human
+identification kept, machine labels for animal-free frames left out.
 """
 from __future__ import annotations
 
@@ -37,13 +38,26 @@ from .storage import build_backends, slugify_folder
 
 logger = logging.getLogger(__name__)
 
-#: Filters that define "a complete backup" as opposed to a user's ad-hoc export.
+#: Defaults for what a backup CSV contains. Overridable per deployment through
+#: ``CT_CSV_BACKUP['EXPORT_MODE']`` / ``['FILTER_TYPE']``.
+#:
 #: ``human_ai`` keeps consensus rows, every competing identification of an
-#: unresolved series, and AI-only series; ``all`` keeps non-animal records
-#: (empty frames, people, vehicles) too. Nothing in ct_db is silently dropped.
-BACKUP_EXPORT_MODE = 'human_ai'
-BACKUP_FILTER_TYPE = 'all'
+#: unresolved series, and the AI prediction for series no human has touched —
+#: so no human work is ever missing from the file.
+#:
+#: ``species_only`` drops the negative-id pseudo-species (``empty``, ``vehicle``,
+#: ``Homo sapiens``, ``not identifiable``, …). That is not a loss of real
+#: observations: those rows are machine labels for frames with no animal in
+#: them, they live in the SQL dump like everything else, and they dominate the
+#: table — for Roztochya alone the AI branch carries 2 023 animal rows against
+#: 9 189 non-animal ones. Including them made the CSV four times its useful size
+#: and the query minutes long, for content nobody reads. ``all`` restores them.
+DEFAULT_EXPORT_MODE = 'human_ai'
+DEFAULT_FILTER_TYPE = 'species_only'
 BACKUP_START_DATE = '1900-01-01'
+
+_VALID_EXPORT_MODES = frozenset({'consensus', 'human_any', 'human_ai'})
+_VALID_FILTER_TYPES = frozenset({'species_only', 'all'})
 
 FILE_STEM = 'ct_occurrence'
 
@@ -120,7 +134,30 @@ def _folder_for(institution):
                           fallback=f'institution_{institution.id}')
 
 
-def export_institution(institution, backends, keep, run_date, dry_run=False):
+def resolve_filters(config):
+    """Validated (export_mode, filter_type) for this deployment.
+
+    An unrecognised value falls back to the default with a warning rather than
+    reaching the SQL builder: ``get_ct_occurrence_data`` silently coerces a bad
+    export_mode to 'consensus', which would quietly shrink every backup.
+    """
+    config = config or {}
+    mode = config.get('EXPORT_MODE', DEFAULT_EXPORT_MODE)
+    ftype = config.get('FILTER_TYPE', DEFAULT_FILTER_TYPE)
+    if mode not in _VALID_EXPORT_MODES:
+        logger.warning('[ct-csv-backup] invalid EXPORT_MODE %r, using %r',
+                       mode, DEFAULT_EXPORT_MODE)
+        mode = DEFAULT_EXPORT_MODE
+    if ftype not in _VALID_FILTER_TYPES:
+        logger.warning('[ct-csv-backup] invalid FILTER_TYPE %r, using %r',
+                       ftype, DEFAULT_FILTER_TYPE)
+        ftype = DEFAULT_FILTER_TYPE
+    return mode, ftype
+
+
+def export_institution(institution, backends, keep, run_date, dry_run=False,
+                       export_mode=DEFAULT_EXPORT_MODE,
+                       filter_type=DEFAULT_FILTER_TYPE):
     """Render one institution's CSV and hand it to every backend.
 
     A backend that rejects the file is logged and the run continues: losing the
@@ -140,8 +177,8 @@ def export_institution(institution, backends, keep, run_date, dry_run=False):
         'end_date': run_date.isoformat(),
         'aggregation': 'none',
         'institution_code': code,
-        'filter_type': BACKUP_FILTER_TYPE,
-        'export_mode': BACKUP_EXPORT_MODE,
+        'filter_type': filter_type,
+        'export_mode': export_mode,
         'institution_ids': [institution.id],
         'qc_exclude': [],
     }
@@ -178,8 +215,8 @@ def export_institution(institution, backends, keep, run_date, dry_run=False):
                 'row_count': len(rows),
                 'institution_code': code,
                 'institution_id': institution.id,
-                'export_mode': BACKUP_EXPORT_MODE,
-                'filter_type': BACKUP_FILTER_TYPE,
+                'export_mode': export_mode,
+                'filter_type': filter_type,
             })
             removed = backend.rotate(folder, pattern, keep)
             result.locations.append(location)
@@ -208,6 +245,7 @@ def run_backup(config, keep=None, run_date=None, dry_run=False, only_codes=None)
 
     run_date = run_date or date.today()
     keep = keep if keep is not None else config.get('KEEP_VERSIONS', 2)
+    export_mode, filter_type = resolve_filters(config)
     backends = build_backends(config.get('STORAGES'))
     if not backends:
         raise RuntimeError('CT_CSV_BACKUP: no storage backend is enabled')
@@ -221,7 +259,8 @@ def run_backup(config, keep=None, run_date=None, dry_run=False, only_codes=None)
     for institution in institutions:
         try:
             results.append(export_institution(
-                institution, backends, keep, run_date, dry_run=dry_run))
+                institution, backends, keep, run_date, dry_run=dry_run,
+                export_mode=export_mode, filter_type=filter_type))
         except Exception as exc:
             # One park's bad data must not cost every other park its backup.
             failed = InstitutionExport(institution.id, institution.code or '?',

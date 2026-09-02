@@ -162,9 +162,19 @@ class Config:
     # `find -mtime +RETENTION_DAYS`, which cannot express "keep the last two"
     # for a file that is only rewritten when the data actually changes. An
     # unchanged park would lose its only CSV after a day of quiet.
+    #
+    # EXPORT_MODE / FILTER_TYPE mirror the two selects on the data-export page.
+    # 'human_ai' keeps consensus rows, every competing identification of an
+    # unresolved series, and the AI prediction for series no human has touched.
+    # 'species_only' drops the negative-id pseudo-species (empty, vehicle,
+    # Homo sapiens, not identifiable, …): machine labels for frames with no
+    # animal, which outnumber the real rows several times over and are in the
+    # SQL dump anyway. Set FILTER_TYPE='all' to keep them.
     CT_CSV_BACKUP = {
         'ROOT': os.environ.get('BACKUP_ROOT', '/home/yura/backups') + '/phototraps_data',
         'KEEP_VERSIONS': int(os.environ.get('BACKUP_KEEP_VERSIONS') or 2),
+        'EXPORT_MODE': os.environ.get('CT_CSV_BACKUP_EXPORT_MODE', 'human_ai'),
+        'FILTER_TYPE': os.environ.get('CT_CSV_BACKUP_FILTER_TYPE', 'species_only'),
         'STORAGES': [
             {'type': 'local',
              'enabled': True,

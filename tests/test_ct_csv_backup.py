@@ -167,21 +167,55 @@ def test_export_writes_file_and_manifest(tmp_path, occurrence):
     manifest = store.read_manifest('Roztochya_Nature_Reserve')
     assert manifest['file'] == 'RSNR_ct_occurrence_2026-09-02.csv'
     assert manifest['row_count'] == 2
+    assert manifest['export_mode'] == 'human_ai'
+    assert manifest['filter_type'] == 'species_only'
     assert len(manifest['sha256']) == 64
 
 
 def test_export_uses_backup_filters_not_page_defaults(tmp_path, occurrence):
-    """A backup must cover all history and every row kind, not the UI defaults."""
+    """Whole history and every human identification — but not the pseudo-species.
+
+    The page defaults to the current year and to `consensus`; a backup needs
+    more than that. It does not need the negative-id rows (empty frames,
+    vehicles, people): for Roztochya they outnumbered the real ones four to one
+    and pushed a two-minute query onto the nightly pipeline.
+    """
     ct_csv.export_institution(_institution(), [LocalStorage(tmp_path)], keep=2,
                               run_date=date(2026, 9, 2))
     filters = occurrence.call_args.args[0]
     assert filters['start_date'] == '1900-01-01'
     assert filters['end_date'] == '2026-09-02'
     assert filters['export_mode'] == 'human_ai'
-    assert filters['filter_type'] == 'all'
+    assert filters['filter_type'] == 'species_only'
     assert filters['aggregation'] == 'none'
     assert filters['institution_ids'] == [1]
     assert filters['institution_code'] == 'RSNR'
+
+
+def test_export_filters_are_overridable(tmp_path, occurrence):
+    ct_csv.export_institution(_institution(), [LocalStorage(tmp_path)], keep=2,
+                              run_date=date(2026, 9, 2),
+                              export_mode='consensus', filter_type='all')
+    filters = occurrence.call_args.args[0]
+    assert filters['export_mode'] == 'consensus'
+    assert filters['filter_type'] == 'all'
+
+
+@pytest.mark.parametrize('config,expected', [
+    ({}, ('human_ai', 'species_only')),
+    (None, ('human_ai', 'species_only')),
+    ({'EXPORT_MODE': 'consensus', 'FILTER_TYPE': 'all'}, ('consensus', 'all')),
+    ({'EXPORT_MODE': 'human_any'}, ('human_any', 'species_only')),
+])
+def test_resolve_filters(config, expected):
+    assert ct_csv.resolve_filters(config) == expected
+
+
+def test_resolve_filters_rejects_garbage():
+    """get_ct_occurrence_data coerces a bad export_mode to 'consensus' in silence,
+    which would quietly shrink every backup. Catch it here instead."""
+    assert ct_csv.resolve_filters({'EXPORT_MODE': 'everything',
+                                   'FILTER_TYPE': 'birds'}) ==         ('human_ai', 'species_only')
 
 
 def test_unchanged_data_is_not_written_again(tmp_path, occurrence):
@@ -275,9 +309,9 @@ def test_backends_track_their_own_manifest(tmp_path, occurrence):
 
 # ── run_backup orchestration ─────────────────────────────────────────────────
 
-def _run_backup(app, tmp_path, institutions, **kwargs):
-    config = {'KEEP_VERSIONS': 2,
-              'STORAGES': [{'type': 'local', 'root': str(tmp_path)}]}
+def _run_backup(app, tmp_path, institutions, config=None, **kwargs):
+    config = config or {'KEEP_VERSIONS': 2,
+                        'STORAGES': [{'type': 'local', 'root': str(tmp_path)}]}
     with app.app_context():
         with patch('app.backup.ct_csv.list_ct_institutions', return_value=institutions), \
              patch('app.camera_traps.database.get_ct_engine', return_value=MagicMock()):
@@ -311,6 +345,16 @@ def test_run_backup_filters_by_institution_code(app, tmp_path):
                return_value={'data': _rows(1), 'total_count': 1}):
         results = _run_backup(app, tmp_path, institutions, only_codes=['cnnp'])
     assert [r.code for r in results] == ['CNNP']
+
+
+def test_run_backup_passes_configured_filters_through(app, tmp_path):
+    config = {'KEEP_VERSIONS': 2, 'EXPORT_MODE': 'consensus', 'FILTER_TYPE': 'all',
+              'STORAGES': [{'type': 'local', 'root': str(tmp_path)}]}
+    with patch('app.camera_traps.data_export.get_ct_occurrence_data',
+               return_value={'data': _rows(1), 'total_count': 1}) as query:
+        _run_backup(app, tmp_path, [_institution()], config=config)
+    filters = query.call_args.args[0]
+    assert (filters['export_mode'], filters['filter_type']) == ('consensus', 'all')
 
 
 def test_run_backup_refuses_to_run_without_a_backend(app):
