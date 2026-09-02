@@ -59,6 +59,52 @@ def register_commands(app):
         deleted = purge_unconfirmed_users(max_age_days=max_age)
         click.echo(f"Deleted {deleted} unconfirmed account(s) older than {max_age} days.")
 
+    @app.cli.command('ct-csv-backup')
+    @click.option('--keep', default=None, type=int,
+                  help='How many versions of each file to retain (default: CT_CSV_BACKUP.KEEP_VERSIONS).')
+    @click.option('--dry-run', is_flag=True,
+                  help='Query and hash, but write nothing anywhere.')
+    @click.option('--institution', 'institutions', multiple=True,
+                  help='Restrict to these institution codes (repeatable).')
+    def ct_csv_backup(keep, dry_run, institutions):
+        """Export camera-trap data to per-institution CSV backups.
+
+        Second tier on top of the nightly SQL dumps: the same table the
+        data-export page serves, one file per institution, written next to the
+        dumps and carried to Google Drive by the existing rclone sync.
+        A park whose data did not change is skipped (content hash).
+
+        Usage:
+            flask ct-csv-backup [--dry-run] [--keep 2] [--institution RSNR]
+
+        Called from /usr/local/bin/full_backup.sh before the rclone step; see
+        deploy/ct_csv_backup.sh.
+        """
+        from app.backup.ct_csv import run_backup
+
+        results = run_backup(app.config['CT_CSV_BACKUP'], keep=keep, dry_run=dry_run,
+                             only_codes=list(institutions) or None)
+        if not results:
+            click.echo('No institutions with camera-trap locations found.')
+            return
+
+        written = unchanged = failed = 0
+        for r in results:
+            if r.errors:
+                failed += 1
+                click.echo(f'  ✗ {r.code}: {"; ".join(r.errors)}')
+            elif r.skipped_unchanged and not r.locations:
+                unchanged += 1
+                click.echo(f'  = {r.code}: unchanged ({r.row_count} rows)')
+            elif r.locations:
+                written += 1
+                click.echo(f'  ✓ {r.code}: {r.row_count} rows → {", ".join(r.locations)}')
+            else:
+                click.echo(f'  · {r.code}: nothing to export')
+        click.echo(f'Done: {written} written, {unchanged} unchanged, {failed} failed.')
+        if failed:
+            raise SystemExit(1)
+
     # ──────────────────────────────────────────────────────────────
     # SDM CLI commands (flask sdm check / build-grid / ...)
     # ──────────────────────────────────────────────────────────────

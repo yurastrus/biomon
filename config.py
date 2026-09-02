@@ -150,6 +150,35 @@ class Config:
     # Complexity (letters+digits) is enforced by form validators.
     PASSWORD_MIN_LENGTH = 8
 
+    # ── Second-tier backup: per-institution CSV of camera-trap data ───────────
+    # Runs from `flask ct-csv-backup`, normally called by full_backup.sh just
+    # before it rsyncs the backup root to Google Drive. See app/backup/.
+    #
+    # ROOT points at the same directory that holds the SQL dumps, so the CSVs
+    # land in a third folder next to postgres/ and geoserver/ and travel to
+    # Drive on the existing rclone sync — no second upload, no extra credentials.
+    #
+    # KEEP_VERSIONS is a count, not an age: full_backup.sh prunes dumps with
+    # `find -mtime +RETENTION_DAYS`, which cannot express "keep the last two"
+    # for a file that is only rewritten when the data actually changes. An
+    # unchanged park would lose its only CSV after a day of quiet.
+    CT_CSV_BACKUP = {
+        'ROOT': os.environ.get('BACKUP_ROOT', '/home/yura/backups') + '/phototraps_data',
+        'KEEP_VERSIONS': int(os.environ.get('BACKUP_KEEP_VERSIONS') or 2),
+        'STORAGES': [
+            {'type': 'local',
+             'enabled': True,
+             'root': os.environ.get('BACKUP_ROOT', '/home/yura/backups') + '/phototraps_data'},
+            # Direct upload to a remote that the backup-root sync does not cover.
+            # Enable by setting CT_CSV_BACKUP_REMOTE (e.g. 'nextcloud:biomon/ct').
+            {'type': 'rclone',
+             'enabled': bool(os.environ.get('CT_CSV_BACKUP_REMOTE')),
+             'remote': os.environ.get('CT_CSV_BACKUP_REMOTE', ''),
+             'config': os.environ.get('RCLONE_CONFIG',
+                                      '/home/yura/.config/rclone/rclone.conf')},
+        ],
+    }
+
     @staticmethod
     def init_app(app):
         """No-op hook for environment-specific setup."""
@@ -195,6 +224,11 @@ class TestingConfig(Config):
     # unsetting the server here costs nothing and closes the hole.
     MAIL_SERVER = None
     MAIL_SUPPRESS_SEND = True
+
+    # Same reasoning as MAIL_SERVER: the inherited config points at the real
+    # server backup root, and a test that ran the exporter unpatched would write
+    # into it. Tests pass their own tmp_path-based storage config instead.
+    CT_CSV_BACKUP = {'ROOT': None, 'KEEP_VERSIONS': 2, 'STORAGES': []}
 
 config = {
     'development': DevelopmentConfig,

@@ -935,3 +935,103 @@ the captured log.
 Full suite: **1580 passed, 36 skipped**. Note this leaves a known, unexplained
 one-in-many flake in the suite — it is not an accepted baseline failure, just an
 unresolved one.
+
+## 2026-09-02 — Second-tier backup: per-institution CSV export of camera-trap data
+
+### Why
+The nightly `full_backup.sh` produces `.sql.gz` dumps of every database plus a
+GeoServer archive. That is a restore path, not a readable copy: it helps only
+someone who can rebuild a running biomon. Requested second layer — export the
+camera-trap data as CSV, one file per institution, so the numbers survive in a
+form a person can open, and each park effectively holds its own copy.
+
+### What was built
+- `app/backup/storage.py` — storage backends behind one four-method interface
+  (`put`, `read_manifest`, `write_manifest`, `rotate`). `LocalStorage` writes a
+  directory; `RcloneStorage` drives the rclone binary already installed for the
+  dump sync. Adding Nextcloud later is one class plus one config line.
+- `app/backup/ct_csv.py` — the exporter. Rows come from
+  `app.camera_traps.data_export.get_ct_occurrence_data`, the same function
+  behind `/api/data-download`, so the backup columns cannot drift from the UI.
+- `config.py` → `CT_CSV_BACKUP`; `app/commands.py` → `flask ct-csv-backup`;
+  `deploy/ct_csv_backup.sh` — cron/full_backup.sh wrapper.
+- `tests/test_ct_csv_backup.py` — 29 tests.
+
+### Decisions and why
+**Reuse the query, not the endpoint.** Calling the HTTP route from cron would
+need a session, a user with export rights, and CSRF handling, all to reach a
+function that is importable. The exporter calls `get_ct_occurrence_data`
+directly and passes `institution_ids=[id]`, which is exactly what the route's
+`_get_export_institution_ids()` resolves to for a single-institution download.
+
+**Change detection by content hash, not by a database timestamp.** The
+alternative was `max(updated_at)` over the source tables, which is cheaper but
+wrong in both directions: ct_db has no reliable update timestamp on every table
+the export touches (identifications, ai_predictions, deployments all feed the
+result), and a change that does not alter the exported columns would still
+force a write. Hashing the rendered CSV asks the only question that matters —
+"is the output different?" Cost is one query per institution per night, which
+the existing dump job dwarfs.
+
+**Rotation counts versions; it does not reuse `RETENTION_DAYS`.** The request
+was to reuse the dump script's retention variable. That variable is age-based
+(`find -mtime +$RETENTION_DAYS`) and currently `0`, i.e. "delete anything older
+than a day". Combined with the change check that is actively harmful: a park
+with no new data would not get a fresh CSV, and the day-old one would be
+deleted, leaving nothing. So `KEEP_VERSIONS` (default 2) counts files instead.
+`keep=0` is clamped to 1 — "no backup at all" is not a state this module will
+enter on a config typo.
+
+**Google Drive comes free.** `phototraps_data/` is created inside
+`$BACKUP_ROOT`, which `full_backup.sh` already mirrors with
+`rclone sync … gdrive_backup:backups/my_server`. No second upload, no extra
+credentials, and the local rotation propagates to Drive because `sync` mirrors
+deletions. The `rclone` backend stays in the code for a genuinely different
+destination and is enabled only when `CT_CSV_BACKUP_REMOTE` is set.
+
+**Backup filters, not page defaults.** Answered by the user: `human_ai` +
+`filter_type='all'` + whole history. So the CSV carries consensus rows, every
+competing identification of an unresolved series, AI-only series, and non-animal
+records. The export page defaults (consensus / animals only / current year) are
+right for a person preparing an analysis and wrong for a backup.
+
+**Per-backend manifests.** Each destination stores its own `manifest.json`, so a
+remote that was unreachable yesterday catches up on the next run even though the
+local copy is already current. A shared manifest would have marked the data
+"unchanged" and left the remote permanently a version behind.
+
+**Failure isolation.** A backend error is logged and the remaining backends
+still write; an institution whose query raises is recorded in the report and the
+remaining institutions still get their backup. The command exits 1 if anything
+failed, but nothing already written is rolled back.
+
+### Folder and file naming
+`Institution.name_en` → ASCII slug for the directory (`Roztochya_Nature_Reserve`),
+`Institution.code` → filename prefix (`RSNR_ct_occurrence_2026-09-02.csv`). Both
+read from the database. An institution without an English name falls back to
+`institution_<id>` rather than to the Ukrainian name, because the folder is
+created on the server, in Google Drive and possibly on Nextcloud, and non-ASCII
+directory names behave differently on each.
+
+### Testing
+`tests/test_ct_csv_backup.py` — 29 tests: slug edge cases, CSV rendering,
+manifest round-trip and corrupt-manifest tolerance, rotation (including that it
+leaves unrelated files alone and never empties a folder), the rclone command
+contract, the backup-specific filters, unchanged-vs-changed behaviour, dry run,
+failing-backend isolation, per-backend manifests, and per-institution isolation.
+`TestingConfig` now ships an empty `CT_CSV_BACKUP` so a test that forgets to
+patch cannot write into the real server backup root.
+
+Full suite after the change: **1609 passed, 36 skipped**.
+
+### Not done — needs sudo, left to the user
+Deployment. Two manual steps on the server:
+1. `install -m 755 /var/www/biomon/deploy/ct_csv_backup.sh /usr/local/bin/`
+2. Insert the `4b` block (text is in the header of `deploy/ct_csv_backup.sh`)
+   into `/usr/local/bin/full_backup.sh` before section 5, the rclone sync.
+Then verify with `/usr/local/bin/ct_csv_backup.sh --dry-run`.
+
+### Worth watching
+The volume is at 96% (6.7 GB free). The CSVs are small next to a 906 MB
+`geodata` dump, and the change check keeps quiet parks from writing at all, but
+this layer does add files to a disk that has little headroom.
