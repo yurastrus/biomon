@@ -1219,3 +1219,63 @@ rows and is correctly skipped.
 - A waiter written as `while pgrep -f "flask ct-csv-backup"` matches **its own
   command line** and never exits. It looked like the export was hanging when it
   had finished minutes earlier.
+
+## 2026-09-02 — Backup verification and notifications (and a real gap found)
+
+Asked for: a Telegram/Discord message when the nightly backup succeeds, listing
+what was backed up and how big it is — but only when everything is genuinely
+fine — and, more importantly, a message when it is not.
+
+### `deploy/backup_report.sh`
+Verifies artefacts rather than exit codes, which matters because exit codes are
+exactly what failed here (see below). Checks, all cheap:
+
+* every non-template database has a dump dated today, plus `globals_roles`;
+* archives up to 50 MiB get a real `gzip -t` — CRC32 over the whole stream;
+* bigger ones are checked structurally: gzip magic plus a non-zero trailer,
+  which is written only when the stream is closed properly. This keeps the
+  nightly job from spending minutes unpacking the 900 MB `geodata` dump;
+* nothing is 0 bytes, nothing has an mtime younger than 60 s (still being written);
+* every camera-trap CSV is re-hashed and compared with the sha256 in its own
+  `manifest.json` — ~8 MB total, so this is both cheap and conclusive.
+
+Whole run: **3.5 s**.
+
+`--watchdog` mode covers what the report cannot: `full_backup.sh` never starting,
+or dying before it reaches the report. It writes a date stamp on success and
+alerts if today's stamp is missing. Cron entry runs 05:00 UTC.
+
+No credentials in the file — the repository is public. They come from
+`/etc/alert-webhook.conf`, falling back to `/var/www/biomon/.env`.
+
+### A false positive of my own, worth recording
+The first version compared the gzip trailer's ISIZE against the compressed size
+and flagged `geodata` as corrupt. ISIZE is the uncompressed size **modulo 2^32**;
+geodata unpacks to more than 4 GiB, so the counter wraps. A plausible-looking
+check that quietly calls a good backup broken is worse than no check, hence the
+size-threshold split above and an explicit comment against reinstating it.
+
+### The real finding: PostgreSQL roles were never being backed up
+`globals_roles_20260902_023001.sql.gz` is **20 bytes — zero after
+decompression**. Roles, users and passwords are not in any backup.
+
+Chain of causes, each individually reasonable:
+1. `sudoers` grants `NOPASSWD` for `/usr/bin/psql` and `/usr/bin/pg_dump` — but
+   **not** `pg_dumpall`.
+2. In cron there is no tty, so `sudo -u postgres pg_dumpall --globals-only`
+   fails immediately.
+3. `full_backup.sh` runs it as `pg_dumpall | gzip > file`, and a pipeline's exit
+   status is that of the **last** command. `gzip` succeeded, so the `if` branch
+   reported success.
+4. The follow-up guard is `[ -s "$file" ]` — "not empty". An empty gzip stream is
+   20 bytes, so it passed that too.
+
+Fix needs root: add `pg_dumpall` to the NOPASSWD list. The prepared
+`full_backup.sh` patch also adds `set -o pipefail`, so a future failure of this
+shape reports itself instead of hiding.
+
+### Prepared, waiting on the user (root required)
+`/tmp/full_backup.sh.new` on the server — syntax-checked, diffed — adds the
+`pipefail` line and a section 6 that calls the report after the rclone sync.
+Section 6 deliberately does not touch `BACKUP_SUCCESS`: the backup is already
+made by then, and the report only says what came of it.
