@@ -116,7 +116,9 @@ def render_csv(rows):
     """Serialise occurrence rows to CSV bytes, or return None for an empty set.
 
     Header order follows the first row's keys, exactly as ``/api/data-download``
-    does, so the backup file and a hand-made download are byte-comparable.
+    does. The two files differ in one respect only: this one uses LF, the
+    browser download CRLF, so a byte comparison needs a line-ending pass first
+    (verified on Roztochya: identical sha256 after converting).
     """
     if not rows:
         return None

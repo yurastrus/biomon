@@ -1035,3 +1035,76 @@ Then verify with `/usr/local/bin/ct_csv_backup.sh --dry-run`.
 The volume is at 96% (6.7 GB free). The CSVs are small next to a 906 MB
 `geodata` dump, and the change check keeps quiet parks from writing at all, but
 this layer does add files to a disk that has little headroom.
+
+## 2026-09-02 (later) — CSV backup: wrong filter caught on real data, deployed, verified
+
+### What went wrong with the first version
+It shipped with `filter_type='all'`. That was chosen deliberately — "a backup
+should lose nothing" — and confirmed with the user before implementation. On
+real data it was simply the wrong call.
+
+`ct_db` carries 28 pseudo-species with negative ids: `empty`, `vehicle`,
+`motobike`, `quadbike`, `Homo sapiens`, `not identifiable`, and so on. They are
+machine labels for frames with no animal in them. For Roztochya alone, the
+AI-only branch produced 2 023 animal rows against **9 189** non-animal ones.
+
+Result: 22 349 rows instead of 6 090, and a query that ran **2 min 25 s** for a
+single institution — inside the nightly pipeline, multiplied by 24 parks.
+
+The cost was not only row count. `s.id > 0` prunes before the window functions
+sort, so `AIPick` no longer drags all 760 205 AI predictions through a sort.
+Dropping the pseudo-species took the run from 2 min 25 s to **23 s**.
+
+The lesson is about how the question was asked, not about the code. The options
+presented "maximum completeness" as recommended and mentioned empty frames in a
+parenthesis, without a number next to it. Counting the pseudo-species first and
+showing "9 189 junk rows per park" would have made the answer obvious.
+
+### The fix
+- `DEFAULT_FILTER_TYPE = 'species_only'`, `DEFAULT_EXPORT_MODE = 'human_ai'`.
+- Both moved into `CT_CSV_BACKUP['EXPORT_MODE'/'FILTER_TYPE']` and env vars, so
+  changing the policy no longer means editing code.
+- `resolve_filters()` validates them. Not cosmetic: `get_ct_occurrence_data`
+  silently coerces an unrecognised `export_mode` to `'consensus'`, so one typo
+  in the config would quietly shrink every backup to consensus-only rows with
+  nothing in the log to say so.
+- The manifest now records which filters produced the file, so an old copy can
+  be told apart from one made under different rules.
+
+### Verification against a real download
+The user downloaded the RSNR table by hand from the export page as a reference.
+
+| | Manual download | `ct-csv-backup` |
+|---|---|---|
+| Rows | 6 090 | 6 090 |
+| Localities | 28 | (RSNR owns 30 locations) |
+| Size | 2 515 503 B | 2 509 412 B |
+
+The 6 091-byte gap is exactly one byte per line: the browser download uses CRLF,
+this exporter writes LF. Converting line endings makes the two files identical —
+same sha256, `ab871f26…`. LF was kept (the file lives on a Linux server) and the
+docstring claim of "byte-comparable" was corrected instead.
+
+### Deployment (done)
+- `/usr/local/bin/ct_csv_backup.sh` installed (by the user).
+- Block `4b` inserted into `/usr/local/bin/full_backup.sh` before section 5.
+  The patched file was prepared in `/tmp`, syntax-checked with `bash -n` and
+  diffed before the user applied it with one `sudo install`; the original was
+  copied to `full_backup.sh.bak-<timestamp>` first. Root-owned file and
+  password-gated sudo meant this step could not be automated.
+- The block deliberately leaves `BACKUP_SUCCESS` untouched. That flag gates the
+  Google Drive sync and exists to stop a corrupt dump from overwriting a good
+  cloud copy. Letting the secondary CSV layer clear it would mean a minor
+  failure cancelling the upload of perfectly good database dumps.
+- End-to-end check on the server: real run wrote
+  `phototraps_data/Roztochya_SNR/RSNR_ct_occurrence_2026-09-02.csv` (2.4 MiB)
+  plus `manifest.json`, and `rclone sync --dry-run` confirms both would be
+  uploaded to `gdrive_backup:backups/my_server/phototraps_data/`.
+
+### Operational note
+Interrupting an `ssh` command locally does not kill the remote process. The
+first full dry-run kept running on the server after the local Ctrl+C and had to
+be killed by PID. Worth remembering for any long remote job started this way.
+
+### Still open
+A full dry-run across all 24 institutions has not been done yet — only RSNR.
