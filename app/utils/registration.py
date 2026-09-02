@@ -15,7 +15,8 @@ from datetime import datetime, timedelta
 from flask import current_app
 
 from app.extensions import db, bcrypt
-from app.models import User, Role, VerificationRequest
+from app.models import (User, Role, Institution, VerificationRequest,
+                        VerificationRequestInstitution)
 
 #: Role every account gets on registration — read-only access to public data.
 BASE_ROLE = 'viewer'
@@ -50,14 +51,22 @@ def email_taken(email):
 
 
 def create_self_registered_user(*, username, email, password, first_name, last_name,
-                                modules, locale='uk'):
+                                modules, institution_ids=(), applicant_note=None,
+                                locale='uk'):
     """Create an inactive account plus one pending request per chosen module.
 
     The caller commits. The account is created with the ``viewer`` role and **no
-    institutions**, which is what limits a future verifier to public locations.
+    institutions**: the institutions named here are *requests*, not grants — each
+    one is granted only when its manager (or an admin) approves it, so an
+    unapproved applicant still sees public locations only.
 
     Args:
         modules: iterable of :data:`VerificationRequest.MODULES` values.
+        institution_ids: institutions the applicant wants access to. The same
+            set is attached to every requested module — the person picks
+            territories once, and each module is still decided separately.
+        applicant_note: what the person wrote about their motivation and
+            experience. Copied onto every module request for the same reason.
 
     Returns:
         The new :class:`User`.
@@ -65,6 +74,15 @@ def create_self_registered_user(*, username, email, password, first_name, last_n
     modules = [m for m in modules if m in VerificationRequest.MODULES]
     if not modules:
         raise ValueError("at least one module must be requested")
+
+    note = (applicant_note or '').strip() or None
+
+    # Only real institutions, deduplicated, order preserved. Filtering here (not
+    # in the form) keeps a stale form or a hand-crafted POST from creating rows
+    # that point at nothing.
+    wanted = list(dict.fromkeys(int(i) for i in institution_ids))
+    valid_ids = ([i.id for i in Institution.query.filter(Institution.id.in_(wanted)).all()]
+                 if wanted else [])
 
     user = User(
         username=username,
@@ -81,7 +99,13 @@ def create_self_registered_user(*, username, email, password, first_name, last_n
     db.session.flush()            # need user.id for the requests below
 
     for module in modules:
-        db.session.add(VerificationRequest(user_id=user.id, module=module))
+        req = VerificationRequest(user_id=user.id, module=module,
+                                  applicant_note=note)
+        db.session.add(req)
+        db.session.flush()        # need req.id for the institution rows
+        for inst_id in valid_ids:
+            db.session.add(VerificationRequestInstitution(
+                request_id=req.id, institution_id=inst_id))
 
     return user
 

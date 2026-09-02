@@ -9,7 +9,8 @@ from datetime import datetime
 
 from sqlalchemy import or_
 from app.extensions import db, bcrypt
-from app.models import User, Role, Institution, UserInstitution, VerificationRequest
+from app.models import (User, Role, Institution, UserInstitution,
+                        VerificationRequest, VerificationRequestInstitution)
 
 # Roles that grant export rights
 EXPORT_ROLES = frozenset({'analyst', 'manager', 'admin'})
@@ -346,46 +347,111 @@ class RoleService:
 class VerificationRequestService:
     """Decisions on self-registered users' requests for verification rights.
 
-    Approval grants exactly one role and no institutions, so the new verifier
-    sees public locations only. Territory access remains a separate, manual
-    grant — see the module docstring of app/utils/registration.py.
+    Two things can be granted from a request:
+
+    * the **module role** (``ct_verifier`` / ``pam_verifier``) — the right to
+      verify at all, which on its own means public locations only;
+    * an **institution** the applicant named at registration — access to that
+      institution's data, granted one institution at a time.
+
+    Who decides what: an admin decides everything; a manager decides only the
+    institutions they themselves have access to, and sees only requests naming
+    at least one of them. A request keeps hanging in the queue while any named
+    institution is still undecided, which is what lets two parks approve the
+    same applicant independently.
     """
 
     @staticmethod
     def can_decide(requester):
-        """Return True if ``requester`` may approve/reject requests.
+        """Return True if ``requester`` may approve/reject requests at all.
 
-        Admin-only for now. Managers are the intended next step: they would be
-        limited to requests they can see, which requires deciding what "their"
-        applicants means (no institution is attached at this point) — so the
-        rule stays deliberately narrow instead of guessing.
+        Managers qualify, but :meth:`scope_rows` narrows what they may touch to
+        their own institutions.
         """
-        return requester.has_role('admin')
+        return requester.has_role('admin') or requester.has_role('manager')
 
     @staticmethod
-    def list_requests(status=None, only_confirmed=True):
-        """Requests newest-first, optionally filtered by status.
+    def _decider_institution_ids(decider):
+        """Institution ids a non-admin decider owns. ``None`` means "all"."""
+        if decider.has_role('admin'):
+            return None
+        return {inst.id for inst in decider.institutions}
+
+    @staticmethod
+    def scope_rows(request_obj, decider, status=None):
+        """Institution rows of ``request_obj`` that ``decider`` may act on.
+
+        Admins get every row; a manager gets the rows for their institutions.
+        """
+        allowed = VerificationRequestService._decider_institution_ids(decider)
+        rows = request_obj.institution_rows(status=status)
+        if allowed is None:
+            return rows
+        return [r for r in rows if r.institution_id in allowed]
+
+    @staticmethod
+    def can_decide_request(request_obj, decider):
+        """Return True if ``decider`` may act on this particular request.
+
+        An admin always may. A manager may only when the request still has an
+        undecided institution of theirs — a request naming no institution (or
+        none of theirs) is not theirs to judge, since approving it would grant a
+        site-wide verifier role they do not own.
+        """
+        if decider.has_role('admin'):
+            return True
+        if not decider.has_role('manager'):
+            return False
+        return bool(VerificationRequestService.scope_rows(
+            request_obj, decider, status=VerificationRequest.STATUS_PENDING))
+
+    @staticmethod
+    def _visible_query(status=None, only_confirmed=True, viewer=None):
+        query = VerificationRequest.query.join(
+            User, VerificationRequest.user_id == User.id)
+        if only_confirmed:
+            query = query.filter(User.email_confirmed_at.isnot(None))
+
+        allowed = (VerificationRequestService._decider_institution_ids(viewer)
+                   if viewer is not None else None)
+        if allowed is None:
+            if status in VerificationRequest.STATUSES:
+                query = query.filter(VerificationRequest.status == status)
+        else:
+            # A manager's queue is limited to requests naming an institution of
+            # theirs. Empty set => nothing (a manager without institutions has
+            # no applicants to judge).
+            rows = db.session.query(VerificationRequestInstitution.request_id).filter(
+                VerificationRequestInstitution.institution_id.in_(allowed or [-1]))
+            if status in VerificationRequest.STATUSES:
+                # The status filter applies to *their* row, not to the request:
+                # once this manager has answered, the applicant is off their
+                # "pending" list even though the request still hangs for the
+                # other institutions.
+                rows = rows.filter(VerificationRequestInstitution.status == status)
+            query = query.filter(VerificationRequest.id.in_(rows))
+        return query
+
+    @staticmethod
+    def list_requests(status=None, only_confirmed=True, viewer=None):
+        """Requests newest-first, optionally filtered by status and by viewer.
 
         ``only_confirmed`` hides applicants who have not clicked the email link
         yet: their request is not actionable and would otherwise let anyone fill
         the admin's queue with unverified addresses.
+
+        ``viewer`` restricts the list the way :meth:`scope_rows` restricts the
+        decision — pass the current user; ``None`` means no restriction.
         """
-        query = VerificationRequest.query.join(
-            User, VerificationRequest.user_id == User.id)
-        if status in VerificationRequest.STATUSES:
-            query = query.filter(VerificationRequest.status == status)
-        if only_confirmed:
-            query = query.filter(User.email_confirmed_at.isnot(None))
-        return query.order_by(VerificationRequest.requested_at.desc()).all()
+        return (VerificationRequestService
+                ._visible_query(status=status, only_confirmed=only_confirmed,
+                                viewer=viewer)
+                .order_by(VerificationRequest.requested_at.desc()).all())
 
     @staticmethod
-    def pending_count():
-        return VerificationRequest.query.join(
-            User, VerificationRequest.user_id == User.id
-        ).filter(
-            VerificationRequest.status == VerificationRequest.STATUS_PENDING,
-            User.email_confirmed_at.isnot(None),
-        ).count()
+    def pending_count(viewer=None):
+        return VerificationRequestService._visible_query(
+            status=VerificationRequest.STATUS_PENDING, viewer=viewer).count()
 
     @staticmethod
     def resolve_pending_for_roles(user, decider, role_names):
@@ -405,39 +471,107 @@ class VerificationRequestService:
         if not modules:
             return []
 
+        now = datetime.utcnow()
+        user_inst_ids = {inst.id for inst in user.institutions}
         closed = []
         for req in VerificationRequest.query.filter(
                 VerificationRequest.user_id == user.id,
                 VerificationRequest.module.in_(modules),
                 VerificationRequest.status == VerificationRequest.STATUS_PENDING).all():
+            # Institutions the same save has just granted are answered too —
+            # otherwise the queue would keep asking for access the person has.
+            for row in req.institution_rows(VerificationRequest.STATUS_PENDING):
+                if row.institution_id in user_inst_ids:
+                    row.status = VerificationRequest.STATUS_APPROVED
+                    row.decided_at = now
+                    row.decided_by_id = decider.id
             req.status = VerificationRequest.STATUS_APPROVED
-            req.decided_at = datetime.utcnow()
+            req.decided_at = now
             req.decided_by_id = decider.id
             closed.append(req.module)
         return closed
 
     @staticmethod
-    def decide(request_obj, decider, approve, note=None):
-        """Approve or reject one request (no commit).
+    def _grant_institution(user, institution_id):
+        """Attach an institution to the user unless it is already attached."""
+        if any(link.institution_id == institution_id
+               for link in user.institution_links):
+            return False
+        user.institution_links.append(
+            UserInstitution(institution_id=institution_id, can_export=False))
+        return True
+
+    @staticmethod
+    def decide(request_obj, decider, approve, institution_ids=None, note=None):
+        """Approve or reject one request, institution by institution (no commit).
+
+        ``institution_ids`` are the institutions to grant — the decider's own
+        selection, so unticking one in the form *removes* it from the request
+        (recorded as ``rejected``). ``None`` means "everything in my scope".
+        Rows outside the decider's scope are never touched, which is what keeps
+        the request alive for the other institutions' managers.
+
+        A request that names no institution at all behaves as it always did: one
+        yes/no granting the module role and no territory.
 
         Returns:
-            Tuple of (True, None) on success or (False, error_message).
+            Tuple of ``(ok, error_message, outcome)``. ``outcome`` is a dict with
+            ``granted`` / ``removed`` (Institution lists), ``closed`` (bool: no
+            institution is left undecided) and ``role_granted`` (bool).
         """
         if request_obj.status != VerificationRequest.STATUS_PENDING:
-            return False, 'Цей запит уже опрацьовано.'
+            return False, 'Цей запит уже опрацьовано.', None
         if not request_obj.user.is_email_confirmed:
-            return False, 'Користувач ще не підтвердив email-адресу.'
+            return False, 'Користувач ще не підтвердив email-адресу.', None
+        if not VerificationRequestService.can_decide_request(request_obj, decider):
+            return False, 'Ви не можете вирішувати цей запит.', None
 
-        if approve:
+        now = datetime.utcnow()
+        user = request_obj.user
+        all_rows = request_obj.institution_rows()
+        scoped = VerificationRequestService.scope_rows(
+            request_obj, decider, status=VerificationRequest.STATUS_PENDING)
+
+        selected = None if institution_ids is None else {int(i) for i in institution_ids}
+        granted, removed = [], []
+        for row in scoped:
+            keep = approve and (selected is None or row.institution_id in selected)
+            row.status = (VerificationRequest.STATUS_APPROVED if keep
+                          else VerificationRequest.STATUS_REJECTED)
+            row.decided_at = now
+            row.decided_by_id = decider.id
+            (granted if keep else removed).append(row.institution)
+
+        for inst in granted:
+            VerificationRequestService._grant_institution(user, inst.id)
+
+        # The role is what makes verification possible at all, so it is granted
+        # as soon as anything is approved — a person cleared for one park must
+        # not wait for the others to answer.
+        role_granted = False
+        if approve and (granted or not all_rows):
             from app.utils.registration import get_or_create_role
             role = get_or_create_role(request_obj.role_name)
-            if role not in request_obj.user.roles:
-                request_obj.user.roles.append(role)
-            request_obj.status = VerificationRequest.STATUS_APPROVED
-        else:
-            request_obj.status = VerificationRequest.STATUS_REJECTED
+            if role not in user.roles:
+                user.roles.append(role)
+                role_granted = True
 
-        request_obj.decided_at = datetime.utcnow()
-        request_obj.decided_by_id = decider.id
-        request_obj.note = (note or '').strip() or None
-        return True, None
+        if note:
+            request_obj.note = note.strip() or None
+
+        still_pending = request_obj.institution_rows(VerificationRequest.STATUS_PENDING)
+        closed = not still_pending
+        if closed:
+            any_approved = bool(request_obj.institution_rows(
+                VerificationRequest.STATUS_APPROVED))
+            if all_rows:
+                request_obj.status = (VerificationRequest.STATUS_APPROVED if any_approved
+                                      else VerificationRequest.STATUS_REJECTED)
+            else:
+                request_obj.status = (VerificationRequest.STATUS_APPROVED if approve
+                                      else VerificationRequest.STATUS_REJECTED)
+            request_obj.decided_at = now
+            request_obj.decided_by_id = decider.id
+
+        return True, None, {'granted': granted, 'removed': removed,
+                            'closed': closed, 'role_granted': role_granted}

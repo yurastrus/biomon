@@ -1322,3 +1322,95 @@ and the maintenance flag would have followed. Operational state is not a backup
 artefact. Both moved to `/home/yura/.backup-state/`, outside the mirrored tree;
 `BACKUP_STATE_DIR` overrides it. The next sync removes the stray file from Drive
 on its own, because `sync` mirrors deletions.
+
+
+## 2026-09-02 — Registration asks for institutions; managers decide their own
+
+### What the signup form gained
+Two fields on `/{lang}/register`:
+
+* **Institutions** (`<select multiple>`, grouped by ecoregion, optional) — the
+  territories the applicant wants to work with.
+* **Motivation and experience** (free text, optional, max 2000 chars) — the
+  question a decider actually needs answered before granting anything.
+
+Neither grants access. The institutions are stored as *requests*, so an
+applicant who names two parks still sees public locations only until somebody
+approves.
+
+### Data model
+New table `verification_request_institutions` (migration `f2a8c31d47b6`): one row
+per (verification request, institution), each with its own
+`status` / `decided_at` / `decided_by_id`. A row per institution — rather than a
+list on the request — is what allows two parks to answer independently and keeps
+the audit trail of who granted what.
+
+Same migration adds `verification_requests.applicant_note` (the motivation text,
+copied onto every module request of one signup — it is the person speaking, not
+a per-module answer).
+
+### Who may decide what
+`/admin/verification-requests` is now open to managers as well as admins:
+
+| | admin | manager |
+|---|---|---|
+| requests visible | all | those naming an institution they have access to |
+| institutions actionable | all rows | only their own institutions |
+| status filter applies to | the request | *their* row on the request |
+
+`VerificationRequestService.scope_rows()` is the single place that answers "which
+rows may this person touch"; `_visible_query()` mirrors it for listings. A
+manager POST naming another park's institution id changes nothing for that park
+(test: `test_manager_cannot_grant_a_park_that_is_not_theirs`).
+
+The status filter deliberately follows the manager's own row, not the request:
+once the Uzhanskyi manager has answered, the applicant leaves *their* pending
+list even though the request is still pending for Skole Beskids.
+
+### What approval does now
+`decide()` works institution by institution. Ticked institutions are approved
+and attached to the user (`user_institutions`, `can_export=False`); unticked ones
+in the decider's scope are recorded `rejected`, which is how "remove this
+institution from the request" is expressed in the UI. Rows outside the scope are
+never touched, so the request stays pending for the other managers. The request
+closes (approved if anything was approved, else rejected) only when no row is
+left undecided.
+
+The module role (`ct_verifier` / `pam_verifier`) is granted as soon as anything
+is approved: a person cleared for one park must not wait for the others. A
+request naming no institution behaves exactly as before — one yes/no, role only.
+
+Checkboxes live in the institutions cell and submit with the decide form in the
+actions cell via the HTML5 `form` attribute (a `<form>` cannot span table cells).
+
+### Notifications
+`send_decision_email` names the institutions this decision opened and stays
+silent about those still deciding. `notify_admin_new_requests` now also emails
+the managers of the named institutions (`_managers_to_notify`) — otherwise nobody
+but the admin would ever learn a request is waiting in their queue.
+
+### Choices worth remembering
+* Both new fields are optional. A public form must not refuse an account over an
+  unfilled essay, and an applicant who names no institution is simply asking for
+  public locations. Making motivation mandatory is one validator in
+  `RegistrationForm` if that turns out to be wanted.
+* Institution choices are validated against the DB in
+  `create_self_registered_user`, not only by the form, so a hand-crafted POST
+  cannot create rows pointing at nothing.
+* `_build_inst_groups` moved to `app/utils/utils.build_institution_groups`; the
+  admin user form and the public registration form now share one grouping.
+
+### Verification
+`venv/Scripts/python -m pytest` — 1691 passed, 36 skipped. New file
+`tests/test_verification_institutions.py` (21 tests) covers the two-parks
+scenario end to end, manager scoping, removal by unticking, and the motivation
+field. `tests/test_registration.py` gained a manager case in place of the old
+"admin only" parametrisation.
+
+i18n cycle run in full (extract / update / translate en / compile -f). Only the
+root catalogs are involved; nothing in the `shared-ct` / `shared-pam` submodules
+was touched, and their translation catalogs stay isolated.
+
+### Deploy
+1. `flask db upgrade` (creates the table and the column, idempotent).
+2. No submodule commits needed — the change is entirely in the biomon root.

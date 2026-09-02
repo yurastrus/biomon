@@ -90,21 +90,38 @@ _MODULE_LABEL = {
 }
 
 
-def send_decision_email(user, module, approved, note=None):
-    """Tell the user that their verification request was approved or rejected."""
+def send_decision_email(user, module, approved, note=None, institutions=None):
+    """Tell the user that their verification request was approved or rejected.
+
+    ``institutions`` names the institutions granted by this decision. A request
+    can be approved one institution at a time (each by its own manager), so the
+    letter says what was opened now and stays silent about what is still being
+    decided — the profile page shows the full picture.
+    """
     lang = _lang(user)
     label = _MODULE_LABEL[module][lang]
+    inst_line = ', '.join(institutions) if institutions else None
 
     if lang == 'en':
         if approved:
             subject = "Verification rights granted — biomon"
-            body = (
-                f"Hello, {user.full_name}!\n\n"
-                f"Your request was approved: {label}.\n\n"
-                "You now have access to publicly available locations. Access to "
-                "other territories is granted separately by their institution.\n\n"
-                f"Start here: {_site_url()}/en/profile\n"
-            )
+            if inst_line:
+                body = (
+                    f"Hello, {user.full_name}!\n\n"
+                    f"Your request was approved: {label}.\n\n"
+                    f"You now have access to the data of: {inst_line}.\n"
+                    "Any other institution you asked for is still deciding; you "
+                    "will get a separate letter about each.\n\n"
+                    f"Start here: {_site_url()}/en/profile\n"
+                )
+            else:
+                body = (
+                    f"Hello, {user.full_name}!\n\n"
+                    f"Your request was approved: {label}.\n\n"
+                    "You now have access to publicly available locations. Access to "
+                    "other territories is granted separately by their institution.\n\n"
+                    f"Start here: {_site_url()}/en/profile\n"
+                )
         else:
             subject = "Verification request declined — biomon"
             body = (
@@ -114,13 +131,23 @@ def send_decision_email(user, module, approved, note=None):
     else:
         if approved:
             subject = "Права верифікації надано — biomon"
-            body = (
-                f"Вітаємо, {user.full_name}!\n\n"
-                f"Ваш запит підтверджено: {label}.\n\n"
-                "Вам доступні публічні локації. Доступ до інших територій "
-                "надають окремо їхні установи.\n\n"
-                f"Почати: {_site_url()}/uk/profile\n"
-            )
+            if inst_line:
+                body = (
+                    f"Вітаємо, {user.full_name}!\n\n"
+                    f"Ваш запит підтверджено: {label}.\n\n"
+                    f"Вам відкрито доступ до даних: {inst_line}.\n"
+                    "Якщо ви просили й інші установи, їхні рішення ще в дорозі: "
+                    "про кожне напишемо окремо.\n\n"
+                    f"Почати: {_site_url()}/uk/profile\n"
+                )
+            else:
+                body = (
+                    f"Вітаємо, {user.full_name}!\n\n"
+                    f"Ваш запит підтверджено: {label}.\n\n"
+                    "Вам доступні публічні локації. Доступ до інших територій "
+                    "надають окремо їхні установи.\n\n"
+                    f"Почати: {_site_url()}/uk/profile\n"
+                )
         else:
             subject = "Запит на верифікацію відхилено — biomon"
             body = (
@@ -172,28 +199,83 @@ def notify_admin_new_requests(user, modules):
     """Ping the admin (Telegram + email) about a confirmed registration.
 
     Called only AFTER the address is confirmed, so unconfirmed bot signups never
-    reach the admin's inbox.
+    reach the admin's inbox. Managers of the institutions the applicant named are
+    notified too — the request waits in their queue, and nobody else can answer
+    for their territory.
     """
     from app.utils.notifications import CH_BIOMON, send_notification
     from markupsafe import escape
 
     labels = ', '.join(_MODULE_LABEL[m]['uk'] for m in modules)
+    institutions = sorted({inst.name_uk
+                           for req in user.verification_requests
+                           for inst in req.requested_institutions})
+    inst_labels = ', '.join(institutions) or '—'
+    # The same text sits on every module request of one signup; take the first
+    # that has it.
+    applicant_note = next((req.applicant_note for req in user.verification_requests
+                           if req.applicant_note), None)
+
+    telegram_note = (f"<b>Про себе:</b> {escape(applicant_note[:600])}\n"
+                     if applicant_note else "")
     send_notification(
         "🙋 <b>Новий запит на верифікацію — biomon.app</b>\n\n"
         f"<b>Користувач:</b> {escape(user.full_name)} ({escape(user.username)})\n"
         f"<b>Email:</b> {escape(user.email)}\n"
-        f"<b>Просить:</b> {escape(labels)}\n\n"
+        f"<b>Просить:</b> {escape(labels)}\n"
+        f"<b>Установи:</b> {escape(inst_labels)}\n"
+        f"{telegram_note}\n"
         f"{_site_url()}/uk/admin/verification-requests",
         channel=CH_BIOMON,
     )
 
+    email_note = (f"\nПро себе та досвід:\n{applicant_note}\n"
+                  if applicant_note else "")
+    body = (
+        f"Користувач: {user.full_name} ({user.username})\n"
+        f"Email: {user.email}\n"
+        f"Просить: {labels}\n"
+        f"Установи: {inst_labels}\n"
+        f"{email_note}\n"
+        f"{_site_url()}/uk/admin/verification-requests\n"
+    )
     admin_email = current_app.config.get('ADMIN_EMAIL')
     if admin_email:
-        send_email(
-            "Новий запит на верифікацію — biomon",
-            [admin_email],
-            f"Користувач: {user.full_name} ({user.username})\n"
-            f"Email: {user.email}\n"
-            f"Просить: {labels}\n\n"
-            f"{_site_url()}/uk/admin/verification-requests\n",
-        )
+        send_email("Новий запит на верифікацію — biomon", [admin_email], body)
+
+    for manager_email in _managers_to_notify(user, admin_email):
+        send_email("Новий запит на верифікацію — biomon", [manager_email], body)
+
+
+def _managers_to_notify(user, admin_email=None):
+    """Addresses of managers who can act on this applicant's request.
+
+    A manager qualifies by holding the ``manager`` role and having access to one
+    of the institutions named in the request. Admins are excluded: they already
+    got the letter above.
+    """
+    institution_ids = {inst.id
+                       for req in user.verification_requests
+                       for inst in req.requested_institutions}
+    if not institution_ids:
+        return []
+
+    from app.models import User as UserModel
+
+    seen = set()
+    if admin_email:
+        seen.add(admin_email.lower())
+    addresses = []
+    for candidate in UserModel.query.filter(UserModel.is_active.is_(True)).all():
+        if not candidate.email or candidate.has_role('admin'):
+            continue
+        if not any(role.name == 'manager' for role in candidate.roles):
+            continue
+        if not institution_ids & {inst.id for inst in candidate.institutions}:
+            continue
+        key = candidate.email.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        addresses.append(candidate.email)
+    return addresses

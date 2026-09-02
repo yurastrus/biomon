@@ -27,6 +27,16 @@ class Institution(db.Model):
     ecoregion_uk = db.Column(db.String(100))
     ecoregion_en = db.Column(db.String(100))
 
+    def label(self, lang='uk'):
+        """Name in the requested language, falling back to Ukrainian.
+
+        Takes the language as an argument instead of reading ``g.lang_code`` so
+        the model stays usable outside a request (emails, CLI, notifications).
+        """
+        if lang == 'en' and self.name_en:
+            return self.name_en
+        return self.name_uk
+
     def __repr__(self):
         return f'<Institution {self.name_uk}>'
 
@@ -199,7 +209,12 @@ class VerificationRequest(db.Model):
     requested_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     decided_at = db.Column(db.DateTime, nullable=True)
     decided_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    #: the decider's comment, shown to the applicant in the decision email
     note = db.Column(db.Text, nullable=True)
+    #: what the applicant wrote about themselves at registration (motivation and
+    #: experience). Free text, the same on every module request of one signup —
+    #: it is the person speaking, not a per-module answer.
+    applicant_note = db.Column(db.Text, nullable=True)
 
     user = db.relationship('User', foreign_keys=[user_id],
                            backref=db.backref('verification_requests',
@@ -217,8 +232,79 @@ class VerificationRequest(db.Model):
     def role_name(self):
         return self.ROLE_BY_MODULE[self.module]
 
+    # ── requested institutions ────────────────────────────────────────────
+    # A request may name institutions the applicant wants to work with. Each is
+    # decided on its own (by that institution's manager, or by an admin), so the
+    # request as a whole stays pending while any institution still is — see
+    # :class:`VerificationRequestInstitution`.
+
+    def institution_rows(self, status=None):
+        rows = list(self.institution_requests)
+        if status is not None:
+            rows = [r for r in rows if r.status == status]
+        return sorted(rows, key=lambda r: (r.institution.name_uk if r.institution else ''))
+
+    @property
+    def pending_institution_rows(self):
+        return self.institution_rows(self.STATUS_PENDING)
+
+    @property
+    def approved_institution_rows(self):
+        return self.institution_rows(self.STATUS_APPROVED)
+
+    @property
+    def requested_institutions(self):
+        return [r.institution for r in self.institution_rows() if r.institution]
+
     def __repr__(self):
         return f'<VerificationRequest user={self.user_id} {self.module} [{self.status}]>'
+
+
+class VerificationRequestInstitution(db.Model):
+    """One institution named in a verification request, decided on its own.
+
+    Why a row per institution rather than a list on the request: an applicant who
+    asks to work with two national parks needs a decision from each park's
+    manager, and a manager may only decide for their own institution. Approving
+    one row grants access to that institution and leaves the rest pending, so the
+    request keeps hanging in the other managers' queues (and in the admin's) with
+    only the undecided institutions shown.
+
+    ``status`` mirrors the parent's vocabulary. ``rejected`` also covers "the
+    decider removed this institution from the request" — the two are the same
+    outcome for the applicant, and keeping the row preserves the audit trail.
+    """
+    __tablename__ = 'verification_request_institutions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    request_id = db.Column(db.Integer,
+                           db.ForeignKey('verification_requests.id', ondelete='CASCADE'),
+                           nullable=False, index=True)
+    institution_id = db.Column(db.Integer,
+                               db.ForeignKey('institutions.id', ondelete='CASCADE'),
+                               nullable=False, index=True)
+    status = db.Column(db.String(10), nullable=False,
+                       default=VerificationRequest.STATUS_PENDING, index=True)
+    decided_at = db.Column(db.DateTime, nullable=True)
+    decided_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
+    request = db.relationship(
+        'VerificationRequest',
+        backref=db.backref('institution_requests', cascade='all, delete-orphan',
+                           passive_deletes=True))
+    institution = db.relationship('Institution')
+    decided_by = db.relationship('User', foreign_keys=[decided_by_id])
+
+    __table_args__ = (
+        db.UniqueConstraint('request_id', 'institution_id',
+                            name='uq_verification_request_institution'),
+        CheckConstraint("status IN ('pending', 'approved', 'rejected')",
+                        name='ck_verification_request_institution_status'),
+    )
+
+    def __repr__(self):
+        return (f'<VerificationRequestInstitution req={self.request_id} '
+                f'inst={self.institution_id} [{self.status}]>')
 
 
 class ContactSubmission(db.Model):

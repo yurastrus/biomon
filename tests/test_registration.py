@@ -497,9 +497,9 @@ def test_unknown_action_changes_nothing(auth_client, db_session, confirmed_appli
     assert db_session.query(VerificationRequest).get(req.id).status == 'pending'
 
 
-@pytest.mark.parametrize('role', ['viewer', 'ct_verifier', 'analyst', 'manager'])
-def test_only_admin_can_see_or_decide_requests(auth_client, db_session,
-                                               confirmed_applicant, role):
+@pytest.mark.parametrize('role', ['viewer', 'ct_verifier', 'analyst'])
+def test_non_managers_cannot_see_or_decide_requests(auth_client, db_session,
+                                                    confirmed_applicant, role):
     from app.models import VerificationRequest
 
     req = db_session.query(VerificationRequest).filter_by(
@@ -512,6 +512,28 @@ def test_only_admin_can_see_or_decide_requests(auth_client, db_session,
     assert cl.post(f'/uk/admin/verification-requests/{req.id}/decide',
                    data={'action': 'approve'}).status_code == 403
 
+    db_session.expire_all()
+    assert db_session.query(VerificationRequest).get(req.id).status == 'pending'
+
+
+def test_manager_cannot_decide_a_request_without_their_institution(
+        auth_client, db_session, confirmed_applicant):
+    """The queue is open to managers, but a request naming no institution of
+    theirs is not theirs to answer — approving it would grant a site-wide
+    verifier role they do not own."""
+    from app.models import VerificationRequest
+
+    req = db_session.query(VerificationRequest).filter_by(
+        user_id=confirmed_applicant.id, module='ct').one()
+
+    cl = auth_client(role='manager', username='lonely_manager')
+    forget_cached_user()
+    body = cl.get('/uk/admin/verification-requests').get_data(as_text=True)
+    assert 'taras' not in body, 'not their applicant'
+
+    forget_cached_user()
+    cl.post(f'/uk/admin/verification-requests/{req.id}/decide',
+            data={'action': 'approve'})
     db_session.expire_all()
     assert db_session.query(VerificationRequest).get(req.id).status == 'pending'
 

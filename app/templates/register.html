@@ -10,10 +10,12 @@
     .reg-form label { display: block; margin-bottom: 6px; font-weight: bold; }
     .reg-form input[type="text"],
     .reg-form input[type="email"],
-    .reg-form input[type="password"] {
+    .reg-form input[type="password"],
+    .reg-form textarea {
         width: 100%; padding: 10px; box-sizing: border-box;
         border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;
     }
+    .reg-form textarea { font-family: inherit; resize: vertical; }
     .reg-form .field-error { color: #dc3545; font-size: 0.9em; margin-top: 4px; }
     .reg-form .field-hint { color: #666; font-size: 0.85em; margin-top: 4px; }
     .reg-form fieldset {
@@ -23,6 +25,11 @@
     .reg-form .check-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
     .reg-form .check-row label { font-weight: normal; margin: 0; }
     .reg-form .check-row input[type="checkbox"] { margin-top: 3px; }
+    .reg-form .inst-select {
+        width: 100%; padding: 8px; box-sizing: border-box;
+        border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;
+    }
+    .reg-form .inst-select option { padding: 3px 4px; }
     /* Honeypot: kept in the DOM for bots, out of reach for people and screen readers. */
     .reg-form .hp-field { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
     .captcha-container { display: flex; justify-content: center; margin: 20px 0; }
@@ -34,7 +41,7 @@
 <div class="container" style="padding: 40px 0;">
     <h1 style="text-align: center;">{{ _('Реєстрація') }}</h1>
     <p style="text-align: center; max-width: 620px; margin: 0 auto 30px;">
-        {{ _('Створіть акаунт, щоб допомагати визначати тварин. Після реєстрації підтвердіть email-адресу, а права на верифікацію надасть адміністратор.') }}
+        {{ _('Створіть акаунт, щоб допомагати визначати тварин. Після реєстрації підтвердіть email-адресу, а права на верифікацію надасть адміністратор або менеджер вибраної установи.') }}
     </p>
 
     <form method="POST" action="{{ url_for('main.register', lang_code=g.lang_code) }}"
@@ -93,6 +100,39 @@
                 {{ _('Спочатку вам будуть доступні лише публічні локації. Доступ до інших територій надають окремо їхні установи.') }}
             </div>
         </fieldset>
+
+        <fieldset>
+            <legend>{{ _('Установи') }}</legend>
+            <label for="institutions">{{ _('Дані яких установ ви хочете опрацьовувати?') }}</label>
+            <select id="institutions" name="institutions" multiple size="8" class="inst-select">
+                {% for group in inst_groups %}
+                <optgroup label="{{ group.eco_name }}">
+                    {% for inst in group.institutions %}
+                    <option value="{{ inst.id }}"
+                            {% if inst.id in (form.institutions.data or []) %}selected{% endif %}>
+                        {{ inst.label(g.lang_code) }}{% if inst.code %} ({{ inst.code }}){% endif %}
+                    </option>
+                    {% endfor %}
+                </optgroup>
+                {% endfor %}
+            </select>
+            {% for error in form.institutions.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+            <div class="field-hint">
+                {{ _('Можна вибрати кілька: тримайте Ctrl (⌘ на Mac) або проведіть пальцем. Вибір не обовʼязковий, без нього ви отримаєте доступ лише до публічних локацій.') }}
+            </div>
+            <div class="field-hint">
+                {{ _('Кожну установу підтверджує окремо її менеджер (або адміністратор), тож доступи можуть надходити частинами.') }}
+            </div>
+        </fieldset>
+
+        <div class="form-group">
+            {{ form.motivation.label }}
+            {{ form.motivation(rows="5") }}
+            <div class="field-hint">
+                {{ _('Коротко напишіть, навіщо вам верифікація і що ви вже визначали: види, регіони, роки, фотопастки чи аудіозаписи, курси й публікації. Це головне, на що дивиться менеджер установи.') }}
+            </div>
+            {% for error in form.motivation.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
 
         <div class="check-row">
             {{ form.consent() }} {{ form.consent.label }}

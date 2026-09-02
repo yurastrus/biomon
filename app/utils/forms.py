@@ -3,7 +3,7 @@
 
 from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, SubmitField, TextAreaField,
-                     BooleanField)
+                     BooleanField, SelectMultipleField)
 from wtforms.validators import (DataRequired, Email, Length, Regexp, EqualTo,
                                 Optional, ValidationError)
 from flask_babel import lazy_gettext as _l
@@ -84,6 +84,22 @@ class RegistrationForm(FlaskForm):
 
     wants_ct = BooleanField(_l('Визначати тварин на фото з фотопасток'))
     wants_pam = BooleanField(_l('Визначати голоси тварин на звукозаписах'))
+
+    # Optional: an applicant who names no institution asks for public locations
+    # only, which is the pre-existing behaviour of this form. Choices are filled
+    # in the route from the Institution table (a form module must not query at
+    # import time); validate_choice stays on, so anything not in that list is
+    # rejected rather than silently dropped.
+    institutions = SelectMultipleField(
+        _l('Установи, дані яких ви хочете опрацьовувати'),
+        coerce=int, validators=[Optional()])
+
+    # Free text the decider reads before granting anything. Optional: a public
+    # form must not refuse an account over an essay, and the queue can always
+    # ask by email. Length is capped so one submit cannot fill a Text column.
+    motivation = TextAreaField(
+        _l('Чому ви хочете верифікувати дані і який у вас досвід?'),
+        validators=[Optional(), Length(max=2000)])
 
     consent = BooleanField(
         _l('Погоджуюся на обробку вказаних даних для роботи в системі'),

@@ -6,10 +6,11 @@ from flask_login import login_required, current_user, login_user, logout_user
 from app.utils.forms import (LoginForm, ContactForm, ChangePasswordForm,
                             ChangeUsernameForm, RegistrationForm,
                             ResendConfirmationForm, NotificationPrefsForm)
-from app.utils.utils import is_safe_url
+from app.utils.utils import is_safe_url, build_institution_groups
 from flask_babel import lazy_gettext as _l
 from app.routes import bp
-from app.models import User, SiteTextContent, ContactSubmission, VerificationRequest
+from app.models import (User, Institution, SiteTextContent, ContactSubmission,
+                        VerificationRequest)
 from app.utils.notifications import CH_BIOMON, send_notification
 from app.utils import notification_prefs as notif_prefs
 from app.utils import registration as reg
@@ -156,15 +157,27 @@ def register(lang_code):
 
     Creates an INACTIVE account plus one pending verification request per module
     the person picked, and emails a confirmation link. Nothing is granted here:
-    logging in needs the address confirmed, and verifying needs an
-    administrator's approval (see app/utils/registration.py for the split).
+    logging in needs the address confirmed, and verifying needs an approval from
+    an admin (or, per institution, from that institution's manager) — see
+    app/utils/registration.py for the split.
+
+    The institutions picked here are requests, not grants: each is attached to
+    every requested module and decided on its own.
     """
     if lang_code not in current_app.config['LANGUAGES']:
         return redirect(url_for('main.root'))
     if current_user.is_authenticated:
         return redirect(url_for('main.profile', lang_code=g.lang_code))
 
+    # Institutions the applicant may ask to work with. Loaded before validation
+    # because SelectMultipleField checks its choices, and re-used for the
+    # ecoregion optgroups in the template.
+    institutions = Institution.query.order_by(Institution.name_uk).all()
+    inst_groups = build_institution_groups(institutions, lang_code)
+
     form = RegistrationForm()
+    form.institutions.choices = [(i.id, i.label(lang_code)) for i in institutions]
+
     if form.validate_on_submit():
         username = form.username.data.strip()
         email = form.email.data.strip().lower()
@@ -185,6 +198,8 @@ def register(lang_code):
                     first_name=form.first_name.data.strip(),
                     last_name=form.last_name.data.strip(),
                     modules=form.selected_modules,
+                    institution_ids=form.institutions.data or [],
+                    applicant_note=form.motivation.data,
                     locale=lang_code,
                 )
                 db.session.commit()
@@ -192,18 +207,21 @@ def register(lang_code):
                 db.session.rollback()
                 current_app.logger.error(f"Registration failed for {email!r}: {e}")
                 flash(_l('Не вдалося створити акаунт. Спробуйте пізніше.'), 'danger')
-                return render_template('register.html', form=form)
+                return render_template('register.html', form=form,
+                                       inst_groups=inst_groups)
 
             current_app.logger.info(
-                "Self-registration: user_id=%s username=%r modules=%s from %s",
-                user.id, user.username, form.selected_modules, request.remote_addr)
+                "Self-registration: user_id=%s username=%r modules=%s "
+                "institutions=%s from %s",
+                user.id, user.username, form.selected_modules,
+                form.institutions.data, request.remote_addr)
             send_confirmation_email(user, generate_email_token(user.email))
 
             flash(_l('Акаунт створено. Ми надіслали лист із посиланням для '
                      'підтвердження — перейдіть за ним, щоб активувати вхід.'), 'success')
             return redirect(url_for('main.login', lang_code=lang_code))
 
-    return render_template('register.html', form=form)
+    return render_template('register.html', form=form, inst_groups=inst_groups)
 
 
 @bp.route('/<lang_code>/confirm/<token>')

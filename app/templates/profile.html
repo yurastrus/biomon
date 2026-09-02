@@ -171,6 +171,21 @@
                 <span class="stat-label">{{ module_labels.get(req.module, req.module) }}</span>
                 <span class="stat-num" style="font-size: 1rem;">{{ status_labels.get(req.status, req.status) }}</span>
             </div>
+            {% for row in req.institution_rows() %}
+            <div class="stat-line" style="padding-left: 15px;">
+                <span class="stat-label" style="font-size: 0.9em; color: #666;">
+                    {{ row.institution.label(g.lang_code) }}
+                </span>
+                <span class="stat-num" style="font-size: 0.9rem; color: #666;">
+                    {{ status_labels.get(row.status, row.status) }}
+                </span>
+            </div>
+            {% endfor %}
+            {% if req.applicant_note and loop.first %}
+            <p style="color: #666; font-size: 0.85em; margin: 6px 0 10px; white-space: pre-wrap;">
+                <strong>{{ _('Ваш опис досвіду:') }}</strong> {{ req.applicant_note }}
+            </p>
+            {% endif %}
             {% if req.note %}
             <p style="color: #666; font-size: 0.85em; margin: 0 0 10px;">{{ req.note }}</p>
             {% endif %}

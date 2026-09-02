@@ -1,6 +1,4 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-from collections import OrderedDict
-
 from flask import render_template, g, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
@@ -9,6 +7,7 @@ from app.extensions import db
 from app.models import (User, Institution, Role, ContactSubmission,
                         VerificationRequest)
 from app.utils.decorators import role_required
+from app.utils.utils import build_institution_groups
 from app.admin.forms import UserCreateForm, UserEditForm, InstitutionForm, RoleForm
 from app.admin.services import (UserService, InstitutionService, RoleService,
                                 VerificationRequestService)
@@ -17,30 +16,8 @@ from app.utils import notification_prefs as notif_prefs
 from . import admin_bp
 
 
-def _build_inst_groups(institutions, lang):
-    """Group Institution objects by ecoregion for the user form.
-
-    Returns list of dicts:
-      {'eco_key': str|None, 'eco_name': str, 'institutions': [...]}
-    eco_key is the Ukrainian ecoregion string (used as the stable key in JS).
-    """
-    eco_map = OrderedDict()
-    ungrouped = []
-
-    for inst in institutions:
-        if inst.ecoregion_uk:
-            if inst.ecoregion_uk not in eco_map:
-                display = inst.ecoregion_uk if lang != 'en' else (inst.ecoregion_en or inst.ecoregion_uk)
-                eco_map[inst.ecoregion_uk] = {'eco_key': inst.ecoregion_uk, 'eco_name': display, 'institutions': []}
-            eco_map[inst.ecoregion_uk]['institutions'].append(inst)
-        else:
-            ungrouped.append(inst)
-
-    groups = list(eco_map.values())
-    if ungrouped:
-        ungrouped_label = 'No ecoregion' if lang == 'en' else 'Без екорегіону'
-        groups.append({'eco_key': None, 'eco_name': ungrouped_label, 'institutions': ungrouped})
-    return groups
+#: Shared with the public registration form — see app/utils/utils.py.
+_build_inst_groups = build_institution_groups
 
 
 # ===========================================================================
@@ -51,9 +28,13 @@ def _build_inst_groups(institutions, lang):
 @login_required
 @role_required('admin', 'manager')
 def home():
-    pending_requests = (VerificationRequestService.pending_count()
-                        if VerificationRequestService.can_decide(current_user) else 0)
-    return render_template('admin_home.html', pending_requests=pending_requests)
+    can_decide_requests = VerificationRequestService.can_decide(current_user)
+    viewer = None if current_user.has_role('admin') else current_user
+    pending_requests = (VerificationRequestService.pending_count(viewer=viewer)
+                        if can_decide_requests else 0)
+    return render_template('admin_home.html',
+                           pending_requests=pending_requests,
+                           can_decide_requests=can_decide_requests)
 
 
 # ===========================================================================
@@ -480,24 +461,40 @@ def delete_submission(submission_id):
 
 @admin_bp.route('/verification-requests')
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def verification_requests():
-    """Queue of self-registered users asking for verification rights."""
+    """Queue of self-registered users asking for verification rights.
+
+    A manager sees only requests naming an institution they have access to, and
+    only those institutions inside each request — hence ``viewer``.
+    """
     status = request.args.get('status', VerificationRequest.STATUS_PENDING)
     if status == 'all':
         status = None
-    requests_list = VerificationRequestService.list_requests(status=status)
+    viewer = None if current_user.has_role('admin') else current_user
+    requests_list = VerificationRequestService.list_requests(status=status,
+                                                             viewer=viewer)
+    scoped_rows = {req.id: VerificationRequestService.scope_rows(req, current_user)
+                   for req in requests_list}
     return render_template('admin_verification_requests.html',
                            requests=requests_list,
+                           scoped_rows=scoped_rows,
+                           is_admin=current_user.has_role('admin'),
                            active_status=status,
-                           pending_count=VerificationRequestService.pending_count())
+                           pending_count=VerificationRequestService.pending_count(
+                               viewer=viewer))
 
 
 @admin_bp.route('/verification-requests/<int:request_id>/decide', methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'manager')
 def decide_verification_request(request_id):
-    """Approve or reject one request and email the applicant the outcome."""
+    """Approve or reject one request and email the applicant the outcome.
+
+    The decision covers only the institutions the decider owns: a manager's POST
+    can neither grant nor remove another park's institution, and the request
+    stays in the queue until every named institution has an answer.
+    """
     req = VerificationRequest.query.get_or_404(request_id)
 
     action = request.form.get('action')
@@ -505,12 +502,24 @@ def decide_verification_request(request_id):
         flash(_('Невідома дія.'), 'danger')
         return redirect(url_for('admin.verification_requests', lang_code=g.lang_code))
 
+    # Absent field (a request naming no institution, or an older cached form) =>
+    # "everything in my scope"; present-but-empty => the decider unticked them
+    # all, which is a removal, not a full grant.
+    if 'institutions' in request.form:
+        institution_ids = request.form.getlist('institutions')
+    else:
+        institution_ids = None
+
     approve = (action == 'approve')
-    ok, error = VerificationRequestService.decide(
-        req, current_user, approve, note=request.form.get('note'))
+    ok, error, outcome = VerificationRequestService.decide(
+        req, current_user, approve, institution_ids=institution_ids,
+        note=request.form.get('note'))
     if not ok:
         flash(error, 'danger')
         return redirect(url_for('admin.verification_requests', lang_code=g.lang_code))
+
+    granted_names = [i.label(g.lang_code) for i in outcome['granted']]
+    removed_names = [i.label(g.lang_code) for i in outcome['removed']]
 
     try:
         db.session.commit()
@@ -520,11 +529,27 @@ def decide_verification_request(request_id):
         return redirect(url_for('admin.verification_requests', lang_code=g.lang_code))
 
     current_app.logger.info(
-        "Verification request %s (%s) %s by user_id=%s",
-        req.id, req.module, 'approved' if approve else 'rejected', current_user.id)
+        "Verification request %s (%s) %s by user_id=%s granted=%s removed=%s closed=%s",
+        req.id, req.module, 'approved' if approve else 'rejected', current_user.id,
+        granted_names, removed_names, outcome['closed'])
 
     if req.user.email:
-        send_decision_email(req.user, req.module, approve, note=req.note)
+        # A partial approval is still good news for the applicant: it names what
+        # was granted and says nothing about the institutions still deciding.
+        notify_approved = approve and (bool(outcome['granted']) or outcome['role_granted'])
+        if notify_approved or outcome['closed']:
+            send_decision_email(req.user, req.module, notify_approved,
+                                note=req.note, institutions=granted_names)
 
-    flash(_('Запит підтверджено.') if approve else _('Запит відхилено.'), 'success')
+    if approve and granted_names:
+        flash(_('Запит підтверджено для: %(names)s.', names=', '.join(granted_names)),
+              'success')
+    elif approve:
+        flash(_('Запит підтверджено.'), 'success')
+    else:
+        flash(_('Запит відхилено.'), 'success')
+    if removed_names and approve:
+        flash(_('Вилучено зі запиту: %(names)s.', names=', '.join(removed_names)), 'info')
+    if not outcome['closed']:
+        flash(_('Запит залишається в черзі, бо очікує рішення інших установ.'), 'info')
     return redirect(url_for('admin.verification_requests', lang_code=g.lang_code))

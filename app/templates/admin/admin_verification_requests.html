@@ -14,7 +14,10 @@
 
     <h2 style="text-align: left; margin-bottom: 10px;">{{ _('Запити на права верифікації') }}</h2>
     <p style="color: #666; margin-bottom: 20px; max-width: 760px;">
-        {{ _('Це користувачі, які зареєструвалися самостійно і підтвердили email. Підтвердження надає лише роль верифікатора: доступні будуть публічні локації. Доступ до територій установи надається окремо в розділі «Користувачі».') }}
+        {{ _('Це користувачі, які зареєструвалися самостійно і підтвердили email. Підтвердження надає роль верифікатора і доступ до тих установ, які ви залишили в списку. Зніміть галочку з установи, щоб вилучити її із запиту.') }}
+        {% if not is_admin %}
+        <br><strong>{{ _('Ви бачите лише запити щодо ваших установ і вирішуєте лише за них.') }}</strong>
+        {% endif %}
     </p>
 
     <div class="admin-toolbar">
@@ -34,6 +37,7 @@
                 <th style="width: 130px;">{{ _('Дата') }}</th>
                 <th>{{ _('Користувач') }}</th>
                 <th>{{ _('Просить') }}</th>
+                <th>{{ _('Установи') }}</th>
                 <th style="width: 120px;">{{ _('Статус') }}</th>
                 <th style="text-align: right;">{{ _('Дії') }}</th>
             </tr>
@@ -49,7 +53,48 @@
                     <span style="font-size: 0.85em; color: #666;">{{ req.user.username }}</span><br>
                     <a href="mailto:{{ req.user.email }}" style="font-size: 0.85em;">{{ req.user.email }}</a>
                 </td>
-                <td data-label="{{ _('Просить') }}">{{ module_labels.get(req.module, req.module) }}</td>
+                <td data-label="{{ _('Просить') }}">
+                    {{ module_labels.get(req.module, req.module) }}
+                    {% if req.applicant_note %}
+                    <details style="margin-top: 6px;">
+                        <summary style="cursor: pointer; font-size: 0.85em; color: #0779e4;">
+                            {{ _('Про себе та досвід') }}
+                        </summary>
+                        <div style="font-size: 0.85em; color: #444; white-space: pre-wrap; margin-top: 4px; max-width: 320px;">{{ req.applicant_note }}</div>
+                    </details>
+                    {% else %}
+                    <div style="font-size: 0.8em; color: #999; margin-top: 6px;">{{ _('Про досвід не написано') }}</div>
+                    {% endif %}
+                </td>
+                {% set my_rows = scoped_rows.get(req.id, []) %}
+                {% set my_ids = my_rows | map(attribute='institution_id') | list %}
+                <td data-label="{{ _('Установи') }}">
+                    {% if not req.institution_rows() %}
+                        <span style="color: #999;">{{ _('Не вказано (публічні локації)') }}</span>
+                    {% else %}
+                        {% for row in req.institution_rows() %}
+                        <div style="margin-bottom: 4px;">
+                            {% if row.status == 'pending' and req.status == 'pending' and row.institution_id in my_ids %}
+                            <label style="font-weight: normal; cursor: pointer;">
+                                {# The form lives in the actions cell; the HTML5
+                                   `form` attribute submits these with it. #}
+                                <input type="checkbox" form="decide-{{ req.id }}"
+                                       name="institutions" value="{{ row.institution_id }}" checked>
+                                {{ row.institution.label(g.lang_code) }}
+                            </label>
+                            {% else %}
+                            <span style="color: #999;">
+                                {{ row.institution.label(g.lang_code) }}
+                                <span class="badge badge-secondary" style="font-size: 0.75em;">
+                                    {{ status_labels.get(row.status, row.status) }}
+                                </span>
+                                {% if row.status == 'pending' %}<em style="font-size: 0.8em;">{{ _('не ваша установа') }}</em>{% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </td>
                 <td data-label="{{ _('Статус') }}">
                     <span class="badge {{ status_badge.get(req.status, 'badge-secondary') }}">
                         {{ status_labels.get(req.status, req.status) }}
@@ -65,8 +110,10 @@
                     {% endif %}
                 </td>
                 <td class="admin-cell-actions" data-label="{{ _('Дії') }}">
-                    {% if req.status == 'pending' %}
-                    <form action="{{ url_for('admin.decide_verification_request', lang_code=g.lang_code, request_id=req.id) }}"
+                    {% set can_act = req.status == 'pending' and (is_admin or my_rows | selectattr('status', 'equalto', 'pending') | list) %}
+                    {% if can_act %}
+                    <form id="decide-{{ req.id }}"
+                          action="{{ url_for('admin.decide_verification_request', lang_code=g.lang_code, request_id=req.id) }}"
                           method="POST" style="margin: 0; padding: 0;">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="text" name="note" placeholder="{{ _('Коментар (необовʼязково)') }}"
@@ -87,7 +134,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="5" style="text-align: center; padding: 30px; color: gray;">
+                <td colspan="6" style="text-align: center; padding: 30px; color: gray;">
                     {{ _('Запитів немає.') }}
                 </td>
             </tr>
