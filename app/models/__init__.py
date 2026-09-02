@@ -11,12 +11,59 @@ user_roles = db.Table('user_roles',
 )
 
 class UserInstitution(db.Model):
+    """One person's access to one institution's data.
+
+    Historically a row meant "may see this institution" in **both** modules, and
+    ``can_export`` meant "may download its data" in both. Per-module access is
+    being introduced in phases (see WORKLOG 2026-09-02), so the two legacy
+    columns stay authoritative until the read paths in shared-ct / shared-pam are
+    switched over.
+
+    The four ``*_ct`` / ``*_pam`` columns are deliberately **nullable**: NULL
+    means "never decided", which lets the backfill script fill in rows created by
+    code that predates them without overwriting a real choice made in the admin
+    form. Readers must go through :meth:`module_flags`, which falls back to the
+    legacy meaning for NULL.
+    """
     __tablename__ = 'user_institutions'
     user_id        = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     institution_id = db.Column(db.Integer, db.ForeignKey('institutions.id'), primary_key=True)
+    #: legacy, both modules — still the only column the live read paths use
     can_export     = db.Column(db.Boolean, default=False, nullable=False)
 
+    can_view_ct    = db.Column(db.Boolean, nullable=True)
+    can_export_ct  = db.Column(db.Boolean, nullable=True)
+    can_view_pam   = db.Column(db.Boolean, nullable=True)
+    can_export_pam = db.Column(db.Boolean, nullable=True)
+
     institution = db.relationship('Institution')
+
+    def module_flags(self, user=None):
+        """Return ``{'view_ct', 'export_ct', 'view_pam', 'export_pam'}`` as bools.
+
+        A NULL column has never been decided for this row, so it falls back to
+        what the row used to mean:
+
+        * camera traps — the row itself was the access grant, so view is True and
+          export follows ``can_export``;
+        * PAM — the same, but only for somebody who may verify sounds at all
+          (``pam_verifier``, which managers and admins hold through the role
+          hierarchy). Without ``user`` the fallback is conservative: no PAM.
+
+        Returns:
+            dict[str, bool]
+        """
+        may_pam = bool(user is not None and user.has_role('pam_verifier'))
+
+        def pick(value, fallback):
+            return fallback if value is None else bool(value)
+
+        return {
+            'view_ct': pick(self.can_view_ct, True),
+            'export_ct': pick(self.can_export_ct, bool(self.can_export)),
+            'view_pam': pick(self.can_view_pam, may_pam),
+            'export_pam': pick(self.can_export_pam, may_pam and bool(self.can_export)),
+        }
 
 class Institution(db.Model):
     __tablename__ = 'institutions'
