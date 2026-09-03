@@ -1762,3 +1762,31 @@ connection, so a bad request took a database connection before being rejected,
 and yesterday's 400 tests silently depended on a reachable `pam_db` (they failed
 this morning with the SSH tunnel down). Validation moved to the top of the
 function.
+
+
+## 2026-09-03 (later) — Module badges in the user list
+
+"Linked to a park" stopped being a useful sentence once access split per module,
+so `/admin/users` now says what each grant actually covers. Every institution
+badge carries a chip per granted module — `ФП` for camera traps, `ПАМ` for
+sounds — and an arrow inside the chip when export is granted too. A legend line
+above the table decodes them, because a chip nobody can read is noise.
+
+The row now carries three institution lists: the module-blind one it always had
+(`data-institution`) plus `data-inst-ct` and `data-inst-pam`. That is what lets
+the new **Модуль** filter work honestly: with a module chosen, the institution
+filter asks that module's list, so "Uzhanskyi + PAM" means "may work with its
+sounds", not "is linked to it somehow". On production data: 70 users, 68 have
+camera-trap access somewhere, 34 have PAM; picking one park narrows 21 users to
+19 when PAM is also required.
+
+Tests: `tests/test_admin_users_list_badges.py` (7) — one chip for a
+camera-trap-only grant, the other for PAM-only, export marked on its own module,
+both chips together, the per-module data attributes, the placeholder for a user
+with no institutions, and the legend plus filter being present. Full suite: 1746
+passed, 36 skipped.
+
+Not done, deliberately: a user with 29 parks now renders 29 lines in that cell
+(the chips widen each item enough to stop two fitting per line). Collapsing long
+lists behind a `<details>` would fix it but changes how the page reads for
+everyone, so it is the owner's call, not a side effect of this change.

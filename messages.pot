@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-02 21:44+0300\n"
+"POT-Creation-Date: 2026-09-03 08:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,8 +22,8 @@ msgid "Пароль має містити і літери, і цифри."
 msgstr ""
 
 #: app/admin/forms.py:31 app/admin/forms.py:50
-#: app/templates/admin/admin_users_list.html:84
-#: app/templates/admin/admin_users_list.html:96
+#: app/templates/admin/admin_users_list.html:101
+#: app/templates/admin/admin_users_list.html:120
 msgid "Логін"
 msgstr ""
 
@@ -285,7 +285,10 @@ msgstr ""
 msgid "ГОЛОВНА"
 msgstr ""
 
-#: app/templates/admin/admin_user_form.html:137 app/templates/base.html:79
+#: app/templates/admin/admin_user_form.html:137
+#: app/templates/admin/admin_users_list.html:63
+#: app/templates/admin/admin_users_list.html:93
+#: app/templates/admin/admin_users_list.html:139 app/templates/base.html:79
 msgid "ПАМ"
 msgstr ""
 
@@ -518,8 +521,8 @@ msgstr ""
 #: app/templates/admin/admin_home.html:48
 #: app/templates/admin/admin_institution_form.html:8
 #: app/templates/admin/admin_institutions_list.html:8
-#: app/templates/admin/admin_users_list.html:86
-#: app/templates/admin/admin_users_list.html:101
+#: app/templates/admin/admin_users_list.html:103
+#: app/templates/admin/admin_users_list.html:125
 #: app/templates/admin/admin_verification_requests.html:40
 #: app/templates/admin/admin_verification_requests.html:71
 #: app/templates/register.html:105
@@ -652,8 +655,8 @@ msgstr ""
 #: app/templates/admin/admin_institutions_list.html:45
 #: app/templates/admin/admin_roles_list.html:25
 #: app/templates/admin/admin_roles_list.html:48
-#: app/templates/admin/admin_users_list.html:88
-#: app/templates/admin/admin_users_list.html:113
+#: app/templates/admin/admin_users_list.html:105
+#: app/templates/admin/admin_users_list.html:152
 #: app/templates/admin/admin_verification_requests.html:42
 #: app/templates/admin/admin_verification_requests.html:112
 msgid "Дії"
@@ -668,7 +671,7 @@ msgid "Видалити це звернення?"
 msgstr ""
 
 #: app/templates/admin/admin_contact_submissions.html:70
-#: app/templates/admin/admin_users_list.html:121
+#: app/templates/admin/admin_users_list.html:160
 msgid "Ця дія є незворотною."
 msgstr ""
 
@@ -676,8 +679,8 @@ msgstr ""
 #: app/templates/admin/admin_institutions_list.html:57
 #: app/templates/admin/admin_roles_list.html:61
 #: app/templates/admin/admin_roles_list.html:66
-#: app/templates/admin/admin_users_list.html:124
-#: app/templates/admin/admin_users_list.html:129
+#: app/templates/admin/admin_users_list.html:163
+#: app/templates/admin/admin_users_list.html:168
 msgid "Видалити"
 msgstr ""
 
@@ -725,8 +728,8 @@ msgstr ""
 #: app/templates/admin/admin_home.html:61
 #: app/templates/admin/admin_role_form.html:8
 #: app/templates/admin/admin_roles_list.html:8
-#: app/templates/admin/admin_users_list.html:87
-#: app/templates/admin/admin_users_list.html:108
+#: app/templates/admin/admin_users_list.html:104
+#: app/templates/admin/admin_users_list.html:147
 msgid "Ролі"
 msgstr ""
 
@@ -825,7 +828,7 @@ msgstr ""
 
 #: app/templates/admin/admin_institutions_list.html:47
 #: app/templates/admin/admin_roles_list.html:50
-#: app/templates/admin/admin_users_list.html:115
+#: app/templates/admin/admin_users_list.html:154
 msgid "Редагувати"
 msgstr ""
 
@@ -978,6 +981,7 @@ msgid "Установа"
 msgstr ""
 
 #: app/templates/admin/admin_user_form.html:136
+#: app/templates/admin/admin_users_list.html:62
 msgid "Фотопастки"
 msgstr ""
 
@@ -1025,39 +1029,79 @@ msgstr ""
 
 #: app/templates/admin/admin_users_list.html:51
 #: app/templates/admin/admin_users_list.html:61
+#: app/templates/admin/admin_users_list.html:70
 msgid "всі"
 msgstr ""
 
 #: app/templates/admin/admin_users_list.html:59
+msgid "Модуль"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:68
 msgid "Роль"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:70
+#: app/templates/admin/admin_users_list.html:79
 msgid "Скинути"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:75
+#: app/templates/admin/admin_users_list.html:84
 msgid "Показано:"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:85
-#: app/templates/admin/admin_users_list.html:100
+#: app/templates/admin/admin_users_list.html:91
+msgid "Позначки біля установи показують, що саме відкрито:"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:92
+#: app/templates/admin/admin_users_list.html:94
+#: app/templates/admin/admin_users_list.html:133
+msgid "ФП"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:92
+msgid "фотопастки"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:93
+msgid "звукозаписи"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:95
+msgid "означає ще й право завантажувати дані."
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:102
+#: app/templates/admin/admin_users_list.html:124
 msgid "Прізвище та ім'я"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:121
+#: app/templates/admin/admin_users_list.html:132
+msgid "Фотопастки: доступ"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:132
+#: app/templates/admin/admin_users_list.html:138
+msgid "експорт"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:138
+msgid "ПАМ: доступ"
+msgstr ""
+
+#: app/templates/admin/admin_users_list.html:160
 msgid "Ви впевнені, що хочете видалити користувача:"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:128
+#: app/templates/admin/admin_users_list.html:167
 msgid "Ви не можете видалити себе"
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:137
+#: app/templates/admin/admin_users_list.html:176
 msgid "Користувачів не знайдено."
 msgstr ""
 
-#: app/templates/admin/admin_users_list.html:144
+#: app/templates/admin/admin_users_list.html:183
 msgid "Жодного користувача не відповідає фільтру."
 msgstr ""
 

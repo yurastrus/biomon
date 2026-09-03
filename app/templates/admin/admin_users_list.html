@@ -55,6 +55,15 @@
                 </select>
             </div>
 
+            <div style="flex: 0 0 150px;">
+                <label class="admin-filter-label">{{ _('Модуль') }}</label>
+                <select id="filter-module" class="admin-filter-input">
+                    <option value="">— {{ _('всі') }} —</option>
+                    <option value="ct">{{ _('Фотопастки') }}</option>
+                    <option value="pam">{{ _('ПАМ') }}</option>
+                </select>
+            </div>
+
             <div style="flex: 0 0 160px;">
                 <label class="admin-filter-label">{{ _('Роль') }}</label>
                 <select id="filter-role" class="admin-filter-input">
@@ -78,6 +87,14 @@
         </div>
     </div>
 
+    <p class="inst-legend">
+        {{ _('Позначки біля установи показують, що саме відкрито:') }}
+        <span class="mod-chip mod-chip-ct">{{ _('ФП') }}</span> {{ _('фотопастки') }},
+        <span class="mod-chip mod-chip-pam">{{ _('ПАМ') }}</span> {{ _('звукозаписи') }},
+        <span class="mod-chip mod-chip-ct">{{ _('ФП') }}<span class="mod-exp">↓</span></span>
+        {{ _('означає ще й право завантажувати дані.') }}
+    </p>
+
     <table class="admin-table">
         <thead>
             <tr>
@@ -90,8 +107,15 @@
         </thead>
         <tbody id="users-tbody">
             {% for user in users %}
+            {# Access is per module, so the row carries one institution list per
+               module; the module-blind list stays for the plain institution filter. #}
+            {% set links = user.institution_links | sort(attribute='institution.name_uk') %}
+            {% set ct_ids = links | selectattr('can_view_ct') | map(attribute='institution_id') | list %}
+            {% set pam_ids = links | selectattr('can_view_pam') | map(attribute='institution_id') | list %}
             <tr data-search="{{ user.username }} {{ user.full_name }}"
                 data-institution="{{ user.institutions | map(attribute='id') | join('|') }}"
+                data-inst-ct="{{ ct_ids | join('|') }}"
+                data-inst-pam="{{ pam_ids | join('|') }}"
                 data-role="{{ user.roles | map(attribute='name') | join('|') }}">
                 <td data-label="{{ _('Логін') }}">
                     <strong>{{ user.username }}</strong><br>
@@ -99,8 +123,23 @@
                 </td>
                 <td data-label="{{ _('Прізвище та ім\'я') }}">{{ user.full_name }}</td>
                 <td data-label="{{ _('Установи') }}">
-                    {% for inst in user.institutions %}
-                        <span class="badge badge-success" style="margin-bottom: 2px;">{{ inst.name_uk }}</span>
+                    {% for link in links %}
+                        {% set inst = link.institution %}
+                        <span class="inst-grant" title="{{ inst.name_uk }}">
+                            <span class="badge badge-success">{{ inst.name_uk }}</span>
+                            {% if link.can_view_ct %}
+                            <span class="mod-chip mod-chip-ct"
+                                  title="{{ _('Фотопастки: доступ') }}{% if link.can_export_ct %} + {{ _('експорт') }}{% endif %}">
+                                {{ _('ФП') }}{% if link.can_export_ct %}<span class="mod-exp">↓</span>{% endif %}
+                            </span>
+                            {% endif %}
+                            {% if link.can_view_pam %}
+                            <span class="mod-chip mod-chip-pam"
+                                  title="{{ _('ПАМ: доступ') }}{% if link.can_export_pam %} + {{ _('експорт') }}{% endif %}">
+                                {{ _('ПАМ') }}{% if link.can_export_pam %}<span class="mod-exp">↓</span>{% endif %}
+                            </span>
+                            {% endif %}
+                        </span>
                     {% else %}
                         <span style="color: gray;">---</span>
                     {% endfor %}
@@ -152,6 +191,7 @@
 function applyFilters() {
     var searchVal = document.getElementById("filter-search").value.toLowerCase();
     var instVal   = document.getElementById("filter-institution").value;
+    var moduleVal = document.getElementById("filter-module").value;
     var roleVal   = document.getElementById("filter-role").value;
 
     var rows = document.querySelectorAll("#users-tbody tr[data-search]");
@@ -160,12 +200,18 @@ function applyFilters() {
     for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
         var search = row.getAttribute("data-search").toLowerCase();
-        var insts  = row.getAttribute("data-institution").split("|");
         var roles  = row.getAttribute("data-role").split("|");
 
-        var ok = (!searchVal || search.indexOf(searchVal) !== -1)
-              && (!instVal   || insts.indexOf(instVal) !== -1)
-              && (!roleVal   || roles.indexOf(roleVal) !== -1);
+        /* With a module chosen, the institution filter asks that module's list,
+           so "Ужанський + ПАМ" means "may work with its sounds", not "is linked
+           to it somehow". */
+        var listAttr = moduleVal ? ("data-inst-" + moduleVal) : "data-institution";
+        var insts = (row.getAttribute(listAttr) || "").split("|").filter(Boolean);
+
+        var ok = (!searchVal  || search.indexOf(searchVal) !== -1)
+              && (!moduleVal  || insts.length > 0)
+              && (!instVal    || insts.indexOf(instVal) !== -1)
+              && (!roleVal    || roles.indexOf(roleVal) !== -1);
 
         row.style.display = ok ? "" : "none";
         if (ok) visible++;
@@ -182,12 +228,14 @@ function applyFilters() {
 function resetFilters() {
     document.getElementById("filter-search").value = "";
     document.getElementById("filter-institution").value = "";
+    document.getElementById("filter-module").value = "";
     document.getElementById("filter-role").value = "";
     applyFilters();
 }
 
 document.getElementById("filter-search").addEventListener("input", applyFilters);
 document.getElementById("filter-institution").addEventListener("change", applyFilters);
+document.getElementById("filter-module").addEventListener("change", applyFilters);
 document.getElementById("filter-role").addEventListener("change", applyFilters);
 </script>
 {% endblock %}
