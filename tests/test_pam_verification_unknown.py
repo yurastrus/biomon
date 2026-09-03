@@ -191,7 +191,7 @@ def test_next_segment_access_baseline_scopes_verifier_to_own_institutions(
     cl = auth_client(role='pam_verifier', username='verifier_with_inst')
     from app.models import User
     user = db_session.query(User).filter_by(username='verifier_with_inst').one()
-    db_session.add(UserInstitution(user_id=user.id, institution_id=inst.id))
+    db_session.add(UserInstitution(user_id=user.id, institution_id=inst.id, can_view_ct=True, can_view_pam=True))
     db_session.commit()
 
     conn = MagicMock()

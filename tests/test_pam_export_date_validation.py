@@ -65,7 +65,7 @@ def test_preview_without_dates_answers_400(app, db_session, make_user):
 
     user = make_user(username='pam_exporter', roles=('analyst', 'pam_verifier'))
     user.institution_links.append(UserInstitution(
-        institution_id=park.id, can_export=True,
+        institution_id=park.id,
         can_view_ct=True, can_export_ct=True,
         can_view_pam=True, can_export_pam=True))
     db_session.commit()
@@ -91,7 +91,7 @@ def test_download_without_dates_answers_400(app, db_session, make_user):
 
     user = make_user(username='pam_exporter2', roles=('analyst', 'pam_verifier'))
     user.institution_links.append(UserInstitution(
-        institution_id=park.id, can_export=True,
+        institution_id=park.id,
         can_view_pam=True, can_export_pam=True,
         can_view_ct=False, can_export_ct=False))
     db_session.commit()

@@ -161,7 +161,7 @@ class StatsApiBase(unittest.TestCase):
         self.manager = User(username='manager_u', password_hash=pw)
         self.manager.roles.append(r_manager)
         self.manager.institution_links.append(
-            UserInstitution(institution_id=self.inst_a.id, can_export=False)
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True)
         )
         db.session.add(self.manager)
 

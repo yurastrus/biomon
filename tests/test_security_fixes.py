@@ -139,7 +139,6 @@ def test_manager_cannot_create_admin(db_session):
     new_user = UserService.create_user(
         creator=mgr, username='victim', password='StrongPass1',
         email=None, phone=None, first_name=None, last_name=None,
-        selected_inst_ids=[], can_export_ids=set(),
         # crafted request tries to grant admin id directly:
         selected_role_ids=[str(role_admin.id), str(role_viewer.id)],
     )
@@ -165,7 +164,6 @@ def test_manager_cannot_promote_to_admin_via_update(db_session):
     UserService.update_user(
         user=target, available_roles=available, username='target',
         email=None, phone=None, first_name=None, last_name=None, new_password=None,
-        selected_inst_ids=[], can_export_ids=set(),
         selected_role_ids=[str(role_admin.id), str(role_viewer.id)],
     )
     db.session.commit()
@@ -187,7 +185,6 @@ def test_admin_can_still_assign_admin(db_session):
     new_user = UserService.create_user(
         creator=admin_user, username='new_admin', password='StrongPass1',
         email=None, phone=None, first_name=None, last_name=None,
-        selected_inst_ids=[], can_export_ids=set(),
         selected_role_ids=[str(role_admin.id)],
     )
     db.session.commit()

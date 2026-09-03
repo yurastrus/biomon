@@ -95,20 +95,6 @@ class UserService:
     ACCESS_FIELDS = ('view_ct', 'export_ct', 'view_pam', 'export_pam')
 
     @staticmethod
-    def module_access_from_legacy(selected_inst_ids, can_export_ids):
-        """Translate the old two-column form input into the four-flag shape.
-
-        Kept so callers that still speak "institutions + can_export" (scripts,
-        older tests) go through exactly the same writer. Camera traps mirrors what
-        the row used to mean; PAM is left off, because the old input cannot say
-        anything about it — a PAM grant has to be ticked deliberately.
-        """
-        inst_ids = {str(i) for i in selected_inst_ids}
-        export_ids = {str(i) for i in can_export_ids} & inst_ids
-        return {'view_ct': inst_ids, 'export_ct': export_ids,
-                'view_pam': set(), 'export_pam': set()}
-
-    @staticmethod
     def _write_institution_links(user, module_access, will_have_export):
         """Replace ``user.institution_links`` from a four-flag selection.
 
@@ -120,8 +106,6 @@ class UserService:
         * a row is written only when it grants something. A park with all four
           boxes clear leaves no row at all, which is the "no access" state the
           model already used (see WORKLOG 2026-09-02 on the sparse table);
-        * ``can_export`` (legacy, read by the live export paths) is kept in sync
-          as "may export in either module";
         * without an export-capable role the export flags are not taken from the
           form (its boxes are disabled) — the stored ones are preserved, so a
           temporary role change does not silently wipe them.
@@ -153,7 +137,6 @@ class UserService:
 
             links.append(UserInstitution(
                 institution_id=inst_id,
-                can_export=bool(export_ct or export_pam),
                 can_view_ct=view_ct,
                 can_export_ct=export_ct,
                 can_view_pam=view_pam,
@@ -166,8 +149,7 @@ class UserService:
     @staticmethod
     def create_user(creator, username, password,
                     email, phone, first_name, last_name,
-                    selected_inst_ids=(), can_export_ids=(), selected_role_ids=(),
-                    module_access=None):
+                    module_access=None, selected_role_ids=()):
         """Create a new user and add it to the session (no commit).
 
         Returns:
@@ -193,10 +175,8 @@ class UserService:
         role_names = UserService._role_names_for_ids(selected_role_ids)
         will_have_export = bool(role_names & EXPORT_ROLES)
 
-        if module_access is None:
-            module_access = UserService.module_access_from_legacy(
-                selected_inst_ids, can_export_ids)
-        UserService._write_institution_links(new_user, module_access, will_have_export)
+        UserService._write_institution_links(
+            new_user, module_access or {}, will_have_export)
 
         for r_id in selected_role_ids:
             role = Role.query.get(int(r_id))
@@ -209,9 +189,7 @@ class UserService:
     @staticmethod
     def update_user(user, available_roles,
                     username, email, phone, first_name, last_name,
-                    new_password,
-                    selected_inst_ids=(), can_export_ids=(), selected_role_ids=(),
-                    module_access=None):
+                    new_password, module_access=None, selected_role_ids=()):
         """Update an existing user in place (no commit).
 
         Args:
@@ -242,12 +220,10 @@ class UserService:
         hidden_role_names = {r.name for r in user.roles if r.id not in available_role_ids}
         will_have_export = bool((selected_role_names | hidden_role_names) & EXPORT_ROLES)
 
-        if module_access is None:
-            module_access = UserService.module_access_from_legacy(
-                selected_inst_ids, can_export_ids)
-        # Writes the four per-module flags and keeps the legacy can_export column
-        # in sync; preserves stored export flags when the role cannot export.
-        UserService._write_institution_links(user, module_access, will_have_export)
+        # Writes the four per-module flags; preserves stored export flags when
+        # the role cannot export.
+        UserService._write_institution_links(
+            user, module_access or {}, will_have_export)
 
         # Retain roles not visible in the form so managers can't accidentally remove hidden roles.
         # Compare by ID — correct regardless of SQLAlchemy's identity map.
@@ -587,7 +563,6 @@ class VerificationRequestService:
         if link is None:
             user.institution_links.append(UserInstitution(
                 institution_id=institution_id,
-                can_export=False,
                 **{view_field: True, other_field: False,
                    'can_export_ct': False, 'can_export_pam': False}))
             return True
@@ -595,16 +570,6 @@ class VerificationRequestService:
         if getattr(link, view_field):
             return False
         setattr(link, view_field, True)
-        # A row written before the per-module columns existed has NULLs; resolve
-        # them now so the other module keeps exactly the access it had.
-        stored = link.module_flags(user)
-        if getattr(link, other_field) is None:
-            setattr(link, other_field,
-                    stored['view_pam'] if other_field == 'can_view_pam' else stored['view_ct'])
-        if link.can_export_ct is None:
-            link.can_export_ct = stored['export_ct']
-        if link.can_export_pam is None:
-            link.can_export_pam = stored['export_pam']
         return True
 
     @staticmethod

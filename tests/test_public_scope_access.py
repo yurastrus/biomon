@@ -213,7 +213,7 @@ def test_access_baseline_adds_own_institutions(app, db_session, make_user):
     db_session.flush()
 
     user = make_user(username='pam_with_inst', roles=('pam_verifier',))
-    db_session.add(UserInstitution(user_id=user.id, institution_id=inst.id))
+    db_session.add(UserInstitution(user_id=user.id, institution_id=inst.id, can_view_ct=True, can_view_pam=True))
     db_session.commit()
 
     sql, params = _segment_sql_for(app, user)

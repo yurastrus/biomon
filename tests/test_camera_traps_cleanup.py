@@ -111,7 +111,7 @@ class CleanupRouteBase(unittest.TestCase):
         self.admin = User(username='a', password_hash=pw); self.admin.roles.append(r_admin)
         self.manager = User(username='m', password_hash=pw); self.manager.roles.append(r_manager)
         self.manager.institution_links.append(
-            UserInstitution(institution_id=self.inst.id, can_export=False))
+            UserInstitution(institution_id=self.inst.id, can_view_ct=True, can_view_pam=True))
         self.viewer = User(username='v', password_hash=pw); self.viewer.roles.append(r_viewer)
         db.session.add_all([self.admin, self.manager, self.viewer])
         db.session.commit()

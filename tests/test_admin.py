@@ -93,7 +93,7 @@ class AdminTestBase(unittest.TestCase):
         self.manager = User(username='manager_user', password_hash=pw)
         self.manager.roles.append(self.role_manager)
         self.manager.institution_links.append(
-            UserInstitution(institution_id=self.inst_a.id, can_export=False)
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True)
         )
         db.session.add(self.manager)
 
@@ -101,7 +101,7 @@ class AdminTestBase(unittest.TestCase):
         self.regular = User(username='regular_user', password_hash=pw)
         self.regular.roles.append(self.role_viewer)
         self.regular.institution_links.append(
-            UserInstitution(institution_id=self.inst_a.id, can_export=False)
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True)
         )
         db.session.add(self.regular)
         db.session.flush()
@@ -363,7 +363,7 @@ class TestEditUser(AdminTestBase):
 
         # Move regular_user to inst_b (remove inst_a)
         self.regular.institution_links = [
-            UserInstitution(institution_id=self.inst_b.id, can_export=False)
+            UserInstitution(institution_id=self.inst_b.id, can_view_ct=True, can_view_pam=True)
         ]
         db.session.commit()
 
@@ -467,7 +467,7 @@ class TestDeleteUser(AdminTestBase):
         from app.extensions import db
         from app.models import User, UserInstitution
         self.regular.institution_links = [
-            UserInstitution(institution_id=self.inst_b.id, can_export=False)
+            UserInstitution(institution_id=self.inst_b.id, can_view_ct=True, can_view_pam=True)
         ]
         db.session.commit()
 
@@ -649,7 +649,7 @@ class TestUserService(AdminTestBase):
         from app.models import UserInstitution
 
         self.regular.institution_links = [
-            UserInstitution(institution_id=self.inst_b.id, can_export=False)
+            UserInstitution(institution_id=self.inst_b.id, can_view_ct=True, can_view_pam=True)
         ]
         db.session.commit()
 

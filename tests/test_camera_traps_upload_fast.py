@@ -106,7 +106,7 @@ class UploadFastAccessBase(unittest.TestCase):
         self.manager = User(username='m', password_hash=pw)
         self.manager.roles.append(r_manager)
         self.manager.institution_links.append(
-            UserInstitution(institution_id=self.inst.id, can_export=False))
+            UserInstitution(institution_id=self.inst.id, can_view_ct=True, can_view_pam=True))
         self.viewer = User(username='v', password_hash=pw)
         self.viewer.roles.append(r_viewer)
         db.session.add_all([self.admin, self.manager, self.viewer])

@@ -39,11 +39,11 @@ def split_user(db_session, make_user, two_parks):
     ct_park, pam_park = two_parks
     user = make_user(username='split', roles=('ct_verifier', 'pam_verifier'))
     user.institution_links.append(UserInstitution(
-        institution_id=ct_park.id, can_export=True,
+        institution_id=ct_park.id,
         can_view_ct=True, can_export_ct=True,
         can_view_pam=False, can_export_pam=False))
     user.institution_links.append(UserInstitution(
-        institution_id=pam_park.id, can_export=False,
+        institution_id=pam_park.id,
         can_view_ct=False, can_export_ct=False,
         can_view_pam=True, can_export_pam=False))
     db_session.commit()
@@ -70,26 +70,26 @@ def test_export_is_per_module(split_user, two_parks):
     assert split_user.export_institution_ids('pam') == []
 
 
-def test_the_legacy_property_still_means_either_module(split_user, two_parks):
-    """`export_institutions` (no module) is what the legacy `can_export` column
-    said, and callers that are not module-aware still get it."""
-    ct_park, _ = two_parks
+def test_the_module_blind_property_means_either_module(split_user, two_parks):
+    """`export_institutions` (no module) is what shared-ct / shared-pam ask a
+    host that has no per-module methods, so it must stay meaningful."""
     assert [i.code for i in split_user.export_institutions] == ['ONE']
 
 
-def test_a_row_written_before_the_split_resolves_to_its_old_meaning(
-        db_session, make_user, two_parks):
+def test_a_row_that_grants_nothing_grants_nothing(db_session, make_user, two_parks):
+    """Since phase 4 the flags are the only truth: a bare row (all four false by
+    default) opens neither module, whatever roles the person holds."""
     from app.models import UserInstitution
 
     park, _ = two_parks
-    user = make_user(username='legacy_reader', roles=('ct_verifier',))
-    user.institution_links.append(
-        UserInstitution(institution_id=park.id, can_export=True))  # all flags NULL
+    user = make_user(username='bare_row', roles=('ct_verifier', 'pam_verifier'))
+    user.institution_links.append(UserInstitution(institution_id=park.id))
     db_session.commit()
 
-    assert user.allowed_institution_ids('ct') == [park.id]
-    assert user.allowed_institution_ids('pam') == [], 'photos only, as the role says'
-    assert user.export_institution_ids('ct') == [park.id]
+    assert user.allowed_institution_ids('ct') == []
+    assert user.allowed_institution_ids('pam') == []
+    assert user.export_institution_ids('ct') == []
+    assert user.export_institutions == []
 
 
 # ── the submodule helpers ──────────────────────────────────────────────────
@@ -115,7 +115,7 @@ def test_pam_only_person_has_no_camera_trap_access(db_session, make_user, two_pa
     park, _ = two_parks
     user = make_user(username='listener', roles=('pam_verifier',))
     user.institution_links.append(UserInstitution(
-        institution_id=park.id, can_export=False,
+        institution_id=park.id,
         can_view_ct=False, can_export_ct=False,
         can_view_pam=True, can_export_pam=False))
     db_session.commit()
@@ -237,7 +237,7 @@ def test_a_manager_decides_only_the_module_they_hold(db_session, make_user, two_
     park, _ = two_parks
     manager = make_user(username='ct_only_manager', roles=('manager',))
     manager.institution_links.append(UserInstitution(
-        institution_id=park.id, can_export=False,
+        institution_id=park.id,
         can_view_ct=True, can_export_ct=False,
         can_view_pam=False, can_export_pam=False))
 

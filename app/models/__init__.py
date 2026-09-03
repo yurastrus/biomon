@@ -11,58 +11,47 @@ user_roles = db.Table('user_roles',
 )
 
 class UserInstitution(db.Model):
-    """One person's access to one institution's data.
+    """One person's access to one institution's data, per module.
 
-    Historically a row meant "may see this institution" in **both** modules, and
-    ``can_export`` meant "may download its data" in both. Per-module access is
-    being introduced in phases (see WORKLOG 2026-09-02), so the two legacy
-    columns stay authoritative until the read paths in shared-ct / shared-pam are
-    switched over.
+    Four independent grants: see and export camera-trap data, see and export PAM
+    data. A row exists only while it grants something; no row at all means no
+    access beyond public locations (the table is deliberately sparse).
 
-    The four ``*_ct`` / ``*_pam`` columns are deliberately **nullable**: NULL
-    means "never decided", which lets the backfill script fill in rows created by
-    code that predates them without overwriting a real choice made in the admin
-    form. Readers must go through :meth:`module_flags`, which falls back to the
-    legacy meaning for NULL.
+    Until 2026-09-03 a single ``can_export`` column carried "may download" for
+    both modules and the row's mere existence carried "may see" for both. That
+    column is gone; the four flags below are the only truth. See WORKLOG
+    2026-09-02 (phases 1-3) and 2026-09-03 (phase 4) for the migration path.
     """
     __tablename__ = 'user_institutions'
     user_id        = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     institution_id = db.Column(db.Integer, db.ForeignKey('institutions.id'), primary_key=True)
-    #: legacy, both modules — still the only column the live read paths use
-    can_export     = db.Column(db.Boolean, default=False, nullable=False)
 
-    can_view_ct    = db.Column(db.Boolean, nullable=True)
-    can_export_ct  = db.Column(db.Boolean, nullable=True)
-    can_view_pam   = db.Column(db.Boolean, nullable=True)
-    can_export_pam = db.Column(db.Boolean, nullable=True)
+    can_view_ct    = db.Column(db.Boolean, nullable=False, default=False,
+                               server_default=db.false())
+    can_export_ct  = db.Column(db.Boolean, nullable=False, default=False,
+                               server_default=db.false())
+    can_view_pam   = db.Column(db.Boolean, nullable=False, default=False,
+                               server_default=db.false())
+    can_export_pam = db.Column(db.Boolean, nullable=False, default=False,
+                               server_default=db.false())
 
     institution = db.relationship('Institution')
 
     def module_flags(self, user=None):
         """Return ``{'view_ct', 'export_ct', 'view_pam', 'export_pam'}`` as bools.
 
-        A NULL column has never been decided for this row, so it falls back to
-        what the row used to mean:
-
-        * camera traps — the row itself was the access grant, so view is True and
-          export follows ``can_export``;
-        * PAM — the same, but only for somebody who may verify sounds at all
-          (``pam_verifier``, which managers and admins hold through the role
-          hierarchy). Without ``user`` the fallback is conservative: no PAM.
+        The columns answer directly now. ``user`` is accepted and ignored: it
+        used to resolve rows written before the split, and keeping the parameter
+        means the callers in shared-ct / shared-pam need no coordinated change.
 
         Returns:
             dict[str, bool]
         """
-        may_pam = bool(user is not None and user.has_role('pam_verifier'))
-
-        def pick(value, fallback):
-            return fallback if value is None else bool(value)
-
         return {
-            'view_ct': pick(self.can_view_ct, True),
-            'export_ct': pick(self.can_export_ct, bool(self.can_export)),
-            'view_pam': pick(self.can_view_pam, may_pam),
-            'export_pam': pick(self.can_export_pam, may_pam and bool(self.can_export)),
+            'view_ct': bool(self.can_view_ct),
+            'export_ct': bool(self.can_export_ct),
+            'view_pam': bool(self.can_view_pam),
+            'export_pam': bool(self.can_export_pam),
         }
 
 class Institution(db.Model):
@@ -168,13 +157,14 @@ class User(db.Model, UserMixin):
 
     @property
     def export_institutions(self):
-        """Institutions the user may export from, either module.
+        """Institutions the user may export from in **either** module.
 
-        Kept for callers that are not module-aware (and for the legacy
-        ``can_export`` column's meaning). Prefer
-        :meth:`export_institutions_for`.
+        The module-blind answer, kept because shared-ct / shared-pam ask hosts
+        for it when the host has no per-module methods (``/var/www/myproject``).
+        Inside biomon prefer :meth:`export_institutions_for`.
         """
-        return [link.institution for link in self.institution_links if link.can_export]
+        return [link.institution for link in self.institution_links
+                if link.can_export_ct or link.can_export_pam]
 
     @property
     def full_name(self):

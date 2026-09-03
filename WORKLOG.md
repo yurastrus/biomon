@@ -1710,3 +1710,55 @@ name. Verified against production data: admin and manager now get
 Tests: `tests/test_pam_export_date_validation.py` (16).
 
 Full suite after everything: 1755 passed, 36 skipped.
+
+
+## 2026-09-03 (phase 4) — The crutches are gone
+
+Ends the migration begun on 02.09. **No behaviour changes**: this only deletes
+the compatibility path that the earlier phases needed while both schemas were
+live.
+
+### What was removed
+* `user_institutions.can_export` — dropped. The four per-module flags are the
+  only truth, and nothing had read the legacy column since phase 3.
+* The NULL fallback in `UserInstitution.module_flags()`. The four flags are
+  `NOT NULL DEFAULT false` now, so "undecided" is no longer a state; the method
+  answers straight from the columns. It still accepts (and ignores) `user`, so
+  the callers in shared-ct / shared-pam needed no coordinated change.
+* `UserService.module_access_from_legacy()` and the `selected_inst_ids` /
+  `can_export_ids` parameters of `create_user` / `update_user`.
+* `scripts/backfill_module_access.py` — it read `can_export` to compute the
+  flags, so with that column gone it could only mislead. Its rule is preserved
+  in this WORKLOG (phase 1) and in migration `a7413fc85d21`.
+
+`User.export_institutions` (module-blind) stays: shared-ct and shared-pam ask
+hosts for it when the host has no per-module methods, which is still the case
+for `/var/www/myproject`. That fallback is the submodule's contract with older
+hosts, not a leftover, and it now computes from `can_export_ct OR can_export_pam`.
+
+### Migration `b93e7d21c604`
+Two steps in one revision: `NOT NULL DEFAULT false` on the four flags, then
+`DROP COLUMN can_export`. It refuses to run if any flag is still NULL, naming
+the backfill in the error, so an unprepared database cannot be silently stripped
+of access. The downgrade recreates `can_export` as
+`can_export_ct OR can_export_pam`, which is exactly what it meant, so a rollback
+is not lossy in any way the old code could notice.
+
+**Deploy order is reversed here**: reload the app FIRST, then migrate. A worker
+still holding the previous code SELECTs `can_export` on every user query, so
+dropping the column under it would break that worker; the new code never
+mentions the column.
+
+### Tests
+`tests/test_module_access_backfill.py` was split: the form cases moved to
+`tests/test_module_access_form.py`, the backfill cases went with the script.
+Every `UserInstitution(...)` construction across the suite lost the legacy
+kwarg; a bare row now grants nothing, which is pinned by its own test.
+Full suite: 1739 passed, 36 skipped.
+
+### Side fix in shared-pam (`2d701c5`)
+`get_occurrence_data` validated its dates *inside* the try, after opening the
+connection, so a bad request took a database connection before being rejected,
+and yesterday's 400 tests silently depended on a reachable `pam_db` (they failed
+this morning with the SSH tunnel down). Validation moved to the top of the
+function.

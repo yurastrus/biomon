@@ -169,9 +169,9 @@ class _ExportRouteBase(unittest.TestCase):
         self.manager = User(username='exp_manager', password_hash=pw)
         self.manager.roles.append(roles['manager'])
         self.manager.institution_links.extend([
-            UserInstitution(institution_id=self.inst_a.id, can_export=True),
-            UserInstitution(institution_id=self.inst_b.id, can_export=True),
-            UserInstitution(institution_id=self.inst_c.id, can_export=False),
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_export_ct=True, can_view_pam=True, can_export_pam=True),
+            UserInstitution(institution_id=self.inst_b.id, can_view_ct=True, can_export_ct=True, can_view_pam=True, can_export_pam=True),
+            UserInstitution(institution_id=self.inst_c.id, can_view_ct=True, can_view_pam=True),
         ])
         db.session.add(self.manager)
 
@@ -179,8 +179,8 @@ class _ExportRouteBase(unittest.TestCase):
         self.analyst = User(username='exp_analyst', password_hash=pw)
         self.analyst.roles.extend([roles['analyst'], roles['pam_verifier']])
         self.analyst.institution_links.extend([
-            UserInstitution(institution_id=self.inst_a.id, can_export=True),
-            UserInstitution(institution_id=self.inst_b.id, can_export=False),
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_export_ct=True, can_view_pam=True, can_export_pam=True),
+            UserInstitution(institution_id=self.inst_b.id, can_view_ct=True, can_view_pam=True),
         ])
         db.session.add(self.analyst)
 
@@ -188,7 +188,7 @@ class _ExportRouteBase(unittest.TestCase):
         self.analyst_noexport = User(username='exp_analyst_noexp', password_hash=pw)
         self.analyst_noexport.roles.append(roles['analyst'])
         self.analyst_noexport.institution_links.append(
-            UserInstitution(institution_id=self.inst_a.id, can_export=False)
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True)
         )
         db.session.add(self.analyst_noexport)
 
@@ -196,7 +196,7 @@ class _ExportRouteBase(unittest.TestCase):
         self.verifier = User(username='exp_verifier', password_hash=pw)
         self.verifier.roles.append(roles['pam_verifier'])
         self.verifier.institution_links.append(
-            UserInstitution(institution_id=self.inst_a.id, can_export=True)
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_export_ct=True, can_view_pam=True, can_export_pam=True)
         )
         db.session.add(self.verifier)
 
@@ -233,8 +233,8 @@ class TestPamDataExportPage(_ExportRouteBase):
         self.assertEqual(resp.status_code, 200)
 
     def test_manager_sees_only_export_flagged_institutions(self):
-        """Manager gets inst_a/inst_b (can_export=True) but NOT inst_c,
-        where they are a member with can_export=False."""
+        """Manager gets inst_a/inst_b (PAM export granted) but NOT inst_c,
+        where they have access without the PAM export flag."""
         self._login(self.manager.id)
         resp = self.client.get('/uk/pam/data-export')
         html = resp.get_data(as_text=True)

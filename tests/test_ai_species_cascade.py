@@ -319,7 +319,7 @@ class TestIdentifyAiSpeciesEndpoint(unittest.TestCase):
         self.verifier = User(username='ais_ver', password_hash=pw)
         self.verifier.roles.append(r_verifier)
         self.verifier.institution_links.append(
-            UserInstitution(institution_id=self.inst_a.id, can_export=False)
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True)
         )
         db.session.add(self.verifier)
 

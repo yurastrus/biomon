@@ -1024,7 +1024,7 @@ class PamImportRouteBase(unittest.TestCase):
         self.manager = User(username='imp_manager', password_hash=pw)
         self.manager.roles.append(roles['manager'])
         self.manager.institution_links.append(
-            UserInstitution(institution_id=self.inst_a.id, can_export=False)
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True)
         )
         db.session.add(self.manager)
 
