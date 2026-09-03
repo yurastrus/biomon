@@ -1813,3 +1813,32 @@ list. The legend is now two rows: the colour samples answer "which modules", the
 arrow row answers "may they download". Pinned by a test that counts the rows and
 checks the arrow is not in the colour row. The sentence lost its em dash while it
 was being rewritten.
+
+## 2026-09-03 (later) — Institution stats opened to every logged-in user
+
+The camera-trap landing page linked the per-institution verification table only
+for managers. The table itself was already access-scoped, so the role gate was
+the only thing keeping ordinary users out of numbers about their own park.
+
+`@role_required('manager')` is gone from `institution-stats`; `@login_required`
+stays. Scoping got stricter in exchange. `get_institution_filter` returns
+"public locations OR locations of my institutions", which for a one-park user
+would have pulled in every public location in the system and, through the
+many-to-many `location_institutions`, a row for each institution owning one.
+A non-admin with institutions is now pinned to exactly those: the same ids are
+passed as `selected_inst_id` (limiting the locations that feed the totals) and
+as the new `restrict_inst_ids` argument of `query_institution_stats` /
+`query_institution_series_counts` (limiting the rows of the table). Access to
+one institution gives one row, ten give ten. An admin passes `None` and stays
+unrestricted; a user with no institution keeps the public-only scope.
+
+The card moved out of the manager-only "Work" section into "Analytics", where it
+renders for `current_user.is_authenticated`, and a contributors card sits next to
+it. Contributors is a public page, so its card has no gate. Both titles already
+existed in the catalog, so the i18n cycle produced only line-reference churn.
+
+Tests: `tests/test_ct_institution_stats_access.py`, 13 cases — anonymous
+redirect, 200 for a plain verifier / an institution-less viewer / an admin, the
+captured `restrict_inst_ids` per user kind, the filter count on the grouped query
+with and without the pin, and the two cards on the hub (institution stats hidden
+from anonymous, contributors visible, the two adjacent).
