@@ -76,7 +76,33 @@ def user_list():
     else:
         # Managers see only users they created
         users = User.query.filter_by(created_by_id=current_user.id).order_by(User.id.desc()).all()
-    return render_template('admin_users_list.html', users=users)
+
+    # Institution names follow the page language, and so must their order —
+    # sorting by the Ukrainian name while showing the English one reads as
+    # random. Both are prepared here because Jinja cannot sort by a method call.
+    lang = g.lang_code
+
+    def label(inst):
+        return inst.label(lang) if inst is not None else ''
+
+    grants = {
+        user.id: sorted(
+            [link for link in user.institution_links if link.institution is not None],
+            key=lambda link: label(link.institution).casefold())
+        for user in users
+    }
+    filter_institutions = sorted(
+        {link.institution for links in grants.values() for link in links},
+        key=lambda inst: label(inst).casefold())
+    filter_roles = sorted({role for user in users for role in user.roles},
+                          key=lambda role: role.name)
+
+    return render_template('admin_users_list.html',
+                           users=users,
+                           grants=grants,
+                           inst_label=label,
+                           filter_institutions=filter_institutions,
+                           filter_roles=filter_roles)
 
 
 @admin_bp.route('/users/add', methods=['GET', 'POST'])

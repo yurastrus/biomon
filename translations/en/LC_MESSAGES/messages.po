@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-03 08:44+0300\n"
+"POT-Creation-Date: 2026-09-03 10:20+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -23,8 +23,8 @@ msgid "Пароль має містити і літери, і цифри."
 msgstr "Password must contain both letters and digits."
 
 #: app/admin/forms.py:31 app/admin/forms.py:50
-#: app/templates/admin/admin_users_list.html:101
-#: app/templates/admin/admin_users_list.html:120
+#: app/templates/admin/admin_users_list.html:88
+#: app/templates/admin/admin_users_list.html:107
 msgid "Логін"
 msgstr "Login"
 
@@ -92,72 +92,72 @@ msgstr "System role name"
 msgid "Призначається"
 msgstr "Assignable"
 
-#: app/admin/routes.py:136 app/templates/admin/admin_users_list.html:15
+#: app/admin/routes.py:162 app/templates/admin/admin_users_list.html:21
 msgid "Додати користувача"
 msgstr "Add user"
 
-#: app/admin/routes.py:232
+#: app/admin/routes.py:258
 msgid "Редагувати користувача"
 msgstr "Edit user"
 
-#: app/admin/routes.py:276
+#: app/admin/routes.py:302
 msgid "Редагувати установу"
 msgstr "Edit institution"
 
-#: app/admin/routes.py:276 app/templates/admin/admin_institutions_list.html:15
+#: app/admin/routes.py:302 app/templates/admin/admin_institutions_list.html:15
 msgid "Додати установу"
 msgstr "Add institution"
 
-#: app/admin/routes.py:355
+#: app/admin/routes.py:381
 msgid "Редагувати роль"
 msgstr "Edit role"
 
-#: app/admin/routes.py:355 app/templates/admin/admin_roles_list.html:15
+#: app/admin/routes.py:381 app/templates/admin/admin_roles_list.html:15
 msgid "Додати роль"
 msgstr "Add role"
 
-#: app/admin/routes.py:449
+#: app/admin/routes.py:475
 msgid "Невідомий статус."
 msgstr "Unknown status."
 
-#: app/admin/routes.py:454
+#: app/admin/routes.py:480
 msgid "Статус оновлено."
 msgstr "Status updated."
 
-#: app/admin/routes.py:469
+#: app/admin/routes.py:495
 msgid "Звернення видалено."
 msgstr "Submission deleted."
 
-#: app/admin/routes.py:520
+#: app/admin/routes.py:546
 msgid "Невідома дія."
 msgstr "Unknown action."
 
-#: app/admin/routes.py:566
+#: app/admin/routes.py:592
 #, python-format
 msgid "Запит підтверджено для: %(names)s."
 msgstr "Request approved for: %(names)s."
 
-#: app/admin/routes.py:571
+#: app/admin/routes.py:597
 #, python-format
 msgid "Галочок не залишилося, тож запит відхилено для: %(names)s."
 msgstr ""
 "No institution was left ticked, so the request was declined for: "
 "%(names)s."
 
-#: app/admin/routes.py:574
+#: app/admin/routes.py:600
 msgid "Запит підтверджено."
 msgstr "Request approved."
 
-#: app/admin/routes.py:576
+#: app/admin/routes.py:602
 msgid "Запит відхилено."
 msgstr "Request declined."
 
-#: app/admin/routes.py:578
+#: app/admin/routes.py:604
 #, python-format
 msgid "Вилучено зі запиту: %(names)s."
 msgstr "Removed from the request: %(names)s."
 
-#: app/admin/routes.py:580
+#: app/admin/routes.py:606
 msgid "Запит залишається в черзі, бо очікує рішення інших установ."
 msgstr "The request stays in the queue: other institutions have yet to decide."
 
@@ -300,9 +300,8 @@ msgid "ГОЛОВНА"
 msgstr "HOME"
 
 #: app/templates/admin/admin_user_form.html:137
-#: app/templates/admin/admin_users_list.html:63
-#: app/templates/admin/admin_users_list.html:93
-#: app/templates/admin/admin_users_list.html:139 app/templates/base.html:79
+#: app/templates/admin/admin_users_list.html:49
+#: app/templates/admin/admin_users_list.html:121 app/templates/base.html:79
 msgid "ПАМ"
 msgstr "PAM"
 
@@ -555,8 +554,8 @@ msgstr ""
 #: app/templates/admin/admin_home.html:48
 #: app/templates/admin/admin_institution_form.html:8
 #: app/templates/admin/admin_institutions_list.html:8
-#: app/templates/admin/admin_users_list.html:103
-#: app/templates/admin/admin_users_list.html:125
+#: app/templates/admin/admin_users_list.html:90
+#: app/templates/admin/admin_users_list.html:112
 #: app/templates/admin/admin_verification_requests.html:40
 #: app/templates/admin/admin_verification_requests.html:71
 #: app/templates/register.html:105
@@ -641,7 +640,7 @@ msgstr "Replied"
 #: app/templates/admin/admin_role_form.html:7
 #: app/templates/admin/admin_roles_list.html:7
 #: app/templates/admin/admin_user_form.html:7
-#: app/templates/admin/admin_users_list.html:7
+#: app/templates/admin/admin_users_list.html:13
 #: app/templates/admin/admin_verification_requests.html:11
 msgid "Адмін-панель"
 msgstr "Admin panel"
@@ -698,8 +697,8 @@ msgstr "Status"
 #: app/templates/admin/admin_institutions_list.html:45
 #: app/templates/admin/admin_roles_list.html:25
 #: app/templates/admin/admin_roles_list.html:48
-#: app/templates/admin/admin_users_list.html:105
-#: app/templates/admin/admin_users_list.html:152
+#: app/templates/admin/admin_users_list.html:92
+#: app/templates/admin/admin_users_list.html:137
 #: app/templates/admin/admin_verification_requests.html:42
 #: app/templates/admin/admin_verification_requests.html:112
 msgid "Дії"
@@ -714,7 +713,7 @@ msgid "Видалити це звернення?"
 msgstr "Delete this submission?"
 
 #: app/templates/admin/admin_contact_submissions.html:70
-#: app/templates/admin/admin_users_list.html:160
+#: app/templates/admin/admin_users_list.html:145
 msgid "Ця дія є незворотною."
 msgstr "This action is irreversible."
 
@@ -722,8 +721,8 @@ msgstr "This action is irreversible."
 #: app/templates/admin/admin_institutions_list.html:57
 #: app/templates/admin/admin_roles_list.html:61
 #: app/templates/admin/admin_roles_list.html:66
-#: app/templates/admin/admin_users_list.html:163
-#: app/templates/admin/admin_users_list.html:168
+#: app/templates/admin/admin_users_list.html:148
+#: app/templates/admin/admin_users_list.html:153
 msgid "Видалити"
 msgstr "Delete"
 
@@ -737,7 +736,7 @@ msgstr "Administration panel"
 
 #: app/templates/admin/admin_home.html:17
 #: app/templates/admin/admin_user_form.html:8
-#: app/templates/admin/admin_users_list.html:8
+#: app/templates/admin/admin_users_list.html:14
 msgid "Користувачі"
 msgstr "Users"
 
@@ -773,8 +772,8 @@ msgstr "Add new organisations and edit their identification codes."
 #: app/templates/admin/admin_home.html:61
 #: app/templates/admin/admin_role_form.html:8
 #: app/templates/admin/admin_roles_list.html:8
-#: app/templates/admin/admin_users_list.html:104
-#: app/templates/admin/admin_users_list.html:147
+#: app/templates/admin/admin_users_list.html:91
+#: app/templates/admin/admin_users_list.html:132
 msgid "Ролі"
 msgstr "Roles"
 
@@ -877,7 +876,7 @@ msgstr "not set"
 
 #: app/templates/admin/admin_institutions_list.html:47
 #: app/templates/admin/admin_roles_list.html:50
-#: app/templates/admin/admin_users_list.html:154
+#: app/templates/admin/admin_users_list.html:139
 msgid "Редагувати"
 msgstr "Edit"
 
@@ -1037,12 +1036,12 @@ msgstr ""
 "ticked drops off the list of rights."
 
 #: app/templates/admin/admin_user_form.html:135
-#: app/templates/admin/admin_users_list.html:49
+#: app/templates/admin/admin_users_list.html:35
 msgid "Установа"
 msgstr "Institution"
 
 #: app/templates/admin/admin_user_form.html:136
-#: app/templates/admin/admin_users_list.html:62
+#: app/templates/admin/admin_users_list.html:48
 msgid "Фотопастки"
 msgstr "Camera traps"
 
@@ -1076,93 +1075,100 @@ msgstr "No available roles."
 msgid "Створити користувача"
 msgstr "Create a user"
 
-#: app/templates/admin/admin_users_list.html:11
+#: app/templates/admin/admin_users_list.html:4
+msgid "фотопастки і звукозаписи"
+msgstr "camera traps and sound recordings"
+
+#: app/templates/admin/admin_users_list.html:5
+#: app/templates/admin/admin_users_list.html:79
+msgid "лише фотопастки"
+msgstr "camera traps only"
+
+#: app/templates/admin/admin_users_list.html:6
+#: app/templates/admin/admin_users_list.html:80
+msgid "лише звукозаписи"
+msgstr "sound recordings only"
+
+#: app/templates/admin/admin_users_list.html:17
 msgid "Керування користувачами"
 msgstr "Manage users"
 
-#: app/templates/admin/admin_users_list.html:43
+#: app/templates/admin/admin_users_list.html:29
 msgid "Пошук"
 msgstr "Search"
 
-#: app/templates/admin/admin_users_list.html:44
+#: app/templates/admin/admin_users_list.html:30
 msgid "Логін або ПІБ..."
 msgstr "Login or full name..."
 
-#: app/templates/admin/admin_users_list.html:51
-#: app/templates/admin/admin_users_list.html:61
-#: app/templates/admin/admin_users_list.html:70
+#: app/templates/admin/admin_users_list.html:37
+#: app/templates/admin/admin_users_list.html:47
+#: app/templates/admin/admin_users_list.html:56
 msgid "всі"
 msgstr "all"
 
-#: app/templates/admin/admin_users_list.html:59
+#: app/templates/admin/admin_users_list.html:45
 msgid "Модуль"
 msgstr "Module"
 
-#: app/templates/admin/admin_users_list.html:68
+#: app/templates/admin/admin_users_list.html:54
 msgid "Роль"
 msgstr "Role"
 
-#: app/templates/admin/admin_users_list.html:79
+#: app/templates/admin/admin_users_list.html:65
 msgid "Скинути"
 msgstr "Reset"
 
-#: app/templates/admin/admin_users_list.html:84
+#: app/templates/admin/admin_users_list.html:70
 msgid "Показано:"
 msgstr "Shown:"
 
-#: app/templates/admin/admin_users_list.html:91
-msgid "Позначки біля установи показують, що саме відкрито:"
-msgstr "The marks next to an institution show what is open there:"
+#: app/templates/admin/admin_users_list.html:77
+msgid "Колір установи показує, що саме відкрито:"
+msgstr "An institution's colour shows what is open there:"
 
-#: app/templates/admin/admin_users_list.html:92
-#: app/templates/admin/admin_users_list.html:94
-#: app/templates/admin/admin_users_list.html:133
-msgid "ФП"
-msgstr "CT"
+#: app/templates/admin/admin_users_list.html:78
+msgid "обидва модулі"
+msgstr "both modules"
 
-#: app/templates/admin/admin_users_list.html:92
-msgid "фотопастки"
-msgstr "camera traps"
+#: app/templates/admin/admin_users_list.html:81
+msgid "установа"
+msgstr "institution"
 
-#: app/templates/admin/admin_users_list.html:93
-msgid "звукозаписи"
-msgstr "sound recordings"
+#: app/templates/admin/admin_users_list.html:82
+msgid ""
+"означає ще й право завантажувати дані; стрілка з назвою модуля — експорт "
+"лише в ньому."
+msgstr ""
+"also means the right to download the data; an arrow labelled with a module "
+"means export in that module only."
 
-#: app/templates/admin/admin_users_list.html:95
-msgid "означає ще й право завантажувати дані."
-msgstr "also means the right to download the data."
-
-#: app/templates/admin/admin_users_list.html:102
-#: app/templates/admin/admin_users_list.html:124
+#: app/templates/admin/admin_users_list.html:89
+#: app/templates/admin/admin_users_list.html:111
 msgid "Прізвище та ім'я"
 msgstr "Full name"
 
-#: app/templates/admin/admin_users_list.html:132
-msgid "Фотопастки: доступ"
-msgstr "Camera traps: access"
+#: app/templates/admin/admin_users_list.html:120
+msgid "ФП"
+msgstr "CT"
 
-#: app/templates/admin/admin_users_list.html:132
-#: app/templates/admin/admin_users_list.html:138
+#: app/templates/admin/admin_users_list.html:124
 msgid "експорт"
 msgstr "export"
 
-#: app/templates/admin/admin_users_list.html:138
-msgid "ПАМ: доступ"
-msgstr "PAM: access"
-
-#: app/templates/admin/admin_users_list.html:160
+#: app/templates/admin/admin_users_list.html:145
 msgid "Ви впевнені, що хочете видалити користувача:"
 msgstr "Are you sure you want to delete the user:"
 
-#: app/templates/admin/admin_users_list.html:167
+#: app/templates/admin/admin_users_list.html:152
 msgid "Ви не можете видалити себе"
 msgstr "You cannot delete yourself"
 
-#: app/templates/admin/admin_users_list.html:176
+#: app/templates/admin/admin_users_list.html:161
 msgid "Користувачів не знайдено."
 msgstr "Users not found."
 
-#: app/templates/admin/admin_users_list.html:183
+#: app/templates/admin/admin_users_list.html:168
 msgid "Жодного користувача не відповідає фільтру."
 msgstr "No users match the filter."
 
@@ -2010,4 +2016,10 @@ msgstr ""
 #~ "неможливий, а установа без жодної "
 #~ "галочки просто зникає зі списку прав."
 #~ msgstr ""
+
+#~ msgid "Фотопастки: доступ"
+#~ msgstr "Camera traps: access"
+
+#~ msgid "ПАМ: доступ"
+#~ msgstr "PAM: access"
 

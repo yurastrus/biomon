@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 
+{% set module_titles = {
+    'both': _('фотопастки і звукозаписи'),
+    'ct': _('лише фотопастки'),
+    'pam': _('лише звукозаписи')
+} %}
+
 {% block content %}
 <div class="container" style="margin-top: 20px; margin-bottom: 50px;">
 
@@ -16,26 +22,6 @@
         </a>
     </div>
 
-    {# Collect unique institutions and roles for the filter dropdowns #}
-    {% set seen_inst_ids = namespace(v=[]) %}
-    {% set filter_institutions = namespace(v=[]) %}
-    {% set seen_role_names = namespace(v=[]) %}
-    {% set filter_roles = namespace(v=[]) %}
-    {% for u in users %}
-        {% for inst in u.institutions %}
-            {% if inst.id not in seen_inst_ids.v %}
-                {% set seen_inst_ids.v = seen_inst_ids.v + [inst.id] %}
-                {% set filter_institutions.v = filter_institutions.v + [inst] %}
-            {% endif %}
-        {% endfor %}
-        {% for role in u.roles %}
-            {% if role.name not in seen_role_names.v %}
-                {% set seen_role_names.v = seen_role_names.v + [role.name] %}
-                {% set filter_roles.v = filter_roles.v + [role] %}
-            {% endif %}
-        {% endfor %}
-    {% endfor %}
-
     <div class="dashboard-section" style="padding: 16px 20px; margin-bottom: 20px;">
         <div class="admin-filter-bar">
 
@@ -49,8 +35,8 @@
                 <label class="admin-filter-label">{{ _('Установа') }}</label>
                 <select id="filter-institution" class="admin-filter-input">
                     <option value="">— {{ _('всі') }} —</option>
-                    {% for inst in filter_institutions.v | sort(attribute='name_uk') %}
-                        <option value="{{ inst.id }}">{{ inst.name_uk }}</option>
+                    {% for inst in filter_institutions %}
+                        <option value="{{ inst.id }}">{{ inst_label(inst) }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -68,7 +54,7 @@
                 <label class="admin-filter-label">{{ _('Роль') }}</label>
                 <select id="filter-role" class="admin-filter-input">
                     <option value="">— {{ _('всі') }} —</option>
-                    {% for role in filter_roles.v | sort(attribute='name') %}
+                    {% for role in filter_roles %}
                         <option value="{{ role.name }}">{{ role.name }}</option>
                     {% endfor %}
                 </select>
@@ -88,11 +74,12 @@
     </div>
 
     <p class="inst-legend">
-        {{ _('Позначки біля установи показують, що саме відкрито:') }}
-        <span class="mod-chip mod-chip-ct">{{ _('ФП') }}</span> {{ _('фотопастки') }},
-        <span class="mod-chip mod-chip-pam">{{ _('ПАМ') }}</span> {{ _('звукозаписи') }},
-        <span class="mod-chip mod-chip-ct">{{ _('ФП') }}<span class="mod-exp">↓</span></span>
-        {{ _('означає ще й право завантажувати дані.') }}
+        {{ _('Колір установи показує, що саме відкрито:') }}
+        <span class="inst-badge inst-badge-both">{{ _('обидва модулі') }}</span>
+        <span class="inst-badge inst-badge-ct">{{ _('лише фотопастки') }}</span>
+        <span class="inst-badge inst-badge-pam">{{ _('лише звукозаписи') }}</span>
+        <span class="inst-badge inst-badge-both">{{ _('установа') }}<span class="inst-exp">↓</span></span>
+        {{ _('означає ще й право завантажувати дані; стрілка з назвою модуля — експорт лише в ньому.') }}
     </p>
 
     <table class="admin-table">
@@ -109,7 +96,7 @@
             {% for user in users %}
             {# Access is per module, so the row carries one institution list per
                module; the module-blind list stays for the plain institution filter. #}
-            {% set links = user.institution_links | sort(attribute='institution.name_uk') %}
+            {% set links = grants[user.id] %}
             {% set ct_ids = links | selectattr('can_view_ct') | map(attribute='institution_id') | list %}
             {% set pam_ids = links | selectattr('can_view_pam') | map(attribute='institution_id') | list %}
             <tr data-search="{{ user.username }} {{ user.full_name }}"
@@ -124,21 +111,19 @@
                 <td data-label="{{ _('Прізвище та ім\'я') }}">{{ user.full_name }}</td>
                 <td data-label="{{ _('Установи') }}">
                     {% for link in links %}
-                        {% set inst = link.institution %}
-                        <span class="inst-grant" title="{{ inst.name_uk }}">
-                            <span class="badge badge-success">{{ inst.name_uk }}</span>
-                            {% if link.can_view_ct %}
-                            <span class="mod-chip mod-chip-ct"
-                                  title="{{ _('Фотопастки: доступ') }}{% if link.can_export_ct %} + {{ _('експорт') }}{% endif %}">
-                                {{ _('ФП') }}{% if link.can_export_ct %}<span class="mod-exp">↓</span>{% endif %}
-                            </span>
-                            {% endif %}
-                            {% if link.can_view_pam %}
-                            <span class="mod-chip mod-chip-pam"
-                                  title="{{ _('ПАМ: доступ') }}{% if link.can_export_pam %} + {{ _('експорт') }}{% endif %}">
-                                {{ _('ПАМ') }}{% if link.can_export_pam %}<span class="mod-exp">↓</span>{% endif %}
-                            </span>
-                            {% endif %}
+                        {% set both = link.can_view_ct and link.can_view_pam %}
+                        {% set kind = 'both' if both else ('ct' if link.can_view_ct else 'pam') %}
+                        {# The colour carries the module set, the arrow carries
+                           export. When only one of two open modules exports, the
+                           arrow names it, so the badge never overpromises. #}
+                        {% set exports = [] %}
+                        {% if link.can_export_ct %}{% set exports = exports + [_('ФП')] %}{% endif %}
+                        {% if link.can_export_pam %}{% set exports = exports + [_('ПАМ')] %}{% endif %}
+                        {% set full_export = (exports | length) == (2 if both else 1) %}
+                        <span class="inst-badge inst-badge-{{ kind }}"
+                              title="{{ inst_label(link.institution) }} — {{ module_titles[kind] }}{% if exports %}; {{ _('експорт') }}: {{ exports | join(', ') }}{% endif %}">
+                            {{ inst_label(link.institution) }}
+                            {% if exports %}<span class="inst-exp">↓{% if not full_export %}{{ exports | join('') }}{% endif %}</span>{% endif %}
                         </span>
                     {% else %}
                         <span style="color: gray;">---</span>

@@ -1786,7 +1786,23 @@ both chips together, the per-module data attributes, the placeholder for a user
 with no institutions, and the legend plus filter being present. Full suite: 1746
 passed, 36 skipped.
 
-Not done, deliberately: a user with 29 parks now renders 29 lines in that cell
-(the chips widen each item enough to stop two fitting per line). Collapsing long
-lists behind a `<details>` would fix it but changes how the page reads for
-everyone, so it is the owner's call, not a side effect of this change.
+### Reworked the same day, on the owner's suggestion
+Two chips per park doubled the cell height for people with many parks. The colour
+of the badge itself now carries the module set, which needs no extra elements:
+**green** both modules, **blue** camera traps only, **orange** PAM only. Export
+stays an arrow inside the badge, and when only one of two open modules exports
+the arrow is labelled with that module, so the badge never overpromises. A user
+with 29 parks went from 29 lines to 15 (two badges per line, 345 px cell).
+
+Institution names in the badges and in the filter dropdown now follow the page
+language, and so does their order: sorting by the Ukrainian name while showing
+the English one reads as random. Jinja cannot sort by a method call, so
+`user_list` prepares the per-user grant lists, the filter lists and an
+`inst_label()` callable; the template's `namespace()` collector loop went away
+with it. An institution with no English name falls back to Ukrainian.
+
+Tests: `tests/test_admin_users_list_badges.py` grew to 15 — one colour per
+module set, one badge per park, the bare and the labelled arrow, no arrow
+without export, both languages for badges and for the filter, the fallback, the
+display-order rule, the placeholder, the per-module data attributes and the
+legend. Full suite: 1754 passed, 36 skipped.
