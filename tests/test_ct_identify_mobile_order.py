@@ -22,10 +22,10 @@ import pytest
 #: are not part of it.
 EXPECTED_ORDER = [
     'photo-viewer',              # фото
+    'action-buttons-container',  # надіслати / пропустити — одразу під фото
     'quantity-panel',            # кількість особин + у вибране
     'species-selection-panel',   # списки видів
     'identification-form-main',  # теги поведінки + коментар (одна карточка)
-    'action-buttons-container',  # надіслати / пропустити
 ]
 
 
@@ -128,3 +128,68 @@ def test_blocks_exist_in_the_template_under_these_class_names(app):
     for sel in EXPECTED_ORDER + ['viewer-and-form', 'right-column']:
         assert f'"{sel}"' in html or f'{sel} ' in html or f' {sel}"' in html, \
             f'класу .{sel} немає в шаблоні'
+
+
+# ── Filter bar on a phone ────────────────────────────────────────────────────
+# The three labelled selects wrapped into a ragged block, each label landing in
+# a different place relative to its field. The labels go away below 992px and
+# the placeholder option carries the meaning instead.
+
+def test_external_filter_labels_are_hidden_on_mobile(media_block):
+    assert re.search(
+        r'\.scope-filter-bar\s+\.scope-filter-label\s*\{[^}]*display:\s*none',
+        media_block), 'підписи фільтрів знову показуються на телефоні'
+
+
+def test_filter_selects_take_a_full_row_on_mobile(media_block):
+    """Uniform width is the point: mixed widths are what made the bar ragged."""
+    m = re.search(r'\.scope-filter-bar\s+\.scope-filter-select\s*\{([^}]*)\}',
+                  media_block)
+    assert m, 'нема мобільного правила для .scope-filter-select'
+    assert 'flex: 1 1 100%' in m.group(1)
+    assert 'max-width: none' in m.group(1)
+
+
+def test_action_buttons_are_a_row_not_a_stack_on_mobile(media_block):
+    """Under the photo they are on the way to the species list, so three
+    stacked full-width bars would push the lists off the screen."""
+    m = re.search(r'\.main-buttons\s*\{([^}]*)\}', media_block)
+    assert m and 'flex-direction: row' in m.group(1)
+
+
+def _identify_html(app):
+    return pathlib.Path(app.root_path, 'camera_traps', 'templates',
+                        'identification.html').read_text(encoding='utf-8')
+
+
+def test_both_placeholder_texts_are_rendered_on_the_selects(app):
+    """The swap is stateless — it reads both texts off the element — because
+    refreshAiSpeciesList() rebuilds the AI options from scratch."""
+    html = _identify_html(app)
+    for attr in ('data-mobile-placeholder=', 'data-desktop-placeholder='):
+        assert html.count(attr) == 2, f'{attr} не на обох селектах'
+    assert 'Всі доступні установи' in html
+    assert 'Будь-який AI вид' in html
+
+
+def test_placeholder_swap_reacts_to_the_same_breakpoint_as_the_css(app):
+    html = _identify_html(app)
+    assert "matchMedia('(max-width: 992px)')" in html
+    assert 'applyFilterPlaceholders' in html
+
+
+def test_swap_is_reapplied_after_the_ai_list_is_rebuilt(app):
+    """A scope change recreates the AI options with the desktop wording; without
+    this call the mobile placeholder silently reverts."""
+    html = _identify_html(app)
+    rebuild = html[html.index('function refreshAiSpeciesList'):]
+    rebuild = rebuild[:rebuild.index("$('#scope-select').on('change'")]
+    assert 'applyFilterPlaceholders();' in rebuild
+
+
+def test_sort_select_has_no_mobile_placeholder(app):
+    """Its options name the field; a placeholder there would be noise."""
+    html = _identify_html(app)
+    sort_tag = html[html.index('<select id="sort-select"'):]
+    sort_tag = sort_tag[:sort_tag.index('>')]
+    assert 'data-mobile-placeholder' not in sort_tag

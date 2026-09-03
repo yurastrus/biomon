@@ -1842,3 +1842,41 @@ redirect, 200 for a plain verifier / an institution-less viewer / an admin, the
 captured `restrict_inst_ids` per user kind, the filter count on the grouped query
 with and without the pin, and the two cards on the hub (institution stats hidden
 from anonymous, contributors visible, the two adjacent).
+
+## 2026-09-03 (later still) — /identify on a phone: filter bar and action buttons
+
+Two leftovers from yesterday's reading-order fix, both reported from a phone
+screenshot.
+
+**Ragged filter bar.** Three labelled selects of different widths wrapped
+however they fitted: "Регіон / Установа:" sat above its field, "🤖 AI вид:"
+beside the previous field, "Сортування:" above again. The labels were what made
+the rows ragged, and the scope label bought little — the field said
+"Всі доступні", which on its own says nothing. Below 992px the external labels
+are hidden and each select takes a full row, so the three read as one column.
+The meaning moves into the placeholder option: "Всі доступні установи",
+"Будь-який AI вид". Sorting gets no placeholder text, its options name it.
+
+Both wordings are rendered on the element as `data-mobile-placeholder` /
+`data-desktop-placeholder`, and a `matchMedia('(max-width: 992px)')` swap writes
+the right one into the empty-value option. Stateless on purpose: the AI select
+is rebuilt from scratch by `refreshAiSpeciesList()` on every scope change, so
+the swap has to be re-runnable, and it is called again at the end of that
+rebuild. Desktop keeps the labels, as asked.
+
+**Action buttons.** They were last in the stacked order, below tags and comment,
+so submitting meant scrolling to the bottom of the page. They now come second,
+directly under the photo and above the count / favourite panel. Because they are
+now on the way to the species list, the mobile `flex-direction: column` on
+`.main-buttons` was wrong — three full-width bars would push the lists off the
+screen. One row instead: Надіслати and Пропустити share the width, 🚩 keeps its
+icon width.
+
+Not verified in a browser: /identify needs a login and the prod DB tunnel. The
+checks are static — which `order` value each block gets, which mobile rules
+exist, which attributes the template renders.
+
+Tests: `tests/test_ct_identify_mobile_order.py` grew from 9 to 16 — the expected
+order was updated for the buttons, plus label hiding, full-row selects, the
+button row, both placeholder attributes, the breakpoint matching the CSS, the
+re-apply after the AI rebuild, and the sort select having no placeholder.
