@@ -246,3 +246,19 @@ def test_the_page_explains_the_colours_and_offers_the_module_filter(
         assert f'inst-badge-{kind}' in body, kind
     assert 'id="filter-module"' in body
     assert 'value="pam"' in body
+
+
+def test_the_legend_keeps_the_export_example_on_its_own_row(
+        app, db_session, make_user, parks, admin_client):
+    """On one line the arrow sample reads as a fourth colour, so the colours and
+    the export rule are two rows."""
+    body = admin_client.get('/uk/admin/users').get_data(as_text=True)
+    # The rows hold spans only, so a non-greedy match ends at the row's own tag.
+    rows = re.findall(r'<div class="inst-legend-row">(.*?)</div>', body, re.S)
+    assert len(rows) == 2, 'colours in one row, the export example in another'
+
+    colours_row, export_row = rows
+    assert colours_row.count('inst-badge-') == 3, 'three colour samples'
+    assert 'inst-exp' not in colours_row, 'the arrow belongs to the second row'
+    assert 'inst-exp' in export_row
+    assert export_row.count('inst-badge-') == 1

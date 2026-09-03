@@ -73,14 +73,21 @@
         </div>
     </div>
 
-    <p class="inst-legend">
-        {{ _('Колір установи показує, що саме відкрито:') }}
-        <span class="inst-badge inst-badge-both">{{ _('обидва модулі') }}</span>
-        <span class="inst-badge inst-badge-ct">{{ _('лише фотопастки') }}</span>
-        <span class="inst-badge inst-badge-pam">{{ _('лише звукозаписи') }}</span>
-        <span class="inst-badge inst-badge-both">{{ _('установа') }}<span class="inst-exp">↓</span></span>
-        {{ _('означає ще й право завантажувати дані; стрілка з назвою модуля — експорт лише в ньому.') }}
-    </p>
+    {# Two rows on purpose: the colour samples answer "which modules", the arrow
+       row answers "may they download". On one line the arrow badge reads as a
+       fourth colour. #}
+    <div class="inst-legend">
+        <div class="inst-legend-row">
+            {{ _('Колір установи показує, що саме відкрито:') }}
+            <span class="inst-badge inst-badge-both">{{ _('обидва модулі') }}</span>
+            <span class="inst-badge inst-badge-ct">{{ _('лише фотопастки') }}</span>
+            <span class="inst-badge inst-badge-pam">{{ _('лише звукозаписи') }}</span>
+        </div>
+        <div class="inst-legend-row">
+            <span class="inst-badge inst-badge-both">{{ _('установа') }}<span class="inst-exp">↓</span></span>
+            {{ _('означає ще й право завантажувати дані. Стрілка з назвою модуля означає експорт лише в тому модулі.') }}
+        </div>
+    </div>
 
     <table class="admin-table">
         <thead>

@@ -1806,3 +1806,10 @@ module set, one badge per park, the bare and the labelled arrow, no arrow
 without export, both languages for badges and for the filter, the fallback, the
 display-order rule, the placeholder, the per-module data attributes and the
 legend. Full suite: 1754 passed, 36 skipped.
+
+### Legend split into two rows (same day, owner's observation)
+On one line the export sample (`установа ↓`) read as a fourth colour in the
+list. The legend is now two rows: the colour samples answer "which modules", the
+arrow row answers "may they download". Pinned by a test that counts the rows and
+checks the arrow is not in the colour row. The sentence lost its em dash while it
+was being rewritten.

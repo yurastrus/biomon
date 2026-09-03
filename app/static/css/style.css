@@ -716,6 +716,12 @@ button.button-danger:disabled { opacity: 0.7; cursor: not-allowed; }
     font-size: 12px;
     color: #777;
     margin: 0 0 10px;
+}
+
+/* Each row is its own line: the colour samples and the export example are two
+   different questions and must not merge into one sentence. */
+.inst-legend-row {
+    display: block;
     line-height: 2;
 }
 
