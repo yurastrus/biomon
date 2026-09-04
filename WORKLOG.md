@@ -1880,3 +1880,62 @@ Tests: `tests/test_ct_identify_mobile_order.py` grew from 9 to 16 — the expect
 order was updated for the buttons, plus label hiding, full-row selects, the
 button row, both placeholder attributes, the breakpoint matching the CSS, the
 re-apply after the AI rebuild, and the sort select having no placeholder.
+
+## 2026-09-04 — PAM sample-upload: seasonal window and a confidence band
+
+Step 3 of `/<lang>/pam/verification/sample-upload` ("Параметри вибірки та
+нарізки") gained three filters. All in the `shared-pam` submodule
+(`2c7c307`, README fix `8627047`).
+
+**Max. confidence.** Completes the pair with the existing minimum, so a run can
+target a band (0.3-0.6) rather than everything above a floor. A value of 1, or a
+blank field, is sent as `null` and adds no clause at all.
+
+**Month from / month to.** A date range was the first idea and was rejected mid-
+task: the operator's actual need is phenological, "every February to April on
+record", which no contiguous span can express. So the window is a month pair
+that is deliberately year-agnostic, and the year is a separate filter. A `from`
+month later than the `to` month (November, February) is not an error but a
+season crossing New Year, and becomes `OR` in SQL rather than `BETWEEN`. A full
+January-December window is dropped before it reaches SQL, since it filters
+nothing.
+
+**Year from / year to.** Inclusive, defaulting to the oldest recording in the
+database through the current year. Written as timestamp comparisons
+(`>= make_date(year_start,1,1)`, `< make_date(year_end,1,1) + 1 year`) rather
+than `EXTRACT(YEAR ...)`, so the `datetime_start` index still applies. That
+matters because it bounds the scan the month filter's unavoidable
+`EXTRACT(MONTH ...)` runs over.
+
+**Caching the floor.** `get_earliest_recording_year()` caches for 24 h in
+process: a `MIN()` over every recording is not worth paying per page render, and
+the floor only moves when someone imports older material. An empty table, a
+nonsense timestamp (floor 1990) or a DB error all degrade to the current year
+rather than a broken page.
+
+`build_sampling_query()` takes the filters as *shape* switches
+(`with_conf_max`, `month_mode`, `with_year_range`) rather than values — values
+stay bound params, and a query carries no clause the caller did not ask for. The
+`month_mode` decision (`range` vs `wrap`) is made in `run_stratified_sample()`
+from the values it holds.
+
+**Validation.** Half a range (one month bound, one year bound) answers 400
+rather than being guessed at, an inverted year range or confidence band answers
+400, and months outside 1-12 answer 400. An inverted *month* pair is explicitly
+legal. The client checks the two orderings before the round trip.
+
+**i18n gotcha worth remembering.** `pybabel update` fuzzy-matched the new month
+names against the weather columns: "Квітень" came back as "Wind", "Листопад" as
+"Precip.", "Макс. конфіденс" as "Min. confidence". Step 4 of the documented
+cycle compiles with `-f`, so those would have shipped. All 15 fuzzy entries were
+corrected by hand and the flags cleared; the submodule README now says to read
+every guess before clearing it, and `extract` no longer carries the `-D pam`
+that made step 1 of those instructions fail.
+
+Tests: `tests/test_pam_sample_window_filters.py`, 42 new cases (SQL shape per
+filter and combined, value-to-shape decisions, the year cache including
+staleness and failure paths, the endpoint's validation matrix, and the English
+page rendering "April" / "November" rather than the fuzzy guesses). Full suite
+1816 passed, 36 skipped.
+
+Not deployed, as asked.
