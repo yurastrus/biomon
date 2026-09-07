@@ -1939,3 +1939,45 @@ page rendering "April" / "November" rather than the fuzzy guesses). Full suite
 1816 passed, 36 skipped.
 
 Not deployed, as asked.
+
+## 2026-09-07 — SEO follow-up: the 17.08 crawl control worked; stage 2 stays off
+
+Scheduled three-week re-check of the Search Console coverage export
+(`biomon.app-Coverage-2026-09-07.xlsx`) against the fixes deployed 17.08
+(`c2de6dd`). Analysis only — **no code changed**. Full write-up:
+`C:/Temp/seo-coverage-check-2026-09-07.md`.
+
+### Result
+"Not indexed" went 43 → 55, but the whole increase sits in reasons we created
+on purpose: excluded-by-noindex 30 → 38 (the new `X-Robots-Tag`) and
+blocked-by-robots 0 → 3 (the new `Disallow` rules). The two Google-side
+crawl-bloat reasons — "crawled/discovered – currently not indexed", the pair
+that reached 55 847 on the sibling property — are flat at 1 and 3. The URL
+space is no longer growing.
+
+Indexed dropped 22 (18.08) → 19 (22.08) → 17 (29.08): the CT/PAM dashboards are
+leaving the index, which is exactly what the `noindex` header was for.
+
+Verified live today: `www.biomon.app/uk/` → 301; `robots.txt` carries all the
+17.08 rules with the stage-2 block still commented; `sitemap.xml` lists 12
+`<loc>` (6 endpoints × en/uk).
+
+### Decision: robots stage 2 still NOT enabled
+The gate was "enable once Search Console shows them dropping". They are
+dropping, but the drop is unfinished — 17 indexed against 12 sitemap URLs means
+5 dashboard URLs are still in the index, and a `Disallow` now would hide their
+`noindex` from Googlebot and freeze precisely those 5. Enable when indexed
+reaches ~12 (indexed == sitemap count); ~2–3 weeks at the current rate.
+
+### Not fixed, no code available for it
+"Google chose a different canonical" is still 5. The cause (www serving a
+second copy) is gone, Google has not re-processed the URLs. Clears on its own
+or via URL Inspection.
+
+### The actual ceiling (audit F7, still open for the owner)
+Impressions are unchanged at ~1–2/day. With 12 indexable URLs, half of them
+short hubs (`/about`, `/contacts`, `/register`), that is the correct number, not
+a defect. No further robots/meta/hreflang work moves it. The open question is
+which biomon pages are *content* rather than tooling and so belong in
+`PUBLIC_ENDPOINTS` — or, if the answer is "none, biomon is a tool", that the
+coverage numbers are already at their ceiling.
