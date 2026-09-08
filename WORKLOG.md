@@ -2034,13 +2034,28 @@ animal's row; what is excluded is a *series whose final answer is a service
 category* (nobody should be graded on agreeing a frame is empty) and any
 row keyed by such a category. `NULL` species ("Other") is always dropped.
 
-### Date filter
+### Date filters — two independent axes
 
-Defaults to the whole period of verification activity; the bounds come from a
-6-hour in-process cache (`_expertise_range_cache`), since they only move when new
-verifications arrive. The window narrows which votes are *evaluated* and never
-how a series was decided — otherwise the same series would resolve to different
-species under different filters.
+The first version filtered on verification time only, and it read as a broken
+control: `min`/`max` on the inputs made the browser refuse anything before
+20.08.2025. That bound is real but it is the start of *verification activity on
+the site*, while the photo record goes back to 2020 (and three series carry a
+1900 EXIF date). Filtering an expertise page on one axis while the whole rest of
+biomon — dashboard, trends, daily activity, heatmap, export — filters on capture
+time is a trap: "2024" would silently mean two different things on two pages.
+
+So the page now has both, independent, each defaulting to its own oldest entry
+through today:
+
+- **capture time** (`Observation.series_start_time`) selects which SERIES enter
+  the sample — in or out as a whole, so the decision keeps every vote the series
+  ever had. Answers "how reliable is the 2023 material I am about to analyse";
+- **verification time** (`Identification.created_at`) selects which VOTES are
+  graded. Answers "how was this person working last month".
+
+Neither ever changes how a series was decided. The bounds of both come from one
+cached query (`get_expertise_date_ranges`, 6-hour in-process cache) and are shown
+as hints under the fields; the inputs themselves are uncapped.
 
 ### Two modes
 

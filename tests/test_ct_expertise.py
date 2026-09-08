@@ -29,15 +29,16 @@ from app.camera_traps.routes import (
 )
 
 # Mirrors a row of fetch_expertise_votes().
-Vote = namedtuple('Vote', 'obs_id user_id species_id quantity voted_at')
+Vote = namedtuple('Vote', 'obs_id user_id species_id quantity voted_at observed_at')
 
-DAY = datetime(2026, 3, 1, 12, 0)
+DAY = datetime(2026, 3, 1, 12, 0)    # when the identification was made
+SHOT = datetime(2026, 2, 1, 3, 0)    # when the series was photographed
 DEER, ROE, FOX = 10, 11, 12
 EMPTY = -1  # service category ("empty frame")
 
 
-def v(obs, user, species, quantity=1, at=DAY):
-    return Vote(obs, user, species, quantity, at)
+def v(obs, user, species, quantity=1, at=DAY, shot=SHOT):
+    return Vote(obs, user, species, quantity, at, shot)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -236,16 +237,16 @@ class TestDateWindow(unittest.TestCase):
         back aware; the window bounds are built from plain dates. Comparing the
         two raises TypeError, which the route swallows into an empty page."""
         from datetime import timezone
-        rows = [Vote(1, 100, ROE, 1, datetime(2026, 3, 1, 12, tzinfo=timezone.utc)),
-                Vote(1, 200, ROE, 1, datetime(2026, 3, 1, 12, tzinfo=timezone.utc))]
+        aware = datetime(2026, 3, 1, 12, tzinfo=timezone.utc)
+        rows = [Vote(1, 100, ROE, 1, aware, SHOT), Vote(1, 200, ROE, 1, aware, SHOT)]
         stats, _ = compute_expertise_stats(
             rows, start_dt=datetime(2026, 1, 1), end_dt=datetime(2026, 12, 31))
         self.assertEqual(stats[100]['n'], 1)
 
     def test_timezone_aware_votes_respect_the_window(self):
         from datetime import timezone
-        rows = [Vote(1, 100, ROE, 1, datetime(2025, 3, 1, 12, tzinfo=timezone.utc)),
-                Vote(1, 200, ROE, 1, datetime(2026, 3, 1, 12, tzinfo=timezone.utc))]
+        rows = [Vote(1, 100, ROE, 1, datetime(2025, 3, 1, 12, tzinfo=timezone.utc), SHOT),
+                Vote(1, 200, ROE, 1, datetime(2026, 3, 1, 12, tzinfo=timezone.utc), SHOT)]
         stats, _ = compute_expertise_stats(
             rows, start_dt=datetime(2026, 1, 1), end_dt=datetime(2026, 12, 31))
         self.assertEqual(set(stats), {200})
@@ -555,17 +556,53 @@ class TestExpertiseModes(ExpertiseRouteBase):
 
 class TestExpertiseDateDefaults(ExpertiseRouteBase):
 
-    def test_defaults_span_the_whole_period(self):
+    RANGES = None  # filled in below, needs `date`
+
+    def _patched_ranges(self):
         from datetime import date
-        with patch('app.camera_traps.routes.get_expertise_date_range',
-                   return_value=(date(2021, 4, 5), date(2026, 8, 9))):
+        return patch('app.camera_traps.routes.get_expertise_date_ranges',
+                     return_value={'verified': (date(2021, 4, 5), date(2026, 8, 9)),
+                                   'observed': (date(2019, 1, 2), date(2026, 7, 21))})
+
+    def test_both_windows_span_the_whole_record_by_default(self):
+        """Each axis starts at its own oldest entry and runs to today — today
+        rather than the newest entry, so a hand-typed range never looks
+        truncated."""
+        from datetime import date
+        with self._patched_ranges():
             spy = MagicMock(return_value=({}, {'series': 0, 'undecidable': 0}))
             with patch('app.camera_traps.routes.compute_expertise_stats', spy):
                 resp = self._get(user_id=self.admin.id)
         self.assertEqual(resp.status_code, 200)
         kwargs = spy.call_args.kwargs
         self.assertEqual(kwargs['start_dt'].date(), date(2021, 4, 5))
-        self.assertEqual(kwargs['end_dt'].date(), date(2026, 8, 9))
+        self.assertEqual(kwargs['obs_start_dt'].date(), date(2019, 1, 2))
+        self.assertEqual(kwargs['end_dt'].date(), date.today())
+        self.assertEqual(kwargs['obs_end_dt'].date(), date.today())
+
+    def test_the_two_windows_are_independent(self):
+        from datetime import date
+        spy = MagicMock(return_value=({}, {'series': 0, 'undecidable': 0}))
+        with self._patched_ranges(),                 patch('app.camera_traps.routes.compute_expertise_stats', spy):
+            resp = self._get(
+                self.URL + '?obs_start_date=2023-01-01&obs_end_date=2023-12-31'
+                           '&start_date=2026-02-01&end_date=2026-02-28',
+                user_id=self.admin.id)
+        self.assertEqual(resp.status_code, 200)
+        kwargs = spy.call_args.kwargs
+        self.assertEqual(kwargs['obs_start_dt'].date(), date(2023, 1, 1))
+        self.assertEqual(kwargs['obs_end_dt'].date(), date(2023, 12, 31))
+        self.assertEqual(kwargs['start_dt'].date(), date(2026, 2, 1))
+        self.assertEqual(kwargs['end_dt'].date(), date(2026, 2, 28))
+
+    def test_narrowing_one_window_leaves_the_other_full(self):
+        from datetime import date
+        spy = MagicMock(return_value=({}, {'series': 0, 'undecidable': 0}))
+        with self._patched_ranges(),                 patch('app.camera_traps.routes.compute_expertise_stats', spy):
+            self._get(self.URL + '?obs_start_date=2024-05-01', user_id=self.admin.id)
+        kwargs = spy.call_args.kwargs
+        self.assertEqual(kwargs['obs_start_dt'].date(), date(2024, 5, 1))
+        self.assertEqual(kwargs['start_dt'].date(), date(2021, 4, 5))
 
     def test_explicit_dates_override_the_default(self):
         from datetime import date
@@ -577,6 +614,16 @@ class TestExpertiseDateDefaults(ExpertiseRouteBase):
         kwargs = spy.call_args.kwargs
         self.assertEqual(kwargs['start_dt'].date(), date(2026, 2, 1))
         self.assertEqual(kwargs['end_dt'].date(), date(2026, 2, 28))
+
+    def test_reversed_observation_range_is_swapped_not_emptied(self):
+        from datetime import date
+        spy = MagicMock(return_value=({}, {'series': 0, 'undecidable': 0}))
+        with patch('app.camera_traps.routes.compute_expertise_stats', spy):
+            self._get(self.URL + '?obs_start_date=2026-05-01&obs_end_date=2026-01-01',
+                      user_id=self.admin.id)
+        kwargs = spy.call_args.kwargs
+        self.assertEqual(kwargs['obs_start_dt'].date(), date(2026, 1, 1))
+        self.assertEqual(kwargs['obs_end_dt'].date(), date(2026, 5, 1))
 
     def test_reversed_range_is_swapped_not_emptied(self):
         from datetime import date
@@ -590,8 +637,9 @@ class TestExpertiseDateDefaults(ExpertiseRouteBase):
 
     def test_garbage_dates_fall_back_to_the_full_period(self):
         from datetime import date
-        with patch('app.camera_traps.routes.get_expertise_date_range',
-                   return_value=(date(2021, 4, 5), date(2026, 8, 9))):
+        with patch('app.camera_traps.routes.get_expertise_date_ranges',
+                   return_value={'verified': (date(2021, 4, 5), date(2026, 8, 9)),
+                                 'observed': (date(2019, 1, 2), date(2026, 7, 21))}):
             spy = MagicMock(return_value=({}, {'series': 0, 'undecidable': 0}))
             with patch('app.camera_traps.routes.compute_expertise_stats', spy):
                 resp = self._get(self.URL + '?start_date=yesterday', user_id=self.admin.id)
@@ -603,9 +651,9 @@ class TestExpertiseDateDefaults(ExpertiseRouteBase):
         from app.camera_traps import routes as ct_routes
         sess = _generic_session()
         sess.query.return_value.first.return_value = None
-        first = ct_routes.get_expertise_date_range(sess)
+        first = ct_routes.get_expertise_date_ranges(sess)
         calls = sess.query.call_count
-        second = ct_routes.get_expertise_date_range(sess)
+        second = ct_routes.get_expertise_date_ranges(sess)
         self.assertEqual(first, second)
         self.assertEqual(sess.query.call_count, calls, 'кеш не спрацював')
 
@@ -630,3 +678,113 @@ class TestExpertiseHubCard(ExpertiseRouteBase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestExpertiseDateInputs(ExpertiseRouteBase):
+    """The date fields must not cap what can be typed.
+
+    `min`/`max` on the inputs made the browser refuse anything before the first
+    verification, which reads as a broken control rather than as "there is no
+    data there" — especially since the bound is the start of verification
+    activity, not the start of the photo record.
+    """
+
+    def _html(self):
+        from datetime import date
+        with patch('app.camera_traps.routes.get_expertise_date_ranges',
+                   return_value={'verified': (date(2025, 8, 20), date(2026, 9, 8)),
+                                 'observed': (date(2020, 3, 4), date(2026, 7, 21))}):
+            resp = self._get(user_id=self.admin.id)
+        self.assertEqual(resp.status_code, 200)
+        return resp.get_data(as_text=True)
+
+    def test_date_inputs_are_not_capped(self):
+        html = self._html()
+        for field in ('start-date', 'end-date'):
+            tag = html.split(f'id="{field}"', 1)[1].split('>', 1)[0]
+            self.assertNotIn('min=', tag)
+            self.assertNotIn('max=', tag)
+
+    def test_available_range_is_shown_as_a_hint(self):
+        html = self._html()
+        self.assertIn('2025-08-20', html)
+        self.assertIn('2026-09-08', html)
+
+    def test_dates_before_the_first_verification_are_accepted(self):
+        from datetime import date
+        spy = MagicMock(return_value=({}, {'series': 0, 'undecidable': 0}))
+        with patch('app.camera_traps.routes.compute_expertise_stats', spy):
+            resp = self._get(self.URL + '?start_date=2015-01-01&end_date=2026-09-08',
+                             user_id=self.admin.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(spy.call_args.kwargs['start_dt'].date(), date(2015, 1, 1))
+
+
+class TestObservationWindow(unittest.TestCase):
+    """The capture-time window selects SERIES, not individual votes.
+
+    A series is in the sample or out of it as a whole, and its decision is
+    always computed from every vote it ever received — otherwise the same
+    series would resolve to different species under different filters.
+    """
+
+    OLD_SHOT = datetime(2022, 6, 1, 5, 0)
+    NEW_SHOT = datetime(2026, 6, 1, 5, 0)
+
+    def _rows(self):
+        return [
+            v(1, 100, ROE, at=DAY, shot=self.OLD_SHOT),
+            v(1, 200, ROE, at=DAY, shot=self.OLD_SHOT),
+            v(2, 100, DEER, at=DAY, shot=self.NEW_SHOT),
+            v(2, 200, DEER, at=DAY, shot=self.NEW_SHOT),
+        ]
+
+    def test_window_selects_series_by_capture_time(self):
+        stats, totals = compute_expertise_stats(
+            self._rows(),
+            obs_start_dt=datetime(2026, 1, 1), obs_end_dt=datetime(2026, 12, 31))
+        self.assertEqual(totals['series'], 1)
+        self.assertEqual(stats[100]['n'], 1)
+
+    def test_full_window_keeps_every_series(self):
+        stats, totals = compute_expertise_stats(
+            self._rows(),
+            obs_start_dt=datetime(2020, 1, 1), obs_end_dt=datetime(2027, 1, 1))
+        self.assertEqual(totals['series'], 2)
+        self.assertEqual(stats[100]['n'], 2)
+
+    def test_decision_keeps_votes_made_outside_the_verification_window(self):
+        """A series shot in 2026 but decided by a 2022 vote must not change its
+        species just because the verification window excludes that vote."""
+        rows = [Vote(1, 100, ROE, 4, datetime(2022, 1, 1), self.NEW_SHOT),
+                Vote(1, 200, DEER, 1, datetime(2026, 3, 1), self.NEW_SHOT)]
+        stats, _ = compute_expertise_stats(
+            rows,
+            start_dt=datetime(2026, 1, 1), end_dt=datetime(2026, 12, 31),
+            obs_start_dt=datetime(2026, 1, 1), obs_end_dt=datetime(2026, 12, 31))
+        self.assertEqual(set(stats), {200})
+        self.assertEqual(stats[200]['hits'], 0)   # ROE won on quantity
+
+    def test_the_two_windows_compose(self):
+        rows = [
+            v(1, 100, ROE, at=datetime(2025, 9, 1), shot=self.OLD_SHOT),
+            v(1, 200, ROE, at=datetime(2025, 9, 1), shot=self.OLD_SHOT),
+            v(2, 100, ROE, at=datetime(2026, 9, 1), shot=self.NEW_SHOT),
+            v(2, 200, ROE, at=datetime(2026, 9, 1), shot=self.NEW_SHOT),
+        ]
+        # Old shots only, but verified in 2026 only -> nothing qualifies.
+        stats, totals = compute_expertise_stats(
+            rows,
+            start_dt=datetime(2026, 1, 1), end_dt=datetime(2026, 12, 31),
+            obs_start_dt=datetime(2022, 1, 1), obs_end_dt=datetime(2022, 12, 31))
+        self.assertEqual(totals['series'], 1)   # the series is in the sample
+        self.assertEqual(stats, {})             # but nobody voted in the window
+
+    def test_timezone_aware_capture_time_is_comparable(self):
+        from datetime import timezone
+        rows = [Vote(1, 100, ROE, 1, DAY, datetime(2026, 6, 1, tzinfo=timezone.utc)),
+                Vote(1, 200, ROE, 1, DAY, datetime(2026, 6, 1, tzinfo=timezone.utc))]
+        stats, _ = compute_expertise_stats(
+            rows,
+            obs_start_dt=datetime(2026, 1, 1), obs_end_dt=datetime(2026, 12, 31))
+        self.assertEqual(stats[100]['n'], 1)
