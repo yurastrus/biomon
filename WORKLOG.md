@@ -1981,3 +1981,107 @@ a defect. No further robots/meta/hreflang work moves it. The open question is
 which biomon pages are *content* rather than tooling and so belong in
 `PUBLIC_ENDPOINTS` — or, if the answer is "none, biomon is a tool", that the
 coverage numbers are already at their ceiling.
+
+---
+
+## 2026-09-08 — Verifier expertise page (`/camera-traps/expertise`)
+
+New admin-only page in the camera-trap module (code lives in the `shared-ct`
+submodule): how often a verifier's call matched the final decision of a series.
+
+### What it measures
+
+Only series with `status IN ('completed','archived')`. The final species comes
+from the canonical consensus rule already shared with analytics and export
+(`_observation_consensus_species`, the `ObservationConsensus` CTE): most distinct
+voters wins, ties broken by the largest reported quantity. No second rule was
+invented — a page disagreeing with the export about what a series "is" would be
+worse than no page.
+
+Votes are read per series, not per photo. Identifications are stored per photo,
+but both writers (`submit_identification`, `verification_import`) put one species
+on every photo of a series, and the identification queue never re-shows a series
+to someone who already voted, so `GROUP BY observation_id, user_id, species_id`
+yields exactly one row per person per series. Verified on production: 0 series
+where a user holds two different species.
+
+### Why leave-one-out is the primary figure
+
+Probed production before writing code (`scratchpad/expertise_probe.py`).
+`MIN_IDENTIFICATIONS` is 2, and the distribution of voters per finished series is
+1 → 848, **2 → 31884**, 3 → 1474, 4+ → 380; 32855 of 34586 series are unanimous.
+So in ~92% of cases the person being graded is half of the decision they are
+graded against, and plain agreement is inflated by construction (it read 98–100%
+for nearly everyone).
+
+LOO recomputes the decision without the evaluated person's vote. Series whose
+remainder has no winner (a tie, or nobody else voted) leave that person's LOO
+denominator rather than being guessed at. With two voters this reduces to "did
+the other person independently say the same", which is the honest question.
+Effect on real data: Шеверя 98.2 → 97.6, Дацко 94.0 → 94.0, and per species the
+signal finally separates (Козуля 97.5, Сойка 65.1).
+
+Only 25 finished series with 3+ voters have a top-count tie, so the
+quantity tiebreak is nearly never load-bearing.
+
+### Service categories — the bug the live probe caught
+
+First implementation dropped `species_id < 0` votes outright. That silently
+erased the commonest real disagreement ("one said roe, one said empty frame")
+and pushed everyone back up to ~99.8%. Corrected semantics: service-category
+votes still take part in deciding a series and still count as a miss on the
+animal's row; what is excluded is a *series whose final answer is a service
+category* (nobody should be graded on agreeing a frame is empty) and any
+row keyed by such a category. `NULL` species ("Other") is always dropped.
+
+### Date filter
+
+Defaults to the whole period of verification activity; the bounds come from a
+6-hour in-process cache (`_expertise_range_cache`), since they only move when new
+verifications arrive. The window narrows which votes are *evaluated* and never
+how a series was decided — otherwise the same series would resolve to different
+species under different filters.
+
+### Two modes
+
+`mode=users` (default) rows are verifiers, narrowed optionally by species;
+`mode=species` rows are species, narrowed optionally by one verifier. Both are
+marginals of one confusion matrix, produced in a single pass: recall keyed by the
+series' final species, precision keyed by the species the vote named.
+
+### Files
+
+- `app/camera_traps/routes.py` — `get_expertise_date_range`, `fetch_expertise_votes`,
+  `final_species`, `loo_species`, `wilson_interval`, `compute_expertise_stats`,
+  `build_expertise_rows`, route `expertise`;
+- `app/camera_traps/templates/expertise.html` — table, filters, mode switch,
+  metric glossary (collapsible block plus `title` tooltips on the headers);
+- `app/camera_traps/templates/overview.html` — hub card in the admin section;
+- `tests/test_ct_expertise.py` — 58 tests (helpers, LOO edge cases, date window,
+  service categories, both modes, Wilson, row building, access, hub card);
+- CT translation catalogs updated (`pybabel update` fuzzy-matched several new
+  strings to unrelated old ones — "Експертність верифікаторів" → "Choose a
+  verifier"; the fill script now overwrites unconditionally and clears fuzzy).
+
+Full suite: 1875 passed, 36 skipped.
+
+### Two defects the unit tests could not have caught
+
+Both surfaced only when the page was rendered against production data
+(`scratchpad/render_check.py` — a test client with an admin session, GET only).
+
+1. **timestamptz vs naive bounds.** `identifications.created_at` comes back
+   timezone-aware; the window bounds are built from plain dates. The comparison
+   raised TypeError, the route swallowed it, and every request produced an empty
+   table with a flash. Fixed by normalising the vote timestamp; two tests added.
+   The pre-code probe missed it because it bypassed the route.
+
+2. **Ordering by the share put noise on top.** Six series at 100% outranked
+   eleven thousand at 97.5%. Rows are now ordered by the LOWER bound of the LOO
+   interval; the share stays the headline column and header clicks still sort by
+   anything.
+
+### Open
+
+Not yet decided whether the 848 single-vote finished series should be excluded
+from the raw column as well (they carry no LOO value at all).
