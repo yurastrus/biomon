@@ -2244,3 +2244,39 @@ Nothing installed on prod yet — dry run only, awaiting the user's go-ahead and
 the rest of the download. The 2 726 photos with no original yet remain
 candidates for `audit_broken_ct_photos.py --delete` if their originals never
 turn up.
+
+### Installed on production, 2026-09-10
+
+The Nextcloud download had meanwhile reached 7 636 JPEGs, so the rerun matched
+**1 297 photos in 1 006 series** — still 0 ambiguous, 0 refused, every touched
+series fully covered. Five locations came back whole:
+
+| location | restored | still broken |
+|---|---|---|
+| Cheremoskyi NNP 1601 | 273 | 0 |
+| Cheremoskyi NNP 1604 | 218 | 0 |
+| Karpatskyi NNP 1820 | 210 | 0 |
+| Synevyr NNP 1907 | 514 | 0 |
+| Synevyr NNP 1916 | 82 | 0 |
+
+Coordinate prefixes in the `system_filename`s agree with the locations' lat/lon
+for all five, count for count. 136 MB shipped as a tarball, installed with
+`install_restored_thumbs.py --apply` (run from a throwaway copy under
+`scripts/` so prod's git checkout, still at 16a96c5, was not disturbed;
+removed afterwards). **1 297 installed, 0 failed.** Re-audit against a fresh
+disk listing: zero-byte thumbnails 3 409 → 2 114, broken rows 3 427 → 2 130,
+affected series 2 150 → 1 144. Free space unchanged at 11 GB.
+
+One thing worth knowing for later matching: the camera unit's own ID stamp is
+not authoritative. Synevyr 1916's pre-deployment test shot (indoors,
+25.10.2024) is stamped `1907` because the ranger had not yet reset the unit
+label; the same camera's field frames from February stamp `ID:1916`. The
+folder name and the EXIF timestamp are the reliable keys, which is what the
+matcher uses.
+
+### Still open
+2 130 photos in 1 144 series remain broken — Verkhovynskyi (6 locations),
+Vyzhnytskyi (2), Drevlianskyi 0403. Their originals had not downloaded yet.
+The 2 114 stale `empty`/1.0 AI predictions on the restored photos were NOT
+deleted: `--requeue-ai` was left off, so the restored series still carry the
+classifier's verdict on a 0-byte file until that is run.
