@@ -2544,3 +2544,152 @@ card. The frames themselves are already on the site, in the healthy batch
 `cca991a1`. A further pass costs nothing and will be run when the download
 completes, but the expected outcome is 0 matches again, and the correct fix
 stays deletion.
+
+## 2026-09-10 (later) — co-occurrence page: six requested refinements
+
+All six on the first review of the page above. Still local, still not committed.
+
+1. **Ecoregion filter.** Ecoregions are not in pam_db: they are
+   `institutions.ecoregion_uk` in the host database, the same column the
+   camera-traps scope picker reads. Rather than copy the CT combined
+   `institution:/ecoregion:` select, the page keeps two controls and treats
+   them as a **union**, which is what "as an institution, or a region" reads
+   as. `_cooc_ecoregions` builds the options (admin sees all, others only
+   their PAM institutions), `_cooc_institution_ids` expands the pick, and each
+   `<option>` carries `data-institutions` so the biotope/location cascade
+   narrows client-side exactly as the query will. Verified on the dev data:
+   Розточчя 85 → 64 locations, Карпати → 19 locations and zero detections for
+   *Glaucidium passerinum*.
+2. **Human verification made visible.** The window query now joins
+   `detection_verification_map` (keyed on the authoritative
+   `segments.detection_id`; no filename or datetime heuristics) plus
+   `segments.positive_verifications`, and `verification_level` grades each
+   (window, location): 2 for consensus or two positive votes, 1 for a single
+   positive vote, 0 for unlistened, -1 for people rejecting it. Map colours
+   follow the module palette (`#1b7a1b` / `#8bd68b` / `#2c7fb8` / `#b30000`),
+   so red now always means "a person said no" — a location suppressed by the
+   spacing rule became dashed **grey**, freeing red for that meaning. New KPI
+   tile and a sortable "Верифік." column; 205 of 1 694 windows carry human
+   evidence on the reference run.
+
+   The ranking change needed a correction on the first pass. Sorting purely
+   verified-first pushed the three-location peak window off a top-50 list full
+   of single-location verified windows, so the map opened on a one-location
+   window. Fixed: the slice is the **union** of the verification-ranked head
+   and the count-ranked head, presented verified-first, and `peak_window`
+   remains a property of the bound (max `n_counted`), not of the list order.
+
+   Counting itself is deliberately untouched: a rejected detection still
+   occupies its window and is only labelled. Dropping consensus-rejected
+   detections from the bound is a real improvement but a separate decision,
+   now first in the README's next steps.
+3. **Season window.** A (month, day) range that ignores the year, so the same
+   calendar stretch pools across every year: 1 April to 20 May over the whole
+   record isolates the breeding season. Compared as `month * 100 + day`, not
+   day-of-year, because day-of-year shifts by one after 29 February and would
+   silently move the window in leap years. A window that wraps the new year
+   (1 Dec to 15 Feb) is the union of two ranges, written out separately.
+   Measured: whole record 6 692 detections → 3 248 for 01.04–20.05, 90 for the
+   wrapping 01.12–15.02.
+4. **Window width is a number now**, default 60 s, clamped to 10 … 3600 s in
+   the API as well as the field. Below 10 s recorder clock error stops being
+   negligible; above an hour "simultaneous" has no biological meaning left.
+   The fixed list of widths is gone.
+5. **The explanation text was a narrow column** hugging the left edge of its
+   panel: the global `style.css` sets `main p { max-width: 700px }`. Fixed with
+   `max-width: 100%` on `.cooc-note p`, next to the same note that already
+   documents this trap for `.no-segment-message`.
+6. **Top-windows table sorts on every column** by header click, client-side
+   over the rows already returned, with the same ▲/▼ affordance as the
+   verifiers leaderboard. No request is repeated.
+
+Tests 51 in the file, full suite green. i18n cycle re-run: 20 new English
+strings, no fuzzy left on this page.
+
+## 2026-09-10 — Drevlianskyi 0403: full duplicate analysis before deleting anything
+
+Checked along independent axes so that agreement between them carries weight.
+Scripts and the full output: `dnr_0403_report.txt` in the session scratchpad.
+
+### The two uploads
+Location 0403 (`id=1569`, 51.16686 / 29.23800) received two batches:
+
+| batch | uploaded | rows | with a file | series | filenames |
+|---|---|---|---|---|---|
+| `cca991a1` | 2026-06-29 17:11 | 44 619 | 44 619 | 3 511 | zero-padded, `IMG_0001.JPG` |
+| `02847c73` | 2026-07-08 15:49 | 814 | 302 | 121 | unpadded, `IMG_6.JPG` |
+
+`02847c73` is the disk-full evening batch; 512 of its rows got no pixels.
+`process_single_photo` keys its duplicate check on
+(location, captured_at, original_filename), and a renamed file is not a
+duplicate by that key, so the second upload sailed through and built its own
+parallel set of series.
+
+### Coordinates, 5 decimals
+Both populations carry the same coordinate prefix in `system_filename`,
+`51_16686_29_23800`, matching the location's own lat/lon. One location row,
+one point, no near-duplicate location to confuse.
+
+### Timestamps
+Every `captured_at` in the data has microsecond 0, so second-level comparison
+is exact rather than approximate. The 512 broken frames fall on 198 distinct
+instants; the healthy population covers **all 198** with at least as many
+frames each, and **zero** instants exist only in the broken set.
+
+### The card decides it
+The park's export (10 473 frames read so far, 3 946 distinct instants) was
+compared against each batch separately, and that is what settles the question:
+
+- `cca991a1` matches the card **exactly** — 3 946 of 3 946 instants present,
+  0 instants where the batch has fewer frames than the card, 0 where it has
+  more.
+- every one of `02847c73`'s 318 instants is fully covered by `cca991a1`
+  (814 frames against 876 at the same instants).
+
+So the good batch alone already accounts for every frame on the card. The bad
+batch adds no capture event, no frame, no second that is not already on the
+site. The five "card ≠ healthy" instants from the earlier pass were an
+artifact of lumping both batches together as "healthy"; split by batch, the
+surplus is exactly the bad batch's own viewable rows, e.g. at
+2025-07-01 17:27:28 the card holds 3 frames, `cca991a1` holds
+IMG_0001/0002/0003 and `02847c73` holds IMG_3/IMG_6/IMG_9 for the same second.
+
+### Series structure
+- 81 broken series, and `broken + healthy rows == declared photo_count` for
+  every one of them (the earlier "declared != rows" line was comparing the
+  declared count against the broken rows alone).
+- **Series fed by both batches: 0.** The bad batch built 121 series of its own.
+  Deleting its photos therefore removes exactly those 121 series and touches
+  no series of the good upload.
+
+### The catch: deleting only the broken 512 is not enough
+The bad batch's 302 viewable rows are duplicates as well — all 126 of their
+instants are already covered by `cca991a1`. They sit in 46 series that
+double-count real capture events in any statistic that counts series, and
+being viewable they will never show up in the broken-photo diagnostic. The
+consistent action is to remove the whole batch at this location:
+
+```
+02847c73 at 0403: 814 pending rows (512 invisible + 302 duplicate-visible)
+                  + 8 already archived
+                  121 series
+                  808 identifications (506 + 302), all by user 29 on 2026-07-08
+                  506 AI predictions
+                  0 favourites
+```
+
+Of those 808 identifications, 451 were given on series with no visible frame
+at all (137 Козуля, 129 Пусто, 60 Олень благородний, 30 Лось, 30 Інший птах,
+27 Лисиця, 27 Куроподібні …) — labels that could not have been read off an
+image. The remaining 357 were given on series where some frame was viewable,
+so they mean something, but they describe capture events that the good batch
+also holds, where they can be redone against a full series.
+
+### Recommendation
+Delete, and delete the whole batch rather than only its invisible half.
+Nothing visual is lost: the same seconds, the same bursts, the same frame
+counts are present in `cca991a1`, verified against the park's own card.
+Keeping the 512 leaves 81 empty series in the identification queue; keeping
+the 302 leaves 46 duplicate series inflating series counts.
+
+Not executed — report only, as asked.
