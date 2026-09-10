@@ -2280,3 +2280,158 @@ Vyzhnytskyi (2), Drevlianskyi 0403. Their originals had not downloaded yet.
 The 2 114 stale `empty`/1.0 AI predictions on the restored photos were NOT
 deleted: `--requeue-ai` was left off, so the restored series still carry the
 classifier's verdict on a 0-byte file until that is run.
+
+## 2026-09-10 — PAM: simultaneous detections page (co-occurrence)
+
+### Request
+Port the desktop prototype `C:/Users/IuriiStrus/Desktop/Одночасні детекції` into
+the PAM module as another analytics page: everything the CLI took as a flag
+becomes a form control with a sensible default, the map becomes a web map, the
+rest follows the other PAM analytics pages. Admin-only for now (page and hub
+card), and nothing computes until a button is pressed.
+
+### What the analysis says
+If one species is detected at N sufficiently separated locations inside one
+short time window, at least N individuals were calling in that window. That is
+a LOWER BOUND on simultaneously calling individuals, not an abundance estimate,
+and it says nothing about silent individuals. Two parameters decide the answer:
+the minimum distance (pseudo-replication: one loud bird heard by two nearby
+recorders looks like two) and the score threshold (a false positive at two
+distant points in the same minute fabricates a "simultaneous pair").
+
+### What was built
+* `app/pam/cooccurrence.py` (submodule shared-pam) — the whole numeric core:
+  window SQL via `date_bin`, UTM projection, the three spacing methods, the
+  window-width sweep, pairwise minimum co-occurrence window. Flask-free apart
+  from taking an open SQLAlchemy connection, so it unit-tests without an app
+  context. `plots.py` from the prototype was not ported: Plotly and Leaflet
+  replace matplotlib.
+* `app/pam/templates/pam_cooccurrence.html` — filter panel, four KPI tiles,
+  histogram, a two-mode Leaflet map, sweep panels.
+* `routes.py` — `GET /<lang>/pam/cooccurrence` (login + admin) plus
+  `POST /api/pam/cooccurrence/run`, `POST .../sweep`, `GET .../export`.
+* Card in `pam_home.html` under `{% if is_admin %}`.
+* `tests/test_pam_cooccurrence.py` — 32 tests.
+
+### Decisions
+**Raw score, not a precision target.** The prototype's best feature is inverting
+the logistic precision fit stored in `evaluation` (`precision(c) =
+sigmoid(b0 + b1*c)`, so the score for a wanted precision is
+`(logit(p) - b0) / b1`), which makes thresholds comparable across species. On
+request this page ships with a plain raw-score slider instead, and the
+inversion, plus the prototype's width-against-precision curves, is left as the
+next step. Fewer moving parts in the first version.
+
+**Synchronous, no threading or Celery.** Measured on the dev database:
+`Glaucidium passerinum` over the whole record (6 692 detections above 0.8644,
+85 locations) takes about a second for the main pass and 1.1 s for a 60-width
+sweep. Limits enforced server-side instead of a job queue: 30 s
+`statement_timeout` (`SET LOCAL`, so the pooled connection goes back
+unchanged), `MAX_DB_PASSES` 12, `SWEEP_MAX_EVENTS` 20 000, `SWEEP_MAX_WIDTHS`
+120. The sweep limit is far below the prototype's 400 000 because its cost is
+(events × widths) in Python and nobody waits on a script.
+
+**Nothing computes on page load.** Opening the page runs only the species list,
+the period bounds, and the shared `/api/pam/get-filters-data` cascade. Same
+shape as the other PAM analytics pages.
+
+**`--location-like` dropped.** In the prototype an ILIKE pattern was the escape
+hatch for a region, because `pam_db` has no region attribute and
+`locations.state_province` holds a single value (`Lviv Oblast`). In a UI that
+would be a box where the user types SQL-ish text and cannot predict the result,
+so institution, biotope and location multi-selects replace it.
+
+**Half-distance circles kept on the map.** Each counted point carries a circle
+of half the minimum spacing, so the rule holds exactly when no two circles
+overlap. It is the one visual check that the method is being applied, and it
+survived the move from matplotlib to Leaflet.
+
+### Two bugs found while wiring it up
+1. `text()` cannot carry a `:param::type` cast — it reads the `::` as another
+   parameter and Postgres gets a literal `:biotope_ids`. Every cast is now
+   `CAST(:x AS type)`, and the two optional location predicates are spliced in
+   only when the filter is set, so no typed NULL is needed.
+2. The two POST endpoints go through `CSRFProtect`, so the page's `fetch` calls
+   needed `X-CSRFToken`. Without it every calculation returned a bare 400 whose
+   body was not even JSON. Found by driving the endpoints through the test
+   client with the token taken out of the rendered page, the way the browser
+   does.
+
+### Verification
+* Cross-check against the prototype on the same parameters (whole record,
+  1-minute windows, 1000 m, score ≥ 0.8644): 6 692 detections, peak window
+  `2025-05-08 20:17:00 UTC`, maximum 3 well-separated locations, distribution
+  1→1 671, 2→22, 3→1. Identical to the prototype's outputs.
+* Sweep: the bound first reaches 2 at a 10 s width and 3 at 40 s; 43
+  co-detecting pairs at least 1000 m apart within 600 s.
+* Endpoints driven end-to-end as a logged-in admin: page 200, `/run` 200,
+  `/sweep` 200, export a valid ZIP; bad species, non-whitelisted score column,
+  reversed period and an over-long sweep all return 400 with a readable
+  message.
+* Full suite: 1930 passed, 44 skipped. Note `TestNoInlineStyles` forbids
+  `<style>` blocks in PAM templates, so the page's CSS lives in
+  `pam_style.css` (with dark-theme overrides).
+* i18n: the full four-step cycle; 91 new English strings, no fuzzy left on this
+  page, uk untouched (msgid is already Ukrainian).
+
+### State and next steps
+Working locally, not committed and not deployed at the user's request. Next, in
+order of value: the threshold from the logistic precision fit (a precision
+target instead of a raw score) with the width-against-precision curves; effort
+normalisation (divide by the number of locations actually recording in each
+window, derivable from `recordings`); a real region attribute in `pam_db` so
+region is selectable without leaning on institution names.
+
+## 2026-09-10 — Cleanup gains a fourth category: series with no images
+
+The admin tool "Очистити невдалі завантаження та сироти" found nothing during
+the whole investigation, and that was correct behaviour rather than a bug: its
+three categories all describe rows with NO observation (stale batches,
+stranded photos, orphan files). The 2026-07 damage is the opposite shape — the
+row has a series, a batch, a timestamp, and no pixels. That is why it stayed
+invisible for two months.
+
+`cleanup.py` now reports **category D: broken photos** — a photo that belongs
+to a series and whose thumbnail is missing or 0 bytes. Archived photos are
+excluded (archiving deletes files on purpose, 176 954 of them), and photos
+with no observation stay in category B, so nothing is double-counted.
+
+### Reported, never deleted
+Execute does not touch category D, and the UI gives it no button. The reason
+is today's evidence: 1 297 of these rows were repairable from the parks'
+originals, and deleting a row also discards the human identifications attached
+to it. The report therefore states what would be lost — series count,
+identifications, AI predictions — and leaves the decision to a person. The
+repair is `scripts/restore_broken_ct_photos.py`; the deletion, when a location
+is given up on, is `scripts/audit_broken_ct_photos.py --delete`.
+
+### Cost
+The analyze already walked raw/ and thumbnails/ and already read every
+`system_filename`. Both were reworked to serve the two categories at once: one
+`os.scandir` pass now fills both the orphan test and a name→size map, and the
+`photos` pass is streamed with `yield_per(10000)` instead of `fetchall`, which
+matters because the table is ~800k rows and this runs inside a gunicorn
+worker. Measured on production: **5.4 s** for the whole analyze.
+
+### Verified on production
+Deployed (biomon 2cd7435, shared-ct f7d8028) and reloaded with `kill -HUP` on
+the gunicorn master (the unit runs as yura; `systemctl reload` needs a
+password). The in-process report agrees with the standalone audit exactly:
+
+```
+broken_photos_count            2130
+broken_photos_zero_byte        2114
+broken_photos_missing            16
+broken_series_count            1144
+broken_identifications_count   1075
+broken_predictions_count       2114
+```
+
+with the nine remaining locations listed and the five restored ones correctly
+absent. Tests: 27 in `test_camera_traps_cleanup.py`, 8 of them new for
+category D, run against a throwaway schema in ct_db (`CT_TEST_DATABASE_URI`);
+no schema left behind. i18n cycle run for the `camera_traps` domain — 11
+strings translated, `-f` compile, checked by loading the compiled .mo.
+
+Note for future deploys: prod had been one commit behind, so this pull also
+shipped c3b2fb6 (two date filters on the expertise page).
