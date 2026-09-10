@@ -998,3 +998,209 @@ def test_page_script_has_no_duplicate_declarations(
                        script, re.M)
     duplicates = {n for n in names if names.count(n) > 1}
     assert not duplicates, f'declared more than once in one scope: {duplicates}'
+
+
+# --------------------------------------------------------------------------
+# Targeted cutting: the detections of one window, not a sample
+# --------------------------------------------------------------------------
+
+def test_window_query_bins_on_the_reconstructed_detection_time():
+    """The window must be applied to `datetime_start + start_s`, the way the
+    co-occurrence page bins it. Filtering `datetime_start` alone would answer a
+    different question -- which recordings started in the window."""
+    from app.pam.pam_segment_sampling import build_window_query
+
+    sql = str(build_window_query('confidence'))
+    assert "r.datetime_start + (d.start_s * interval '1 second') >= CAST(:from_ts" in sql
+    assert "r.datetime_start + (d.start_s * interval '1 second') <  CAST(:to_ts" in sql
+    # The recording bound still exists, but only as a slack-widened prefilter.
+    assert 'CAST(:slack AS interval)' in sql
+
+
+def test_window_query_skips_detections_already_cut_for_this_model():
+    from app.pam.pam_segment_sampling import build_window_query
+
+    sql = str(build_window_query('confidence'))
+    assert 'sg.detection_id = d.detection_id' in sql
+    assert 'sg.model_id = :seg_model_id' in sql
+
+
+def test_window_query_does_not_stratify():
+    """Two detections over ten quantile bins is meaningless; this query returns
+    every match in time order instead."""
+    from app.pam.pam_segment_sampling import build_window_query
+
+    sql = str(build_window_query('confidence'))
+    assert 'ntile(' not in sql
+    assert 'random()' not in sql.lower()
+
+
+def test_window_query_rejects_a_column_name_that_is_not_a_column():
+    from app.pam.pam_segment_sampling import build_window_query
+
+    with pytest.raises(ValueError):
+        build_window_query('confidence; DROP TABLE detections')
+
+
+def test_window_query_accepts_the_perch_column():
+    from app.pam.pam_segment_sampling import build_window_query
+
+    assert 'd.conf_perch_v2' in str(build_window_query('conf_perch_v2'))
+
+
+def test_plan_window_segments_needs_a_window_and_a_location():
+    from app.pam.pam_segment_sampling import plan_window_segments
+
+    assert plan_window_segments('Sp', [], 1, 2) == []
+    assert plan_window_segments('Sp', [1], None, 2) == []
+    assert plan_window_segments('Sp', [1], 1, None) == []
+
+
+class _PlanConn:
+    """Minimal connection returning fixed mapping rows."""
+
+    def __init__(self, rows):
+        self.rows = rows
+
+    def execute(self, *_a, **_kw):
+        rows = self.rows
+
+        class _R:
+            def mappings(self_inner):
+                return self_inner
+
+            def fetchall(self_inner):
+                return rows
+        return _R()
+
+
+def test_plan_window_segments_shape_matches_the_sampler_plan():
+    """The browser cutting path is shared, so a plan item from either producer
+    has to carry the same keys."""
+    from app.pam import pam_segment_sampling as pss
+
+    row = {
+        'detection_id': 5, 'recording_id': 7, 'species_id': 42,
+        'rec_filename': 'CHORNIOZERA_20250508_035000.wav',
+        'datetime_start': dt.datetime(2025, 5, 8, 3, 50, tzinfo=dt.timezone.utc),
+        'location_name': 'Чорні озера', 'start_s': 42.0, 'end_s': 45.0,
+        'confidence': 0.9525,
+    }
+    plan = pss.plan_window_segments(
+        'Glaucidium passerinum', [121],
+        dt.datetime(2025, 5, 8, 3, 50, tzinfo=dt.timezone.utc),
+        dt.datetime(2025, 5, 8, 3, 51, tzinfo=dt.timezone.utc),
+        confidence_threshold=0.95, conn=_PlanConn([row]), model_id=1,
+    )
+    assert len(plan) == 1
+    item = plan[0]
+    for key in ('detection_id', 'recording_id', 'species_id', 'model_id',
+                'recording_filename', 'segment_filename', 'location_name',
+                'start_s', 'end_s', 'confidence', 'recorded_date',
+                'recorded_time'):
+        assert key in item, key
+    assert item['start_s'] == 42.0
+    assert item['recorded_date'] == '2025-05-08'
+
+
+def test_plan_window_numbers_parts_per_recording():
+    """Two detections from one recording become _part1 and _part2, as in the
+    sampler, so filenames from the two pages stay comparable."""
+    from app.pam import pam_segment_sampling as pss
+
+    base = {
+        'recording_id': 7, 'species_id': 42,
+        'rec_filename': 'CHORNIOZERA_20250508_035000.wav',
+        'datetime_start': dt.datetime(2025, 5, 8, 3, 50, tzinfo=dt.timezone.utc),
+        'location_name': 'Чорні озера', 'end_s': None,
+    }
+    rows = [dict(base, detection_id=1, start_s=42.0, confidence=0.95),
+            dict(base, detection_id=2, start_s=51.0, confidence=0.97)]
+    plan = pss.plan_window_segments(
+        'Sp', [121],
+        dt.datetime(2025, 5, 8, 3, 50, tzinfo=dt.timezone.utc),
+        dt.datetime(2025, 5, 8, 3, 51, tzinfo=dt.timezone.utc),
+        conn=_PlanConn(rows), model_id=1)
+    names = [p['segment_filename'] for p in plan]
+    assert len(set(names)) == 2
+    assert any('part1' in n for n in names) and any('part2' in n for n in names)
+
+
+def test_window_slack_agrees_with_the_cooccurrence_page():
+    """Both reconstruct detection time from a recording that may have started
+    earlier; a disagreement would offer to cut detections the map never
+    counted."""
+    from app.pam.pam_segment_sampling import WINDOW_RECORDING_SLACK
+
+    assert WINDOW_RECORDING_SLACK == cooc.RECORDING_SLACK
+
+
+def test_plan_window_endpoint_validates_its_input(auth_client, mock_pam_conn):
+    client = auth_client(role='admin')
+    bad = [
+        {},                                                    # nothing at all
+        {'species_name': 'Sp'},                                # no location
+        {'species_name': 'Sp', 'location_ids': [1],
+         'from_ts': 'nope', 'to_ts': '2025-05-08T00:00:00Z'},   # unparsable
+        {'species_name': 'Sp', 'location_ids': [1],
+         'from_ts': '2025-05-09T00:00:00Z',
+         'to_ts': '2025-05-08T00:00:00Z'},                     # reversed
+    ]
+    with mock_pam_conn():
+        for body in bad:
+            resp = client.post('/uk/api/pam/sample/plan-window', json=body)
+            assert resp.status_code == 400, body
+
+
+def test_segment_window_page_is_admin_only(client):
+    resp = client.get('/uk/pam/verification/segment-window')
+    assert resp.status_code in (302, 401, 403)
+
+
+def test_segment_window_page_is_not_in_the_pam_hub(auth_client, mock_pam_conn):
+    """It is only ever reached from a map popup: opened cold it would have
+    nothing to work on, so it must not appear in the hub."""
+    with mock_pam_conn():
+        body = auth_client(role='admin').get('/uk/pam').get_data(as_text=True)
+    assert 'segment-window' not in body
+
+
+def test_segment_window_page_uses_the_shared_cutter(auth_client, mock_pam_conn):
+    with mock_pam_conn():
+        body = auth_client(role='admin').get(
+            '/uk/pam/verification/segment-window').get_data(as_text=True)
+    assert 'js/segment_cutter.js' in body
+    assert 'PamSegmentCutter.run' in body
+    assert 'PamSegmentCutter.indexFolder' in body
+
+
+def test_sample_upload_page_also_uses_the_shared_cutter(auth_client, mock_pam_conn):
+    """The WAV machinery was moved out of the sampler template, not copied."""
+    with mock_pam_conn():
+        body = auth_client(role='admin').get(
+            '/uk/pam/verification/sample-upload').get_data(as_text=True)
+    assert 'js/segment_cutter.js' in body
+    assert 'PamSegmentCutter.run' in body
+    assert 'function encodeWav' not in body
+    assert 'function cutWavByBytes' not in body
+
+
+def test_shared_cutter_module_carries_no_jinja():
+    """It is served as a static file, so a {{ }} in it would ship verbatim."""
+    from pathlib import Path
+
+    js = Path('app/pam/static/js/segment_cutter.js').read_text(encoding='utf-8')
+    assert '{{' not in js and '{%' not in js
+    for name in ('encodeWav', 'cutWavByBytes', 'cutByDecode', 'indexFolder',
+                 'PamSegmentCutter'):
+        assert name in js
+
+
+def test_popup_offers_both_targeted_and_sampled_cutting(
+        auth_client, mock_pam_conn, monkeypatch):
+    """Two ways to get segments, deliberately both kept: exactly these
+    detections, or the stratified sampler for the whole month."""
+    body = _admin_page(auth_client, mock_pam_conn, monkeypatch)
+    assert 'WINDOW_CUT_URL' in body
+    assert 'segment-window' in body
+    assert 'sample-upload' in body

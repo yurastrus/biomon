@@ -2947,3 +2947,46 @@ Renamed to `interpolate`, and added a test that extracts the rendered inline
 script and asserts no name is declared twice at the ready()-body indentation.
 That is a narrow check, but it is exactly the class of bug that kills the whole
 page while every server-side test stays green.
+
+### Targeted cutting for one window (variant B)
+
+The problem: the popup's "Підготувати сегменти" link could only narrow the
+sampler to month + year, so a 60-second window at Чорні озера turned into an
+offer to cut 99 detections for all of May. The finest unit
+`run_stratified_sample` understands is a month, and stratifying two detections
+over ten quantile bins is meaningless anyway — so this is a different question,
+not a missing parameter.
+
+Built as a separate hidden page, `/pam/verification/segment-window` (admin),
+reachable only from a map popup: pick the folder, press one button. Both older
+popup options stay, so there are now three, and the choice says what it does:
+
+* **Верифікувати (N)** — segments already exist.
+* **Нарізати саме ці детекції** — the new page, the exact window.
+* **або вибірка за весь місяць** — the sampler, deliberately kept: a
+  co-occurrence is often a reason to sample that site properly.
+
+Measured narrowing on the exact case from the report: whole May 99 detections
+→ one day 15 → one 60-second window **1**.
+
+Two implementation points worth keeping:
+
+* `plan_window_segments()` filters the **reconstructed** detection time
+  (`datetime_start + start_s`), like the co-occurrence page, not
+  `datetime_start`; and `WINDOW_RECORDING_SLACK` is pinned by test to equal
+  `cooccurrence.RECORDING_SLACK`, because a disagreement there would offer to
+  cut detections the map never counted. Dedup stays per `(detection_id,
+  model_id)`, so a second visit offers only what is missing and "nothing to
+  cut" is an informative outcome with a link straight to verification.
+* The browser-side WAV machinery was **moved**, not copied, into
+  `static/js/segment_cutter.js` (encoder, header parser, byte-slice fast path,
+  decode fallback, upload, concurrency pool), and the sampler page now calls it
+  too. Refactoring a working page is the risk here, so it was checked in a
+  browser rather than assumed: the module exposes all nine functions, the
+  sampler's own cascade still renders its 79 locations, and a synthesised
+  10-second WAV cut from second 4 for 3 s came back at 48 044 bytes —
+  exactly `44 + 3 × 8000 × 2` — with clamping at the end of file and `null`
+  past it. A test also asserts the sampler template no longer defines
+  `encodeWav`, so the copy cannot creep back.
+
+Tests 98 in the file, full suite green.
