@@ -600,8 +600,401 @@ def test_season_narrows_the_period_and_does_not_replace_it():
     sql = cooc.WINDOW_SQL.format(
         conf='confidence',
         season=cooc.season_clause(cooc.DET_TS_SQL, 401, 520),
+        verifiable=cooc.verifiable_expr(None, None),
     )
     assert 'r.datetime_start >= CAST(:start AS timestamptz)' in sql
     assert 'r.datetime_start <  CAST(:end AS timestamptz)' in sql
     assert 'window_start >= CAST(:start AS timestamptz)' in sql
     assert ':season_from' in sql and ':season_to' in sql
+
+# --------------------------------------------------------------------------
+# The Top-windows table lists co-occurrences, not every window
+# --------------------------------------------------------------------------
+
+def _run_with_windows(rows, min_distance_m=500.0, **over):
+    """Drive ``run`` against a fake connection that returns ``rows``.
+
+    ``rows`` are ``(window_start, location_id, n_detections)`` triples; the
+    verification columns are filled with zeros.
+    """
+    win0 = dt.datetime(2025, 5, 8, 20, 0, tzinfo=dt.timezone.utc)
+    locs = [
+        {'location_id': 1, 'location_name': 'A', 'location_name_en': None,
+         'lat': 49.90, 'lon': 23.70},
+        {'location_id': 2, 'location_name': 'B', 'location_name_en': None,
+         'lat': 49.95, 'lon': 23.80},
+        {'location_id': 3, 'location_name': 'C', 'location_name_en': None,
+         'lat': 49.85, 'lon': 23.60},
+    ]
+
+    class _Conn:
+        def __init__(self):
+            self.calls = 0
+
+        def execute(self, statement, params=None):
+            sql = str(statement)
+            self.calls += 1
+            conn = self
+
+            class _R:
+                def fetchone(self_inner):
+                    return (42, 'Glaucidium passerinum')
+
+                def mappings(self_inner):
+                    return self_inner
+
+                def fetchall(self_inner):
+                    if 'FROM locations' in sql:
+                        return locs
+                    if 'date_bin' in sql:
+                        return [(win0 + dt.timedelta(minutes=m), lid, n, 0, 0, 0, 0)
+                                for (m, lid, n) in rows]
+                    return []
+
+                def scalar(self_inner):
+                    return 0
+            return _R()
+
+    kw = dict(
+        species='42',
+        start=dt.datetime(2025, 5, 1, tzinfo=dt.timezone.utc),
+        end=dt.datetime(2025, 6, 1, tzinfo=dt.timezone.utc),
+        window_s=60, step_s=60, min_distance_m=min_distance_m,
+        cluster_method='greedy', min_conf=0.95, conf_column='confidence',
+        access_condition='1=1', access_params={},
+    )
+    kw.update(over)
+    return cooc.run(_Conn(), **kw)
+
+
+def test_table_lists_only_windows_with_two_or_more_locations():
+    """A single location says nothing about simultaneity, however many
+    detections it holds."""
+    result = _run_with_windows([
+        (0, 1, 9),                      # minute 0: one location
+        (1, 1, 1), (1, 2, 1),           # minute 1: two, far apart
+        (2, 3, 4),                      # minute 2: one location
+    ])
+    assert result['table_min_counted'] == 2
+    assert result['windows_singles_only'] is False
+    assert result['n_windows'] == 3          # the histogram still sees all three
+    assert result['n_windows_listed'] == 1
+    assert [w['n_counted'] for w in result['windows']] == [2]
+
+
+def test_single_location_windows_stay_in_the_histogram():
+    result = _run_with_windows([(0, 1, 9), (1, 1, 1), (1, 2, 1)])
+    hist = {h['n']: h['windows'] for h in result['histogram']}
+    assert hist == {1: 1, 2: 1}
+
+
+def test_table_falls_back_to_singles_rather_than_going_blank():
+    """Nothing in the selection reaches two well-separated locations: show the
+    single-location windows and flag it, instead of an empty table."""
+    result = _run_with_windows([(0, 1, 9), (1, 2, 3)])
+    assert result['windows_singles_only'] is True
+    assert result['n_windows_listed'] == 2
+    assert len(result['windows']) == 2
+
+
+def test_spacing_rule_can_reduce_a_window_below_the_table_threshold():
+    """Two locations detected, but too close to count as two individuals, so
+    the window is not a co-occurrence and does not belong in the table."""
+    result = _run_with_windows([(0, 1, 1), (0, 2, 1)], min_distance_m=50000.0)
+    assert result['max_counted'] == 1
+    assert result['windows_singles_only'] is True
+
+
+def test_peak_window_is_listed_in_the_table():
+    result = _run_with_windows([
+        (0, 1, 1), (0, 2, 1),
+        (1, 1, 1), (1, 2, 1), (1, 3, 1),
+    ])
+    assert result['max_counted'] == 3
+    assert any(w['start'] == result['peak_window'] for w in result['windows'])
+
+
+def test_csv_export_is_not_limited_to_co_occurrences():
+    """The export is the audit trail, so it keeps every window the filters
+    admit, single-location ones included."""
+    result = _run_with_windows([(0, 1, 9), (1, 1, 1), (1, 2, 1)],
+                               detail_windows=None)
+    assert len(result['all_windows']) == 2
+    assert sorted(s['n_counted'] for s in result['all_windows']) == [1, 2]
+
+def test_network_map_mode_says_when_it_becomes_available(
+        auth_client, mock_pam_conn, monkeypatch):
+    """The pairs it draws only exist in the sweep response, so the radio is
+    disabled until a sweep has run. That condition has to be written on the
+    page, not left for the user to guess."""
+    body = _admin_page(auth_client, mock_pam_conn, monkeypatch)
+    radio = body[body.index('id="mode-network"') - 220:
+                 body.index('id="mode-network"') + 40]
+    assert 'disabled' in radio
+    assert 'id="map-mode-hint"' in body
+    assert 'Розгортка за шириною вікна' in body
+
+# --------------------------------------------------------------------------
+# The green ramp is scaled to the run, not to one window
+# --------------------------------------------------------------------------
+
+def _run_with_verified(rows):
+    """``rows`` are ``(minute, location_id, n_detections, votes, confirmed,
+    rejected)`` so a test can set the verification state per cell."""
+    win0 = dt.datetime(2025, 5, 8, 20, 0, tzinfo=dt.timezone.utc)
+    locs = [
+        {'location_id': 1, 'location_name': 'A', 'location_name_en': None,
+         'lat': 49.90, 'lon': 23.70},
+        {'location_id': 2, 'location_name': 'B', 'location_name_en': None,
+         'lat': 49.95, 'lon': 23.80},
+    ]
+
+    class _Conn:
+        def execute(self, statement, params=None):
+            sql = str(statement)
+
+            class _R:
+                def fetchone(self_inner):
+                    return (42, 'Glaucidium passerinum')
+
+                def mappings(self_inner):
+                    return self_inner
+
+                def fetchall(self_inner):
+                    if 'FROM locations' in sql:
+                        return locs
+                    if 'date_bin' in sql:
+                        return [(win0 + dt.timedelta(minutes=m), lid, n, v, c, r, 0)
+                                for (m, lid, n, v, c, r) in rows]
+                    return []
+
+                def scalar(self_inner):
+                    return 0
+            return _R()
+
+    return cooc.run(
+        _Conn(), species='42',
+        start=dt.datetime(2025, 5, 1, tzinfo=dt.timezone.utc),
+        end=dt.datetime(2025, 6, 1, tzinfo=dt.timezone.utc),
+        window_s=60, step_s=60, min_distance_m=500.0,
+        cluster_method='greedy', min_conf=0.95, conf_column='confidence',
+        access_condition='1=1', access_params={},
+    )
+
+
+def test_max_positive_votes_covers_the_whole_result():
+    """The ramp's top end is a property of the run, so a shade means the same
+    thing while flipping between windows."""
+    result = _run_with_verified([
+        (0, 1, 1, 1, 0, 0), (0, 2, 1, 1, 0, 0),     # a window with one vote each
+        (1, 1, 1, 4, 0, 0), (1, 2, 1, 2, 0, 0),     # and one reaching four
+    ])
+    assert result['max_positive_votes'] == 4
+
+
+def test_max_positive_votes_is_zero_without_any_verification():
+    result = _run_with_verified([(0, 1, 3, 0, 0, 0), (0, 2, 2, 0, 0, 0)])
+    assert result['max_positive_votes'] == 0
+
+
+def test_points_carry_their_own_vote_count():
+    result = _run_with_verified([(0, 1, 1, 3, 0, 0), (0, 2, 1, 1, 0, 0)])
+    detail = result['window_detail'][result['peak_window']]
+    votes = {pt['location_id']: pt['positive_votes'] for pt in detail}
+    assert votes == {1: 3, 2: 1}
+
+
+def test_window_rows_carry_the_best_vote_count():
+    result = _run_with_verified([(0, 1, 1, 3, 0, 0), (0, 2, 1, 1, 0, 0)])
+    assert result['windows'][0]['max_votes'] == 3
+
+
+def test_more_votes_outrank_fewer_at_the_same_verified_count():
+    result = _run_with_verified([
+        (0, 1, 1, 1, 0, 0), (0, 2, 1, 1, 0, 0),
+        (1, 1, 1, 5, 0, 0), (1, 2, 1, 1, 0, 0),
+    ])
+    # Both windows have two verified locations; the better-verified one leads.
+    assert result['windows'][0]['max_votes'] == 5
+
+
+def test_overlapping_passes_keep_the_highest_vote_count_for_a_cell():
+    """Two database passes can report the same cell; votes are a maximum, not
+    a sum, because they describe one segment's verifiers."""
+    result = _run_with_verified([(0, 1, 1, 1, 0, 0), (0, 1, 1, 2, 0, 0),
+                                 (0, 2, 1, 0, 0, 0)])
+    assert result['max_positive_votes'] == 2
+
+
+def test_page_renders_the_green_ramp_not_two_fixed_swatches(
+        auth_client, mock_pam_conn, monkeypatch):
+    body = _admin_page(auth_client, mock_pam_conn, monkeypatch)
+    assert 'cooc-gradient-green' in body
+    assert 'max_positive_votes' in body
+    assert 'один позитивний голос людини' not in body
+
+# --------------------------------------------------------------------------
+# From a point on the map to the verification queue
+# --------------------------------------------------------------------------
+
+def test_verifiable_expr_is_a_literal_zero_without_a_verifier():
+    """An anonymous run must not pay for a per-detection subquery."""
+    assert cooc.verifiable_expr(None, 'TRUE') == '0'
+    assert cooc.verifiable_expr(0, 'TRUE') == '0'
+
+
+def test_verifiable_expr_matches_the_verification_queue_predicate():
+    """The page and the queue must never disagree on what is verifiable: same
+    pending status, same per-user exclusion, and the host's access baseline
+    passed in rather than rebuilt here."""
+    sql = cooc.verifiable_expr(7, 'MY_ACCESS_RULE')
+    assert "seg_v.status = 'pending'" in sql
+    assert 'seg_v.detection_id = d.detection_id' in sql
+    assert 'sv_v.user_id = :verifier_user_id' in sql
+    assert 'MY_ACCESS_RULE' in sql
+
+
+def test_window_sql_counts_verifiable_segments_per_cell():
+    sql = cooc.WINDOW_SQL.format(conf='confidence', season='',
+                                 verifiable=cooc.verifiable_expr(7, 'TRUE'))
+    assert 'AS n_verifiable' in sql
+    assert 'sum(verifiable)' in sql
+
+
+def _run_with_verifiable(rows):
+    """``rows``: ``(minute, location_id, n_detections, verifiable)``."""
+    win0 = dt.datetime(2025, 5, 8, 20, 0, tzinfo=dt.timezone.utc)
+    locs = [
+        {'location_id': 1, 'location_name': 'A', 'location_name_en': None,
+         'lat': 49.90, 'lon': 23.70},
+        {'location_id': 2, 'location_name': 'B', 'location_name_en': None,
+         'lat': 49.95, 'lon': 23.80},
+    ]
+
+    class _Conn:
+        def execute(self, statement, params=None):
+            sql = str(statement)
+
+            class _R:
+                def fetchone(self_inner):
+                    return (42, 'Glaucidium passerinum')
+
+                def mappings(self_inner):
+                    return self_inner
+
+                def fetchall(self_inner):
+                    if 'FROM locations' in sql:
+                        return locs
+                    if 'date_bin' in sql:
+                        return [(win0 + dt.timedelta(minutes=m), lid, n, 0, 0, 0, v)
+                                for (m, lid, n, v) in rows]
+                    return []
+
+                def scalar(self_inner):
+                    return 0
+            return _R()
+
+    return cooc.run(
+        _Conn(), species='42',
+        start=dt.datetime(2025, 5, 1, tzinfo=dt.timezone.utc),
+        end=dt.datetime(2025, 6, 1, tzinfo=dt.timezone.utc),
+        window_s=60, step_s=60, min_distance_m=500.0,
+        cluster_method='greedy', min_conf=0.95, conf_column='confidence',
+        access_condition='1=1', access_params={},
+        verifier_user_id=7, segment_access_sql='TRUE', segment_access_params={},
+    )
+
+
+def test_points_carry_how_many_segments_are_left_to_verify():
+    result = _run_with_verifiable([(0, 1, 3, 2), (0, 2, 1, 0)])
+    detail = result['window_detail'][result['peak_window']]
+    by_loc = {pt['location_id']: pt['n_verifiable'] for pt in detail}
+    assert by_loc == {1: 2, 2: 0}
+
+
+def test_verifiable_count_is_a_maximum_across_overlapping_passes():
+    """The same cell can be reported by several window offsets; the count
+    belongs to the cell, so it must not be summed."""
+    result = _run_with_verifiable([(0, 1, 1, 3), (0, 1, 1, 3), (0, 2, 1, 0)])
+    detail = result['window_detail'][result['peak_window']]
+    assert next(pt['n_verifiable'] for pt in detail if pt['location_id'] == 1) == 3
+
+
+def test_popup_offers_verification_only_to_a_verifier(
+        auth_client, mock_pam_conn, monkeypatch):
+    body = _admin_page(auth_client, mock_pam_conn, monkeypatch)
+    assert 'const CAN_VERIFY = true' in body
+    assert 'const CAN_SAMPLE = true' in body
+    assert 'function actionsFor' in body
+    # The deep link carries exactly what identifies the point's detections.
+    for key in ('species_id', 'location_ids', 'from_ts', 'to_ts'):
+        assert key in body
+
+
+# --------------------------------------------------------------------------
+# The deep link the popup builds
+# --------------------------------------------------------------------------
+
+def test_parse_ts_arg_tolerates_how_urls_mangle_a_timestamp(app):
+    """A bare +00:00 offset arrives as a space when the plus was not encoded,
+    and Z has to be accepted too. Anything else must raise, so the caller can
+    answer 400 instead of leaking a database error."""
+    from app.pam.routes import _parse_ts_arg
+
+    expected = dt.datetime(2024, 9, 5, 20, 10, tzinfo=dt.timezone.utc)
+    assert _parse_ts_arg('2024-09-05T20:10:00+00:00') == expected
+    assert _parse_ts_arg('2024-09-05T20:10:00 00:00') == expected
+    assert _parse_ts_arg('2024-09-05T20:10:00Z') == expected
+    # No offset at all is read as UTC, like every other timestamp on this page.
+    assert _parse_ts_arg('2024-09-05T20:10:00') == expected
+    assert _parse_ts_arg('') is None
+    assert _parse_ts_arg(None) is None
+    with pytest.raises(ValueError):
+        _parse_ts_arg('not-a-date')
+
+
+def test_next_segment_rejects_an_unparsable_window(auth_client, mock_pam_conn):
+    with mock_pam_conn():
+        resp = auth_client(role='admin').get(
+            '/uk/api/verification/next-segment?from_ts=not-a-date')
+    assert resp.status_code == 400
+
+
+def test_verification_page_carries_the_narrowing_into_every_request(
+        auth_client, mock_pam_conn):
+    """location_ids / from_ts / to_ts have no UI control, so they have to ride
+    along with the next-segment, stats and cascade requests, and a banner has
+    to explain why the queue is short."""
+    with mock_pam_conn():
+        body = auth_client(role='admin').get(
+            '/uk/pam/verification/verify').get_data(as_text=True)
+    assert 'DEEP_LOCATIONS' in body
+    assert "params.push('location_ids=" in body
+    assert 'verification-scope-banner' in body
+
+
+def test_sample_upload_page_reads_a_prefill_from_the_url(auth_client, mock_pam_conn):
+    with mock_pam_conn():
+        body = auth_client(role='admin').get(
+            '/uk/pam/verification/sample-upload').get_data(as_text=True)
+    assert 'function applyPrefill' in body
+    assert 'su-prefill-banner' in body
+
+def test_page_script_has_no_duplicate_declarations(
+        auth_client, mock_pam_conn, monkeypatch):
+    """Regression: a second `const fill` collided with the `fill()` that
+    repopulates a <select>. `Identifier has already been declared` is a
+    SyntaxError, so the WHOLE script never ran: no select2, no filter lists, no
+    handlers, and the only visible symptom was the multi-selects rendering as
+    tall native list boxes. Nothing in Python or Jinja can catch that, hence
+    this check on the rendered script.
+    """
+    import re
+
+    body = _admin_page(auth_client, mock_pam_conn, monkeypatch)
+    script = re.findall(r'<script>(.*?)</script>', body, re.S)[-1]
+    # Declarations in the ready() body: exactly four spaces of indentation.
+    names = re.findall(r'^    (?:const|let|var|function)\s+([A-Za-z_$][\w$]*)',
+                       script, re.M)
+    duplicates = {n for n in names if names.count(n) > 1}
+    assert not duplicates, f'declared more than once in one scope: {duplicates}'

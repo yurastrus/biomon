@@ -2722,6 +2722,16 @@ Not executed — report only, as asked.
    6 692 detections to 4 772 and its maximum from 3 to 2 simultaneous
    locations, which is the honest cost of the stricter default.
 
+One self-inflicted bug on the way, worth recording because the cause is a
+habit rather than a typo: the scripted edit that added `season_decades` to the
+page's `render_template` matched on
+`geoserver_url=current_app.config.get('GEOSERVER_URL', '')`, which appears in
+**two** routes, so the kwargs also landed in `pam_import`, where `cooc` is not
+imported. The import page then 302'd with `NameError: name 'cooc' is not
+defined`, caught by five existing `test_pam_import` tests. Reverted there.
+Anchor scripted replacements on something unique to the target function, or
+assert the match count is one.
+
 Tests 57 in the file, full suite green.
 
 ### Executed, 2026-09-10
@@ -2779,3 +2789,161 @@ removed whole (822 rows). Nothing from the incident remains.
 Still open: CT analytics for 0403 should be recalculated, since 124 series and
 822 photos left the location. The 2 069 restored series are reclassifying on
 the normal cron.
+
+## 2026-09-10 (fourth pass) — the Top-windows table lists co-occurrences only
+
+Single-location windows are out of the table (`TABLE_MIN_COUNTED = 2`). They
+were the bulk of the list and said nothing about simultaneity: one bird singing
+twelve times in a minute is still one bird, so "2 or more" has to mean two
+well-separated **locations**, not two detections. Reading it as detections
+would keep exactly the rows that carry no information.
+
+What did NOT change: the histogram, the KPI tiles and the CSV export still
+cover every window. The distribution's shape is the thing that shows how rare
+the co-occurrences are, and the export is the audit trail. Effect on the
+reference species (whole record, 1-minute windows, 1000 m): the table drops
+from 69 rows to 23 at confidence 0.8644, and to 11 at the new 0.95 default,
+while `n_windows_kept` stays 1 694 and 1 177.
+
+Two things the filter had to not break:
+
+* **The peak window must stay listed.** It is the headline, and it is now
+  guaranteed to be in the table because it always reaches two by definition
+  when anything does; `peak_window` still comes from the count ranking.
+* **The table must not go blank.** A strict selection can legitimately contain
+  no co-occurrence at all (50 km spacing over 10 s windows leaves 3 830
+  single-location windows and nothing else). In that case the list falls back
+  to single-location windows and the note says why, with the three parameters
+  worth loosening.
+
+Also fixed while here: the two notes above the table were first written as
+concatenated fragments ("Показано лише вікна з" + number + "+ розведеними
+точками:"), which is unusable for a translator and assumes English word order.
+Rewritten as whole sentences with `%(min)s` / `%(listed)s` / `%(kept)s`
+placeholders filled in JS. And one leftover "порога score" in the explanation
+text became "порога confidence".
+
+Tests 63 in the file (six new, driving `run` against a fake connection so the
+threshold, the fallback, the histogram and the export are each pinned), full
+suite green.
+
+### Network map mode: the condition is now written on the page
+
+The "Мережа співдетекцій" radio was disabled and nothing said why. The pairs it
+draws exist only in the `/sweep` response, so the mode needs a sweep to have
+run; a new `/run` clears `sweepData` and disables it again.
+
+First attempt was to remove the puzzle by making the radio run the sweep
+itself. The user rejected that and asked for the condition to be stated
+instead, so the gating stayed and a line under the mode switch now says it:
+available after pressing "Розгортка за шириною вікна", and every new
+calculation turns it off again. The line hides once a sweep has run, and the
+radio carries a title describing what the mode draws.
+
+### Distance buffers are red dashed
+
+The half-distance rings around counted points took their colour from the
+point's verification level, which made them nearly invisible against the green
+points and the basemap. They are now a fixed red dashed ring (`#d62728`, weight
+2, `6,5`), with a matching legend swatch. Red carries a different meaning for
+point fills on this map ("a person rejected this detection"), so the comment in
+the code and the legend both say what the ring is: the rule being applied, not
+a datum. Suppressed points stay grey dashed and open, so the two dashed shapes
+remain distinguishable.
+
+### Green is a ramp now, scaled to the run
+
+A single positive vote and a consensus were two fixed greens; the shade now
+carries **how many** people confirmed the point. The scale is
+`max_positive_votes` over the whole result, not per window, so a shade means
+the same thing while switching windows and the darkest green in view is the
+best-verified point in the selection. Five ColorBrewer Greens stops with
+neither extreme: the palest vanishes on a light basemap, the darkest reads as
+black. Consensus keeps a darker outline so that fact survives a pale fill. The
+legend became a gradient bar labelled 1 … max instead of two swatches, and the
+popup names the point's votes against the run's maximum.
+
+Worth knowing before reading the map: **the whole database currently tops out
+at two positive votes per segment**, because two verifiers reach consensus and
+the segment stops being served (checked across all species: max is 2, with
+451 such segments for *Bombina bombina*, 124 for *Rana dalmatina*). So the ramp
+renders as two shades today and spreads on its own as verification deepens,
+with no code change. Window ordering gained `max_votes` as a tiebreak after
+`max_level`.
+
+Two strings had to be rewritten again as whole sentences with placeholders
+(`%(votes)s`, `%(bar)s`) rather than fragments concatenated around a number;
+the `fill()` helper that already did this for the table notes moved up to be
+shared.
+
+Tests 71 in the file, full suite green.
+
+### Point popup links into verification (and into segment preparation)
+
+Asked for: from a point on the map, jump straight to verifying the segments
+behind it; and when there is nothing to verify there, jump to cutting some
+instead. First option for everyone, second admin-only, first disabled when
+there is nothing to verify.
+
+Done, with two backend additions that were unavoidable:
+
+* **`n_verifiable` per (window, location)**, computed in the window query as a
+  per-detection subquery over `segments` (`pending`, no vote from this user).
+  `verifiable_expr()` collapses to a literal `0` when no verifier is asking, so
+  an anonymous run pays nothing. The host's segment access baseline is passed
+  in from `_segment_access_sql('seg_v')` rather than rebuilt inside the module,
+  so the page and the verification queue cannot disagree on who may see what.
+* **`/api/verification/next-segment` gained `location_ids`, `from_ts`,
+  `to_ts`**, applied through `segments.detection_id` → `detections` →
+  `recordings`. It has to go through the detection: `segments.recorded_date` +
+  `recorded_time` is the RECORDING's start, shared by every segment cut from
+  that recording, so filtering on it could not tell one minute from another.
+  Verified against the data: the deep link for the 2024-09-05 20:10 window at
+  location 3 returns exactly segment 3641; a wrong location or an empty window
+  gives a clean 404.
+
+Both target pages read the parameters now — the verify page carries them into
+next-segment, stats and the cascade alike (otherwise the stats would describe a
+different set than the queue serves) and shows a banner with a link that drops
+the narrowing; sample-upload gained `applyPrefill()`, which has to await the
+institution → locations → species chain rather than set five fields at once.
+
+A real bug found while testing: an unencoded `+00:00` in the query string
+arrives as a space and produced a 500 with a psycopg2 message in it.
+`_parse_ts_arg` now tolerates that and `Z`, and answers 400 on anything else.
+`URLSearchParams` in the popup would have encoded it correctly, but a
+copy-pasted URL would not.
+
+Two limits stated rather than papered over:
+
+* Popup actions exist only for points in **listed** windows (2+ well-separated
+  locations). A verifiable detection in a single-location window is not
+  reachable this way — the same decision that keeps singles out of the table.
+* In today's data the "Верифікувати" button will rarely light up on
+  co-occurrence windows: 20 161 pending segments exist, but they were sampled
+  independently of these windows, so the usual case is exactly the one
+  anticipated — nothing to verify, and the admin gets "Підготувати сегменти"
+  pre-filled with that location, species, year and month.
+
+Tests 81 in the file, full suite green.
+
+### The page was completely dead: `const fill` declared twice
+
+Symptom the user saw: the multi-select filters rendered as tall native list
+boxes and the species picker as an empty plain select. Cause: the placeholder
+helper I had lifted out of `render()` was named `fill`, and a much older
+`fill($sel, items, key)` repopulates a `<select>` in the same scope.
+`Identifier 'fill' has already been declared` is a **SyntaxError**, so the
+entire inline script never executed: no select2, no filter lists, no handlers,
+no run button. The bloated fields were just the browser showing the raw
+`<select multiple>` underneath.
+
+Nothing in Python, Jinja or pytest could see this, and no node is installed to
+lint the JS. Found by rendering the page as an admin through the test client,
+writing it into the project folder (the preview pane refuses to run scripts for
+files outside it) and reading the browser console, which said it in one line.
+
+Renamed to `interpolate`, and added a test that extracts the rendered inline
+script and asserts no name is declared twice at the ready()-body indentation.
+That is a narrow check, but it is exactly the class of bug that kills the whole
+page while every server-side test stays green.
