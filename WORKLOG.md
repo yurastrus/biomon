@@ -2723,3 +2723,59 @@ Not executed — report only, as asked.
    locations, which is the honest cost of the stricter default.
 
 Tests 57 in the file, full suite green.
+
+### Executed, 2026-09-10
+
+`scripts/delete_duplicate_ct_batch.py` was written for this and redoes the
+analysis itself rather than trusting the report above. Its checks can only
+refuse: one location per batch, per-instant coverage by other batches (a
+surplus at one second never excuses a shortfall at another), 0-byte twins not
+counted as cover, no favourites, and a series deleted only when the batch owns
+every one of its photos. The safety predicate is unit-tested
+(`tests/test_delete_duplicate_ct_batch.py`, 10 tests).
+
+Run on production against the real volume, dry run first:
+
+```
+photo rows                                     : 822
+capture instants in the batch                  : 322
+other batches unusable (0-byte, not archived)  : 0
+instants NOT covered by other batches          : 0
+favourites in the batch                        : 0
+series touched                                 : 124  (124 wholly this batch, 0 shared)
+```
+
+The figures are slightly larger than the earlier analysis (822 vs 814 rows,
+124 vs 121 series) because they include the 8 already-archived rows and their
+series, which belong to the same duplicate batch.
+
+Applied. Backup first: `/home/yura/backups/ct_batch_02847c73_deleted.json`,
+929 669 bytes, holding the photo, observation, identification, behaviour and
+prediction rows verbatim.
+
+```
+identification_behaviors : 4
+identifications          : 824
+ai_predictions           : 816
+photos                   : 822
+observations             : 124
+files removed from disk  : 808
+locations.photo_count    : 45444 -> 44622
+```
+
+The `upload_batches` row was kept as provenance with a note in
+`error_message`: "duplicate of another batch at this location; 822 photos and
+124 series deleted 20260910_075839".
+
+After: 0403 holds 44 622 photos in 3 512 series, all from `cca991a1`, matching
+`locations.photo_count`. The in-app diagnostic now reports **0 broken photos,
+0 affected series** across the whole database, and the site serves 200.
+
+### Where this leaves the 2026-07 incident
+3 427 photos were damaged. 2 915 were restored from the parks' originals
+(13 locations), and 512 turned out to be half of a duplicate batch that was
+removed whole (822 rows). Nothing from the incident remains.
+
+Still open: CT analytics for 0403 should be recalculated, since 124 series and
+822 photos left the location. The 2 069 restored series are reclassifying on
+the normal cron.
