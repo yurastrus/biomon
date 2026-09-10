@@ -2693,3 +2693,33 @@ Keeping the 512 leaves 81 empty series in the identification queue; keeping
 the 302 leaves 46 duplicate series inflating series counts.
 
 Not executed — report only, as asked.
+
+## 2026-09-10 (third pass) — season by decades, and the confidence threshold
+
+1. **The date filter was never being ignored**, and now says so. The season
+   clause has always been an extra AND *inside* the period, not a substitute
+   for it; the hint said "рік ігнорується", which read as if the whole date
+   filter was. Re-worded, and pinned by both a test on the generated SQL and
+   measurements: whole record 6 692 detections → 3 248 for 1 Apr–20 May across
+   all years → 3 177 with the period additionally cut to 2025 → 0 with it cut
+   to 2024 (that species has no April–May detections that year).
+2. **The season window is picked in decades**, ten-day thirds of a month, which
+   is the unit field seasons are actually named in. `season_decades()` builds
+   the 36 rows once; the "from" select offers the first day of each decade and
+   the "to" select the last, so "April, decade 1" to "May, decade 2" resolves
+   to 1 April … 20 May without the user doing arithmetic. A third decade runs
+   to the end of its month; February's takes 29, so the window covers
+   29 February in leap years and matches nothing there in ordinary ones. The
+   month names were already in the catalog, so this added no new translation
+   work beyond the labels.
+
+   The alternative offered (month select plus a day field) was not taken: it
+   allows 31 February and needs client-side clamping per month, while decades
+   are 36 valid choices by construction.
+3. **"Поріг score" is now "Поріг confidence", default 0.95** (was 0.8), with
+   the model picker and hint renamed to match. Internal names (`min_conf`,
+   `conf_column`) are unchanged. At 0.95 the reference species drops from
+   6 692 detections to 4 772 and its maximum from 3 to 2 simultaneous
+   locations, which is the honest cost of the stricter default.
+
+Tests 57 in the file, full suite green.

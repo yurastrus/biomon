@@ -376,3 +376,232 @@ def test_page_hands_a_csrf_token_to_its_post_calls(
 
     assert 'X-CSRFToken' in body
     assert body.count('headers: POST_HEADERS') == 2
+
+# --------------------------------------------------------------------------
+# Season window: the same calendar stretch pooled across every year
+# --------------------------------------------------------------------------
+
+def test_mmdd_accepts_a_date_a_string_and_an_int():
+    assert cooc.mmdd(dt.date(2025, 4, 1)) == 401
+    assert cooc.mmdd('2025-04-01') == 401
+    assert cooc.mmdd('04-01') == 401
+    assert cooc.mmdd(401) == 401
+    assert cooc.mmdd(None) is None
+    assert cooc.mmdd('') is None
+
+
+def test_mmdd_rejects_an_impossible_boundary():
+    with pytest.raises(cooc.CooccurrenceError):
+        cooc.mmdd('13-40')
+
+
+def test_season_clause_is_empty_without_both_boundaries():
+    assert cooc.season_clause('ts', None, None) == ''
+    assert cooc.season_clause('ts', 401, None) == ''
+    assert cooc.season_clause('ts', None, 520) == ''
+
+
+def test_season_clause_uses_a_range_when_it_does_not_wrap():
+    sql = cooc.season_clause('ts', 401, 520)
+    assert 'BETWEEN :season_from AND :season_to' in sql
+    assert ' OR ' not in sql
+
+
+def test_season_clause_splits_a_window_that_wraps_the_new_year():
+    """1 Dec to 15 Feb is the union of two ranges, not an interval."""
+    sql = cooc.season_clause('ts', 1201, 215)
+    assert ' OR ' in sql
+    assert '>= :season_from' in sql and '<= :season_to' in sql
+
+
+def test_season_expression_compares_month_and_day_not_day_of_year():
+    """Day-of-year shifts by one after 29 February, which would silently move
+    the window in leap years."""
+    sql = cooc.season_clause('ts', 401, 520)
+    assert 'extract(month' in sql and 'extract(day' in sql
+    assert 'doy' not in sql
+
+
+# --------------------------------------------------------------------------
+# Human verification
+# --------------------------------------------------------------------------
+
+def test_verification_level_two_for_consensus_or_two_votes():
+    assert cooc.verification_level(0, 1, 0) == 2      # consensus on a detection
+    assert cooc.verification_level(2, 0, 0) == 2      # two positive votes
+    assert cooc.verification_level(5, 3, 1) == 2      # consensus wins over a reject
+
+
+def test_verification_level_one_for_a_single_positive_vote():
+    assert cooc.verification_level(1, 0, 0) == 1
+
+
+def test_verification_level_zero_when_nobody_listened():
+    assert cooc.verification_level(0, 0, 0) == 0
+
+
+def test_verification_level_negative_when_people_rejected_it():
+    assert cooc.verification_level(0, 0, 2) == -1
+
+
+def test_window_sql_reads_verification_through_the_authoritative_map():
+    """segments.detection_id (via detection_verification_map) is the only
+    sanctioned link; filename/datetime heuristics are not used here."""
+    sql = cooc.WINDOW_SQL
+    assert 'detection_verification_map' in sql
+    assert 'dvm.detection_id = d.detection_id' in sql
+    assert 'positive_verifications' in sql
+    assert 'recorded_date' not in sql and 'location_name' not in sql
+
+
+# --------------------------------------------------------------------------
+# Window width bounds
+# --------------------------------------------------------------------------
+
+def test_window_bounds_are_ten_seconds_to_one_hour():
+    assert cooc.WINDOW_MIN_S == 10
+    assert cooc.WINDOW_MAX_S == 3600
+
+
+def test_default_confidence_threshold_is_strict():
+    """A false positive at two distant points in the same minute fabricates a
+    simultaneous pair, so the default leans strict rather than inclusive."""
+    assert cooc.DEFAULT_MIN_CONF == 0.95
+
+
+# --------------------------------------------------------------------------
+# The page's new controls
+# --------------------------------------------------------------------------
+
+def _admin_page(auth_client, mock_pam_conn, monkeypatch, institutions=()):
+    from unittest.mock import MagicMock
+
+    conn = MagicMock()
+    row = MagicMock()
+    row.fetchone.return_value = None
+    conn.execute.return_value = row
+    monkeypatch.setattr('app.pam.routes.get_pam_db_connection', lambda: conn)
+    monkeypatch.setattr('app.pam.routes.get_models_list', lambda: [])
+    monkeypatch.setattr('app.pam.utils.get_available_species', lambda lang: [
+        {'value': 'Glaucidium passerinum', 'text': 'Glaucidium passerinum'},
+    ])
+    with mock_pam_conn():
+        return auth_client(role='admin').get('/uk/pam/cooccurrence').get_data(as_text=True)
+
+
+def test_page_offers_a_numeric_window_field_within_bounds(
+        auth_client, mock_pam_conn, monkeypatch):
+    body = _admin_page(auth_client, mock_pam_conn, monkeypatch)
+    assert 'id="window-input"' in body
+    assert 'min="10"' in body and 'max="3600"' in body
+    assert 'id="window-select"' not in body
+
+
+def test_page_offers_the_season_window_as_decade_pickers(
+        auth_client, mock_pam_conn, monkeypatch):
+    body = _admin_page(auth_client, mock_pam_conn, monkeypatch)
+    assert 'id="season-from"' in body and 'id="season-to"' in body
+    # 36 decades in each of the two lists, and no bare date input any more.
+    assert body.count('декада') == 72
+    assert 'id="season-from" class="form-control">' not in body.replace(
+        '<select id="season-from" class="form-control">', '')
+    # The "from" list offers first days, the "to" list last days.
+    assert 'value="401"' in body and 'value="520"' in body
+
+
+def test_page_offers_a_sortable_verified_column(auth_client, mock_pam_conn, monkeypatch):
+    body = _admin_page(auth_client, mock_pam_conn, monkeypatch)
+    for key in ('start', 'n_counted', 'n_verified', 'n_locations_raw', 'n_detections'):
+        assert f'data-sort="{key}"' in body
+
+
+def test_page_renders_the_ecoregion_picker_with_its_institutions(
+        auth_client, mock_pam_conn, monkeypatch, db_session):
+    """Ecoregions come from the host `institutions` table, and each option
+    carries the ids it expands to so the biotope/location cascade can narrow."""
+    from app.models import Institution
+
+    inst = Institution(name_uk='Тестова установа', code='TST-ECO',
+                       ecoregion_uk='Розточчя', ecoregion_en='Roztochia')
+    db_session.add(inst)
+    db_session.commit()
+
+    body = _admin_page(auth_client, mock_pam_conn, monkeypatch)
+    assert 'id="ecoregion-select"' in body
+    assert 'Розточчя' in body
+    assert f'data-institutions="{inst.id}"' in body
+
+
+def test_ecoregion_expands_to_institution_ids(app, db_session):
+    """The union is what the two pickers read as: an ecoregion plus an
+    institution outside it means both."""
+    from app.models import Institution
+    from app.pam.routes import _cooc_institution_ids
+
+    a = Institution(name_uk='A', code='ECO-A', ecoregion_uk='Полісся')
+    b = Institution(name_uk='B', code='ECO-B', ecoregion_uk='Полісся')
+    c = Institution(name_uk='C', code='ECO-C', ecoregion_uk='Степ')
+    db_session.add_all([a, b, c])
+    db_session.commit()
+
+    with app.test_request_context('/uk/pam/cooccurrence'):
+        ids = _cooc_institution_ids({'institution_ids': [c.id],
+                                     'ecoregions': ['Полісся']})
+    assert set(ids) == {a.id, b.id, c.id}
+
+
+def test_no_ecoregion_selected_leaves_the_institution_picks_alone(app, db_session):
+    from app.pam.routes import _cooc_institution_ids
+
+    with app.test_request_context('/uk/pam/cooccurrence'):
+        assert _cooc_institution_ids({'institution_ids': [7, 3],
+                                      'ecoregions': []}) == [3, 7]
+
+# --------------------------------------------------------------------------
+# Season decades
+# --------------------------------------------------------------------------
+
+def test_season_decades_has_three_per_month():
+    decades = cooc.season_decades()
+    assert len(decades) == 36
+    assert [d['decade'] for d in decades[:3]] == [1, 2, 3]
+    assert {d['month'] for d in decades} == set(range(1, 13))
+
+
+def test_season_decade_boundaries_are_first_and_last_day():
+    by_key = {(d['month'], d['decade']): d for d in cooc.season_decades()}
+    april_1 = by_key[(4, 1)]
+    may_2 = by_key[(5, 2)]
+    assert (april_1['from_mmdd'], april_1['to_mmdd']) == (401, 410)
+    assert (may_2['from_mmdd'], may_2['to_mmdd']) == (511, 520)
+    # The user's worked example: April decade 1 to May decade 2 is 1 Apr - 20 May.
+    assert cooc.season_clause('ts', april_1['from_mmdd'], may_2['to_mmdd'])
+
+
+def test_third_decade_runs_to_the_end_of_its_month():
+    by_key = {(d['month'], d['decade']): d for d in cooc.season_decades()}
+    assert by_key[(1, 3)]['to_day'] == 31
+    assert by_key[(4, 3)]['to_day'] == 30
+    # February takes 29, so the window covers 29 February in leap years and
+    # simply matches nothing on that day in ordinary ones.
+    assert by_key[(2, 3)]['to_day'] == 29
+
+
+def test_decade_values_round_trip_through_mmdd():
+    """The select sends the boundary as a bare MM*100+DD integer."""
+    for d in cooc.season_decades():
+        assert cooc.mmdd(str(d['from_mmdd'])) == d['from_mmdd']
+        assert cooc.mmdd(str(d['to_mmdd'])) == d['to_mmdd']
+
+
+def test_season_narrows_the_period_and_does_not_replace_it():
+    """The date filter keeps its full effect: the season clause is an extra AND
+    inside the period, never a substitute for it."""
+    sql = cooc.WINDOW_SQL.format(
+        conf='confidence',
+        season=cooc.season_clause(cooc.DET_TS_SQL, 401, 520),
+    )
+    assert 'r.datetime_start >= CAST(:start AS timestamptz)' in sql
+    assert 'r.datetime_start <  CAST(:end AS timestamptz)' in sql
+    assert 'window_start >= CAST(:start AS timestamptz)' in sql
+    assert ':season_from' in sql and ':season_to' in sql
