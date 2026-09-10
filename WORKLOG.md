@@ -2512,3 +2512,35 @@ tempting. Not executed; waiting on the user.
 ### Running total
 2 915 of 3 427 restored, 13 of 14 locations clear. The remaining 512 are the
 0403 duplicates described above.
+
+## 2026-09-10 — Reclassifying the restored series
+
+The 2 915 restored photos carried 2 909 DeepFaune predictions produced from
+0-byte files: 2 903 `empty` and 6 `human`, all at score 1.0. Deleting them is
+the whole requeue, because `pick_pending_observations` takes pending
+observations that have no prediction from the active model.
+
+Deleted **per observation, not per photo** (2 069 series). DeepFaune is
+sequence-aware, so a prediction derived from a partial sequence is not worth
+keeping once the rest of the frames are back — that matters for the seven
+series that had a mix of healthy and broken frames.
+
+The worker needs no manual enqueue: cron runs `run-batch.sh` every 30 min
+between 03:00 and 20:00 and every 20 min at night, 200 series per run, and it
+had been idle ("SQL returned 0 candidate observations"). One batch was kicked
+off by hand to confirm the path end to end.
+
+First 16 series came back as `human` 20, `vehicle` 10, `undefined` 6,
+`empty` 4 — against the uniform `empty`/1.0 they carried before. That is the
+clearest possible confirmation that the classifier is now reading real pixels.
+At 200 series per run the remaining ~2 050 need roughly half a day of cron.
+
+### Drevlianskyi 0403 — do not expect the sync to fix it
+Worth restating, because it looks like a sync-progress problem and is not.
+The park's card carries zero-padded filenames; the 512 broken rows carry
+unpadded ones from a renamed second upload. No amount of further downloading
+will produce a file named `IMG_6.JPG`, because that name never existed on the
+card. The frames themselves are already on the site, in the healthy batch
+`cca991a1`. A further pass costs nothing and will be run when the download
+completes, but the expected outcome is 0 matches again, and the correct fix
+stays deletion.
