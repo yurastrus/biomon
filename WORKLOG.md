@@ -2478,3 +2478,37 @@ clear. Only Drevlianskyi NR 0403 remains (512 photos, 81 series) — its export
 lives under a separate `Ukraine - Polissia` branch that began downloading
 during this pass, and its filenames (IMG_0003.JPG …) do line up with the DB,
 so a further pass should finish it.
+
+### Drevlianskyi 0403 is a different problem: a duplicate re-upload
+
+The third pass, with 13 514 source JPEGs including the newly-arrived
+`Ukraine - Polissia` branch, matched **nothing** for 0403 — every source file
+was rejected on the name test. The reason turned out to be informative rather
+than a defect.
+
+The park's card holds zero-padded names (`IMG_0001.JPG` …). The 512 broken
+rows carry unpadded ones (`IMG_6.JPG`, `IMG_54.JPG`, `IMG_380.JPG`), and they
+all belong to a single batch, `02847c73`, from the disk-full evening of
+2026-07-08. The location's real upload is batch `cca991a1`: 44 619 photos,
+all healthy, padded names.
+
+So 0403 was uploaded twice. `process_single_photo` keys its duplicate check on
+(location, captured_at, original_filename), and a renamed file is not a
+duplicate by that key, so the second pass created fresh rows and fresh series
+for moments that already existed.
+
+Checked frame by frame: the 512 broken photos fall on 198 distinct capture
+seconds, and at **every one of those seconds the healthy batch already holds
+at least as many frames** (548 healthy against 512 broken). Nothing visual is
+missing from 0403 — the same moments are viewable in series 74xxx while the
+broken series 124xxx are empty shells beside them.
+
+Restoring these would therefore be the wrong move: it would resurrect 81
+duplicate series and double-count 198 capture events in every dashboard that
+counts series. The right move is deletion — the one case so far where
+`audit_broken_ct_photos.py --delete` is clearly correct rather than merely
+tempting. Not executed; waiting on the user.
+
+### Running total
+2 915 of 3 427 restored, 13 of 14 locations clear. The remaining 512 are the
+0403 duplicates described above.
