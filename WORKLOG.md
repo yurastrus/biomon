@@ -2168,3 +2168,79 @@ observations; partially-broken observations survive with a corrected
 ### Open
 Deletion not executed — it discards 1 444 human identifications and awaits the
 user's go-ahead. CT analytics need recalculating afterwards.
+
+## 2026-09-10 — Restoring the lost thumbnails from the parks' originals
+
+The rows survived the 2026-07 disk-full incident intact; only the JPEGs died.
+So the repair is file-level: keep every row, every `system_filename` and every
+timestamp, and put the right pixels back under the name the DB already expects.
+`scripts/restore_broken_ct_photos.py` matches and renders,
+`deploy/install_restored_thumbs.py` installs on the server.
+
+### Matching rule
+A source frame is bound to a row only when its basename equals
+`original_filename` AND its EXIF DateTimeOriginal — sub-seconds included, read
+through the uploader's own `extract_datetime_from_exif` — equals `captured_at`
+to the microsecond. Everything else can only reject:
+
+- **folder ↔ location bijection.** `camera_folder()` collapses DCIM buckets
+  (`100CUDDY`, bare `DCIM`) and dated dumps (`01_01_25`) onto the camera
+  directory, so `Остріцьке ПНДВ/1904` stays distinct from `Колочавське ПНДВ/1901`.
+  If one folder fed two locations, or one location two folders, every row
+  involved is refused. This is the "не наплутати парки" guarantee.
+- **whole series only.** A series is restored only if all of its broken photos
+  matched; half a series silently changes what the verifier sees. `--partial`
+  overrides.
+- **no source file may serve two rows.**
+
+### Thumbnail generation
+PIL `thumbnail()` to `THUMBNAIL_SIZE` (960), JPEG quality 85, EXIF block copied
+over. The fast-upload path normally stores the browser-compressed file, which
+keeps EXIF, so this is what the healthy neighbours look like: a reference file
+pulled from the server is 960×739, 141 812 B, 638 B of EXIF; the 701 rebuilt
+files are 960×739/742, median 93 725 B, EXIF on all of them.
+
+### Dry run, 2026-09-10 (download still in progress)
+5 118 JPEGs available so far → **701 photos in 447 series matched, 0 ambiguous,
+0 refused**. Three locations come back whole:
+
+| location | restored | still broken |
+|---|---|---|
+| Cheremoskyi NNP 1601 | 273 | 0 |
+| Cheremoskyi NNP 1604 | 218 | 0 |
+| Karpatskyi NNP 1820 | 210 | 0 |
+
+Independent confirmation that nothing is crossed: the coordinate prefix baked
+into each `system_filename` matches the location's own lat/lon
+(47_74847_24_98064 = 1601, 47_75466_24_96464 = 1604, 48_19905_24_58592 = 1820),
+and the first restored frame is the setup shot with "1601" on the whiteboard,
+"11.28.2024 15.54" written on it, and the camera's own stamp reading
+`11/28/2024 3:53 PM 1601` — against a DB row saying location 1601,
+`captured_at` 2024-11-28 15:53:48.
+
+Synevyr's export so far holds cameras 1901/1902/1904/1908/1911, none of which
+is 1907 or 1916, so its 596 broken photos have simply not arrived yet. Same for
+Verkhovynskyi, Vyzhnytskyi and Drevlianskyi. Rerun as the download proceeds;
+the script is idempotent and re-matches from scratch every time.
+
+### What the restored series carry
+699 stale AI predictions (all `empty`/1.0 — what the classifier returns for a
+0-byte file). `--requeue-ai` deletes them, and since the worker picks
+observations having no prediction, the series get classified against the real
+image. The 321 blind human identifications on these photos (176 Пусто,
+104 Людина, and notably 6 Рись, 3 Ведмідь бурий, 12 Олень) are deliberately
+left in place: once the image is back they become checkable, which is better
+than deleting them unseen.
+
+### Safety of the install step
+`install_restored_thumbs.py` refuses a file whose name is unknown to the DB,
+refuses an empty source, and never overwrites a target that is already
+non-empty. It copies to `<name>.incoming` and renames into place, so a failure
+mid-copy cannot create the very 0-byte file this whole exercise is about.
+Owner/mode are set to yura:www-data 0644.
+
+### Open
+Nothing installed on prod yet — dry run only, awaiting the user's go-ahead and
+the rest of the download. The 2 726 photos with no original yet remain
+candidates for `audit_broken_ct_photos.py --delete` if their originals never
+turn up.
