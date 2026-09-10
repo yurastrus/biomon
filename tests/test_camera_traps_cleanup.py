@@ -268,6 +268,27 @@ class TestCleanupIntegration:
                     identification_count INTEGER DEFAULT 0,
                     is_favorite BOOLEAN DEFAULT FALSE
                 )"""))
+            # Needed by category D: the diagnostic counts what would be lost
+            # with a broken photo, and identifications are the expensive half.
+            conn.execute(text(f"""
+                CREATE TABLE {self.schema}.identifications (
+                    id SERIAL PRIMARY KEY,
+                    photo_id INTEGER REFERENCES {self.schema}.photos(id),
+                    user_id INTEGER NOT NULL,
+                    species_id INTEGER,
+                    quantity INTEGER,
+                    comment TEXT,
+                    created_at TIMESTAMP DEFAULT NOW()
+                )"""))
+            conn.execute(text(f"""
+                CREATE TABLE {self.schema}.ai_predictions (
+                    id SERIAL PRIMARY KEY,
+                    photo_id INTEGER REFERENCES {self.schema}.photos(id),
+                    observation_id INTEGER REFERENCES {self.schema}.observations(id),
+                    prediction_label TEXT,
+                    prediction_score DOUBLE PRECISION,
+                    processed_at TIMESTAMP DEFAULT NOW()
+                )"""))
             conn.execute(text(f"""
                 CREATE TABLE {self.schema}.cleanup_log (
                     id VARCHAR(36) PRIMARY KEY,
@@ -388,6 +409,149 @@ class TestCleanupIntegration:
         """Call _collect_cleanup_report directly — without threading."""
         from app.camera_traps.cleanup import _collect_cleanup_report
         return _collect_cleanup_report(threshold_hours, probe_seconds)
+
+    # ────────── Category D: broken photos (diagnostic only) ──────────
+
+    def _break_thumbnail(self, filename, mode='zero'):
+        """Reproduce the two shapes of 2026-07 damage.
+
+        'zero'    — the file exists at 0 bytes, which is what a write onto a
+                    full disk left behind;
+        'missing' — no file at all.
+        """
+        p = os.path.join(self.thumb_dir, filename)
+        if mode == 'zero':
+            open(p, 'wb').close()
+            old = time.time() - 3600
+            os.utime(p, (old, old))
+        else:
+            os.remove(p)
+
+    def test_zero_byte_thumbnail_of_a_series_photo_is_reported(self):
+        loc = self._mk_loc()
+        bid = self._mk_batch(loc, status='completed', age_min=60)
+        obs = self._mk_observation(loc)
+        pid, fn = self._mk_photo(bid, observation_id=obs, status='pending')
+        self._break_thumbnail(fn, 'zero')
+        report = self._collect_report_sync()
+        assert report["broken_photos_count"] == 1
+        assert report["broken_photos_zero_byte"] == 1
+        assert report["broken_photos_missing"] == 0
+        assert report["broken_series_count"] == 1
+        assert fn in {p["system_filename"]
+                      for p in report["broken_photos_sample"]}
+
+    def test_missing_thumbnail_of_a_series_photo_is_reported(self):
+        loc = self._mk_loc()
+        bid = self._mk_batch(loc, status='completed', age_min=60)
+        obs = self._mk_observation(loc)
+        pid, fn = self._mk_photo(bid, observation_id=obs, status='pending')
+        self._break_thumbnail(fn, 'missing')
+        report = self._collect_report_sync()
+        assert report["broken_photos_count"] == 1
+        assert report["broken_photos_missing"] == 1
+
+    def test_archived_photo_without_a_file_is_not_reported_as_broken(self):
+        """Archiving deletes files on purpose — 176k of them on production.
+
+        Counting those would drown the real signal in expected losses.
+        """
+        loc = self._mk_loc()
+        bid = self._mk_batch(loc, status='completed', age_min=60)
+        obs = self._mk_observation(loc)
+        pid, fn = self._mk_photo(bid, observation_id=obs, status='archived')
+        self._break_thumbnail(fn, 'missing')
+        report = self._collect_report_sync()
+        assert report["broken_photos_count"] == 0
+
+    def test_healthy_photo_is_not_reported(self):
+        loc = self._mk_loc()
+        bid = self._mk_batch(loc, status='completed', age_min=60)
+        obs = self._mk_observation(loc)
+        self._mk_photo(bid, observation_id=obs, status='pending')
+        report = self._collect_report_sync()
+        assert report["broken_photos_count"] == 0
+        assert report["broken_by_location"] == []
+
+    def test_broken_photo_is_never_deleted_by_execute(self):
+        """The whole point of the category: it diagnoses, it does not clean."""
+        from app.camera_traps.cleanup import _execute_cleanup
+        from sqlalchemy import text
+
+        loc = self._mk_loc()
+        bid = self._mk_batch(loc, status='completed', age_min=60)
+        obs = self._mk_observation(loc)
+        pid, fn = self._mk_photo(bid, observation_id=obs, status='pending')
+        self._break_thumbnail(fn, 'zero')
+
+        report = self._collect_report_sync()
+        assert report["broken_photos_count"] == 1
+        report_id = str(uuid.uuid4())
+        with self.engine.begin() as c:
+            c.execute(text(f"SET search_path TO {self.schema}, public"))
+            c.execute(text(
+                f"INSERT INTO {self.schema}.cleanup_log"
+                f"(id, kind, status, triggered_by, report_json) "
+                f"VALUES(:i, 'manual', 'executing', 1, :r)"),
+                {"i": report_id, "r": json.dumps(report)})
+        _execute_cleanup(report_id, probe_seconds=1)
+
+        with self.engine.begin() as c:
+            c.execute(text(f"SET search_path TO {self.schema}, public"))
+            still = c.execute(text(
+                f"SELECT count(*) FROM {self.schema}.photos WHERE id = :i"),
+                {"i": pid}).scalar()
+        assert still == 1, "a broken photo row must survive execute"
+        assert os.path.exists(os.path.join(self.thumb_dir, fn)), \
+            "its 0-byte file must survive too — the original may still return"
+
+    def test_broken_report_counts_what_would_be_lost(self):
+        """Identifications and predictions are the argument against deleting."""
+        from sqlalchemy import text
+        loc = self._mk_loc()
+        bid = self._mk_batch(loc, status='completed', age_min=60)
+        obs = self._mk_observation(loc)
+        pid, fn = self._mk_photo(bid, observation_id=obs, status='pending')
+        self._break_thumbnail(fn, 'zero')
+        with self.engine.begin() as c:
+            c.execute(text(f"SET search_path TO {self.schema}, public"))
+            c.execute(text(
+                f"INSERT INTO {self.schema}.identifications(photo_id, user_id, "
+                f"species_id) VALUES(:p, 1, 5), (:p, 2, 5)"), {"p": pid})
+            c.execute(text(
+                f"INSERT INTO {self.schema}.ai_predictions(photo_id, "
+                f"observation_id, prediction_label, prediction_score) "
+                f"VALUES(:p, :o, 'empty', 1.0)"), {"p": pid, "o": obs})
+        report = self._collect_report_sync()
+        assert report["broken_identifications_count"] == 2
+        assert report["broken_predictions_count"] == 1
+
+    def test_broken_photos_grouped_by_location(self):
+        from sqlalchemy import text
+        loc_a = self._mk_loc()
+        with self.engine.begin() as c:
+            c.execute(text(f"UPDATE {self.schema}.locations SET name='Park_A' "
+                           f"WHERE id=:i"), {"i": loc_a})
+        bid = self._mk_batch(loc_a, status='completed', age_min=60)
+        obs = self._mk_observation(loc_a)
+        for _ in range(3):
+            _pid, fn = self._mk_photo(bid, observation_id=obs, status='pending')
+            self._break_thumbnail(fn, 'zero')
+        report = self._collect_report_sync()
+        assert report["broken_by_location"] == [
+            {"location": "Park_A", "photos": 3, "series": 1,
+             "uploaded": report["broken_by_location"][0]["uploaded"]}
+        ]
+
+    def test_stranded_photo_without_a_file_is_not_double_counted(self):
+        """A photo with no observation belongs to category B, not D."""
+        loc = self._mk_loc()
+        bid = self._mk_batch(loc, status='failed', age_min=60)
+        pid, fn = self._mk_photo(bid, observation_id=None, write_file=False)
+        report = self._collect_report_sync()
+        assert report["broken_photos_count"] == 0
+        assert fn in {p["system_filename"]
+                      for p in report["stranded_photos_sample"]}
 
     # ────────── SAFETY invariants ──────────
 
