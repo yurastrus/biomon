@@ -2435,3 +2435,46 @@ strings translated, `-f` compile, checked by loading the compiled .mo.
 
 Note for future deploys: prod had been one commit behind, so this pull also
 shipped c3b2fb6 (two date filters on the expertise page).
+
+### Second restore pass, 2026-09-10
+
+The Nextcloud sync had reached 12 536 JPEGs, so Verkhovynskyi and Vyzhnytskyi
+arrived. Matched **1 618 photos in 1 063 series**, again 0 ambiguous and 0
+refused, and all eight of their locations came back whole:
+
+| location | restored |
+|---|---|
+| Verkhovynskyi NNP PER3 | 356 |
+| Verkhovynskyi NNP PER1 | 300 |
+| Vyzhnytskyi NNP 2201 | 269 |
+| Verkhovynskyi NNP 2108 | 246 |
+| Verkhovynskyi NNP PRK2 | 203 |
+| Verkhovynskyi NNP PER2 | 135 |
+| Vyzhnytskyi NNP 22110 | 106 |
+| Verkhovynskyi NNP PRK3 | 3 |
+
+Verkhovynskyi is the case the coordinate cross-check was built for: its camera
+folders carry forestry names, not camera codes ("Чивчинське 2" → 2108,
+"Перкалабське 2" → PER1), so the folder tells you nothing you can eyeball.
+The `system_filename` coordinate prefixes match the locations' lat/lon count
+for count on all eight, and a spot-checked frame from "Чивчинське 2" carries
+the camera stamp `21 08` with the timestamp `11/16/2024 12:06 PM`, against a
+row saying location 2108 and `captured_at` 2024-11-16 12:06:04.
+
+Installed with `--apply`: **1 618 of 1 618, 0 failed.** The in-app diagnostic
+now reports:
+
+```
+broken_photos_count            512
+broken_photos_zero_byte        506
+broken_photos_missing            6
+broken_series_count             81
+broken_identifications_count   506
+broken_predictions_count       506
+```
+
+Running total: 2 915 of the original 3 427 photos restored, 13 of 14 locations
+clear. Only Drevlianskyi NR 0403 remains (512 photos, 81 series) — its export
+lives under a separate `Ukraine - Polissia` branch that began downloading
+during this pass, and its filenames (IMG_0003.JPG …) do line up with the DB,
+so a further pass should finish it.
