@@ -2100,3 +2100,71 @@ Both surfaced only when the page was rendered against production data
 
 Not yet decided whether the 848 single-vote finished series should be excluded
 from the raw column as well (they carry no LOO value at all).
+
+## 2026-09-10 — Camera-trap series that never load a photo: full DB↔disk audit
+
+### Report from the field
+A verifier hit series on /identify whose images stay blank. Example payload:
+observation 124468, location `2025_Summer_Drevlianskyi NR_0403`, six photos,
+all `thumbnail_url`s returning nothing. The DB rows looked perfectly normal,
+which is why the report read like "orphan records in the database".
+
+### What was actually compared
+Prod `ct_db` over the SSH tunnel against a full listing of the photo volume
+(`find thumbnails -maxdepth 1 -type f -printf '%s %f\n'`, 632 963 files) —
+every one of the 809 935 photo rows that has an observation.
+
+- Observations with zero photo rows: **0**. Nothing is orphaned in the DB sense.
+- Thumbnail files with no DB row: **0**. Nothing is orphaned on disk either.
+- Photo rows whose file is missing or empty: **180 381**, split cleanly in two:
+
+| group | rows | verdict |
+|---|---|---|
+| `status='archived'`, file gone | 176 954 | expected — `archive_old_observations` deletes files on purpose |
+| `status='pending'`, no usable image | **3 427** | the bug |
+
+### The 3 427
+3 409 have a **zero-byte** thumbnail, 18 have none at all. File mtimes match
+the upload minute exactly, so the files were born empty — not truncated later.
+Every one of them was uploaded on **2026-07-02** (1 863) or **2026-07-08**
+(1 564), across 14 batches, i.e. the disk-full incident window. The raw
+originals were never written, and routine cleanup has long since removed the
+raws that did exist (the raw directory now holds 64 files in total). No
+duplicate upload of the same location+filename+timestamp exists anywhere in
+the DB, so **the pixels are unrecoverable**.
+
+Affected: **2 150 observations**, of which 2 143 have no viewable photo at all
+and 7 keep some good frames. Attached to the broken photos: **1 444 human
+identifications** (users 29 and 57; on the fully-broken series the labels are
+mostly Пусто/Людина but also Козуля, Рись, Ведмідь — recorded on 2026-07-08,
+the upload day) and **3 409 AI predictions**, all of them `empty` with score 1.0,
+which is simply what the classifier returns for a 0-byte file. Both sets are
+worthless and both currently feed the dashboards.
+
+### Why the admin "Очистити невдалі завантаження та сироти" finds nothing
+`cleanup._execute_cleanup` deletes photos matching `status='uploaded' AND
+observation_id IS NULL`, plus files on disk absent from `photos`. These rows
+are `status='pending'`, they *do* have an observation, and their filenames *are*
+in the DB. Every criterion misses them by design. This is a different class of
+damage and needs its own pass.
+
+### Recurrence
+The guard is in place: `_verify_files_on_disk()` in `utils.py:287` raises
+before the Photo row is committed if a written file is missing or zero bytes
+(added 2026-07-09, deployed — verified in `/var/www/biomon`). It covers the
+fast-upload path too, since `fast_upload.py` only groups series and reuses the
+same `process_single_photo`. The photo volume is at 94 % (11 GB free), so the
+underlying pressure has not gone away.
+
+### Tooling
+`scripts/audit_broken_ct_photos.py` — report by default, `--delete` to repair.
+Runs on the server against the real volume, or from a workstation with
+`--manifest` (a `find -printf` listing copied over) plus the tunnel. `--delete`
+removes identifications, their behaviours, AI predictions (photo- and
+series-level), the photo rows, the empty files, and the fully-broken
+observations; partially-broken observations survive with a corrected
+`photo_count`.
+
+### Open
+Deletion not executed — it discards 1 444 human identifications and awaits the
+user's go-ahead. CT analytics need recalculating afterwards.
