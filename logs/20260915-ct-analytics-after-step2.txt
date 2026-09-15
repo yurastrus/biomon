@@ -1,0 +1,40 @@
+database: localhost:5433/ct_db
+date:     2026-09-15
+repeats:  3 (median reported, min in brackets)
+
+── window 30d (2025-06-01 → 2025-07-01) ────────────────────────────
+  1 photos                98 ms  [97]
+  2 locations             96 ms  [87]
+  3 observations         101 ms  [98]
+  4 species count        103 ms  [89]
+  5 pending              221 ms  [220]
+  6 capture days          85 ms  [83]
+  7 contributors         124 ms  [117]
+  dashboard total        827 ms
+  top-species (old)      679 ms  [678]
+  top-species            121 ms  [119]
+
+── window 1y (2025-01-01 → 2026-01-01) ────────────────────────────
+  1 photos               188 ms  [188]
+  2 locations            353 ms  [346]
+  3 observations         224 ms  [222]
+  4 species count        204 ms  [201]
+  5 pending              258 ms  [256]
+  6 capture days         494 ms  [479]
+  7 contributors         642 ms  [630]
+  dashboard total       2364 ms
+  top-species (old)      739 ms  [730]
+  top-species            304 ms  [303]
+
+── window all (2020-08-01 → 2026-09-15) ────────────────────────────
+  1 photos               193 ms  [192]
+  2 locations            400 ms  [386]
+  3 observations         233 ms  [233]
+  4 species count        216 ms  [209]
+  5 pending              254 ms  [245]
+  6 capture days         552 ms  [546]
+  7 contributors         815 ms  [809]
+  dashboard total       2663 ms
+  top-species (old)      824 ms  [816]
+  top-species            330 ms  [324]
+

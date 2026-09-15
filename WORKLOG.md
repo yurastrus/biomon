@@ -3,6 +3,82 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-09-15 — CT analytics, step 2 of 3: top-species, filter before aggregate
+
+Nothing was changed until the rewrite had been prototyped against the live
+database and proved both faster and equivalent. The prototype run is what turned
+up the two correctness bugs below, which matter more than the speed.
+
+### The change
+
+`stats_top_species` built `ObservationConsensus` over the entire
+identifications ⋈ photos table (619k × 814k rows), ranked every observation with
+`ROW_NUMBER()`, and only then let the outer query filter by date, status,
+location and institution. An `EligibleObservations` CTE now applies those
+filters first and the consensus is computed over its output.
+
+The date predicate also stopped being `DATE(o.series_start_time) BETWEEN ...`,
+which wrapped the column in a function and made the index added in step 1
+unusable. It is now a half-open range, so the end date stays inclusive of the
+whole day and `idx_observations_series_start` is actually chosen — confirmed:
+the plan shows a Bitmap Heap Scan on observations where it used to seq-scan.
+
+### Measured on prod, before changing anything
+
+| Window | Old | New | |
+|---|---|---|---|
+| 1 day | 700 ms | 49 ms | −93 % |
+| 30 days | 721 ms | 116 ms | −84 % |
+| 1 year | 804 ms | 316 ms | −61 % |
+| all time | 802 ms | 351 ms | −56 % |
+
+Also measured for a non-admin scoped to one institution (the correlated EXISTS
+path), in case moving the filter earlier hurt it: −53 % to −93 % there too, so
+no regression at either end.
+
+The shape of those numbers is the point, more than their size. The old query
+cost the same for one day as for six years, so every future row of
+`identifications` slowed down every chart regardless of what the user asked
+for. The new one costs roughly what the window contains.
+
+### Two bugs the prototype exposed
+
+**The biotope filter double-counted.** `JOIN location_biotopes lb ON l.id =
+lb.location_id` fans out: 314 of 914 locations carry more than one biotope, up
+to six. With a three-biotope filter, `COUNT(o.id)` counted an observation once
+per matching biotope — Capreolus capreolus showed 7347 instead of 5810, ~26 %
+too high, and the fifth bar of the chart changed species (Alces alces instead of
+Meles meles). Replaced with `EXISTS`, which cannot multiply rows.
+
+**The consensus tie-break was undefined.** When two species tie on vote count
+and quantity, `ROW_NUMBER()` picked arbitrarily, so the chart could change
+between runs or plans without any data changing — 11 such observations in the
+2025 window alone. A third sort key (`species_id DESC`) makes it deterministic.
+
+`DESC` is deliberate but arbitrary in one respect worth flagging: it means a
+real species outranks the negative pseudo-rows ('empty', 'not identifiable'),
+so an observation where two verifiers said "hare" and two said "not
+identifiable" now counts as a hare instead of vanishing from the chart. Between
+two real species the winner is simply the higher id, which is stable but has no
+meaning. Whether a tie should count at all is a question about the data, not
+about SQL, and is filed separately.
+
+### What is still slow, and what that means as data grows
+
+The remaining cost in the new plan is a parallel sequential scan of `photos`
+when joining identifications to the eligible observations (~32 ms of ~116 ms on
+the 30-day window). `idx_photos_observation_id` exists, but the planner prefers
+a hash join at this table size. As `photos` grows relative to a typical window,
+a nested loop over that index becomes the better plan and the planner should
+switch on its own. Worth re-measuring rather than forcing now.
+
+Tests: `tests/test_ct_top_species_query_shape.py` asserts the three load-bearing
+properties against the SQL the endpoint actually emits, since none of them are
+visible in the response body. Full suite 2046 passed, 44 skipped.
+
+`scripts/bench_ct_analytics.py` now times both the old and the new statement in
+one run, so the comparison stays reproducible and old logs stay readable.
+
 ## 2026-09-15 — CT analytics, step 1 of 3: the missing indexes
 
 Acting on an external review of the camera-trap analytics queries. Every claim

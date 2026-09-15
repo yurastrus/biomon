@@ -46,7 +46,11 @@ WINDOWS = [
 
 REPEATS = 3
 
-TOP_SPECIES_SQL = """
+# Both shapes are kept so one run shows the difference and old log files stay
+# comparable. TOP_SPECIES_OLD is the pre-2026-09-15 statement; TOP_SPECIES_SQL
+# mirrors what routes.stats_top_species builds today (anonymous scope, no
+# location or biotope filter). If the route changes, change this too.
+TOP_SPECIES_OLD = """
 WITH ObservationConsensus AS (
     SELECT p.observation_id, i.species_id,
            COUNT(DISTINCT i.user_id) AS vote_count,
@@ -69,6 +73,41 @@ WHERE o.status IN ('completed', 'archived')
   AND s.id > 0
   AND DATE(o.series_start_time) BETWEEN :start_date AND :end_date
   AND l.is_valid IS NOT FALSE
+GROUP BY s.id
+ORDER BY observation_count DESC
+LIMIT 15
+"""
+
+TOP_SPECIES_SQL = """
+WITH EligibleObservations AS (
+    SELECT o.id
+    FROM observations o
+    JOIN locations l ON o.location_id = l.id
+    WHERE o.status IN ('completed', 'archived')
+      AND o.series_start_time >= CAST(:start_date AS date)
+      AND o.series_start_time < (CAST(:end_date AS date) + 1)
+      AND l.is_valid IS NOT FALSE
+),
+ObservationConsensus AS (
+    SELECT p.observation_id, i.species_id,
+           COUNT(DISTINCT i.user_id) AS vote_count,
+           MAX(i.quantity) AS max_quantity
+    FROM identifications i
+    JOIN photos p ON i.photo_id = p.id
+    JOIN EligibleObservations eo ON eo.id = p.observation_id
+    GROUP BY p.observation_id, i.species_id
+),
+RankedConsensus AS (
+    SELECT observation_id, species_id,
+           ROW_NUMBER() OVER (PARTITION BY observation_id
+                              ORDER BY vote_count DESC, max_quantity DESC,
+                                       species_id DESC) AS rn
+    FROM ObservationConsensus
+)
+SELECT s.id, COUNT(rc.observation_id) AS observation_count
+FROM RankedConsensus rc
+JOIN species s ON s.id = rc.species_id
+WHERE rc.rn = 1 AND s.id > 0
 GROUP BY s.id
 ORDER BY observation_count DESC
 LIMIT 15
@@ -177,11 +216,13 @@ def main():
                 emit(f"  {name:18}{median * 1000:8.0f} ms  [{best * 1000:.0f}]")
             emit(f"  {'dashboard total':18}{total * 1000:8.0f} ms")
 
-            median, best = _timed(lambda: session.execute(
-                text(TOP_SPECIES_SQL),
-                {'start_date': start_date.isoformat(),
-                 'end_date': end_date.isoformat()}).fetchall())
-            emit(f"  {'top-species':18}{median * 1000:8.0f} ms  [{best * 1000:.0f}]")
+            bind = {'start_date': start_date.isoformat(),
+                    'end_date': end_date.isoformat()}
+            for label, sql in (('top-species (old)', TOP_SPECIES_OLD),
+                               ('top-species', TOP_SPECIES_SQL)):
+                median, best = _timed(
+                    lambda sql=sql: session.execute(text(sql), bind).fetchall())
+                emit(f"  {label:18}{median * 1000:8.0f} ms  [{best * 1000:.0f}]")
             emit()
 
         if args.explain:
