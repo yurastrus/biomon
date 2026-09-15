@@ -3,6 +3,50 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-09-15 — CT analytics, the two loose ends
+
+### 1. Map markers had the same fan-out as the dashboard
+
+`/api/stats/locations` filtered biotopes with `JOIN location_biotopes` and
+counted with a plain `count(Photo.id)`. Measured on prod with three biotopes
+selected: **194 of 575 markers were 2–3x too high**, and the map totalled
+1,504,083 photos against 808,460 in the database. Same membership-test fix as
+the dashboard.
+
+Worth noting for anyone touching these two endpoints: they read the same filter
+in different shapes on purpose. The dashboard form posts one `biotopes`
+parameter per selection (`getlist`), while the map JS sends one comma-separated
+value (`split(',')`). A test written for the wrong shape passes without ever
+applying the filter — which already caught us once.
+
+### 2. Contributors moved out of the page request
+
+Nothing about the query got faster; the page stopped waiting for it. It is now
+`/api/stats/top-contributors`, fetched after render, and it carries the page's
+filters so the panel cannot disagree with the cards beside it.
+
+| Window | Dashboard before the whole series | now | contributors panel |
+|---|---|---|---|
+| 30 days | 783 ms | 398 ms | 112 ms, async |
+| 1 year | 2326 ms | 1005 ms | 590 ms, async |
+| all time | 2766 ms | 1170 ms | 730 ms, async |
+
+The panel builds its DOM with `textContent`, not `innerHTML` — usernames are
+user-supplied and now travel through JSON instead of Jinja's autoescaping.
+
+`scripts/bench_ct_analytics.py` reports the panel separately and excludes it
+from the dashboard total, so the number tracks what a user actually waits for.
+
+### i18n note
+
+`pybabel` guessed both new strings wrong — it rendered "Завантаження…" as
+"Upload" (matching the upload page, not this one) and the error string as
+"Failed to load data.". Fixed by hand, and the loading string was changed to
+the existing "Завантаження..." so the catalogue keeps one entry instead of two
+near-identical ones. Always read a fuzzy msgstr before clearing the flag.
+
+Full suite 2058 passed, 44 skipped.
+
 ## 2026-09-15 — CT analytics, follow-up: top contributors
 
 The most expensive counter left after step 3. The interesting part is not the

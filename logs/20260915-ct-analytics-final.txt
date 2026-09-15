@@ -1,0 +1,55 @@
+database: localhost:5433/ct_db
+date:     2026-09-15
+repeats:  3 (median reported, min in brackets)
+
+── window 30d (2025-06-01 → 2025-07-01) ────────────────────────────
+  1 photos               109 ms  [93]
+  2 locations             76 ms  [75]
+  3 observations          96 ms  [94]
+  4 species count        108 ms  [94]
+  5 pending              197 ms  [194]
+  6 capture days          80 ms  [79]
+  7 contributors         117 ms  [103]
+  dashboard (old)        783 ms
+  A photos/loc/days       81 ms  [79]
+  B obs/species           92 ms  [91]
+  5 pending              225 ms  [208]
+  dashboard              398 ms
+  panel contributors     112 ms  [106]  (async, not in the total)
+  top-species (old)      643 ms  [619]
+  top-species            115 ms  [114]
+
+── window 1y (2025-01-01 → 2026-01-01) ────────────────────────────
+  1 photos               183 ms  [180]
+  2 locations            347 ms  [343]
+  3 observations         211 ms  [208]
+  4 species count        183 ms  [175]
+  5 pending              220 ms  [215]
+  6 capture days         481 ms  [470]
+  7 contributors         701 ms  [666]
+  dashboard (old)       2326 ms
+  A photos/loc/days      531 ms  [513]
+  B obs/species          224 ms  [219]
+  5 pending              251 ms  [242]
+  dashboard             1005 ms
+  panel contributors     590 ms  [574]  (async, not in the total)
+  top-species (old)      750 ms  [746]
+  top-species            322 ms  [319]
+
+── window all (2020-08-01 → 2026-09-15) ────────────────────────────
+  1 photos               208 ms  [202]
+  2 locations            392 ms  [390]
+  3 observations         238 ms  [232]
+  4 species count        214 ms  [213]
+  5 pending              267 ms  [258]
+  6 capture days         575 ms  [557]
+  7 contributors         871 ms  [864]
+  dashboard (old)       2766 ms
+  A photos/loc/days      626 ms  [608]
+  B obs/species          257 ms  [252]
+  5 pending              287 ms  [283]
+  dashboard             1170 ms
+  panel contributors     730 ms  [677]  (async, not in the total)
+  top-species (old)      779 ms  [776]
+  top-species            355 ms  [343]
+

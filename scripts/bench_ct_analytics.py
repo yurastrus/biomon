@@ -165,12 +165,14 @@ def dashboard_queries_new(session, start_date, end_date):
         .group_by(contributor_pairs.c.user_id)
         .order_by(func.count().desc()).limit(10))
 
+    # Contributors is no longer part of the page request — it loads from
+    # /api/stats/top-contributors after render. Reported separately so the
+    # dashboard total reflects what the user actually waits for.
     return [
         ('A photos/loc/days', photo_stats),
         ('B obs/species', species_stats),
         ('5 pending', pending),
-        ('7 contributors', contributors),
-    ]
+    ], ('panel contributors', contributors)
 
 
 def dashboard_queries(session, start_date, end_date):
@@ -276,12 +278,16 @@ def main():
             emit(f"  {'dashboard (old)':18}{total * 1000:8.0f} ms")
 
             total = 0.0
-            for name, query in dashboard_queries_new(session, start_date, end_date):
-                runner = query.all if name.startswith('7') else query.one
-                median, best = _timed(runner)
+            page_queries, (panel_name, panel_query) = dashboard_queries_new(
+                session, start_date, end_date)
+            for name, query in page_queries:
+                median, best = _timed(query.one)
                 total += median
                 emit(f"  {name:18}{median * 1000:8.0f} ms  [{best * 1000:.0f}]")
             emit(f"  {'dashboard':18}{total * 1000:8.0f} ms")
+            median, best = _timed(panel_query.all)
+            emit(f"  {panel_name:18}{median * 1000:8.0f} ms  [{best * 1000:.0f}]"
+                 "  (async, not in the total)")
 
             bind = {'start_date': start_date.isoformat(),
                     'end_date': end_date.isoformat()}
