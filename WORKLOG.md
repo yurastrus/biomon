@@ -2990,3 +2990,93 @@ Two implementation points worth keeping:
   `encodeWav`, so the copy cannot creep back.
 
 Tests 98 in the file, full suite green.
+
+## 2026-09-15 — /identify: where the latency on "all institutions" actually is
+
+Reported symptom: on `/camera-traps/identify`, with an AI species picked and no
+institution selected, the page feels sluggish; `submit-identification` was timed
+at 1.77 s and 1.99 s against 72 ms and 749 ms with an institution selected. The
+suspicion in the report was that a query walks every institution before doing
+anything else.
+
+### What the measurements say
+
+`EXPLAIN (ANALYZE, BUFFERS)` against prod `ct_db` (photos 814 572 rows,
+ai_predictions 764 860, identifications 616 987, observations 129 028):
+
+| endpoint | unscoped | institution 12 |
+|---|---|---|
+| `/api/next-observation-for-identification` (priority_random + AI filter) | 766 ms | 647 ms |
+| `/api/identification-stats` (two counts) | 570 ms | 48 ms |
+| `/api/identify/ai-species` | 835 ms | 467 ms |
+
+`submit-identification` itself carries nothing scope-dependent: it takes no
+scope parameter, and the series it writes hold 3 photos each in both cases. Its
+work is a handful of indexed lookups. What differs is the company it keeps.
+Choosing a scope, or loading the page, fires all three endpoints above, and
+biomon runs 3 sync gunicorn workers — unscoped that is ~2.2 s of database work
+contending for 3 workers against ~1.2 s scoped. A submit arriving in that window waits
+for a worker, and the browser counts that wait as part of the request's own time. So the
+report's instinct was right about the direction and wrong about the endpoint:
+the queries are unoptimised, but not the one that was timed.
+
+### Three causes found
+
+1. **The votes aggregate ignored every filter.** `_identify_votes_subq` ranks
+   series by distinct identifying users for `priority_random`. It was scoped by
+   observation *status* only — never by institution, never by the AI species —
+   so on every request it seq-scanned photos (0.8 M) and hash-joined
+   identifications (0.6 M) over all 89 633 pending series, to rank the ~3 200
+   that survive the outer filters. 600 ms of the 766.
+2. **The counter counted twice.** `api_get_identification_stats` ran
+   `query.count()` and then the same query again with an extra EXISTS
+   (174 ms + 396 ms).
+3. **The AI species list built its winner set first and filtered second.**
+   `get_species_with_ai_predictions` ran `DISTINCT ON (observation_id)` over
+   every pending prediction (~613 k rows, sort spilling to disk — "external
+   merge Disk: 15 600 kB", re-executed once per parallel worker) and only then
+   applied the access, user and scope filters that throw most of it away.
+
+### Fixes
+
+1. `_identify_votes_subq(status_filter, extra_filters)` now receives the same
+   scope and AI predicates the outer query uses. Only predicates that reference
+   `Observation` qualify: the aggregate joins `Observation` but not `Location`,
+   and the outer query has already applied location visibility, so leaving that
+   one out cannot change the result. **766 ms → 344 ms.**
+2. The counter takes both numbers from one aggregate,
+   `count(id)` plus `count(id) FILTER (WHERE …)`. **570 ms → 256 ms**, same
+   answer (3210 / 1901).
+3. The AI species list selects candidate series first (`WITH cand AS …`) and
+   restricts the winning-prediction pass to them with
+   `ap.observation_id = ANY(ARRAY(SELECT id FROM cand))`. `= ANY(ARRAY(…))`
+   rather than `IN (…)` is what makes the planner use `idx_ai_pred_observation`
+   instead of hashing the table. **467 ms → 136 ms scoped, 694 ms → 540 ms
+   unscoped**, output diffed byte-for-byte against the old query on prod.
+
+Sum over a scope change: ~2.2 s → ~0.95 s unscoped, ~1.2 s → ~0.45 s scoped.
+
+### What was considered and not done
+
+* **An index on `observations(location_id)`.** The scoped path does seq-scan
+  observations, but that scan is 2 924 buffers ≈ 13 ms on 129 k rows. Not the
+  bottleneck, and an index has its own write cost on every upload.
+* **A cheaper "winning model per series".** The `DISTINCT ON` is inherently a
+  sort of ~600 k rows when nothing narrows it, and the rank order of the three
+  models (40, 30, 10 → ids 6, 5, 7) does not coincide with any column order, so
+  no index can serve it. Denormalising the rank into `ai_predictions` would fix
+  it and is a schema change; left for when it is worth one.
+* **Caching the species list.** Its labels carry live counts; staleness there is
+  visible. Restricting the input was enough.
+
+Nothing about the raising of `min_identifications`, series grouping or the
+consensus path was touched. Tests: 6 new in
+`tests/test_ct_identify_scope_votes.py` (scoped queue still serves the contested
+series first; out-of-scope votes stay invisible; unscoped ranking unchanged;
+both counters from the single aggregate; a shape assertion that the winning pass
+stays restricted to candidates, since that cost is invisible to behavioural
+tests). Full suite green.
+
+Deploy: code only, in the `shared-ct` submodule — no migration, no index, no
+script. Commit in `shared-ct`, then update the pointer in `biomon` and in
+`/var/www/myproject`.
