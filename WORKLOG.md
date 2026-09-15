@@ -3,6 +3,78 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-09-15 — CT analytics, step 1 of 3: the missing indexes
+
+Acting on an external review of the camera-trap analytics queries. Every claim
+was re-checked against the live ct_db before anything was changed; three of the
+eleven did not survive that check (recorded in the Notion tasks, not here).
+
+### Baseline
+
+`scripts/bench_ct_analytics.py` (new) times the seven dashboard aggregates plus
+the top-species chart over three date windows, median of three runs. It exists
+so that each optimisation step is judged on the same measurement instead of on
+a plan reading. Baseline and result are in `logs/20260915-ct-analytics-*.txt`.
+
+Prod sizes: photos 814,572 rows / 480 MB, observations 129,028 / 16 MB,
+identifications 619,516 / 112 MB, locations 914 / 416 kB. Whole DB 893 MB.
+
+### What was missing
+
+Verified through `pg_indexes`, not through the models:
+
+* `photos.captured_at` — only the composite `(upload_batch_id, captured_at, id)`
+  existed, which cannot serve a bare date-window filter;
+* `observations.series_start_time` — nothing;
+* `observations.location_id` — nothing (Postgres creates no index for a foreign
+  key, so "FK only" was never true);
+* `identifications.species_id` — nothing.
+
+Built on prod with `CREATE INDEX CONCURRENTLY`, sub-second each, 22 MB total.
+Declared in `models.py` `__table_args__` and added to
+`scripts/init_query_indexes.py` so fresh installs get them too (ct_db is not
+under Alembic).
+
+### Result: the plans improved, the wall clock barely did
+
+`EXPLAIN` on the 30-day photo count changed from `Parallel Seq Scan on photos`
+(265,764 rows discarded per worker) to `Bitmap Index Scan on
+idx_photos_captured_at`, and that node went from ~30 ms to ~10 ms.
+
+End to end, though:
+
+| Window | Dashboard before | after | top-species before | after |
+|---|---|---|---|---|
+| 30 days | 943 ms | 828 ms | 663 ms | 658 ms |
+| 1 year | 2331 ms | 2294 ms | 775 ms | 720 ms |
+| all time | 2853 ms | 2845 ms | 799 ms | 846 ms |
+
+About 12 % on the narrow window and nothing on the wide ones. The reason is
+visible in the same plan: with the photo scan gone, the remaining cost is the
+hash join against a full scan of `observations` plus the per-query round trip,
+and the entire database fits in RAM, so a sequential scan of 480 MB was never
+as expensive as its row counts suggest. Measurements were taken through an SSH
+tunnel from Windows, which inflates every number by a constant.
+
+So this step is insurance against growth rather than a speed-up: the plans are
+now correct in shape, and they stay correct as the tables grow past cache.
+The real wins have to come from steps 2 and 3 (fewer round trips, and not
+aggregating the whole identifications table before filtering it).
+
+### Deliberately not done
+
+No index on `observations.status`. The analytics filter is
+`status IN ('completed','archived')`, which is 39,705 of 129,028 rows — at 31 %
+selectivity the planner will keep choosing a sequential scan, and the existing
+partial index (predicate `status IN ('pending','completed')`) is unusable for
+these queries anyway. Adding either variant would cost write throughput and buy
+nothing measurable.
+
+No index on `locations.is_valid` (914 rows, 416 kB, 0.1–0.2 ms per scan) and no
+change to the correlated `EXISTS` in `get_institution_filter()`, which
+correlates over those same 914 location rows and not, as the review supposed,
+row by row over photos.
+
 ## 2026-09-15 — Second storage gate, xeno-canto cross-check, PAM test fixture
 
 Three small items from the September–December backlog, plus a pre-existing test

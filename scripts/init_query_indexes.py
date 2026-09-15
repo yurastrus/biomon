@@ -25,11 +25,13 @@ Production note (as of 2026-06):
 
     To build these indexes on an already-large table in production,
     do NOT use plain CREATE INDEX (ACCESS EXCLUSIVE lock blocks
-    reads/writes during the build). Use outside a transaction:
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_photos_status
-            ON photos(status);
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_identifications_user_id
-            ON identifications(user_id);
+    reads/writes during the build). Use CREATE INDEX CONCURRENTLY,
+    outside a transaction, one statement at a time — for example:
+        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_photos_captured_at
+            ON photos(captured_at);
+    The four analytics indexes added on 2026-09-15 were built that way on
+    prod (photos is ~480 MB, so a plain CREATE INDEX would have taken the
+    site down for the duration of the build).
 
 Why separate from init_fast_upload / not via Alembic:
     ct_db is not managed by Alembic — only CTBase.metadata.create_all().
@@ -49,6 +51,15 @@ DDL_STATEMENTS = [
     "CREATE INDEX IF NOT EXISTS idx_photos_status ON photos (status)",
     "CREATE INDEX IF NOT EXISTS idx_identifications_user_id "
     "ON identifications (user_id)",
+    # Added 2026-09-15 for the analytics pass. Each one backs a filter or join
+    # that was measured doing a sequential scan on prod; see WORKLOG.
+    "CREATE INDEX IF NOT EXISTS idx_photos_captured_at ON photos (captured_at)",
+    "CREATE INDEX IF NOT EXISTS idx_observations_series_start "
+    "ON observations (series_start_time)",
+    "CREATE INDEX IF NOT EXISTS idx_observations_location_id "
+    "ON observations (location_id)",
+    "CREATE INDEX IF NOT EXISTS idx_identifications_species_id "
+    "ON identifications (species_id)",
 ]
 
 
