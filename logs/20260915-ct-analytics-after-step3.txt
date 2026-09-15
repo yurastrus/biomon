@@ -1,0 +1,55 @@
+database: localhost:5433/ct_db
+date:     2026-09-15
+repeats:  3 (median reported, min in brackets)
+
+── window 30d (2025-06-01 → 2025-07-01) ────────────────────────────
+  1 photos               104 ms  [102]
+  2 locations             96 ms  [93]
+  3 observations         104 ms  [92]
+  4 species count        102 ms  [100]
+  5 pending              224 ms  [209]
+  6 capture days          81 ms  [79]
+  7 contributors         125 ms  [111]
+  dashboard (old)        837 ms
+  A photos/loc/days       83 ms  [82]
+  B obs/species          103 ms  [98]
+  5 pending              185 ms  [171]
+  7 contributors          99 ms  [98]
+  dashboard              470 ms
+  top-species (old)      701 ms  [642]
+  top-species            128 ms  [123]
+
+── window 1y (2025-01-01 → 2026-01-01) ────────────────────────────
+  1 photos               190 ms  [188]
+  2 locations            346 ms  [345]
+  3 observations         193 ms  [192]
+  4 species count        172 ms  [171]
+  5 pending              212 ms  [212]
+  6 capture days         487 ms  [471]
+  7 contributors         650 ms  [641]
+  dashboard (old)       2251 ms
+  A photos/loc/days      527 ms  [526]
+  B obs/species          225 ms  [223]
+  5 pending              251 ms  [245]
+  7 contributors         697 ms  [682]
+  dashboard             1700 ms
+  top-species (old)      787 ms  [780]
+  top-species            333 ms  [325]
+
+── window all (2020-08-01 → 2026-09-15) ────────────────────────────
+  1 photos               214 ms  [212]
+  2 locations            400 ms  [388]
+  3 observations         232 ms  [215]
+  4 species count        214 ms  [211]
+  5 pending              279 ms  [279]
+  6 capture days         561 ms  [555]
+  7 contributors         846 ms  [833]
+  dashboard (old)       2748 ms
+  A photos/loc/days      601 ms  [592]
+  B obs/species          234 ms  [222]
+  5 pending              239 ms  [226]
+  7 contributors         853 ms  [832]
+  dashboard             1927 ms
+  top-species (old)      825 ms  [779]
+  top-species            350 ms  [348]
+

@@ -114,8 +114,65 @@ LIMIT 15
 """
 
 
+def dashboard_queries_new(session, start_date, end_date):
+    """What routes.dashboard() runs today: the same seven counters, grouped by
+    the base they share. Mirrors the route for an unfiltered admin scope."""
+    valid = valid_location_id_subquery()
+    photo_stats = (
+        session.query(
+            func.count(Photo.id),
+            func.count(distinct(Observation.location_id)),
+            func.count(func.distinct(func.date(Photo.captured_at))),
+        ).join(Observation, Photo.observation_id == Observation.id)
+        .join(Location, Observation.location_id == Location.id)
+        .filter(Photo.captured_at.between(start_date, end_date))
+        .filter(Location.id.in_(valid)))
+
+    identified = (
+        session.query(
+            Observation.id.label('observation_id'),
+            Identification.species_id.label('species_id'),
+            Observation.status.in_(['completed', 'archived']).label('counts_for_species'),
+        ).join(Photo, Photo.observation_id == Observation.id)
+        .join(Identification, Identification.photo_id == Photo.id)
+        .join(Location, Observation.location_id == Location.id)
+        .filter(Photo.captured_at.between(start_date, end_date),
+                Identification.species_id > 0)
+        .filter(Location.id.in_(valid)).distinct().subquery())
+    species_stats = session.query(
+        func.count(distinct(identified.c.observation_id)),
+        func.count(distinct(identified.c.species_id)).filter(
+            identified.c.counts_for_species))
+
+    pending = (
+        session.query(func.count(Observation.id))
+        .join(Location, Observation.location_id == Location.id)
+        .filter(Observation.series_start_time.between(start_date,
+                                                      end_date + timedelta(days=1)),
+                ~Observation.photos.any(Photo.identifications.any()))
+        .filter(Location.id.in_(valid)))
+
+    contributors = (
+        session.query(Identification.user_id,
+                      func.count(distinct(Photo.observation_id)))
+        .join(Photo, Identification.photo_id == Photo.id)
+        .join(Observation, Photo.observation_id == Observation.id)
+        .join(Location, Observation.location_id == Location.id)
+        .filter(Photo.captured_at.between(start_date, end_date))
+        .filter(Location.id.in_(valid))
+        .group_by(Identification.user_id)
+        .order_by(func.count(distinct(Photo.observation_id)).desc()).limit(10))
+
+    return [
+        ('A photos/loc/days', photo_stats),
+        ('B obs/species', species_stats),
+        ('5 pending', pending),
+        ('7 contributors', contributors),
+    ]
+
+
 def dashboard_queries(session, start_date, end_date):
-    """The seven aggregates routes.dashboard() runs, in page order."""
+    """The seven separate aggregates the page ran before 2026-09-15."""
     valid = valid_location_id_subquery()
     return [
         ('1 photos',
@@ -214,7 +271,15 @@ def main():
                 median, best = _timed(runner)
                 total += median
                 emit(f"  {name:18}{median * 1000:8.0f} ms  [{best * 1000:.0f}]")
-            emit(f"  {'dashboard total':18}{total * 1000:8.0f} ms")
+            emit(f"  {'dashboard (old)':18}{total * 1000:8.0f} ms")
+
+            total = 0.0
+            for name, query in dashboard_queries_new(session, start_date, end_date):
+                runner = query.all if name.startswith('7') else query.one
+                median, best = _timed(runner)
+                total += median
+                emit(f"  {name:18}{median * 1000:8.0f} ms  [{best * 1000:.0f}]")
+            emit(f"  {'dashboard':18}{total * 1000:8.0f} ms")
 
             bind = {'start_date': start_date.isoformat(),
                     'end_date': end_date.isoformat()}

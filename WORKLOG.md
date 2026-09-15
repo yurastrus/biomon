@@ -3,6 +3,74 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-09-15 — CT analytics, step 3 of 3: the dashboard's seven counters
+
+### Grouping followed the measurements, not tidiness
+
+The seven aggregates do not share one base, so "make it one query" was never the
+goal. Measured on prod before touching the route:
+
+* 1/2/6 (photos ⋈ observations ⋈ locations) merged into one pass: −47 % … −67 %
+* 3/4 (the same plus identifications), merged the obvious way — two
+  `count(DISTINCT)` over the join — was **60 % slower** on the wide windows.
+  Two distinct sorts over the full join cost more than two separate plans. A
+  subquery that de-duplicates once and counts over the result wins instead:
+  −45 % … −48 %
+* 5 (anti-join over observations alone) and 7 (grouped, limited) share nothing
+  with the others and were left as they are
+
+Seven statements became four. Dashboard total: 837 → 470 ms on 30 days,
+2251 → 1700 ms on a year, 2748 → 1927 ms on all time.
+
+The first merge attempt for 3/4 is worth remembering: batching is not free, and
+`count(DISTINCT)` is where it stops paying.
+
+### A counting bug, again from the biotope filter
+
+`.join(Location.biotopes)` fans out exactly as it did in top-species, and worse
+here: with three biotopes selected the photo counter read **1,504,083 against a
+database holding 808,460 photos**. 314 of 914 locations carry more than one
+biotope, up to six.
+
+This is not the legitimate case where one observation belongs to several
+biotopes and a per-biotope breakdown counts it in each. The dashboard has no
+breakdown — `biotopes` is a filter control ("Біотоп:", a multi-select) and the
+cards are totals. A filtered total that exceeds the unfiltered total is wrong
+under any reading. No `group_by(Biotope)` exists anywhere in the module, so
+nothing depended on the duplication.
+
+Replaced with a membership test against `location_biotopes`, which cannot fan
+out. Verified counter by counter against the old implementation: every value
+identical except the photo count under a biotope filter. Only `count(Photo.id)`
+moved — the others were already `COUNT(DISTINCT ...)` and therefore immune,
+which is why the bug survived this long.
+
+### Still affected, filed separately
+
+`/api/stats/locations` (the map markers) uses the same fan-out join with a plain
+`func.count(Photo.id)`, so marker counts inflate the same way.
+`query_contributor_stats` and `/api/behavior/data` also join that way but count
+DISTINCT, so they are correct.
+
+### A trap in testing this
+
+The first version of the regression test passed against the buggy code. The
+dashboard reads the filter with `request.args.getlist('biotopes')`, so the page's
+multi-select submits one parameter per biotope; a comma-joined value parses to
+nothing and the filter is silently skipped. The test was asserting on an
+unfiltered page. Fixed to use repeated parameters, then confirmed the tests fail
+against the old join and pass against the fix.
+
+Tests: `tests/test_ct_dashboard_biotope_fanout.py`. Full suite 2049 passed,
+44 skipped.
+
+### Where the time goes now
+
+Top contributors is the single most expensive item left (650–850 ms of the
+~1.9 s total) — a group-by over the whole photo ⋈ identification join with a
+`count(DISTINCT observation_id)`. That is the obvious next target if the page
+needs to get faster.
+
 ## 2026-09-15 — CT analytics, step 2 of 3: top-species, filter before aggregate
 
 Nothing was changed until the rewrite had been prototyped against the live
