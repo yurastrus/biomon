@@ -1,6 +1,6 @@
 """
 CT identify: sort options available to ALL users (not just moderators),
-and 'priority_random' additionally ranks already-voted series by photo count.
+and 'priority_random' splitting the queue into two tiers.
 
 GET /api/next-observation-for-identification
 
@@ -10,9 +10,10 @@ Covers:
   - review mode gains 'priority_random' as a real option (previously any
     non-recognized value, including the old default, fell through to plain
     'random');
-  - 'priority_random' (the shared default) ranks series with more photos
-    first among those that already have votes, and leaves untouched
-    (0-vote) series unaffected by photo count;
+  - 'priority_random' (the shared default) serves series somebody has already
+    identified at least once before untouched ones, and orders randomly WITHIN
+    each tier - it deliberately does NOT rank by vote count or photo count
+    (see test_ct_identify_skip.py for why that finer ranking was removed);
   - an unknown sort_by value falls back to 'priority_random' rather than
     erroring.
 """
@@ -64,9 +65,14 @@ def test_normal_mode_photo_count_desc_is_honored(auth_client, db_session, ct_rou
     assert resp.get_json()['observation_id'] == obs_big.id
 
 
-def test_priority_random_ranks_voted_series_by_photo_count(
+def test_priority_random_does_not_rank_voted_series_by_photo_count(
         auth_client, db_session, ct_route_session, make_ct_observation, make_ct_photo):
-    """Among already-voted series, the one with MORE photos comes first."""
+    """Within the voted tier the order is random, NOT by photo count.
+
+    The photo-count key used to sort before random(), which is what pinned the
+    queue to one series and broke "Пропустити". Both series here are in the same
+    tier, so repeated calls must reach both.
+    """
     obs_voted_small = make_ct_observation(photo_count=2)
     photo_voted_small = make_ct_photo(observation=obs_voted_small)
     _vote(ct_route_session, photo_voted_small, user_id=97)
@@ -76,9 +82,13 @@ def test_priority_random_ranks_voted_series_by_photo_count(
     _vote(ct_route_session, photo_voted_big, user_id=98)
 
     cl = auth_client(role='admin')
-    resp = cl.get(URL)  # default sort_by = priority_random
-    assert resp.status_code == 200
-    assert resp.get_json()['observation_id'] == obs_voted_big.id
+    served = set()
+    for _ in range(25):
+        resp = cl.get(URL)  # default sort_by = priority_random
+        assert resp.status_code == 200
+        served.add(resp.get_json()['observation_id'])
+    assert served == {obs_voted_small.id, obs_voted_big.id}, (
+        'the voted tier must be shuffled, not ordered by photo count')
 
 
 def test_priority_random_still_prefers_any_vote_over_untouched_big_series(
@@ -111,9 +121,15 @@ def test_review_mode_defaults_to_priority_random(
     _vote(ct_route_session, photo_big, user_id=98)
 
     cl = auth_client(role='admin')  # admin also has manager-equivalent review access
-    resp = cl.get(URL + '?review=true')
-    assert resp.status_code == 200
-    assert resp.get_json()['observation_id'] == obs_big.id
+    served = set()
+    for _ in range(25):
+        resp = cl.get(URL + '?review=true')
+        assert resp.status_code == 200
+        served.add(resp.get_json()['observation_id'])
+    # Both are in the voted tier, so the default must shuffle between them
+    # rather than pin the biggest one - that is what tells priority_random
+    # apart from photo_count_desc, checked in the next test.
+    assert served == {obs_small.id, obs_big.id}
 
 
 def test_review_mode_photo_count_asc_is_honored(

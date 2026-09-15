@@ -1,10 +1,12 @@
 """
-CT identification queue (#32, analogous to Idea 7 for PAM): prioritize
-series that are closer to consensus.
+CT identification queue: prioritize series somebody has already looked at.
 
-GET /api/next-observation-for-identification (normal mode) should serve:
-  contested (>=2 votes, no winner) -> one vote -> fresh,
-random within a group. The user's own votes still exclude a series.
+GET /api/next-observation-for-identification (normal mode) serves two tiers:
+series carrying at least one identification, then everything else, random
+WITHIN each tier. It used to rank the first tier finer - by number of distinct
+voters, then by photo count - and that is what broke "Пропустити": both keys
+sort before random(), so the single top-ranked series was returned forever
+(see test_ct_identify_skip.py). The user's own votes still exclude a series.
 Review mode is unaffected.
 
 Run:
@@ -64,11 +66,18 @@ def _admin_id(db_session):
     return db_session.query(User).filter_by(username='test_admin').first().id
 
 
-def test_contested_series_served_first(auth_client, db_session, three_series):
+def test_voted_series_served_before_fresh_ones(auth_client, db_session,
+                                               three_series):
+    """Both voted series outrank the untouched one; which of the two comes up
+    is random, so the assertion is about the tier, not about an ordering."""
     cl = auth_client(role='admin')
-    resp = cl.get(URL)
-    assert resp.status_code == 200
-    assert resp.get_json()['observation_id'] == three_series['contested'].id
+    served = set()
+    for _ in range(25):
+        resp = cl.get(URL)
+        assert resp.status_code == 200
+        served.add(resp.get_json()['observation_id'])
+    assert served == {three_series['contested'].id, three_series['one'].id}
+    assert three_series['fresh'].id not in served
 
 
 def test_one_vote_series_served_after_contested_resolved(

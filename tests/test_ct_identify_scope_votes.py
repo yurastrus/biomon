@@ -1,13 +1,13 @@
 """
 Identification queue under an institution scope (perf refactor, 2026-09-15).
 
-The votes-per-series aggregate behind `priority_random` used to run over EVERY
-pending series in the database, ignoring the scope and AI filters the outer
-query applies — ~600 ms of a ~770 ms request on prod. It now receives the same
+The first-tier subquery behind `priority_random` used to run over EVERY pending
+series in the database, ignoring the scope and AI filters the outer query
+applies — ~600 ms of a ~770 ms request on prod. It now receives the same
 narrowing predicates. These tests pin the behaviour that refactor must not
-change: a scoped queue still serves the contested series first, still ignores
-votes that belong to series outside the scope, and the counter still reports
-both numbers from its single-pass query.
+change: a scoped queue still puts identified series ahead of untouched ones,
+still ignores identifications that belong to series outside the scope, and the
+counter still reports both numbers from its single-pass query.
 
 Run:
     venv/Scripts/python -m pytest tests/test_ct_identify_scope_votes.py -v
@@ -48,9 +48,9 @@ def _vote(ct_session, photo, user_id, species_id=None):
 @pytest.fixture
 def two_institutions(ct_route_session, make_ct_location, make_ct_observation,
                      make_ct_photo):
-    """Inside the scope: a fresh series and a contested one (2 votes).
-    Outside it: a series with 3 votes — the most contested in the database,
-    so a votes aggregate that ignores the scope would rank it first."""
+    """Inside the scope: a fresh series and an identified one (2 votes).
+    Outside it: a series with 3 votes, so a first-tier subquery that ignores
+    the scope would still pull it into the in-scope queue."""
     sess = ct_route_session
 
     loc_in = make_ct_location(name='В межах установи')
@@ -77,13 +77,15 @@ def two_institutions(ct_route_session, make_ct_location, make_ct_observation,
     return {'fresh': obs_fresh, 'contested': obs_contested, 'outside': obs_outside}
 
 
-def test_scoped_queue_still_prioritises_the_contested_series(
+def test_scoped_queue_still_prioritises_the_identified_series(
         auth_client, db_session, two_institutions):
-    """Narrowing the votes aggregate must not lose the votes of in-scope series."""
+    """Narrowing the first-tier subquery must not lose in-scope identifications:
+    the identified series still beats the untouched one inside the scope."""
     cl = auth_client(role='admin')
-    resp = cl.get(f'{NEXT_URL}?scope_institution_id={INST_IN_SCOPE}')
-    assert resp.status_code == 200
-    assert resp.get_json()['observation_id'] == two_institutions['contested'].id
+    for _ in range(10):
+        resp = cl.get(f'{NEXT_URL}?scope_institution_id={INST_IN_SCOPE}')
+        assert resp.status_code == 200
+        assert resp.get_json()['observation_id'] == two_institutions['contested'].id
 
 
 def test_scoped_queue_never_serves_a_series_from_another_institution(
@@ -99,13 +101,19 @@ def test_scoped_queue_never_serves_a_series_from_another_institution(
     assert outside_id not in served
 
 
-def test_unscoped_queue_serves_the_globally_most_contested_series(
+def test_unscoped_queue_reaches_identified_series_of_both_institutions(
         auth_client, db_session, two_institutions):
-    """Without a scope the old ranking still applies across institutions."""
+    """Without a scope both identified series are in the same tier and the
+    untouched one stays behind them."""
     cl = auth_client(role='admin')
-    resp = cl.get(NEXT_URL)
-    assert resp.status_code == 200
-    assert resp.get_json()['observation_id'] == two_institutions['outside'].id
+    served = set()
+    for _ in range(25):
+        resp = cl.get(NEXT_URL)
+        assert resp.status_code == 200
+        served.add(resp.get_json()['observation_id'])
+    assert served == {two_institutions['contested'].id,
+                      two_institutions['outside'].id}
+    assert two_institutions['fresh'].id not in served
 
 
 def test_scoped_stats_count_only_in_scope_series(auth_client, db_session,

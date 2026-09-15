@@ -3150,3 +3150,97 @@ the template, since a 4 kB URL is invisible to any server-side test. Full suite
 
 Deploy: code only, `shared-ct` submodule, no schema change. Old bookmarks
 carrying the full id list keep working - they are still a valid explicit list.
+
+
+## 2026-09-15 (third pass) — "Пропустити" could not skip, and why
+
+Notion task "biomon CT identify: «Пропустити» у режимі «Пріоритет визначених»
+вертає ту саму серію" (from the inbox, 11.09.2026). Reported behaviour: the
+default mode is "Пріоритет визначених", and pressing "Пропустити" returns the
+same series again, so a series you cannot identify cannot be put aside.
+
+### The cause is an ordering key, not the button
+
+`priority_random` ordered by
+
+```
+votes DESC, (photo_count WHEN votes > 0) DESC, random()
+```
+
+`random()` is the THIRD key. It only decides ties in the first two. Counted on
+production for one verifier:
+
+| votes | photo_count | series sharing this rank |
+|---|---|---|
+| 4 | 9 | **1** |
+| 4 | 3 | 6 |
+| 3 | 24 | **1** |
+
+The top rank is held by exactly one series, so `LIMIT 1` returns it
+deterministically, for as long as it stays top. The skip button re-runs the same
+query with the same parameters — neither the page nor the server remembers
+anything — so it physically cannot move. The task's own phrasing ("why does it
+serve a RANDOM series") had it the other way round: that branch does not have
+too much randomness, it has too little, and only in the tail.
+
+### What was decided
+
+Yuriy's call: drop the fine ranking entirely. Two tiers, random inside each —
+series someone has identified at least once, then everything else. That is the
+whole ordering.
+
+This is a deliberate behaviour change, not only a bug fix. The vote-count and
+photo-count keys were added on purpose (#32: bring series closer to consensus
+forward, and resolve big series sooner because they hold more photos and more
+disk). They are removed because a queue you cannot step through costs more than
+the ordering gained: a verifier stuck on an unidentifiable series has no way
+past it.
+
+### Implementation
+
+`_identify_votes_subq` becomes `_identify_voted_subq`: it answers "has anyone
+identified this series", not "how many", so `count(DISTINCT user_id)` and the
+`GROUP BY` give way to a plain `DISTINCT` over the join. The sort is then
+`(voted.observation_id IS NOT NULL) DESC, random()`.
+
+Cost is unchanged — 334 ms against the 344 ms of this morning's version, with
+the same narrowing predicates passed in. Two alternatives were measured and
+rejected: a correlated `EXISTS` in the ORDER BY (693 ms — it forces a full scan
+of photos joined to identifications) and splitting into two queries, tier-1
+first with a fallback (376 ms for tier 1 alone, i.e. no better and two round
+trips).
+
+### What this does NOT do
+
+The task's acceptance criterion was two-part: successive skips give different
+series, AND a skipped series does not come back within the session. Only the
+first part is solved. Nothing remembers what was skipped, so a repeat is
+possible by chance — with ~1900 candidates in the first tier on production the
+odds of an immediate repeat are about 0.05%, which is why this reads as fixed in
+practice. A strict "never again this session" still needs a skip list (client-
+side set of ids sent as an exclude parameter is the cheap option); left out
+because it was not asked for and it re-grows the query string we just shrank.
+
+### Tests
+
+4 new in `tests/test_ct_identify_skip.py`, built around five identified series
+deliberately uneven in both of the removed keys: repeated requests must reach
+every series in the tier; the series the old ranking pinned (3 voters, 40
+photos) must not come back every time; the untouched tier must not leak forward;
+and with nothing identified, the untouched tier is shuffled too rather than
+ordered by photo count. Both regression tests were checked against the old code
+with the submodule stashed — they fail there, so they are not vacuous.
+
+Three existing files had to change, because they pinned the ranking that was
+just removed: `test_ct_identification_priority.py` (contested-first becomes
+tier-membership), `test_ct_identify_sort_options.py` (the photo-count rank
+within the voted tier becomes its negation — the tier must shuffle), and
+`test_ct_identify_scope_votes.py` from this morning. Full suite: 2026 passed,
+44 skipped, 1 failed — `test_verification_institutions.py::test_the_queue_shows
+_the_applicants_note`, unrelated to identify and green on a re-run of that file
+(28 passed). Second flaky test seen today; both were in the full-suite run and
+neither reproduces in isolation, so the suite has an isolation problem worth a
+separate look.
+
+The UI label "Пріоритет визначених (за замовчуванням)" still describes the
+behaviour exactly, so no `_()` string changed and the babel cycle was not needed.
