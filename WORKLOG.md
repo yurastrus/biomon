@@ -3075,8 +3075,78 @@ consensus path was touched. Tests: 6 new in
 series first; out-of-scope votes stay invisible; unscoped ranking unchanged;
 both counters from the single aggregate; a shape assertion that the winning pass
 stays restricted to candidates, since that cost is invisible to behavioural
-tests). Full suite green.
+tests). Full suite green: 2023 passed, 44 skipped. (An earlier run of it had
+4 failures in `tests/test_pam_cooccurrence.py`, which also reproduced on a
+clean stashed tree — they are flaky, not broken, and green on a re-run in a
+quiet environment. The SSH tunnel and concurrent pytest runs that were up at
+the time are the likely cause.)
 
 Deploy: code only, in the `shared-ct` submodule — no migration, no index, no
 script. Commit in `shared-ct`, then update the pointer in `biomon` and in
 `/var/www/myproject`.
+
+
+## 2026-09-15 (later) — the dashboard URL carried every location id
+
+Spotted from a DevTools screenshot: `/camera-traps/dashboard` sends a
+`locations` parameter that spells out all 914 ids, ~4 kB of query string, even
+when nothing is actually filtered.
+
+### It is not a database problem
+
+Worth saying, because that was the first guess. `Location.id IN (914 ids)` costs
+PostgreSQL nothing: the total-photos query runs 157 ms without it and 115 ms
+with it - the difference is noise, the planner hashes the list either way. So no
+query was changed on account of the list's length.
+
+### It is a semantics problem, and the size is a symptom
+
+The parameter had two states where it needed three. A list meant "these", an
+empty string meant "no filter". There was no way to say "all", so the page
+enumerated everything instead - and no way to say "nothing", because an empty
+selection joins to that same empty string. Two consequences:
+
+* **Deselecting every marker showed ALL data.** "Зняти виділення" then
+  "Застосувати" silently inverted itself into the widest possible query.
+* **A bookmark froze the location set.** A dashboard saved as "all data" kept
+  the 914 ids it had that day and silently stopped covering locations added
+  afterwards. The URL size is also a latent 414: nginx takes an 8 kB request
+  line by default, and the ids alone are already at 4 kB.
+
+### The fix
+
+`parse_location_ids()` plus a `'none'` sentinel give the parameter its third
+state: `''` no filter, `'none'` no locations, `'1,2,3'` exactly those. `'none'`
+becomes `[NO_LOCATIONS_SENTINEL_ID]`, an id no row can carry, so it narrows all
+nine downstream queries in `dashboard` and `stats_top_species` without any of
+them needing to know about it. On the page, `serialiseSelection()` emits `''`
+when the selection covers every visible marker.
+
+Verified in a browser against the tunnelled production database: 30 markers
+loaded and the hidden input holds `''` instead of 30 ids; "deselect all" gives
+`none`; "invert" and "select all" give `''`; ticking one marker gives `1`. The
+rendered metrics follow - no parameter 110 626 photos / 30 locations,
+`locations=none` all six stat cards at zero, `locations=1` a genuine subset.
+
+### One pre-existing bug found on the way
+
+`stats_top_species` bound `IN :location_ids` (and `:biotope_ids`) to a plain
+tuple inside a `text()` statement. That works only because psycopg2 happens to
+render tuples as `(1,2,3)`; on any other driver it raises, which is why the
+endpoint had never been covered by a test. Both are declared
+`bindparam(..., expanding=True)` now, so SQLAlchemy does the expansion and the
+statement is portable. Checked on PostgreSQL with `locations=1,2,3` - 15 species
+returned, as before.
+
+Also noticed and NOT fixed: `dashboard` catches every exception and renders
+zeros. That is how the "deselect all" bug stayed invisible, and it made the
+first version of a new test pass vacuously. Worth revisiting separately.
+
+Tests: 11 in `tests/test_ct_dashboard_location_param.py` - the three parameter
+states, the sentinel being negative so it cannot collide with a real location,
+`none` zeroing every stat card and emptying the chart, and a shape assertion on
+the template, since a 4 kB URL is invisible to any server-side test. Full suite
+2023 passed, 44 skipped, 0 failed.
+
+Deploy: code only, `shared-ct` submodule, no schema change. Old bookmarks
+carrying the full id list keep working - they are still a valid explicit list.
