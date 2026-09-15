@@ -152,16 +152,18 @@ def dashboard_queries_new(session, start_date, end_date):
                 ~Observation.photos.any(Photo.identifications.any()))
         .filter(Location.id.in_(valid)))
 
-    contributors = (
-        session.query(Identification.user_id,
-                      func.count(distinct(Photo.observation_id)))
+    contributor_pairs = (
+        session.query(Identification.user_id.label('user_id'),
+                      Photo.observation_id.label('observation_id'))
         .join(Photo, Identification.photo_id == Photo.id)
         .join(Observation, Photo.observation_id == Observation.id)
         .join(Location, Observation.location_id == Location.id)
         .filter(Photo.captured_at.between(start_date, end_date))
-        .filter(Location.id.in_(valid))
-        .group_by(Identification.user_id)
-        .order_by(func.count(distinct(Photo.observation_id)).desc()).limit(10))
+        .filter(Location.is_valid.is_(True)).distinct().subquery())
+    contributors = (
+        session.query(contributor_pairs.c.user_id, func.count())
+        .group_by(contributor_pairs.c.user_id)
+        .order_by(func.count().desc()).limit(10))
 
     return [
         ('A photos/loc/days', photo_stats),

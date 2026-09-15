@@ -3,6 +3,65 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-09-15 — CT analytics, follow-up: top contributors
+
+The most expensive counter left after step 3. The interesting part is not the
+15 % it gained but the cliff it was heading for.
+
+### What the plan was actually doing
+
+`count(DISTINCT observation_id)` grouped by user. Postgres cannot hash-aggregate
+a DISTINCT aggregate, so it sorted every joined row first:
+
+    Sort (rows=423862) Sort Method: quicksort Memory: 25534kB
+      -> GroupAggregate (rows=33)
+
+25.5 MB of sort against a `work_mem` of 32 MB on prod — and 33 groups out of
+423,862 rows. The next ~25 % of data growth pushes that sort to an external
+merge on disk, at which point the query does not degrade, it falls off a cliff.
+
+De-duplicating the (user, observation) pairs in a subquery and counting over the
+result lets the planner hash both steps. Confirmed:
+
+    HashAggregate (rows=33)
+      -> HashAggregate (rows=55287)
+
+The only sort left is a top-N heapsort over 33 rows, 25 kB.
+
+### Also: one scan less per counter
+
+Every query in the dashboard's `_scope()` already joins Location, so
+`valid_location_id_subquery()` was re-scanning the table a second time for the
+validity rule. Reading `Location.is_valid` off the joined row is the same rule
+without the extra scan. The helper stays as it is for the query sites that do
+not join Location.
+
+### Measured
+
+| Window | Contributors before | after | Dashboard total |
+|---|---|---|---|
+| 30 days | 110 ms | 98 ms | 757 → 484 ms |
+| 1 year | 649 ms | 608 ms | 2325 → 1594 ms |
+| all time | 866 ms | 725 ms | 2735 → 1876 ms |
+
+Results verified identical to the previous implementation on all three windows,
+and the six stat cards render the same numbers as before.
+
+### Why the gain is only 15 %, and what would actually fix it
+
+The remaining time is the join itself, not the aggregation: 619,588
+identifications sequentially scanned and hashed against 648,656 photos in the
+window, ~600 ms of the ~650 ms. No index changes that — every row in the window
+genuinely participates. The cost is linear in the data and will keep growing.
+
+The structural fix is to stop computing it inside the page request: either load
+the contributors panel asynchronously after the page renders (the module already
+does this for other analytics), or precompute it. Filed as a separate task
+rather than bolted on here, because it changes how the page loads, not what it
+computes.
+
+Full suite 2049 passed, 44 skipped.
+
 ## 2026-09-15 — CT analytics, step 3 of 3: the dashboard's seven counters
 
 ### Grouping followed the measurements, not tidiness
