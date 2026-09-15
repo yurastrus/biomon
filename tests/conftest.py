@@ -284,6 +284,11 @@ def mock_pam_conn():
 
         patches = [
             patch('app.pam.utils.get_pam_db_connection', return_value=conn),
+            # Routes import the helper into their own namespace, so patching it
+            # in app.pam.utils alone leaves route handlers talking to the real
+            # database — they then fail and redirect, and the test sees a 302
+            # instead of the page it asked for.
+            patch('app.pam.routes.get_pam_db_connection', return_value=conn),
         ]
         started = []
         try:

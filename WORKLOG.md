@@ -1,7 +1,71 @@
-﻿# WORKLOG — biomon
+# WORKLOG — biomon
 
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
+
+## 2026-09-15 — Second storage gate, xeno-canto cross-check, PAM test fixture
+
+Three small items from the September–December backlog, plus a pre-existing test
+failure found on the way.
+
+### 1. Second storage gate: no full-size originals below 20 GB free
+
+**Problem.** The only storage guard was `MIN_UPLOAD_FREE_MB = 500`, which
+refuses to *start* a batch. That is a cliff: intake works normally until half a
+gigabyte is left, then stops dead. The 2026-07-08 disk-full incident is what
+that looks like in practice.
+
+**Change.** `MIN_ORIGINALS_FREE_GB = 20` in `app/camera_traps/routes.py`. While
+free space is under it, uploads keep running but only the thumbnail is stored;
+full-size originals are refused. Originals are what fills the volume (a raw
+frame is roughly 100x a thumbnail), so dropping them buys weeks of intake
+instead of stopping data collection.
+
+**Where it is enforced.** Server-side in `process_single_upload`, per photo,
+because the disk can fill mid-batch — the client's `save_original=true` is
+downgraded to `false` there. The upload page additionally disables the
+"keep originals" checkbox and says why, so the browser compresses before
+sending instead of pushing full frames the server will not keep. Same
+degradation rule as the existing gate: if free space cannot be measured, allow,
+never false-block.
+
+**Log noise.** One warning per batch, not per photo (`_originals_blocked_batches`,
+bounded, per worker), so a 10k-photo upload writes one line.
+
+Threshold was set at 20 GB on the user's call (proposed 50).
+
+Tests: `tests/test_ct_upload_originals_gate.py` (9) — thresholds including the
+inclusive boundary and the unmeasurable-disk case, the server-side downgrade,
+and the page-side hint.
+
+### 2. xeno-canto link on the PAM verify page
+
+A verifier judging a BirdNET segment often needs a reference recording. That
+meant leaving the queue and searching by hand. The page now carries a link
+filtered to the current segment's species.
+
+`api_get_next_segment` gained a `scientific_name` field. It is sent separately
+rather than parsed out of `species_display_name`, which is
+`"Common name (Scientific name)"` and not safely parseable. The link is hidden
+when a segment carries no scientific name, so it can never open an empty search.
+
+Tests: `tests/test_pam_verify_xenocanto_link.py` (4).
+
+### 3. Pre-existing failure: `mock_pam_conn` patched only half the call sites
+
+`tests/test_pam_cooccurrence.py` had 4 failures, present before this session's
+changes (verified by stashing them). The `mock_pam_conn` fixture patched
+`app.pam.utils.get_pam_db_connection` only, but route handlers import the helper
+into their own namespace. They therefore talked to the real database, failed and
+redirected, and the tests saw a 302 instead of the page. Fixed by also patching
+`app.pam.routes.get_pam_db_connection`.
+
+Full suite after: 2040 passed, 44 skipped.
+
+### Note on repository boundaries
+
+Items 1 and 2 land inside the public submodules `shared-ct` and `shared-pam`,
+which `myproject` also consumes. Neither is pushed from here.
 
 ## 2026-08-20 — Opt-out for the weekly identification reminder
 
