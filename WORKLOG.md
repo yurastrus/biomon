@@ -4026,3 +4026,62 @@ turning it red, coordinates rendered, and the selection cleared when switching t
 a foreign institution.
 
 Full suite: **2137 passed, 44 skipped**.
+
+---
+
+## 2026-09-18 — The third camera family, tackled and only half solved
+
+The user hit `info bar not found in the frame` on the first three clips they
+tried — UOVision AVI from Ставчанське, 640×480, MJPG. They are the third layout
+documented earlier: `5sec 13/08/2025 13:09:41` in white with a dark outline,
+painted straight onto the picture with no strip behind it. Not an exotic case,
+then, but a common one.
+
+### Solved: finding the text
+
+The feature that separates these glyphs from the picture is the **outline**. Snow,
+sky and sunlit foliage are all bright, but only a drawn glyph is bright *and* has
+something much darker within a couple of pixels on both sides. `stroke_mask()`
+tests exactly that, and scoring rows by its density locates the line of text on
+both cameras of this family — including the NVTIM clip that defeated every
+earlier attempt (flatness, brightness, inter-frame change, static-and-bright).
+
+A scored window then has to be grown to the text's real extent, because the
+best-scoring fixed window lands where the text is densest, not where it starts,
+and a beheaded glyph never matches a whole one.
+
+### Not solved: reading the glyphs
+
+Cutting glyphs out of a photograph leaves them noisy. Clustering identical shapes
+— the mechanism the whole calibration rests on — falls apart: **115 clusters for
+140 glyphs**, i.e. nearly every glyph is unique, so the expected text cannot be
+laid over them. Taking the grey pixels instead of the binary mask helps (62
+clusters for 101) but not nearly enough.
+
+The honest diagnosis: segment-then-cluster is the wrong shape of algorithm here.
+What would probably work is matching whole digit templates by sliding correlation
+across the band, seeded from one hand-read frame and refined over the clip, so no
+step depends on two independently segmented glyphs being pixel-similar. That is a
+piece of work, not a tweak.
+
+### What shipped
+
+The groundwork (`LAYOUT_OVERLAY`, `stroke_mask`, `find_overlay_bands`,
+`overlay_glyphs`, `calibrate_overlay_profile`) plus, more importantly, an honest
+failure. Calibration now tries the strip, then the title card, then the overlay,
+and when all three fail it checks whether the clip carries outlined text and says
+so:
+
+> Ця камера друкує час просто поверх зображення, а не на окремій смузі. Така
+> розкладка поки не читається.
+
+instead of "the frames do not match the given timestamp and date format", which
+sends the operator hunting for a typo they did not make. Verified on real clips of
+all three families: UOVision and NVTIM both get the new message, Fujifilm still
+calibrates.
+
+`VideoUploadError` grew a `code` so the route can translate the cases the page has
+words for, without dragging the translation machinery into a module that two
+projects share.
+
+Full suite: **2137 passed, 44 skipped**.
