@@ -4085,3 +4085,43 @@ words for, without dragging the translation machinery into a module that two
 projects share.
 
 Full suite: **2137 passed, 44 skipped**.
+
+---
+
+## 2026-09-18 — Video upload restricted to admin
+
+While the reader is still being taught camera families, the page is admin-only.
+The reason is the same one that runs through this whole feature: a mis-read
+capture time is invisible once it is in the database. It misgroups series, shifts
+activity-by-hour and distorts phenology, and nobody notices for a year. Until
+every family in the archives reads cleanly, the people who can recognise a wrong
+reading are the only ones who should be producing them.
+
+All four video routes moved from `manager` to `admin`. The hub card sits under
+`is_admin` and, deliberately, **outside** the `can_upload` block: that flag is the
+manager role, and an admin who is not also a manager must still reach the page
+the route grants them.
+
+`tests/test_ct_video_access.py` covers it: manager, verifier and anonymous are
+turned away from each of the four endpoints, an admin gets past the gate, and the
+hub shows the card to an admin and not to a manager.
+
+### A fixture quirk worth knowing
+
+The first version of the hub test built two logged-in clients in one test and
+compared them. It failed — and for an instructive reason: **the second
+`auth_client` keeps acting as the first user**. Verified directly:
+
+```
+manager -> test_manager ['manager'] has_role(admin) False
+admin   -> test_manager ['manager'] has_role(admin) False
+```
+
+So a test that compares two roles side by side silently compares one role with
+itself. Mine failed loudly only because the expectation happened to be the
+asymmetric one; the reverse test would have passed for entirely the wrong reason.
+Split into one client per test, with a note in the file. The fixture itself is
+shared by the whole suite and was left alone, but it is worth a look: other
+role-comparison tests written that way would be quietly meaningless.
+
+Full suite: **2155 passed, 44 skipped**.
