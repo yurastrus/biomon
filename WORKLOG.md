@@ -3922,3 +3922,68 @@ gets an honest refusal rather than a second server-side code path built on spec.
   folder, deleted only after the frames are verified on disk and their rows
   committed with real capture times, with the existing stale-batch cleanup as a
   second line so nothing accumulates.
+
+---
+
+## 2026-09-18 — Video upload: styling, and two real defects it uncovered
+
+The page was live but visibly broken, and looking into why turned up two faults
+that had nothing to do with looks.
+
+### Why it looked broken
+
+It used Bootstrap classes, but the base layout does not load Bootstrap: every CT
+page that wants it pulls it in itself, as `upload_fast.html` does. **jQuery is not
+loaded by the base layout either**, and the whole page script is jQuery, so the
+page was not merely unstyled -- nothing on it ran at all.
+
+Rebuilt the markup on the module's own conventions (`step-card` / `step-title` /
+`step-num`, the same numbered cards the photo page uses) rather than Bootstrap
+cards, so the two pages now read as one product.
+
+Also dropped the blueprint `static_folder` added earlier: the module already has
+`serve_ct_static`, and two ways of serving one directory is one too many.
+
+### Defect 1: an id collision with the photo page
+
+`camera_traps.css` carries four rules for `#upload-btn`, meant for the photo
+upload page, including `width: 100%`. This page reused the id and inherited them,
+which is why its button stretched across the whole panel. Page-specific ids now
+(`#video-upload-btn`, `#video-read-btn`, `#video-progress-bar`,
+`#video-progress-text`, `#video-location-select`). Checked the other twenty ids
+on the page against the stylesheet; this was the only clash.
+
+### Defect 2: frames named by position defeated the duplicate check
+
+Prompted by the user asking whether duplicate protection works here at all.
+
+It does -- video frames go through the same `process_single_photo`, whose key is
+`(location, original_filename, captured_at)` -- but only as long as the name is
+stable. Frames were named by position (`DSCF0006_003.jpg`), and position is not
+stable: re-run the same clip at one frame every two seconds and the frame from
+t+2s arrives as `_001` instead of `_002`. That name the database has not seen, so
+a second photo of the very same second is stored and the check never fires.
+
+Frames are now named after the moment they were taken (`DSCF0006_143302.jpg`), so
+the key is identical whatever sampling step produced the frame.
+
+### Defect 3: the per-frame reading never reached the database
+
+Found while fixing the naming. `read_clip` deliberately keeps each frame's own
+reading -- that is the point of the cross-frame voting, and on `DSCF0355` the
+overlay clock genuinely skips a second between two samples. But the upload path
+recomputed every frame as `start + index * step` from the token, throwing that
+away and dating every frame after a skip one second early.
+
+The token now carries the offsets themselves. Frames beyond the sampled ones keep
+the even-step fallback, which is documented and accurate to the second or two an
+overlay clock drifts.
+
+### Verification
+
+Rendered the page with production-shaped data and inspected it in a browser:
+jQuery 3.6.0 present, `CTVideoSlicer` loaded, handlers bound, the upload button
+back to its natural 142px instead of 871px, fields in two columns. Only console
+error was the site's global stylesheet, which the isolated preview does not serve.
+
+Full suite: **2137 passed, 44 skipped** (4 new tests for the offsets and naming).

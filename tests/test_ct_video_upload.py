@@ -203,3 +203,63 @@ def test_an_unreadable_clip_is_reported_not_guessed(ctx):
 def test_reading_an_empty_clip_is_refused(ctx):
     with pytest.raises(vu.VideoUploadError):
         vu.read_clip([], vt.CameraProfile(), 'clip.avi')
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Per-frame timing, and why it has to survive the trip to the database
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_each_frame_keeps_its_own_reading_when_the_clock_skips(ctx):
+    """A camera's overlay clock runs independently of the frame rate.
+
+    On a real clip the seconds went 25, 26, 28, 29 -- one second skipped between
+    two samples. Assuming a perfectly even step would record every frame after
+    the skip one second early, which is exactly the accuracy the per-frame
+    reading exists to protect. So the offsets travel inside the token.
+    """
+    start = datetime(2026, 7, 28, 6, 35, 25)
+    token = vu.issue_clip_token('batch-1', 'DSCF0355.AVI', start, 1.0, None,
+                                [0, 1, 3, 4, 5])
+
+    assert vu.frame_capture_time(token, 'batch-1', 'DSCF0355.AVI', 2) == \
+        start + timedelta(seconds=3)
+    assert vu.frame_capture_time(token, 'batch-1', 'DSCF0355.AVI', 4) == \
+        start + timedelta(seconds=5)
+
+
+def test_frames_past_the_read_ones_fall_back_to_the_even_step(ctx):
+    # Only the first frames are read; the rest of a long clip is spaced evenly,
+    # which is accurate to the second or two an overlay clock drifts.
+    start = datetime(2026, 7, 20, 14, 2, 33)
+    token = vu.issue_clip_token('batch-1', 'clip.avi', start, 1.0, None, [0, 1, 2])
+
+    assert vu.frame_capture_time(token, 'batch-1', 'clip.avi', 7) == \
+        start + timedelta(seconds=7)
+
+
+def test_offsets_are_reported_so_the_page_can_name_frames_to_match(ctx):
+    """The file name is half of the duplicate key, so it must follow the clock.
+
+    Frames are named after the moment they were taken rather than their position
+    in the clip. Numbered by position, the same clip re-uploaded at a different
+    sampling step would produce names the database has not seen, and a second
+    copy of the very same second would be stored despite the duplicate check.
+    """
+    start = datetime(2026, 7, 20, 14, 2, 33)
+    profile = vu.calibrate([[_jpeg(f) for f in _clip(start, count=10)]],
+                           [start], 'ymd', '24', 4)
+
+    result = vu.read_clip([_jpeg(f) for f in _clip(start, count=6)],
+                          profile, 'DSCF0006.AVI')
+
+    assert result['offsets'] == [0, 1, 2, 3, 4, 5]
+
+
+def test_a_token_without_offsets_still_works(ctx):
+    # Tokens are short-lived, but one issued before offsets existed must not
+    # break an upload that is already in flight.
+    start = datetime(2026, 7, 20, 14, 2, 33)
+    token = vu.issue_clip_token('batch-1', 'clip.avi', start, 2.0, None)
+
+    assert vu.frame_capture_time(token, 'batch-1', 'clip.avi', 3) == \
+        start + timedelta(seconds=6)
