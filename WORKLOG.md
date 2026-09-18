@@ -3987,3 +3987,42 @@ back to its natural 142px instead of 871px, fields in two columns. Only console
 error was the site's global stylesheet, which the isolated preview does not serve.
 
 Full suite: **2137 passed, 44 skipped** (4 new tests for the offsets and naming).
+
+---
+
+## 2026-09-18 — Video upload: choosing the location
+
+The page offered one flat dropdown of every location. There are over a thousand,
+so it was unusable in practice. It now has the same three ways in as the photo
+upload page, in the same order, because that is the step people already know:
+
+* **institution** narrows the list, cascading into the location dropdown and the
+  map at once;
+* **search** — select2 on the location dropdown, so a location is found by typing
+  part of its name;
+* **map** — Leaflet with a marker per location, click to select. Often the only
+  thing an operator remembers about a location is roughly where it is.
+
+Choosing on the map marks the marker red and shows the coordinates under the
+dropdown; choosing in the dropdown pans the map to it. Switching to an
+institution the current location does not belong to clears the selection rather
+than leaving a stale one behind.
+
+Deliberately left out of the port: the date and photo-count filters, and the
+"create a new location" branch. The filters exist to explore a photo archive,
+which is not what someone uploading a clip is doing, and creating a location
+belongs on the page that manages locations.
+
+A location without coordinates keeps its place in the dropdown and simply has no
+marker, instead of being silently unselectable.
+
+No new translatable strings: everything the step needed was already in the
+catalogue from the photo page.
+
+Verified in a browser against 26 synthetic locations across two institutions:
+27 options unfiltered, 15 and 13 after each institution, 12 markers for the
+institution with no coordinate gap, marker click selecting the right location and
+turning it red, coordinates rendered, and the selection cleared when switching to
+a foreign institution.
+
+Full suite: **2137 passed, 44 skipped**.
