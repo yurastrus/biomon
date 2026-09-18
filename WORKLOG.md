@@ -3627,3 +3627,298 @@ separate look.
 
 The UI label "Пріоритет визначених (за замовчуванням)" still describes the
 behaviour exactly, so no `_()` string changed and the babel cycle was not needed.
+
+---
+
+## 2026-09-18 — Camera-trap video support, step 1 of 2: reading the capture time
+
+### Why
+
+Field users shoot video as well as stills, and the camera-traps module accepts
+photos only, so those observations were simply being lost. The plan agreed with
+the user: cut each clip into frames at one frame per second (a ten-second clip
+becomes a ten-photo series), which shrinks 70 MB to roughly 3 MB and lets the
+frames flow through the existing photo pipeline untouched.
+
+The whole idea stands or falls on one thing: can we recover *when* the clip was
+taken? This step answers that. The page itself is step 2.
+
+### What the sample videos actually contain
+
+Five Fujifilm-style clips from the user's desktop, and three Cuddeback clips
+pulled from the FZS Carpathians archive (`03_Skolivski_Beskydy_NNP_SBNNP/
+SMM_Summer_Mammal_Monitoring_SBNNP_2024/.../300CUDDY`).
+
+| | Fujifilm-style AVI | Cuddeback M4V |
+|---|---|---|
+| Container | AVI, MJPG, 30 fps, 1920x1080 | MP4/H.264, 8 fps, 1280x720 |
+| Capture date in metadata | none at all | `CreateDate 2015:05:21` — **wrong by nine years** |
+| EXIF in the frames | none | none |
+| Where the time really is | info bar burned into every frame | a title card shown before the footage |
+| Format | `2026/07/20 14:02:33`, 24-hour, zero-padded | `7/9/2024 3:51PM`, 12-hour, unpadded, **no seconds** |
+| Footage frames | carry the bar | carry no overlay whatsoever |
+
+Two findings changed the design:
+
+1. **Container metadata cannot be trusted even when present.** The Cuddeback
+   files carry a creation date that is years off and would still pass a naive
+   sanity check, since 2015 is not an absurd year. The burned-in overlay is the
+   only honest source.
+2. **There is more than one layout**, and they need different readers. This is
+   why the module is built around two named layouts rather than one parser with
+   options bolted on.
+
+### How the reader works
+
+`app/camera_traps/video_timestamp.py`, new, in the `shared-ct` submodule. Depends
+on Pillow and numpy only, both already in `requirements.txt`, so the production
+box needs no new packages.
+
+* **Finding the bar** — not by a fixed fraction of the frame, which breaks on a
+  different aspect ratio or a top-mounted bar. Rows are scored by *flatness*: the
+  share of pixels sitting on the row median. Measured on the real clips, bar rows
+  score 0.66–1.00 and photographed rows 0.09–0.32, a margin wide enough to decide
+  on. Candidates at both edges are then confirmed by whether glyphs can actually
+  be cut out of them, so a flat sky or a letterbox edge is rejected.
+* **Learning the glyphs** — no Tesseract, no system binary, no font knowledge.
+  Calibration asks the operator for one thing: the timestamp visible on the first
+  frame. The rest falls out of the clock ticking — frame *k* must read `t0 + k`
+  seconds, so the expected character at every position of every frame is known,
+  and matching that equality structure against clusters of identical shapes
+  labels every digit. Ten frames normally expose all ten.
+* **Reading** — every glyph is matched, the bar becomes a string, and the
+  timestamp is found in it by pattern, so nothing depends on position. Position
+  genuinely shifts: the bar slides sideways when the temperature goes from
+  "9 C" to "32 C".
+* **Cross-checking** — each frame is read independently and the readings must sit
+  on the line `t = t0 + k`. The consensus is found by vote, but a frame's own
+  reading is kept whenever it lands near the line; only a frame that wanders far
+  off it is treated as misread and repaired. This matters: on `DSCF0355` the
+  overlay clock genuinely skips a second between two samples, and overruling it
+  would have recorded eight frames one second wrong.
+* **Refusing to guess** — an unreadable clip raises rather than returning
+  something plausible. A wrong capture time silently corrupts series grouping,
+  activity-by-hour and phenology, and nobody would notice.
+
+### Two decisions worth recording
+
+**The year width is pinned by calibration, not inferred.** Read with a two-digit
+year, "2001/07/2014:02:33" also spells a perfectly plausible 2020-01-07 20:14:02.
+That ghost advances one second per frame exactly like the real reading, so no
+amount of cross-frame voting can expose it. Only the operator's declared format
+can. This is the concrete reason the upload page must ask for the date format
+instead of working it out — the user asked for that selector independently, and
+it turns out to be load-bearing rather than a convenience.
+
+**Padding and the presence of seconds are settled by the machine, not the
+operator.** Whether a camera writes "07" or "7", and whether it records seconds
+at all, are properties of the model. Calibration tries the combinations against
+what the cards actually show; only one reconciles. Asking would be four more
+questions with no better answer.
+
+### Results on real footage
+
+Both families read end to end, with a profile calibrated on one clip and applied
+to clips it had never seen:
+
+```
+BAR layout (Fujifilm AVI)      agreement   counter matches file name
+  DSCF0006  2026-07-20 14:02:33    1.00              yes
+  DSCF0142  2026-07-25 08:45:10    1.00              yes
+  DSCF0262  2026-07-27 01:52:07    1.00              yes
+  DSCF0355  2026-07-28 06:35:25    1.00              yes
+  DSCF0362  2026-07-28 09:06:37    1.00              yes
+
+CARD layout (Cuddeback M4V)
+  V__00001  2024-06-20 11:13       card on frame 0
+  V__00002  2024-07-09 15:51       card on frame 0
+  V__00003  2024-07-23 21:10       card on frame 0   (never seen in calibration)
+```
+
+The trailing number in the Fujifilm bar matches the file name on all five, which
+is a free confirmation that the right strip was found and the glyphs were matched
+correctly.
+
+### Tests
+
+`tests/test_ct_video_timestamp.py`, 58 tests, all passing. The reasoning layer is
+tested directly; the pixel layer runs against frames drawn in the test file, so
+the suite needs no sample videos and still exercises bar detection, segmentation,
+calibration and reading for both layouts.
+
+### State and next step
+
+Done: the reader, its tests, validation on two real camera families.
+
+Not started: the upload page itself. Agreed shape, from the discussion —
+
+* a separate page `/<lang>/camera-traps/upload-video`, leaving `/upload-fast`
+  untouched;
+* frames cut **in the browser**. For AVI/MJPG this needs no decoding at all: each
+  `00dc` chunk of the RIFF stream is already a complete JPEG with its own DQT and
+  DHT tables (verified on the samples), so a ~150-line RIFF walk extracts frames
+  by repackaging bytes. MP4/H.264 goes through `<video>` plus canvas. Anything
+  else gets an honest "format not supported" — the user chose this over building
+  a server-side fallback now;
+* consequently no video ever reaches the server, so the staging-and-deletion
+  lifecycle discussed earlier is not needed for this path;
+* the page must carry the date-format selector (see above), show the cropped bar
+  or card next to the parsed date for eyeball confirmation before anything is
+  written, and store the resulting profile per camera so a model is calibrated
+  once;
+* the title-card frame must be excluded from the stored photos — it is a black
+  splash with no wildlife on it — while still supplying the clip's time.
+  `ClipReading.card_index` carries this to the caller.
+
+---
+
+## 2026-09-18 — Camera-trap video support, step 2 of 2: the upload page
+
+Step 1 (above) established that the capture time can be recovered. This step is
+the page that uses it. Nothing on `/upload` or `/upload-fast` was touched.
+
+### Shape
+
+`GET /<lang>/camera-traps/upload-video`, plus three endpoints:
+
+| Endpoint | Does |
+|---|---|
+| `POST /api/video/calibrate` | learns a camera from frames plus what the operator reads off them |
+| `POST /api/video/read-clip` | establishes one clip's capture time, returns a signed token |
+| `POST /api/video/process-frame` | stores one frame with the time its token dictates |
+
+Frames then finish through the existing `finalize-batch-async` grouping, so a
+clip becomes an ordinary series and every downstream page treats it as photos.
+
+### Cutting happens in the browser
+
+`app/camera_traps/static/js/video_slice.js`. Two strategies:
+
+* **AVI with MJPG** — no decoding at all. The RIFF stream stores one complete
+  JPEG per frame, so the wanted frames are extracted by walking chunk headers and
+  slicing bytes. Browsers cannot play AVI, which is precisely why this path is
+  worth having.
+* **Anything the browser decodes** (H.264 in MP4/MOV) — seek a hidden `<video>`
+  and paint onto a canvas.
+
+Measured in the browser on the real samples:
+
+```
+AVI/MJPG   74 MB clip → 10 frames, 2.6 MB, 25 ms
+MOV/H.264  clip       → 10 frames, 6.5 MB, 10.6 s   (seeking dominates)
+```
+
+The AVI path is effectively free; the canvas path costs about a second per
+frame, which is the price of the browser having to decode.
+
+### The capture time is decided by the server, not the client
+
+It would be simpler to have the browser read the timestamp and post it with each
+frame. It would also put the most consequential field in the record under the
+control of the least trustworthy participant, and a wrong capture time is an
+invisible error: it misgroups series, shifts activity-by-hour and distorts
+phenology, and stays unnoticed for a year.
+
+So frames are read server-side and the clip's start time is returned inside a
+signed token (`itsdangerous`) which the browser must return unmodified with every
+frame. The batch id and file name are inside the signature, so a token issued for
+one clip cannot be replayed onto another's frames. The browser carries the value;
+it cannot choose it. `tests/test_ct_video_upload.py` covers replay, tampering and
+negative indices explicitly.
+
+### What the operator is asked, and what is worked out
+
+Asked:
+
+* which camera model (a stored profile, or a calibration);
+* the date format — order, year width, 12/24 hour;
+* for a new camera, the date and time visible on 2–3 clips.
+
+Worked out without asking: which layout the camera uses, whether fields are
+zero-padded, whether seconds are printed, which glyph is which digit, where the
+strip sits in the frame.
+
+The format question is not a convenience, and step 1 explains why: with the year
+width left open, "2001/07/2014:02:33" also spells a plausible 2020-01-07
+20:14:02, and that ghost ticks once per frame exactly like the real reading.
+
+### A third camera family, and why it is not supported yet
+
+Three families turned up in the real archives, not two:
+
+| Family | Sample | Status |
+|---|---|---|
+| Info bar on a solid strip | Fujifilm-style AVI (desktop) | works |
+| Title card before the footage | Cuddeback M4V (Carpathians) | reader works; see codec note |
+| Timestamp drawn straight onto the scene | NVTIM MOV (`2 - Не сортовані/100NVTIM`) | **not supported** |
+
+The third family prints `03/22/2025 15:45:57` in yellow directly over the
+photograph, with no background strip. Every signal tried failed to separate the
+text from the picture:
+
+* flatness — the defining trait of the other two layouts — is 0.14–0.26 there,
+  i.e. indistinguishable from any photographed row;
+* brightness thresholding picks up snow and overexposed sky as readily as glyphs;
+* "pixels that change in every frame" locates the seconds on two of three clips
+  and the top edge on the third, where the scene moves;
+* static-and-bright masking leaves 38–48 glyph boxes where roughly 30 characters
+  exist, the surplus being scene texture.
+
+Reading this family needs actual text detection (stroke width, the dark outline
+around the glyphs, the colour of the overlay), which is a piece of work in its own
+right rather than another threshold. Until then the behaviour is safe rather than
+wrong: `find_info_bar` rejects these frames outright and the page reports that the
+capture time could not be read. No guessed date reaches the database.
+
+Worth noting for whoever picks this up: on this family the container's own
+creation date *is* correct (2025-03-22 15:46:07 against a bar reading of
+15:45:57, i.e. the end of a ten-second clip). That is a tempting fallback, but
+Cuddeback prints a creation date that is nine years wrong, so it can only ever be
+offered with the operator's explicit consent and a visible warning, never used
+silently.
+
+### Cuddeback clips cannot be cut in the browser
+
+Their M4V stores MPEG-4 Part 2 (`mp4v`), which Chromium no longer decodes: it
+plays the audio, reports `readyState` 4 and leaves the frame size at zero. Caught
+explicitly in the slicer, since a zero-sized canvas otherwise yields blank frames
+that look like a working upload. The title-card reader built in step 1 is
+therefore ready but currently exercised only by tests, not by real Cuddeback
+footage — until either the server-side path exists or those files are transcoded.
+
+This is the case the user accepted in advance: a format the browser cannot open
+gets an honest refusal rather than a second server-side code path built on spec.
+
+### Verification
+
+* Full suite: **2133 passed, 44 skipped**. 75 of those are new (58 reading, 17
+  upload boundary).
+* Two real camera families read end to end from calibration to per-frame times.
+* The browser slicer run against the actual clips, figures above.
+* The page rendered with production-shaped data; this caught a real bug, the
+  blueprint being mounted under `/<lang_code>` so its static endpoint needs one
+  too, which would have made the page fail to render at all.
+* Translations: 21 new strings translated into English, 39 fuzzy marks cleared,
+  catalogues compiled. Note for future work: the camera-traps submodule has its
+  **own** gettext domain, so the cycle is
+  `pybabel extract -F app/camera_traps/babel.cfg ... -o app/camera_traps/messages.pot`
+  and `-D camera_traps` on update/compile. Running the root cycle silently does
+  nothing for this module.
+
+### Deploy
+
+1. Create the profile table (idempotent):
+   `venv/bin/python -m scripts.init_video_upload`
+2. Submodule commits go to `shared-ct` first, then the pointer is updated in
+   `biomon` and in `/var/www/myproject`.
+3. Nothing else: no new Python packages, no ffmpeg, no server-side video storage.
+
+### Next, if it proves worth it
+
+* Text detection for the third family, which is the largest remaining gap.
+* A server-side ffmpeg path for codecs the browser refuses, which would also make
+  the Cuddeback title-card reader usable on real footage. The staging-and-deletion
+  lifecycle for that was designed in discussion: video into a `pending_videos/<batch_id>/`
+  folder, deleted only after the frames are verified on disk and their rows
+  committed with real capture times, with the existing stale-batch cleanup as a
+  second line so nothing accumulates.
