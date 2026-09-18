@@ -4125,3 +4125,61 @@ shared by the whole suite and was left alone, but it is worth a look: other
 role-comparison tests written that way would be quietly meaningless.
 
 Full suite: **2155 passed, 44 skipped**.
+
+## 2026-09-18 — Whose data is this: photo copyright and basemap attribution
+
+Parks upload their primary data to a platform that is still private and, in
+practice, held together by one administrator. Nothing on the site said who owns
+those photos, and nothing credited the basemaps the site itself borrows. Both
+gaps were closed today; the larger legal question behind them was planned, not
+solved, because it is a document to be signed, not code to be written.
+
+### Basemaps: Esri was credited nowhere
+
+Sixteen templates across camera traps, PAM and SDM draw a Leaflet map. A sweep
+found the satellite layer — Esri World Imagery — carrying **no attribution in any
+of them**, and OSM credited inconsistently: a plain `© OpenStreetMap` in a few
+files, a linked credit in one, nothing at all in nine. OSM is ODbL and Esri's
+terms both require visible credit, so this was a licence breach in the quiet
+direction: nobody complains, and nobody notices either.
+
+All sixteen now carry the canonical strings — OSM linked to
+`openstreetmap.org/copyright`, Esri with its full source line. The layer-group
+form used for the satellite basemap keeps the credit on the imagery layer; the
+boundaries overlay on top of it needs none of its own, since Leaflet's
+attribution control de-duplicates.
+
+The interesting part is not the fix but keeping it fixed: a map added in six
+months would repeat the omission. `tests/test_ct_photo_rights.py` scans every
+template containing `L.tileLayer(` and fails if an OSM or Esri basemap is
+declared without attribution. That is a cheap test against a class of mistake
+that code review does not catch, because the missing thing is invisible.
+
+### Photos: naming the owner under every frame
+
+`photo_rights_holder()` in the CT submodule resolves a location to the
+institution(s) that own it — `location_institutions` in ct_db for the link, the
+main DB for the names, which is why the lookup cannot simply ride on the ORM
+relationship. Locations are many-to-many with institutions, so a shared camera
+yields several names joined by a comma, and a location with no institution
+yields `None`.
+
+That `None` is deliberate. The three viewers — gallery, identification page and
+the full-size viewer — fall back to a generic notice rather than rendering an
+empty line, because an orphaned location is exactly the case where a blank
+caption would look like "nobody owns this".
+
+The gallery resolves one lookup per location rather than per photo; a gallery
+page is dozens of frames from a handful of cameras.
+
+Wording is deliberately plain: `© Фото належать <установа>. Копіювання і
+поширення заборонене.` Translated for the CT domain (`camera_traps`), which has
+its own babel cycle — the root cycle does nothing for it.
+
+### What was not done
+
+The real protection is a document, not a caption. A data-sharing agreement, terms
+of use and a privacy policy, plus a licence field per institution so exports can
+carry it, are now a hot `biomon` task in the planner. Until that exists, the
+notice under a photo asserts a right nobody has actually granted in writing —
+which is better than asserting nothing, and worse than an agreement.
