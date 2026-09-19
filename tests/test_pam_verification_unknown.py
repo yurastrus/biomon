@@ -417,14 +417,14 @@ def test_stats_class_filter_applies_subquery(auth_client):
 
 # ── next-segment: bilingual location from the locations registry ─────────────────
 
-def _next_segment_row(loc_uk, loc_en, seg_loc='FILE_LOC'):
-    """A full next-segment result tuple (12 cols): ...seg.location_name(3)...,
-    l.location_name(10, uk), l.location_name_en(11, en)."""
+def _next_segment_row(loc_uk, loc_en, seg_loc='FILE_LOC', rights='Установа'):
+    """A full next-segment result tuple (13 cols): ...seg.location_name(3)...,
+    l.location_name(10, uk), l.location_name_en(11, en), rights_holder(12)."""
     return (
         7, 'seg.wav', 0.912, seg_loc,
         date(2024, 10, 11), time(10, 51, 2), '/path/seg.wav',
         'Pelobates fuscus', 'Часничниця', 'Common spadefoot toad',
-        loc_uk, loc_en,
+        loc_uk, loc_en, rights,
     )
 
 

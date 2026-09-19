@@ -4183,3 +4183,45 @@ of use and a privacy policy, plus a licence field per institution so exports can
 carry it, are now a hot `biomon` task in the planner. Until that exists, the
 notice under a photo asserts a right nobody has actually granted in writing —
 which is better than asserting nothing, and worse than an agreement.
+
+## 2026-09-19 — The same copyright line on the PAM verification page
+
+Audio is in exactly the same position as the camera-trap photos: a recording
+belongs to the institution that runs the recorder, and the page where a verifier
+listens to it said nothing about that. The notice now sits **directly under the
+spectrogram**, above the player, where the eye already is while judging a call.
+
+The owner is resolved inside the existing next-segment query as a correlated
+`string_agg` over `location_institutions → institutions`, language-aware through
+a `:rights_lang` parameter. One row per request, so a second round trip would
+have bought nothing; a shared location still lists every owner.
+
+Two details worth recording:
+
+**Alias choice was not cosmetic.** The obvious `li`/`i` aliases collide with
+what `test_next_segment_no_institution_filter_when_absent` asserts: it proves the
+*optional* institution filter is absent by looking for `li.institution_id` in the
+SQL. A rights subquery using the same alias would have made that test pass for
+the wrong reason forever after. Renamed to `li_own`/`i_own`, and the test keeps
+meaning what it says.
+
+**Adding a column broke three mock fixtures.** The route reads its row
+positionally, so three test files carrying a hand-built 12-tuple started raising
+IndexError → 500. All extended, including the arity guard's comment. The guard
+did its job: the failure was loud and in the right place, rather than a mystery
+500 in production.
+
+`tests/test_pam_verification_rights.py` pins the payload, the `None` fallback for
+a location with no institution, the language of the query, and the placement
+between spectrogram and player — placement being the part a future refactor is
+most likely to lose.
+
+### On the suite
+
+Two full runs came back with a single failure each, and a *different* one each
+time (`test_insert_locations_always_called`, then
+`test_upload_page_disables_checkbox_when_low`). Both pass in isolation and
+alongside their own files. Both runs also took eight to ten hours of wall clock
+against a normal five minutes, because the machine slept through them. Treated as
+flakes of the sleeping machine, not as findings — but two different tests
+wobbling under a long run is worth remembering if either shows up again.

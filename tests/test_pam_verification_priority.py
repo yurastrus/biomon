@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, patch
 EXPECTED_ORDER_BY = 'ORDER BY COALESCE(seg.verification_count, 0) DESC, RANDOM() LIMIT 1'
 
 # Mirrors the SELECT list of api_next_verification_segment, in order. The route
-# reads positionally (result[0]…result[11]), so a short row raises IndexError →
+# reads positionally (result[0]…result[12]), so a short row raises IndexError →
 # 500. Keep this tuple in step with the query; the arity assertion below is the
 # guard that makes a drift fail loudly instead of as a mystery 500.
 FAKE_ROW = (
@@ -31,6 +31,7 @@ FAKE_ROW = (
     'Great Tit',            # 9  s.common_name_en
     'Локація з реєстру',    # 10 l.location_name      (loc_name_uk)
     'Registry location',    # 11 l.location_name_en   (loc_name_en)
+    'Установа-власник',     # 12 rights_holder (institutions of the location)
 )
 
 

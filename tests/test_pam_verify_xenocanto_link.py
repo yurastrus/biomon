@@ -22,7 +22,7 @@ from unittest.mock import MagicMock, patch
 VERIFY_URL = '/uk/pam/verification/verify'
 NEXT_URL = '/uk/api/verification/next-segment'
 
-# Column order as read by api_get_next_segment (result[0]..result[11]).
+# Column order as read by api_get_next_segment (result[0]..result[12]).
 SEGMENT_ROW = (
     42,                              # 0 segment_id
     'PARMAJ_20260601_0530.flac',     # 1 filename
@@ -36,6 +36,7 @@ SEGMENT_ROW = (
     'Great Tit',                     # 9 common_name_en
     'Розточчя',                      # 10 location_name_uk
     'Roztochia',                     # 11 location_name_en
+    'Природний заповідник «Розточчя»',  # 12 rights_holder
 )
 
 
