@@ -1,0 +1,252 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.3, pluggy-1.6.0
+rootdir: C:\Users\IuriiStrus\repositories\biomon
+configfile: pytest.ini
+testpaths: tests
+plugins: cov-7.1.0
+collected 2269 items
+
+tests\test_access_decorator.py ...............                           [  0%]
+tests\test_admin.py .................................................... [  2%]
+..........................                                               [  4%]
+tests\test_admin_i18n.py ....                                            [  4%]
+tests\test_admin_institution_ecoregion.py ...............                [  4%]
+tests\test_admin_users_list_badges.py ................                   [  5%]
+tests\test_ai_quantity_max.py ...                                        [  5%]
+tests\test_ai_species_cascade.py ......................                  [  6%]
+tests\test_analytics.py ..............                                   [  7%]
+tests\test_analytics_async.py .................ssssssss                  [  8%]
+tests\test_audio_path_safety.py ....                                     [  8%]
+tests\test_audit_broken_ct_photos.py ....                                [  8%]
+tests\test_auth_redirect.py ...                                          [  8%]
+tests\test_behavior_analysis.py ........................................ [ 10%]
+.................................                                        [ 12%]
+tests\test_biomon_ai.py ................................................ [ 14%]
+                                                                         [ 14%]
+tests\test_biotope_autoassign.py ...............                         [ 14%]
+tests\test_camera_traps_cleanup.py .........ssssssssssssssssss           [ 16%]
+tests\test_camera_traps_deployments.py .............                     [ 16%]
+tests\test_camera_traps_models.py ........                               [ 17%]
+tests\test_camera_traps_upload_fast.py .............ssssssss             [ 17%]
+tests\test_camera_traps_utils.py ................                        [ 18%]
+tests\test_classification_import.py ............                         [ 19%]
+tests\test_cleanup_old_photos.py ssssssssss                              [ 19%]
+tests\test_config_default.py .                                           [ 19%]
+tests\test_cookie_security.py ......                                     [ 19%]
+tests\test_ct_activity_heatmap.py ..............                         [ 20%]
+tests\test_ct_admin_storage_stats.py ..........                          [ 21%]
+tests\test_ct_ai_calibration.py .....                                    [ 21%]
+tests\test_ct_ai_was_correct.py ....                                     [ 21%]
+tests\test_ct_cleanup_statistics_accuracy.py .....                       [ 21%]
+tests\test_ct_contributors.py .....................                      [ 22%]
+tests\test_ct_coverage_calendar.py ...........                           [ 23%]
+tests\test_ct_csv_backup.py ....................................         [ 24%]
+tests\test_ct_daily_activity_species_filter.py ....                      [ 24%]
+tests\test_ct_dashboard_biotope_fanout.py ...                            [ 24%]
+tests\test_ct_dashboard_location_param.py ...........                    [ 25%]
+tests\test_ct_deployment_form_guard.py .....                             [ 25%]
+tests\test_ct_deployment_legend.py ...                                   [ 25%]
+tests\test_ct_deployment_loc_edit_link.py ....                           [ 25%]
+tests\test_ct_expertise.py ............................................. [ 27%]
+...........................                                              [ 29%]
+tests\test_ct_export_scoping.py .........................                [ 30%]
+tests\test_ct_export_timewindow.py ....                                  [ 30%]
+tests\test_ct_filter_panel_css.py ...                                    [ 30%]
+tests\test_ct_flag_review.py ...........                                 [ 31%]
+tests\test_ct_hub_order.py .                                             [ 31%]
+tests\test_ct_identification_comment.py .....                            [ 31%]
+tests\test_ct_identification_priority.py ....                            [ 31%]
+tests\test_ct_identification_stats.py ....                               [ 31%]
+tests\test_ct_identify_ai_group_filters.py ....................          [ 32%]
+tests\test_ct_identify_mobile_order.py ................                  [ 33%]
+tests\test_ct_identify_scope_votes.py ......                             [ 33%]
+tests\test_ct_identify_skip.py ....                                      [ 33%]
+tests\test_ct_identify_sort_options.py .......                           [ 33%]
+tests\test_ct_identify_species_grouping.py ........                      [ 34%]
+tests\test_ct_institution_stats_access.py .............                  [ 34%]
+tests\test_ct_location_validity.py .........                             [ 35%]
+tests\test_ct_locations_no_description_removed.py ..                     [ 35%]
+tests\test_ct_manage_locations.py ...................................... [ 37%]
+....................................................                     [ 39%]
+tests\test_ct_map_layers.py ................                             [ 40%]
+tests\test_ct_notifications.py ...                                       [ 40%]
+tests\test_ct_pages_access.py .......................................... [ 42%]
+.................                                                        [ 42%]
+tests\test_ct_photo_rights.py .........                                  [ 43%]
+tests\test_ct_query_indexes.py ....                                      [ 43%]
+tests\test_ct_scope_default.py .......                                   [ 43%]
+tests\test_ct_stats_api.py ............................................. [ 45%]
+....                                                                     [ 45%]
+tests\test_ct_stats_locations_biotope_fanout.py ...                      [ 45%]
+tests\test_ct_top_contributors_api.py ......                             [ 46%]
+tests\test_ct_top_species_query_shape.py ......                          [ 46%]
+tests\test_ct_upload_originals_gate.py .........                         [ 46%]
+tests\test_ct_upload_stats.py ...............                            [ 47%]
+tests\test_ct_upload_time_shift.py ..................................... [ 49%]
+.................                                                        [ 49%]
+tests\test_ct_verification_import.py ..............                      [ 50%]
+tests\test_ct_video_access.py ..................                         [ 51%]
+tests\test_ct_video_timestamp.py ....................................... [ 53%]
+...................                                                      [ 53%]
+tests\test_ct_video_upload.py .....................                      [ 54%]
+tests\test_data_export.py .....................................          [ 56%]
+tests\test_delete_duplicate_ct_batch.py ..........                       [ 56%]
+tests\test_deployment_import.py ...........                              [ 57%]
+tests\test_export_filter.py ............                                 [ 57%]
+tests\test_login_hardening.py ....                                       [ 58%]
+tests\test_mann_kendall.py ................                              [ 58%]
+tests\test_module_access_form.py ......                                  [ 59%]
+tests\test_module_access_reads.py ...............                        [ 59%]
+tests\test_nav_arrow_css.py ..                                           [ 59%]
+tests\test_notification_prefs.py ...........                             [ 60%]
+tests\test_notifications.py ..........                                   [ 60%]
+tests\test_pam_biotope_autoassign.py ..............                      [ 61%]
+tests\test_pam_cooccurrence.py ......................................... [ 63%]
+.........................................................                [ 65%]
+tests\test_pam_coverage_calendar.py ..............                       [ 66%]
+tests\test_pam_data_export.py .......................................... [ 68%]
+.........                                                                [ 68%]
+tests\test_pam_evaluation.py ........................................... [ 70%]
+..............                                                           [ 71%]
+tests\test_pam_evaluation_utils.py .......                               [ 71%]
+tests\test_pam_export_date_validation.py ................                [ 72%]
+tests\test_pam_import.py ............................................... [ 74%]
+........................................................................ [ 77%]
+............                                                             [ 77%]
+tests\test_pam_linking_utils.py ...                                      [ 77%]
+tests\test_pam_locations.py ............................................ [ 79%]
+..........................                                               [ 81%]
+tests\test_pam_map_layers.py ..........                                  [ 81%]
+tests\test_pam_pages_smoke.py ...................                        [ 82%]
+tests\test_pam_sample_window_filters.py ................................ [ 83%]
+..........                                                               [ 84%]
+tests\test_pam_segment_sampling.py .............................         [ 85%]
+tests\test_pam_spectrogram_interaction.py .....                          [ 85%]
+tests\test_pam_utils.py .............................................    [ 87%]
+tests\test_pam_verification_priorities_page.py ......                    [ 87%]
+tests\test_pam_verification_priority.py .....                            [ 88%]
+tests\test_pam_verification_rights.py ....                               [ 88%]
+tests\test_pam_verification_unknown.py ......................            [ 89%]
+tests\test_pam_verifiers_page.py ......                                  [ 89%]
+tests\test_pam_verify_xenocanto_link.py ....                             [ 89%]
+tests\test_pam_zip_bomb.py ....                                          [ 89%]
+tests\test_password_policy.py ........                                   [ 90%]
+tests\test_profile.py ..........                                         [ 90%]
+tests\test_public_scope_access.py .................                      [ 91%]
+tests\test_registration.py ............................................. [ 93%]
+.                                                                        [ 93%]
+tests\test_restore_broken_ct_photos.py .....                             [ 93%]
+tests\test_roles.py .......................                              [ 94%]
+tests\test_sdm_auth.py ..........                                        [ 95%]
+tests\test_secret_key.py ...                                             [ 95%]
+tests\test_security_fixes.py ...................                         [ 96%]
+tests\test_security_headers.py .......                                   [ 96%]
+tests\test_security_hygiene.py ...............                           [ 97%]
+tests\test_seo.py ...........................                            [ 98%]
+tests\test_verification_decision_email.py ...........                    [ 98%]
+tests\test_verification_institutions.py ............................     [100%]
+
+============================== warnings summary ===============================
+tests/test_access_decorator.py: 15 warnings
+tests/test_admin.py: 12 warnings
+tests/test_admin_i18n.py: 1 warning
+tests/test_ai_species_cascade.py: 1 warning
+tests/test_analytics.py: 14 warnings
+tests/test_analytics_async.py: 2 warnings
+tests/test_auth_redirect.py: 3 warnings
+tests/test_behavior_analysis.py: 7 warnings
+tests/test_camera_traps_cleanup.py: 1 warning
+tests/test_camera_traps_upload_fast.py: 4 warnings
+tests/test_ct_expertise.py: 5 warnings
+tests/test_ct_institution_stats_access.py: 4 warnings
+tests/test_ct_location_validity.py: 2 warnings
+tests/test_ct_manage_locations.py: 10 warnings
+tests/test_ct_pages_access.py: 12 warnings
+tests/test_ct_stats_api.py: 7 warnings
+tests/test_ct_verification_import.py: 1 warning
+tests/test_data_export.py: 29 warnings
+tests/test_export_filter.py: 12 warnings
+tests/test_mann_kendall.py: 16 warnings
+tests/test_pam_data_export.py: 6 warnings
+tests/test_pam_evaluation.py: 2 warnings
+tests/test_pam_import.py: 2 warnings
+tests/test_pam_locations.py: 10 warnings
+tests/test_pam_pages_smoke.py: 2 warnings
+tests/test_roles.py: 23 warnings
+tests/test_security_fixes.py: 2 warnings
+tests/test_security_headers.py: 1 warning
+  C:\Users\IuriiStrus\repositories\biomon\venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+    warnings.warn(
+
+tests/test_ct_admin_storage_stats.py::test_storage_section_renders_numbers
+tests/test_ct_admin_storage_stats.py::test_storage_section_handles_missing_oldest_batch
+tests/test_ct_admin_storage_stats.py::test_admin_panel_survives_stats_exception
+tests/test_ct_admin_storage_stats.py::test_admin_card_shows_free_space_in_gb
+tests/test_ct_admin_storage_stats.py::test_admin_card_shows_free_space_in_mb_below_1gb
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:123: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    ).scalar() or 0
+
+tests/test_ct_top_species_query_shape.py::test_observations_are_narrowed_before_the_consensus_aggregate
+tests/test_ct_top_species_query_shape.py::test_date_predicate_is_sargable
+tests/test_ct_top_species_query_shape.py::test_end_date_stays_inclusive_of_the_whole_day
+tests/test_ct_top_species_query_shape.py::test_biotope_filter_cannot_multiply_observations
+tests/test_ct_top_species_query_shape.py::test_consensus_tie_break_is_deterministic
+tests/test_ct_top_species_query_shape.py::test_species_filter_stays_outside_the_consensus
+  C:\Users\IuriiStrus\repositories\biomon\tests\test_ct_top_species_query_shape.py:44: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    connection = session.connection()
+
+tests/test_ct_top_species_query_shape.py::test_observations_are_narrowed_before_the_consensus_aggregate
+tests/test_ct_top_species_query_shape.py::test_date_predicate_is_sargable
+tests/test_ct_top_species_query_shape.py::test_end_date_stays_inclusive_of_the_whole_day
+tests/test_ct_top_species_query_shape.py::test_biotope_filter_cannot_multiply_observations
+tests/test_ct_top_species_query_shape.py::test_consensus_tie_break_is_deterministic
+tests/test_ct_top_species_query_shape.py::test_species_filter_stays_outside_the_consensus
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:3387: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    conn = session.connection()
+
+tests/test_ct_upload_originals_gate.py::test_upload_page_disables_checkbox_when_low
+tests/test_ct_upload_originals_gate.py::test_upload_page_checkbox_enabled_when_space_is_fine
+tests/test_ct_upload_time_shift.py::test_fast_page_has_time_shift_block
+tests/test_ct_upload_time_shift.py::test_fast_page_time_shift_is_collapsed_by_default
+tests/test_ct_upload_time_shift.py::test_fast_page_time_shift_is_translated
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:2730: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    all_loc_inst_records = ct_session.query(location_institutions).all()
+
+tests/test_ct_upload_time_shift.py::test_legacy_upload_page_has_no_time_shift
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:2432: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    all_loc_inst_records = ct_session.query(location_institutions).all()
+
+tests/test_ct_video_access.py::test_an_admin_gets_through_the_gate[get-/uk/camera-traps/upload-video]
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:3118: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    locations = ct_session.query(Location).order_by(Location.name).all()
+
+tests/test_ct_video_access.py::test_an_admin_gets_through_the_gate[get-/uk/camera-traps/upload-video]
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:3130: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    for record in ct_session.query(location_institutions).all():
+
+tests/test_ct_video_access.py::test_an_admin_gets_through_the_gate[get-/uk/camera-traps/upload-video]
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\video_upload.py:165: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    .order_by(CameraTimestampProfile.updated_at.desc()).all()
+
+tests/test_seo.py::test_dashboards_are_noindex[/uk/camera-traps/dashboard]
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:430: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    biotopes_list = ct_session.query(Biotope).order_by(Biotope.name_ua).all()
+
+tests/test_seo.py::test_dashboards_are_noindex[/uk/camera-traps/dashboard]
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:493: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    ).one()
+
+tests/test_seo.py::test_dashboards_are_noindex[/uk/camera-traps/dashboard]
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:517: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    ).one()
+
+tests/test_seo.py::test_dashboards_are_noindex[/uk/camera-traps/dashboard]
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:529: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    ).scalar() or 0
+
+tests/test_seo.py::test_dashboards_are_noindex[/uk/camera-traps/gallery]
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:5006: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    ).params(**inst_params).distinct().all()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========= 2225 passed, 44 skipped, 237 warnings in 393.04s (0:06:33) ==========

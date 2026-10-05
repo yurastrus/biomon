@@ -4225,3 +4225,82 @@ alongside their own files. Both runs also took eight to ten hours of wall clock
 against a normal five minutes, because the machine slept through them. Treated as
 flakes of the sleeping machine, not as findings — but two different tests
 wobbling under a long run is worth remembering if either shows up again.
+
+## 2026-10-05 — Batch time shift on /upload-fast
+
+A camera with a wrong clock (summer time, AM/PM mixed up, the wrong day, a
+factory reset to 2000) used to mean a wrong `captured_at` forever: invisible,
+and quietly breaking series grouping, diel activity and phenology. `/upload-fast`
+now takes an optional shift for the whole batch. Legacy `/upload` is untouched,
+already uploaded batches are not corrected (both by request).
+
+### Design
+
+- **The server owns the shift.** `upload_batches.time_offset_seconds` (INTEGER,
+  NOT NULL, default 0) is set once in `create-batch` and applied in
+  `process_single_photo`. It rides on the existing `UPDATE … RETURNING
+  processed_files`, so it costs no extra query per photo. Kept on the batch so a
+  resumed upload cannot drift to another value, and the camera's own time stays
+  recoverable as `captured_at - offset`.
+- **Shift before the plausibility guard.** `extract_datetime_from_exif(offset=)`
+  adds the shift before the 2010 / now+24h check. A camera reset to 2000 is
+  "implausible" raw, and the shift is exactly how the user fixes it; the other
+  order would send those photos to the 1900 placeholder regardless. The guard
+  still runs on the result, so a shift cannot smuggle in a future date.
+- **Not shifted:** the 1900 placeholder for photos without EXIF, and video
+  frames (`captured_at_override`, read from the burned-in stamp, already final).
+- **Validation:** whole seconds, |x| ≤ 50 years (`MAX_TIME_OFFSET_SECONDS`, kept
+  in step with `time_shift.js` by a test). Bad value → 400 before any write.
+- **Units:** days/hours/minutes/seconds only. No months or years: "+1 month" is
+  ambiguous and "−1 year" breaks on leap years; the calculator gives exact
+  seconds for those cases.
+
+### Browser side (`static/js/time_shift.js`, `upload_fast.html` step 3)
+
+Collapsed optional step. Sign + four number fields; a calculator (pick a sample
+photo → its EXIF time fills "camera time", type the correct time, "Calculate");
+a preview table of the first 4 and last 2 files by natural name order, was →
+will be, with implausible results flagged. A non-zero shift is confirmed before
+upload; resuming a batch with a different shift in the form asks, since a batch's
+shift cannot change halfway. "Upload more" resets the shift to 0 (next card is
+usually another camera). All arithmetic is naive wall-clock (treated as UTC) so
+the browser's own DST never leaks into the preview.
+
+### Two traps found on real photos (HC800, 92 files, 49.928742, 23.767003)
+
+1. exifr's `pick` option throws inside the lite build; my `catch` turned that
+   into "no EXIF" on every file. Switched to `{tiff:false, exif:[…]}` and the
+   catch now warns once in the console instead of failing silently.
+2. With `reviveValues` on, exifr returns Dates in the browser's zone (14:52 on
+   the camera came back as 11:52Z). Values are read as raw strings.
+
+Verification without touching any DB: the real `upload_fast.html` was rendered
+through the test client with mocked DBs and served statically (POSTs refused),
+the 92 photos injected into the file input. Browser and server readings of all
+92 files hash-identical; with −1 h every photo moves exactly one hour
+(`scripts/preview_time_shift.py`, log in `logs/preview_time_shift_49.928742_*`).
+Nothing uploaded; the user will upload this folder themselves.
+
+### Tests
+
+`tests/test_ct_upload_time_shift.py` (54): parser, EXIF offset incl. reset
+rescue and future refusal, create-batch route, storage/status, end-to-end
+`process_single_photo` on SQLite with real JPEGs (shift, placeholder, video,
+duplicates), page wiring, EN translation, JS/Python limit parity. The e2e fixture
+first copied `app.config['CAMERA_TRAP_CONFIG']` and failed only in the full run:
+other tests overwrite that dict on the shared `app` fixture. It now builds from
+`config.Config`. Full suite: 2225 passed, 44 skipped
+(`logs/pytest_time_shift_final_*`).
+
+### Known limit
+
+The duplicate key is the stored time, so the same file uploaded again with a
+different shift is not recognised as a duplicate (pinned by a test).
+A batch spanning a DST change needs splitting into two uploads.
+
+### Deploy (not done)
+
+1. `venv/bin/python -m scripts.init_time_offset` **before** the code: the model
+   declares the column, so UploadBatch queries fail until it exists.
+2. shared-ct pointer in biomon and `/var/www/myproject`; no new packages
+   (exifr comes from jsdelivr).
