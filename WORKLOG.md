@@ -3,6 +3,80 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-14 — CT gap analysis page (Beta)
+
+New page `GET /<lang>/camera-traps/analysis/gap-analysis` (hub card "Прогалини
+в даних"). The question it answers: *where does a non-detection mean
+something, and where did we simply not look enough?* Three dimensions are kept
+separate instead of being collapsed into one number by default.
+
+### What was built, in five stages
+1. **`gap_metrics.py`** (pure, no Flask/DB): EEA grid on EPSG:3035 with the SDM
+   module's cell-code convention; incidence-based Chao2, sample coverage
+   (Chao & Jost 2012), rarefaction/extrapolation curve (Chao et al. 2014, what
+   iNEXT does for `incidence_freq`), units needed for 95% coverage / 90% of
+   Chao2; per-species detection probability; pool sensitivity; temporal
+   coverage; log effort score; geometric-mean composite; Gaussian kernel
+   effort surface.
+2. **`gap_analysis.py`**: one read of ct_db (5 queries, 2.4 s on prod data for
+   912 locations / 46.5k camera-days) into `GapData`, then pure builders for the
+   grid, kernel, biotope table and cell detail.
+3. **`gap_routes.py`**: page + 4 JSON endpoints (`grid`, `cell/<code>`,
+   `kernel`, `biotopes`) with a 10-minute per-process cache keyed on the
+   caller's access rights. Kept out of `routes.py` (7.8k lines).
+4. **`templates/gap_analysis.html`**: Leaflet map with 8 layers, 1/5/10 km
+   grids, red→green ramp, grey for "no cameras", dashed outline for "too little
+   data to estimate"; click a cell for its accumulation curve (Chart.js), the
+   species recorded and the species most likely missed; detectability table;
+   biotope table; plain-language methods.
+5. CT-domain i18n, tests, docs.
+
+### Decisions and why
+- **Camera-day definition** = the coverage-calendar rule (deployment days ∪
+  series days with gaps ≤ `COVERAGE_MAX_GAP_DAYS` filled) plus two guards:
+  days whose series are all unverified are not effort (nothing on them can be a
+  record yet), and a deployment counts only if it holds at least one verified
+  series day. Without the second guard, deployments whose photos never reached
+  the DB would read as long, empty, "well-surveyed" periods.
+- **Sample coverage turned out too optimistic on real data**: median 1.0 at
+  every scale, because roe deer / red deer / wild boar dominate the incidences
+  and coverage weights species by commonness. Added **pool sensitivity**: the
+  mean, over the species pool, of P(recorded | present) given the cell's
+  effort, recorded species counting as 1. Rare species weigh the same as common
+  ones. The composite uses this, not coverage. Coverage and Chao2 stay as their
+  own layers.
+- **The pool is local** (species recorded within 50 km, ≥3 units). A scope-wide
+  pool faulted Carpathian cells for missing kulan and steppe marmot.
+- **Detection probability** = units with a record / units at locations where
+  the species was ever recorded. Biased upward (conditioned on known presence);
+  documented on the page as fine for ranking cells, not a substitute for an
+  occupancy model. Real values: lynx 0.016/camera-day (~180 days for 95%),
+  forest polecat 0.007 (~430 days), roe deer 0.12 (~24 days).
+- **IDW rejected** in favour of a kernel density of effort: IDW interpolates a
+  value and would paint a "well-surveyed" band between two distant cameras.
+  The kernel bandwidth is read as home-range scale (1 / 2.5 / 5 / 10 km).
+- **Study area** = 5 km buffer around cameras, morphologically closed by 10 km,
+  so holes between clusters up to 20 km apart show as grey cells. 1 km grid on
+  the whole DB: 13.2k empty cells, 3.5 MB JSON; capped at 20k empty cells.
+- Taxon group default **mammals**; domestic species (`DOMESTIC_SPECIES_IDS`)
+  and negative-id higher-rank placeholders are excluded from richness.
+
+### Tests
+`tests/test_ct_gap_metrics.py` (27), `tests/test_ct_gap_analysis.py` (22),
+`tests/test_ct_gap_routes.py` (15). Hand-checked estimator values; SQL replayed
+through a mocked session (BOOL_OR / ANY are Postgres-only).
+`scripts/probe_gap_analysis.py` runs the whole pipeline read-only against a real
+ct_db and prints timings and distributions.
+
+### Not done / next
+- Browser check by the user (no JS runtime on this machine for a syntax check;
+  JS was reviewed by hand).
+- Environmental gaps beyond biotopes (elevation / WorldCover share of the study
+  area vs of the cameras) need DEM/landcover per cell, i.e. the SDM module.
+- An occupancy-model detection probability would replace the naive one.
+- Effort targets per scale (365/730/1460 camera-days) are conventions to tune
+  after feedback.
+
 ## 2026-09-15 — CT analytics, the two loose ends
 
 ### 1. Map markers had the same fan-out as the dashboard
