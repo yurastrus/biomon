@@ -93,6 +93,49 @@ gap page does the same. The decorator itself is left untouched.
   public locations + the user's institutions; admin sees all); now pinned by a
   test for a one-park manager.
 
+### Scientific audit (same day, on request)
+Formulas re-derived against the iNEXT source (`incidence_freq`): f0, the
+coverage A term (both the Q2>0 and Q2=0 branches), rarefaction and both
+extrapolations match. R is installed but iNEXT is not, so no numeric
+cross-check was run. The problems were in the assumptions, checked on prod data
+with `scripts/audit_gap_analysis.py` (read-only):
+
+1. **Half the effort is unverified.** 73.5k pending vs 57.5k verified series;
+   25.4k of 53.8k location-days hold only unverified series; 45 locations have
+   nothing else. Excluding them from effort is right (nothing on them can be a
+   record yet), but they used to vanish: cells with cameras showed as grey
+   "no cameras". Now kept as `pending_days`, cells with only pending days get
+   status `unverified` (purple), a new **Верифіковано** layer shows the
+   verified share, tooltips/popup/stats show pending days. The gap map now
+   separates "no fieldwork" from "verification backlog".
+2. **Day units are autocorrelated.** P(record tomorrow | record today) = 0.235
+   vs mean daily p 0.080 (×3). Chao2 and 1-(1-p)^T assume independent units, so
+   day units overstate both. **Default unit is now the camera-week**
+   (`DEFAULT_UNIT`); day stays selectable.
+3. **Partial weeks** (introduced by 2): 10 scattered days in 10 weeks counted
+   as 10 full weeks of exposure (lynx: 59% "would have been detected" instead
+   of ~15%). Detection side now uses a rate per full-unit equivalent: p = hit
+   units / (camera-days / L), exposure = camera-days / L (`UNIT_LENGTH_DAYS`).
+   Incidence statistics keep counting units as occasions. Effect on prod:
+   weekly estimates are now slightly *more* conservative than daily (forest
+   polecat 469 vs 434 camera-days for 95%), as autocorrelation predicts.
+4. **Coverage 1.0 from a single singleton.** With Q1=1, Q2=0 the
+   bias-corrected f0 = Q1(Q1-1)/2 = 0, so one species seen once gives
+   coverage 1 and Chao2 = S_obs (iNEXT does the same). 45 of the 107 cells with
+   coverage 1.0 (5 km, day units) were this case. Kept, but flagged
+   `unstable` (Q1>0, Q2=0) and drawn with a dotted outline.
+5. **Composite with no species pool** returned 0 (red). Now None ("cannot
+   say"). Also documented: effort and pool sensitivity both grow with units, so
+   the composite leans on effort.
+6. **Kernel bandwidth** now shows the home range it implies: 95% contour of a
+   bivariate normal = 2πσ²ln20 ≈ 18.8σ² (σ 1 km ≈ 19 km², 2.5 ≈ 118, 5 ≈ 471,
+   10 ≈ 1882 km²).
+7. Documented, not changed: deployment intervals with unusable/non-functional/
+   stolen flags never count, but verified series days inside them do unless the
+   user ticks QC (module-wide opt-in rule); the species pool ignores habitat
+   (otter/beaver show as "likely missed" in dry cells); p is conditioned on
+   known presence (upper bound).
+
 ### Not done / next
 - Browser check by the user (no JS runtime on this machine for a syntax check;
   JS was reviewed by hand).

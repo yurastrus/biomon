@@ -168,9 +168,14 @@ def test_effort_score_log_scale_and_saturation():
     assert 0.3 < gm.effort_score(10, 1000) < 0.5
 
 
-def test_composite_is_zero_if_any_dimension_missing():
-    assert gm.composite_score(1, None, 1) == 0
+def test_composite_is_zero_if_any_dimension_is_zero():
     assert gm.composite_score(1, 1, 0) == 0
+    assert gm.composite_score(0, 1, 1) == 0
+
+
+def test_composite_is_unknown_without_a_species_pool():
+    """No pool to judge against means "cannot say", not "bad"."""
+    assert gm.composite_score(1, None, 1) is None
     assert gm.composite_score(0.5, 0.5, 0.5) == pytest.approx(0.5)
 
 
@@ -212,3 +217,29 @@ def test_pool_sensitivity_counts_recorded_species_as_one():
 
 def test_pool_sensitivity_empty_pool():
     assert gm.pool_sensitivity({}, 100) is None
+
+
+
+# ─── Audit follow-ups (Oct 2026) ──────────────────────────────────────────────
+
+def test_single_singleton_without_doubletons_is_flagged_unstable():
+    """Q1 = 1, Q2 = 0: bias-corrected f0 = 0, coverage = 1 on one record (iNEXT does
+    the same). The value is kept but must be flagged."""
+    r = gm.richness_stats([1, 30, 40], 50)
+    assert r['coverage'] == 1 and r['chao2'] == 3
+    assert r['unstable'] is True
+
+
+def test_doubletons_make_estimate_stable():
+    assert gm.richness_stats(INC, T)['unstable'] is False
+    assert gm.richness_stats([5, 7], 40)['unstable'] is False      # no singletons at all
+
+
+def test_unstable_needs_an_estimate_first():
+    assert gm.richness_stats([1], 5)['unstable'] is False
+
+
+def test_home_range_of_kernel_bandwidth():
+    # 95% contour of a bivariate normal: 2*pi*sigma^2*ln(20)
+    assert gm.home_range_km2(1000) == pytest.approx(18.82, abs=0.01)
+    assert gm.home_range_km2(2500) == pytest.approx(117.6, abs=0.1)

@@ -82,8 +82,12 @@ def make_data():
     return data
 
 
+def test_default_unit_is_camera_week():
+    assert ga.DEFAULT_UNIT == ga.UNIT_WEEK
+
+
 def test_grid_pools_locations_of_a_cell():
-    res = ga.build_grid(make_data(), 5000, include_empty=False)
+    res = ga.build_grid(make_data(), 5000, unit=ga.UNIT_DAY, include_empty=False)
     data_cells = {c['code']: c for c in res['cells'] if c['status'] == 'data'}
     assert len(data_cells) == 2
     big = data_cells['5kmE5300N3070']
@@ -110,7 +114,8 @@ def test_grid_week_units_shrink_T():
 
 
 def test_grid_focus_species_confidence():
-    res = ga.build_grid(make_data(), 5000, focus_species_id=11, include_empty=False)
+    res = ga.build_grid(make_data(), 5000, unit=ga.UNIT_DAY, focus_species_id=11,
+                        include_empty=False)
     by_code = {c['code']: c for c in res['cells']}
     assert by_code['5kmE5300N3070']['focus_detected'] is True
     assert by_code['5kmE5300N3070']['focus_confidence'] == 1.0
@@ -191,6 +196,7 @@ def test_fetch_gap_data_assembles_effort_and_detections():
     data = ga.fetch_gap_data(session, '1=1', {}, exclude_species_ids={8})
     assert list(data.locations) == [1]                 # no coordinates → skipped
     assert data.effort_days[1] == days(D0, 10) - {D0 + timedelta(days=2)}
+    assert data.pending_days == {1: {D0 + timedelta(days=2)}}
     assert data.detections == {1: {10: {D0 + timedelta(days=5)}}}
     assert data.biotopes == {1: [100]}
     assert session.execute.call_count == 5
@@ -246,3 +252,83 @@ def test_far_cell_is_not_judged_against_a_distant_pool():
     far = next(c for c in res['cells'] if c['code'] == '5kmE5360N3070')
     # within 50 km only the far location's own roe deer: recorded, so pool = {roe deer}
     assert far['pool_size'] == 1 and far['pool_sensitivity'] == 1.0
+
+
+
+# ─── Unverified data (audit, Oct 2026) ────────────────────────────────────────
+
+def test_location_with_only_unverified_days_is_not_an_empty_cell():
+    """Cameras whose photos nobody verified yet must not read as "no cameras"."""
+    data = make_data()
+    data.pending_days = {4: days(D0, 20)}          # location 4: no effort at all
+    res = ga.build_grid(data, 1000, include_empty=False)
+    by_status = {}
+    for c in res['cells']:
+        by_status.setdefault(c['status'], []).append(c)
+    unverified = by_status['unverified']
+    assert len(unverified) == 1
+    assert unverified[0]['pending_days'] == 20 and unverified[0]['camera_days'] == 0
+    assert unverified[0]['verified_share'] == 0
+    assert res['summary']['n_unverified_cells'] == 1
+    assert res['summary']['n_cells_with_data'] == 3
+
+
+def test_verified_share_mixes_effort_and_pending():
+    data = make_data()
+    data.pending_days = {1: days(D0 + timedelta(days=40), 30)}
+    res = ga.build_grid(data, 5000, include_empty=False)
+    big = next(c for c in res['cells'] if c['code'] == '5kmE5300N3070')
+    assert big['camera_days'] == 60 and big['pending_days'] == 30
+    assert big['verified_share'] == pytest.approx(60 / 90, abs=1e-3)
+
+
+def test_location_points_include_unverified_locations():
+    data = make_data()
+    data.pending_days = {4: days(D0, 3)}
+    pts = {p['id']: p for p in ga.location_points(data)}
+    assert pts[4]['camera_days'] == 0 and pts[4]['pending_days'] == 3
+
+
+def test_kernel_uses_verified_effort_only():
+    data = make_data()
+    data.pending_days = {4: days(D0, 500)}
+    k = ga.build_kernel(data, 2000)
+    total = sum(p['value'] for p in k['pixels']) * (k['pixel_m'] / 1000) ** 2
+    assert total == pytest.approx(65, rel=0.02)
+    assert k['home_range_km2'] == round(gm.home_range_km2(2000))
+
+
+
+def test_detection_exposure_counts_days_not_partial_weeks():
+    """10 scattered days in 10 weeks must not count as 10 full weeks."""
+    data = make_data()
+    loc3 = data.locations[3]
+    scattered = {D0 + timedelta(weeks=i) for i in range(10)}     # 10 days, 10 weeks
+    data.effort_days[3] = scattered
+    data.detections[3] = {}
+    res = ga.build_grid(data, 5000, unit=ga.UNIT_WEEK, focus_species_id=10, include_empty=False)
+    far = next(c for c in res['cells'] if c['code'] == '5kmE5360N3070')
+    assert far['T'] == 10                       # incidence side: 10 occasions
+    assert far['exposure_units'] == pytest.approx(10 / 7, abs=0.01)
+    p = res['summary']['focus']['p_unit']
+    assert far['focus_confidence'] == pytest.approx(1 - (1 - p) ** (10 / 7), abs=1e-3)
+
+
+def test_weekly_p_is_rate_per_week_equivalent():
+    data = make_data()
+    p_day = ga.species_detection_probabilities(data, ga.UNIT_DAY)
+    p_week = ga.species_detection_probabilities(data, ga.UNIT_WEEK)
+    # roe deer at locations 1, 2, 3: 4 record-days over 30 + 30 + 5 camera-days
+    assert p_day[10] == pytest.approx(4 / 65)
+    week_hits = sum(len({ga.unit_key(d, ga.UNIT_WEEK) for d in data.detections[lid][10]})
+                    for lid in (1, 2, 3))
+    assert p_week[10] == pytest.approx(week_hits / (65 / 7))
+
+
+def test_camera_days_for_95_uses_unit_length():
+    res = ga.build_grid(make_data(), 5000, unit=ga.UNIT_WEEK, focus_species_id=10,
+                        include_empty=False)
+    focus = res['summary']['focus']
+    from app.camera_traps import gap_metrics
+    raw_p = ga.species_detection_probabilities(make_data(), ga.UNIT_WEEK)[10]
+    assert focus['camera_days_for_95'] == gap_metrics.units_for_confidence(raw_p) * 7

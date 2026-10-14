@@ -127,7 +127,7 @@ def test_grid_api_shape(viewer, fetch_stub):
 def test_invalid_parameters_fall_back_to_defaults(viewer, fetch_stub):
     body = viewer.get(f'{BASE}/api/gap-analysis/grid?scale=777&unit=hour&taxon=fungi'
                       '&start_date=2025-02-01&end_date=2024-01-01').get_json()
-    assert body['summary']['scale_m'] == 5000 and body['summary']['unit'] == 'day'
+    assert body['summary']['scale_m'] == 5000 and body['summary']['unit'] == 'week'
     kwargs = fetch_stub.call_args.kwargs
     assert kwargs['taxon'] == 'mammals'
     assert kwargs['start_date'] is None and kwargs['end_date'] is None
