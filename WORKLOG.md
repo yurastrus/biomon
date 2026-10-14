@@ -136,6 +136,12 @@ with `scripts/audit_gap_analysis.py` (read-only):
    (otter/beaver show as "likely missed" in dry cells); p is conditioned on
    known presence (upper bound).
 
+### Opened to all signed-in users (same day)
+`GAP_ANALYSIS_MIN_ROLE = None`: page, card and API for every signed-in user.
+Data stay limited by institution access (public locations + the user's
+institutions; admin sees all). Anonymous users get the login redirect and no
+card. Setting a role in the constant restricts the page again.
+
 ### Not done / next
 - Browser check by the user (no JS runtime on this machine for a syntax check;
   JS was reviewed by hand).

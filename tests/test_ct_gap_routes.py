@@ -1,8 +1,8 @@
 """Tests for the gap analysis page and its JSON API (app/camera_traps/gap_routes.py).
 
 fetch_gap_data (PostgreSQL-only SQL) is replaced by a stub returning synthetic
-GapData; what is checked here is the route layer: access (page for managers and
-admins while testing, API login-only), parameter validation, access rules reaching the SQL
+GapData; what is checked here is the route layer: access (page and API for every
+signed-in user, data limited by institution access), parameter validation, access rules reaching the SQL
 filter, caching keyed on access, and the JSON shapes.
 
 One user per test: Flask-Login caches the user on ``g`` of the long-lived test
@@ -62,25 +62,20 @@ def test_page_renders_for_manager(manager):
     assert manager.get(PAGE).status_code == 200
 
 
-def test_page_needs_login_while_testing(client):
-    assert gap_routes.GAP_ANALYSIS_MIN_ROLE == 'manager'
+def test_page_open_to_any_signed_in_user(viewer):
+    assert gap_routes.GAP_ANALYSIS_MIN_ROLE is None
+    assert viewer.get(PAGE).status_code == 200
+
+
+def test_page_needs_login(client):
     resp = client.get(PAGE)
     assert resp.status_code == 302 and 'login' in resp.headers['Location']
 
 
-def test_page_refuses_role_below_manager(viewer):
+def test_page_can_be_restricted_again(viewer, monkeypatch):
+    monkeypatch.setattr(gap_routes, 'GAP_ANALYSIS_MIN_ROLE', 'manager')
     resp = viewer.get(PAGE)
     assert resp.status_code == 302 and 'login' not in resp.headers['Location']
-
-
-def test_page_opens_to_signed_in_users_when_flag_is_off(viewer, monkeypatch):
-    monkeypatch.setattr(gap_routes, 'GAP_ANALYSIS_MIN_ROLE', None)
-    assert viewer.get(PAGE).status_code == 200
-
-
-def test_page_still_needs_login_when_flag_is_off(client, monkeypatch):
-    monkeypatch.setattr(gap_routes, 'GAP_ANALYSIS_MIN_ROLE', None)
-    assert client.get(PAGE).status_code == 302
 
 
 @pytest.mark.parametrize('path', ['grid', 'kernel', 'biotopes', 'cell/5kmE5300N3070'])
@@ -90,12 +85,15 @@ def test_api_requires_login(client, fetch_stub, path):
 
 
 def test_api_open_to_any_signed_in_user(viewer, fetch_stub):
-    """The page is restricted for now, the API is not: nothing to change on opening day."""
     assert viewer.get(f'{BASE}/api/gap-analysis/grid').status_code == 200
 
 
-def test_hub_card_hidden_below_manager(viewer):
-    assert b'/analysis/gap-analysis' not in viewer.get(f'{BASE}/').data
+def test_hub_card_shown_to_signed_in_user(viewer):
+    assert b'/analysis/gap-analysis' in viewer.get(f'{BASE}/').data
+
+
+def test_hub_card_hidden_from_anonymous(client):
+    assert b'/analysis/gap-analysis' not in client.get(f'{BASE}/').data
 
 
 def test_hub_card_shown_to_admin(admin):
