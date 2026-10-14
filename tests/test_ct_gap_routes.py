@@ -1,8 +1,8 @@
 """Tests for the gap analysis page and its JSON API (app/camera_traps/gap_routes.py).
 
 fetch_gap_data (PostgreSQL-only SQL) is replaced by a stub returning synthetic
-GapData; what is checked here is the route layer: access (page admin-only while
-testing, API login-only), parameter validation, access rules reaching the SQL
+GapData; what is checked here is the route layer: access (page for managers and
+admins while testing, API login-only), parameter validation, access rules reaching the SQL
 filter, caching keyed on access, and the JSON shapes.
 
 One user per test: Flask-Login caches the user on ``g`` of the long-lived test
@@ -45,6 +45,11 @@ def admin(auth_client):
     return auth_client(role='admin')
 
 
+@pytest.fixture
+def manager(auth_client):
+    return auth_client(role='manager')
+
+
 # ─── Access ───────────────────────────────────────────────────────────────────
 
 def test_page_renders_for_admin(admin):
@@ -53,24 +58,28 @@ def test_page_renders_for_admin(admin):
     assert b'gap-map' in resp.data
 
 
-def test_page_is_admin_only_while_testing(client):
-    assert gap_routes.GAP_ANALYSIS_ADMIN_ONLY is True
+def test_page_renders_for_manager(manager):
+    assert manager.get(PAGE).status_code == 200
+
+
+def test_page_needs_login_while_testing(client):
+    assert gap_routes.GAP_ANALYSIS_MIN_ROLE == 'manager'
     resp = client.get(PAGE)
     assert resp.status_code == 302 and 'login' in resp.headers['Location']
 
 
-def test_page_refuses_signed_in_non_admin(viewer):
+def test_page_refuses_role_below_manager(viewer):
     resp = viewer.get(PAGE)
     assert resp.status_code == 302 and 'login' not in resp.headers['Location']
 
 
 def test_page_opens_to_signed_in_users_when_flag_is_off(viewer, monkeypatch):
-    monkeypatch.setattr(gap_routes, 'GAP_ANALYSIS_ADMIN_ONLY', False)
+    monkeypatch.setattr(gap_routes, 'GAP_ANALYSIS_MIN_ROLE', None)
     assert viewer.get(PAGE).status_code == 200
 
 
 def test_page_still_needs_login_when_flag_is_off(client, monkeypatch):
-    monkeypatch.setattr(gap_routes, 'GAP_ANALYSIS_ADMIN_ONLY', False)
+    monkeypatch.setattr(gap_routes, 'GAP_ANALYSIS_MIN_ROLE', None)
     assert client.get(PAGE).status_code == 302
 
 
@@ -81,16 +90,20 @@ def test_api_requires_login(client, fetch_stub, path):
 
 
 def test_api_open_to_any_signed_in_user(viewer, fetch_stub):
-    """The page is admin-only for now, the API is not: nothing to change on opening day."""
+    """The page is restricted for now, the API is not: nothing to change on opening day."""
     assert viewer.get(f'{BASE}/api/gap-analysis/grid').status_code == 200
 
 
-def test_hub_card_hidden_from_non_admin(viewer):
+def test_hub_card_hidden_below_manager(viewer):
     assert b'/analysis/gap-analysis' not in viewer.get(f'{BASE}/').data
 
 
 def test_hub_card_shown_to_admin(admin):
     assert b'/analysis/gap-analysis' in admin.get(f'{BASE}/').data
+
+
+def test_hub_card_shown_to_manager(manager):
+    assert b'/analysis/gap-analysis' in manager.get(f'{BASE}/').data
 
 
 def test_english_page_is_translated(admin):
@@ -125,6 +138,18 @@ def test_user_without_institutions_sees_public_locations_only(viewer, fetch_stub
     args, kwargs = fetch_stub.call_args
     assert 'visibility_level = 0' in args[1]
     assert kwargs['qc_exclude'] == ['qc_poor_placement']
+
+
+def test_institution_user_sees_own_and_public_locations_only(manager, fetch_stub):
+    """A manager of one park sees that park's locations plus the public ones,
+    the same rule as everywhere else in the module."""
+    with patch.object(gap_routes.ct_access, 'allowed_institution_ids', return_value=[7]):
+        manager.get(f'{BASE}/api/gap-analysis/grid')
+    args, _ = fetch_stub.call_args
+    condition, params = args[1], args[2]
+    assert 'visibility_level = 0' in condition
+    assert 'institution_id = ANY(:user_inst_ids)' in condition
+    assert params['user_inst_ids'] == [7]
 
 
 def test_admin_gets_everything(admin, fetch_stub):

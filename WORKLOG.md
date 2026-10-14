@@ -80,6 +80,19 @@ which does not exist (`main.login` does), so it raises `BuildError`. Every
 existing use stacks `@login_required` first and never reaches that branch; the
 gap page does the same. The decorator itself is left untouched.
 
+### Feedback round 1 (same day)
+- **Camera points stayed under the grid** after a layer switch: one shared canvas
+  draws in insertion order. Points now sit in their own pane (z-index 650) with
+  an SVG renderer; the pane has `pointer-events: none`, so clicks still reach
+  the cells and only the points catch hover. (A second canvas would have
+  swallowed every click on the grid.)
+- **Managers see the tool too**: `GAP_ANALYSIS_ADMIN_ONLY` became
+  `GAP_ANALYSIS_MIN_ROLE = 'manager'` (role hierarchy lets admins through), card
+  guarded by `can_manage`. `None` opens the page to every signed-in user.
+- **Institution visibility** was already the module rule (`get_institution_filter`:
+  public locations + the user's institutions; admin sees all); now pinned by a
+  test for a one-park manager.
+
 ### Not done / next
 - Browser check by the user (no JS runtime on this machine for a syntax check;
   JS was reviewed by hand).
