@@ -68,6 +68,18 @@ through a mocked session (BOOL_OR / ANY are Postgres-only).
 `scripts/probe_gap_analysis.py` runs the whole pipeline read-only against a real
 ct_db and prints timings and distributions.
 
+### Access (follow-up, same day)
+Testing phase: the **page and its hub card are admin-only**
+(`GAP_ANALYSIS_ADMIN_ONLY = True` in `gap_routes.py` + `{% if is_admin %}` in
+`overview.html`). The **JSON API requires login only**, no role, so opening the
+page later means flipping the flag and dropping the template guard; the page then
+needs login like the API. The API applies institution access to every query.
+
+Found on the way: `role_required` redirects anonymous users to `auth.login`,
+which does not exist (`main.login` does), so it raises `BuildError`. Every
+existing use stacks `@login_required` first and never reaches that branch; the
+gap page does the same. The decorator itself is left untouched.
+
 ### Not done / next
 - Browser check by the user (no JS runtime on this machine for a syntax check;
   JS was reviewed by hand).
