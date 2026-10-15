@@ -29,6 +29,12 @@ recorders, so the map now lets you plan points and take them to the field.
 - Planned points and their rings use their own pane (z 660) with
   `pointer-events: none` and an SVG renderer: a canvas there would swallow the
   clicks meant for the grid, the same trap as the location points.
+- Layout feedback the same day: site-wide `.btn` styles stretched the buttons
+  to full width and the side panel outgrew the map. Tool buttons became icons
+  (📍 📏 🧽) in a horizontal Leaflet control on the map (top left); the side
+  panel keeps a one-line buffer slider (PAM), a one-row-per-point list and small
+  KML/GPX/🗑 chips (own `.gap-chip` class, not `.btn`); long hints moved to
+  `title` tooltips.
 - No JS runtime locally (no Node), so the JS is checked statically
   (`tests/test_gap_map_tools.py`) and by reading; the UI needs a manual check
   after deploy.
