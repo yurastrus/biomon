@@ -3,6 +3,84 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-15 — PAM gap analysis page (Beta)
+
+The acoustic twin of the CT gap analysis page below:
+`GET /<lang>/pam/gap-analysis`, hub card "Прогалини в даних" in the PAM hub,
+APIs `/<lang>/api/pam/gap-analysis/{grid,cell/<code>,kernel,biotopes}`. Same
+three dimensions on the same EEA grid with the same estimators; the differences
+are what acoustics needs.
+
+### Files (submodule shared-pam)
+- `app/pam/gap_metrics.py`: a **copy** of the CT `gap_metrics.py`, not an
+  import. shared-pam and shared-ct are separate packages and must stay
+  importable alone. A parity test (`tests/test_pam_gap_metrics.py`) runs both
+  copies on random inputs and fails if they drift. Acoustic additions:
+  `EFFORT_TARGET_HOURS` (300/600/1200 h for 1/5/10 km), `diel_coverage`
+  (clock hours with at least 60 recording minutes; night = 21:00-04:59).
+- `app/pam/gap_analysis.py`: reads pam_db into `GapData`, `apply_threshold`,
+  map layers.
+- `app/pam/gap_routes.py`: page + API, cache, access. Registered from
+  `app/pam/__init__.py`.
+- `templates/pam_gap_analysis.html`; styles in `static/css/pam_style.css`
+  (PAM forbids inline `<style>`, a smoke test enforces it; cache-buster v=31).
+
+### Decisions
+- **The confidence threshold is the main filter.** Slider 0.70 to 1.00, default
+  0.95, step 0.01. Scores are fetched once down to 0.70 as the best score per
+  (location, local day, species); the slider re-filters that in memory. First
+  load ~9 s on the full DB (26M detections), every slider move ~0.1 s.
+- Verification refines the threshold where it exists: consensus-rejected
+  detections never count, consensus-confirmed ones count at any threshold. Only
+  ~8.7k of 26M detections are verified, so this barely moves the numbers.
+- Scores are rounded to 4 decimals in SQL so that a 0.95 threshold includes a
+  stored REAL 0.95 (0.94999998). Other PAM pages compare the raw REAL and
+  exclude it; the difference is a handful of detections at exact boundaries.
+- Effort = recording minutes (`recordings.duration_minutes`). Only 189 of 586k
+  recordings have no detection at all, so the recordings table is a fair record
+  of effort (empty files are not systematically missing).
+- Unit default = recorder-week. Autocorrelation is stronger than in camera
+  traps: at 0.95, P(detected tomorrow | today) = 0.56 vs mean daily p 0.11.
+- Local day and hour in Europe/Kyiv.
+- New diel layer and per-cell 24-hour bar chart: a dawn-only schedule says
+  nothing about owls or nocturnal migrants. Not part of the composite (kept at
+  the CT definition: effort × pool sensitivity × seasons).
+- Taxon groups by `species.class`: birds (default), amphibians, bats, all.
+- Model picker (reference / other models / any) reuses
+  `_confidence_value_sql` / `_confidence_filter_sql`.
+- Kernel bandwidths 0.5/1/2.5/5 km (default 1 km), smaller than CT.
+- No "unverified cells" layer: there is no verification backlog notion here.
+
+### Access
+Same as the CT page now: page, card and API for every signed-in user
+(`GAP_ANALYSIS_MIN_ROLE = None`). Locations: public + the user's PAM
+institutions (`pam_access.allowed_institution_ids`), admin sees all. Species:
+`required_role` filter as on other PAM pages (bats are admin-only); the cache
+key carries institutions and roles.
+
+### Real data (Oct 2026, admin, birds, 0.95)
+84 locations with recordings, 7.4k recorder-days, 48.7k h; 225 species kept of
+279 at 0.70. 13 cells at 5 km, 7 estimable; coverage ~0.99 everywhere, so
+again pool sensitivity carries the composite. The "hardest to detect" table at
+0.95 is topped by oystercatcher, herring gull, bean goose: most likely BirdNET
+false positives in a forest region. That is the threshold trade-off made
+visible; the methods section says so.
+
+### Tests
+`tests/test_pam_gap_metrics.py` (parity + diel/effort), `test_pam_gap_analysis.py`
+(threshold, verification, grid, fetch via mocked connection),
+`test_pam_gap_routes.py` (access, role filter, threshold clamp, model SQL,
+cache, translations). `conftest.mock_pam_conn` now also patches
+`app.pam.gap_routes`. Full suite: 2377 passed, 44 skipped.
+Probe on a real DB (read-only): `venv/Scripts/python -m scripts.probe_pam_gap_analysis [taxon]`.
+
+### Open
+- Per-species thresholds from the evaluation page (P(correct) ≥ 0.95 by
+  logistic regression) would be more defensible than one global slider: a
+  natural next option for the threshold control.
+- The pool keeps false positives that pass the threshold in ≥3 units; a
+  minimum number of locations per pool species could be tried.
+
 ## 2026-10-14 — CT gap analysis page (Beta)
 
 New page `GET /<lang>/camera-traps/analysis/gap-analysis` (hub card "Прогалини
