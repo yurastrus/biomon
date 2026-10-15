@@ -3,6 +3,36 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-15 — Map tools on both gap analysis pages
+
+Purpose: the gap pages are used to choose where to put new cameras and
+recorders, so the map now lets you plan points and take them to the field.
+
+- **Planned points** (CT and PAM): "Додати точку" mode, click the map to add,
+  drag to move, rename/delete/zoom in the side list. Export to **KML** (asked
+  for; Google Earth, OsmAnd, Locus) and **GPX** (Garmin handhelds do not read
+  KML). Each exported point carries a description: the grid cell under it and
+  its composite, effort, species and pool sensitivity (PAM: hours and diel
+  coverage, plus the buffer radius). Points live in the browser's localStorage
+  only (per-viewer convenience, nothing sent to the server); every storage call
+  is guarded so a private window just does not persist.
+- **Ruler** (CT and PAM): click vertices, live distance to the cursor,
+  double-click or Esc finishes; the last measurement stays until cleared or a
+  new one starts. Uses Leaflet `map.distance` (great-circle).
+- **Buffer ring** (PAM only): slider 50 to 2000 m, default 500, step 10. Dashed
+  rings around recorder locations when "Локації реєстраторів" is on, and around
+  every planned point immediately. Slider moves all rings live.
+- While a tool is active, clicks on grid cells do not open the cell panel.
+- Code: `static/js/gap_map_tools.js`, one copy per submodule. Duplication is
+  deliberate (user, 2026-10-15: submodules must stay independent), so the
+  copies may evolve separately; no parity test for them.
+- Planned points and their rings use their own pane (z 660) with
+  `pointer-events: none` and an SVG renderer: a canvas there would swallow the
+  clicks meant for the grid, the same trap as the location points.
+- No JS runtime locally (no Node), so the JS is checked statically
+  (`tests/test_gap_map_tools.py`) and by reading; the UI needs a manual check
+  after deploy.
+
 ## 2026-10-15 — PAM gap analysis page (Beta)
 
 The acoustic twin of the CT gap analysis page below:
@@ -14,8 +44,9 @@ are what acoustics needs.
 ### Files (submodule shared-pam)
 - `app/pam/gap_metrics.py`: a **copy** of the CT `gap_metrics.py`, not an
   import. shared-pam and shared-ct are separate packages and must stay
-  importable alone. A parity test (`tests/test_pam_gap_metrics.py`) runs both
-  copies on random inputs and fails if they drift. Acoustic additions:
+  importable alone. The copies may evolve separately (a first parity test
+  was replaced the same day by standalone hand-computed checks, after the user
+  confirmed duplication is fine). Acoustic additions:
   `EFFORT_TARGET_HOURS` (300/600/1200 h for 1/5/10 km), `diel_coverage`
   (clock hours with at least 60 recording minutes; night = 21:00-04:59).
 - `app/pam/gap_analysis.py`: reads pam_db into `GapData`, `apply_threshold`,
@@ -67,7 +98,7 @@ false positives in a forest region. That is the threshold trade-off made
 visible; the methods section says so.
 
 ### Tests
-`tests/test_pam_gap_metrics.py` (parity + diel/effort), `test_pam_gap_analysis.py`
+`tests/test_pam_gap_metrics.py` (hand-computed estimators + diel/effort), `test_pam_gap_analysis.py`
 (threshold, verification, grid, fetch via mocked connection),
 `test_pam_gap_routes.py` (access, role filter, threshold clamp, model SQL,
 cache, translations). `conftest.mock_pam_conn` now also patches
