@@ -3,6 +3,81 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-16 — GBIF on the CT gap analysis page
+
+Question: where is a mammal known to be present but the cameras missed it,
+and where does nobody know anything? GBIF is an independent presence source;
+the camera-only species pool cannot contain species no camera ever recorded.
+
+Decisions (user, 2026-10-16): species = all mammals a camera trap can record,
+not only those already on cameras; no citation/DOI needed, so the plain search
+API (reliable, no GBIF account); window = last N years with N = 20, easy to
+change.
+
+### Files (shared-ct)
+- `gbif_cache.py`: fetch (occurrence/search, 300 per page, year-split past
+  the 100k offset limit, 3 retries), filters, aggregation to 1 km EEA cells,
+  cache read (`load_gbif`, never raises), background refresh with status in
+  `calculation_log` (`source_name='gbif_cache'`), same pattern as
+  `biotope_autoassign.py`.
+- `models.py`: `GbifTaxon` (`gbif_taxa`), `GbifCellCount` (`gbif_cell_counts`:
+  taxon × 1 km cell × year × uncertainty bucket → records).
+- `gap_analysis.py`: `build_grid(..., gbif=)` adds `gbif_records`,
+  `gbif_species`, `gbif_missed` (in GBIF, not recorded by the camera in that
+  cell) and `knowledge` (both / camera / gbif / none) to every cell, empty
+  ones included; `summary.gbif` lists species GBIF knows in the shown cells
+  that no camera recorded anywhere.
+- `gap_routes.py`: GBIF only for taxon mammals/all; grid cache key carries the
+  GBIF update stamp; `POST /api/gap-analysis/gbif/refresh` (admin, 202/409),
+  `GET /api/gap-analysis/gbif/status`.
+- Template: layers "GBIF: видів у клітинці" and "Прогалина знань"
+  (categorical), GBIF line in tooltips, "Є в GBIF, камерою не зафіксовані" in
+  the cell panel, a panel listing mammals never recorded by cameras, admin
+  refresh button with polling, GBIF count in KML descriptions.
+- Scripts: `scripts/init_gbif_cache.py` (DDL, `--refresh` to fill in the
+  foreground), `scripts/probe_gbif_cache.py` (read-only: fetches GBIF and
+  builds the grid in memory, writes nothing).
+
+### Filters and why
+- Taxa: orders Carnivora, Artiodactyla, Perissodactyla, Lagomorpha; families
+  Erinaceidae, Castoridae, Sciuridae, Myocastoridae, Hystricidae; plus any
+  camera species outside them. Seals and domestic forms excluded (the record's
+  own taxonKey is checked: GBIF folds dogs into Canis lupus at species rank).
+- **Own data excluded**: dataset b587c2e3 (Roztochya camera traps). On the real
+  area it was 4692 of 15387 fetched records (30%); without it the cameras would
+  confirm themselves. More keys via `CAMERA_TRAP_CONFIG['GBIF_EXCLUDED_DATASETS']`.
+- Uncertainty buckets 1/5/10 km, coarser dropped; a record counts on a grid
+  only if its bucket fits the cell; no stated uncertainty counts from 5 km.
+- Query area: bounding boxes of the study-area parts (all valid locations,
+  same buffer + closing as the page), points then tested against the exact
+  area (3508 records were inside the boxes but outside the area).
+- Window: `gbif_year_window()` is the one place for the rule
+  (`GBIF_YEARS_BACK = 20`); the cache holds `FETCH_YEARS_BACK = 40` so N can
+  grow to 40 without a refetch.
+- Vernacular names: GBIF lists them unordered ("кролик свійський декоративний"
+  first for the rabbit); `pick_vernacular` takes the preferred flag, then the
+  name most sources share, then the shortest. Camera species keep CT names.
+
+### Real data (read-only probe, 2026-10-16)
+Refresh ~2 min (90 queries over 10 boxes). Window 2007-2026: 6945 records, 34
+species, 22 of them on cameras. Not on cameras: Equus przewalskii 144, stoat
+51, European mink 44, least weasel 12, American mink 8, rabbit 8, stone marten
+5, coypu 3, sika 2, muntjac 2, white-tailed deer 1, Atelerix algirus 1.
+5 km grid: both 139, camera only 73, GBIF only 104, nothing 411 cells. Most
+frequent "in GBIF, missed by camera": fox, red squirrel, roe deer, wolf.
+
+### Deploy
+1. `venv/bin/python -m scripts.init_gbif_cache` on prod (creates two tables).
+2. Code: shared-ct → biomon (and myproject pointer).
+3. Press "Оновити дані GBIF" on the page as admin (or
+   `scripts.init_gbif_cache --refresh`). Server needs outbound HTTPS to
+   api.gbif.org. Until then the page says GBIF is not loaded; nothing breaks.
+
+### Open
+- PAM (birds) would need GBIF SQL/async downloads: eBird volume is far beyond
+  the search API; also exclude the Roztochya PAM datasets (790244fc, af2b5fb0).
+- Periodic refresh (cron) not set up; the button is enough for now.
+
 ## 2026-10-15 — Map tools on both gap analysis pages
 
 Purpose: the gap pages are used to choose where to put new cameras and
