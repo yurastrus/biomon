@@ -73,6 +73,19 @@ frequent "in GBIF, missed by camera": fox, red squirrel, roe deer, wolf.
    `scripts.init_gbif_cache --refresh`). Server needs outbound HTTPS to
    api.gbif.org. Until then the page says GBIF is not loaded; nothing breaks.
 
+### Deployed 2026-10-16 (by the agent, on request)
+- biomon: pulled 145bcc2 (shared-ct f85b653, shared-pam f5bd0a2), ran
+  `scripts.init_gbif_cache` (tables created), HUP reload; smoke 200/302 as expected.
+- GBIF cache filled on prod with `scripts.init_gbif_cache --refresh`: 7005
+  records kept of 15387, 35 species (22 linked to camera species), years
+  1991-2026; same numbers as the local read-only probe.
+- myproject: submodules bumped to the same tips (1fcf77b, its tests 231 passed),
+  pulled on the server, HUP; pages 200/302.
+- Checked as admin on the server (test_request_context, read-only): CT grid
+  200 in 1.5 s with GBIF (6940 records in the window, 14 species not on
+  cameras at 5 km), PAM grid 200 in 7.4 s.
+- Logs: `/var/www/biomon/logs/deploy_gbif_init_*.log`, `deploy_gbif_refresh_*.log`.
+
 ### Open
 - PAM (birds) would need GBIF SQL/async downloads: eBird volume is far beyond
   the search API; also exclude the Roztochya PAM datasets (790244fc, af2b5fb0).
