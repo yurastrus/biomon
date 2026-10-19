@@ -8,8 +8,8 @@
 From the user's GPS export (installed 2026-10-09): VL2_MIXED, VL3_YAR,
 VL4_SVITLYI, VL1_BEECH, VF1_VERBA, institution 2 (VYNLIS, Vynnyky project),
 `state_province='Lviv Oblast'`, name_en = name. One `service_visits` row each:
-installation (purpose 2), NiMH 2500, 64 GB, 24 h/day (ASSUMED round-the-clock,
-not stated), local times as typed (seconds dropped, alt/acc not stored: no column).
+installation (purpose 2), NiMH 2500, 64 GB, 24 h/day (round-the-clock, confirmed by user;
+was first assumed), local times as typed (seconds dropped, alt/acc not stored: no column).
 Script: `scripts/add_vynnyky_locations_2026_10_09.py`.
 
 ## 2026-10-19 — Installation visits for OBROSHYNE-1..5
