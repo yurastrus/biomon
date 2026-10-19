@@ -3,6 +3,17 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-19 — Service visits of 2026-09-17 (3 PAM locations)
+
+Matched the user's three WhatsApp-style notes to locations by exact coordinates
+(distance 0 m): 9 (Verechytsi ponds st. 2_3), 393 (Horbky pine plantation),
+394 (Horbky wolf place). Inserted `service_visits` ids 85-87 via tunnel 5433:
+purpose 1 (routine maintenance), 6 h/day (the value in all earlier rows),
+`is_operational` NULL (unknown), user_id 1, no comments. Battery: black = NiMH
+2500 (id 1), lithium = id 4; card 64 GB = id 3, 256 GB = id 5. Times stored as
+typed (app stores datetime-local as-is; DB tz is UTC). Script:
+`scripts/add_service_visits_2026_09_17.py`.
+
 ## 2026-10-19 — Five OBROSHYNE PAM locations added
 
 Added OBROSHYNE-1..5 (location_id 409-413) directly to `pam_db` through the
