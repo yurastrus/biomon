@@ -3,6 +3,13 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-19 — Installation visits for OBROSHYNE-1..5
+
+`service_visits` for locations 409-413: purpose 2 (installation), 2026-10-18
+12:00 (user said "around noon"), NiMH 2000 (id 2, lower bound of 2000-2800),
+64 GB card (id 3, guess), 6 h/day, is_operational NULL; the approximations are
+noted in `comments`. Script: `scripts/add_service_visits_obroshyne.py`.
+
 ## 2026-10-19 — Service visits of 2026-07-21 (5 PAM locations)
 
 Back-filled from the user's chat notes (none of 21-22 July was in the DB; no
