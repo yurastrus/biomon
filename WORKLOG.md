@@ -3,6 +3,15 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-19 — Vynnyky project: 5 locations + installation visits
+
+From the user's GPS export (installed 2026-10-09): VL2_MIXED, VL3_YAR,
+VL4_SVITLYI, VL1_BEECH, VF1_VERBA, institution 2 (VYNLIS, Vynnyky project),
+`state_province='Lviv Oblast'`, name_en = name. One `service_visits` row each:
+installation (purpose 2), NiMH 2500, 64 GB, 24 h/day (ASSUMED round-the-clock,
+not stated), local times as typed (seconds dropped, alt/acc not stored: no column).
+Script: `scripts/add_vynnyky_locations_2026_10_09.py`.
+
 ## 2026-10-19 — Installation visits for OBROSHYNE-1..5
 
 `service_visits` for locations 409-413: purpose 2 (installation), 2026-10-18
