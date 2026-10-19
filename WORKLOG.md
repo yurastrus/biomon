@@ -3,6 +3,18 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-19 — Service visits of 2026-07-21 (5 PAM locations)
+
+Back-filled from the user's chat notes (none of 21-22 July was in the DB; no
+visits at all between 2026-07-04 and 2026-09-17). Inserted `service_visits`
+ids 88-92: 121 Chorni ozera (12:45), 389 near centroid (13:16), 400 Yavorivskyi 2
+(13:34), 401 Yavorivskyi 3 (13:56), 399 border with YNPP (14:21). 64 GB card
+(id 3) everywhere; NiMH 2500 (id 1) except 399 = NiMH 2000 (id 2). Same
+defaults as the 09-17 batch (purpose 1, 6 h/day, is_operational NULL).
+The 22 July coordinates (locations 404, 405) are location creation only, no
+visit data given, so no visits were added. Script:
+`scripts/add_service_visits_2026_07_21.py`.
+
 ## 2026-10-19 — Service visits of 2026-09-17 (3 PAM locations)
 
 Matched the user's three WhatsApp-style notes to locations by exact coordinates
