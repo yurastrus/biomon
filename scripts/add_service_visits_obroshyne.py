@@ -17,7 +17,7 @@ with e.begin() as c:
             print('skip', loc); continue
         c.execute(text("""INSERT INTO service_visits (location_id,user_id,visit_datetime,is_operational,battery_type_id,
             sd_card_status_id,recording_hours_per_day,visit_purpose_id,comments)
-            VALUES (:l,1,:dt,NULL,2,3,6,2,:c)"""), dict(l=loc, dt=dt, c=COMMENT))
+            VALUES (:l,1,:dt,NULL,2,3,24,2,:c)"""), dict(l=loc, dt=dt, c=COMMENT))
         print('added', loc)
 with e.connect() as c:
     for r in c.execute(text("select sv.id,l.location_name,sv.visit_datetime,sv.battery_type_id,sv.sd_card_status_id,sv.visit_purpose_id from service_visits sv join locations l using(location_id) where sv.location_id between 409 and 413 order by sv.id")): print(tuple(r))

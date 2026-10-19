@@ -7,7 +7,7 @@
 
 `service_visits` for locations 409-413: purpose 2 (installation), 2026-10-18
 12:00 (user said "around noon"), NiMH 2000 (id 2, lower bound of 2000-2800),
-64 GB card (id 3, guess), 6 h/day, is_operational NULL; the approximations are
+64 GB card (id 3, guess), 24 h/day (round-the-clock, corrected by user), is_operational NULL; the approximations are
 noted in `comments`. Script: `scripts/add_service_visits_obroshyne.py`.
 
 ## 2026-10-19 — Service visits of 2026-07-21 (5 PAM locations)
