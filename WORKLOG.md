@@ -3,6 +3,17 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-19 — Five OBROSHYNE PAM locations added
+
+Added OBROSHYNE-1..5 (location_id 409-413) directly to `pam_db` through the
+SSH tunnel (5433), mirroring `api_create_pam_location` in `app/pam/routes.py`:
+`locations` row (name = name_en, lat/lon + `geom` SRID 4326, visibility 0,
+`state_province='Lviv Oblast'`) plus one `location_institutions` row for
+institution 31 (Obroshyne project, code OBROSHYNE). No biotopes assigned
+(not specified; can be set on /pam/manage-locations or via the landcover
+auto-assign). Script: `scripts/add_obroshyne_locations.py` (idempotent guard).
+Next: set biotopes if wanted.
+
 ## 2026-10-16 — GBIF on the CT gap analysis page
 
 Question: where is a mammal known to be present but the cameras missed it,
