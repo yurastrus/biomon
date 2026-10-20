@@ -289,12 +289,12 @@ def test_robots_blocks_editor_screens_only(client):
     assert 'Disallow: /*/docs\n' not in txt
 
 
-def test_menu_link_admin_only(app, client, docs, make_user):
-    assert 'ІНСТРУКЦІЇ' not in client.get('/uk/docs/').get_data(as_text=True)
-    ed = make_user('ed', roles=('manager',))
-    assert 'ІНСТРУКЦІЇ' not in _login(app, ed).get('/uk/docs/').get_data(as_text=True)
+def test_menu_link_for_everyone(app, client, docs, make_user):
+    assert 'ДОКУМЕНТАЦІЯ' in client.get('/uk/').get_data(as_text=True)
+    assert 'DOCS' in client.get('/en/').get_data(as_text=True)
     admin = make_user('boss', roles=('admin',))
-    assert 'ІНСТРУКЦІЇ' in _login(app, admin).get('/uk/docs/').get_data(as_text=True)
+    html = _login(app, admin).get('/uk/docs/').get_data(as_text=True)
+    assert html.index('SDM') < html.index('ДОКУМЕНТАЦІЯ')  # right after SDM for admins
 
 
 # ── bundles (agent / script path) ────────────────────────────────────────────
@@ -556,3 +556,14 @@ def test_every_module_string_has_english():
             if s not in EN:
                 missing.add(s)
     assert not missing, sorted(missing)
+
+
+def test_browser_crlf_is_stored_as_lf(app, docs, make_user):
+    """<textarea> posts CRLF; stored text uses LF so bundle round trips compare equal."""
+    ed = make_user('ed', roles=('viewer',))
+    docs.grant(ed, 'ct')
+    p = docs.page('p1')
+    c = _login(app, ed)
+    c.post('/uk/docs/p1/edit', data={'title': 'T', 'body': 'a\r\nb\r\n', 'topic_id': p.topic_id,
+                                     'published': '1', 'base_stamp': _stamp(c, 'p1')})
+    assert p.translation('uk').body == 'a\nb\n'

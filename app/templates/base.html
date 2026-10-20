@@ -84,10 +84,9 @@
                         <li class="{{ 'current' if request.endpoint == 'main.about' else '' }}"><a href="{{ url_for('main.about', lang_code=g.lang_code) }}">{{ _('ПРО ПРОЕКТ') }}</a></li>
                         {% if current_user.is_authenticated and current_user.has_role('admin') %}
                         <li class="{{ 'current' if request.blueprint == 'sdm' else '' }}"><a href="{{ url_for('sdm.dashboard') }}">{{ _('SDM') }}</a></li>
-                        {# Docs: admin-only in the menu while content is being written.
-                           The pages themselves are public and in the sitemap. #}
-                        <li class="{{ 'current' if request.blueprint == 'docs' else '' }}"><a href="{{ url_for('docs.index', lang_code=g.lang_code or 'uk') }}">{{ _('ІНСТРУКЦІЇ') }}</a></li>
                         {% endif %}
+                        {# Docs: for everyone; right after SDM (which only admins see). #}
+                        <li class="{{ 'current' if request.blueprint == 'docs' else '' }}"><a href="{{ url_for('docs.index', lang_code=g.lang_code or 'uk') }}">{{ _('ДОКУМЕНТАЦІЯ') }}</a></li>
                         <li class="{{ 'current' if request.endpoint == 'main.contacts' else '' }}"><a href="{{ url_for('main.contacts', lang_code=g.lang_code) }}">{{ _('КОНТАКТИ') }}</a></li>
                         {% if current_user.is_authenticated and current_user.has_role('admin', 'manager') %}
                         <li class="{{ 'current' if request.blueprint == 'admin' else '' }}"><a href="{{ url_for('admin.home', lang_code=g.lang_code) }}">{{ _('АДМІН') }}</a></li>
