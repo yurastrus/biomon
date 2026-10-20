@@ -420,21 +420,125 @@ def test_bundle_rejects_missing_image_and_bad_front_matter(app, docs, make_user,
     assert r.exit_code != 0 and 'unknown key' in r.output
 
 
-def test_example_bundle_is_valid_and_bilingual(app, docs, make_user):
+def test_example_bundle_is_valid_and_bilingual(app, docs, make_user, make_role):
     """The worked example agents copy from (app/docs/examples) must import."""
     from app.docs.models import DocPage
     root = Path(__file__).resolve().parents[1] / 'app' / 'docs' / 'examples' / 'editing-guides'
+    make_role('manager')
     admin = make_user('boss', roles=('admin',))
     r = app.test_cli_runner().invoke(args=['docs', 'import', str(root), '--author', 'boss'])
     assert r.exit_code == 0, r.output
     page = DocPage.query.filter_by(slug='how-to-edit-guides').one()
     assert {t.lang for t in page.translations} == {'uk', 'en'}
     assert page.published is False
+    assert [r.name for r in page.visible_roles] == ['manager']
     # Same structure in both languages: same number of sections and steps.
     uk, en = page.translation('uk').body, page.translation('en').body
     assert uk.count('\n## ') == en.count('\n## ')
     assert len(re.findall(r'^\d+\. ', uk, re.M)) == len(re.findall(r'^\d+\. ', en, re.M))
     assert '—' not in uk + en and '–' not in uk + en
+
+
+# ── visibility by role / editors only ────────────────────────────────────────
+
+def _roles(page, *names):
+    from app.models import Role
+    from app.extensions import db
+    page.visible_roles = Role.query.filter(Role.name.in_(names)).all()
+    db.session.commit()
+
+
+def test_managers_only_page(app, client, docs, make_user, make_role):
+    for n in ('manager', 'ct_verifier', 'admin'):
+        make_role(n)
+    p = docs.page('managers-guide', topic='general')
+    p.members_only = True
+    _roles(p, 'manager')
+    verifier = make_user('ver', roles=('ct_verifier',))
+    manager = make_user('man', roles=('manager',))
+    admin = make_user('boss', roles=('admin',))
+
+    assert client.get('/uk/docs/managers-guide').status_code in (302, 401)
+    assert _login(app, verifier).get('/uk/docs/managers-guide').status_code == 403
+    assert 'managers-guide' not in _login(app, verifier).get('/uk/docs/').get_data(as_text=True)
+    assert _login(app, manager).get('/uk/docs/managers-guide').status_code == 200
+    assert _login(app, admin).get('/uk/docs/managers-guide').status_code == 200
+    assert 'managers-guide' not in client.get('/sitemap.xml').get_data(as_text=True)
+    page = _login(app, manager).get('/uk/docs/managers-guide').get_data(as_text=True)
+    assert 'noindex' in page and 'Менеджери' in page
+
+
+def test_role_hierarchy_manager_reads_verifier_pages(app, docs, make_user, make_role):
+    make_role('ct_verifier')
+    p = docs.page('verifier-guide', topic='ct')
+    p.members_only = True
+    _roles(p, 'ct_verifier')
+    assert _login(app, make_user('man', roles=('manager',))).get('/uk/docs/verifier-guide').status_code == 200
+    assert _login(app, make_user('pv', roles=('pam_verifier',))).get('/uk/docs/verifier-guide').status_code == 403
+
+
+def test_editors_only_page(app, docs, make_user):
+    from app.extensions import db
+    p = docs.page('editor-notes', topic='ct')
+    p.editors_only = True
+    db.session.commit()
+    ct_ed = make_user('ct_ed', roles=('viewer',))
+    pam_ed = make_user('pam_ed', roles=('viewer',))
+    docs.grant(ct_ed, 'ct')
+    docs.grant(pam_ed, 'pam')
+    assert _login(app, ct_ed).get('/uk/docs/editor-notes').status_code == 200
+    assert _login(app, pam_ed).get('/uk/docs/editor-notes').status_code == 403
+    assert _login(app, make_user('reader', roles=('viewer',))).get('/uk/docs/editor-notes').status_code == 403
+
+
+def test_editor_without_role_cannot_edit_restricted_page(app, docs, make_user, make_role):
+    make_role('manager')
+    p = docs.page('managers-guide', topic='general')
+    _roles(p, 'manager')
+    ed = make_user('ed', roles=('viewer',))
+    docs.grant(ed, 'general')
+    assert _login(app, ed).get('/uk/docs/managers-guide/edit').status_code == 403
+
+
+def test_form_sets_roles_and_refuses_self_lockout(app, docs, make_user, make_role):
+    from app.docs.models import DocPage
+    manager_role = make_role('manager')
+    ed = make_user('ed', roles=('ct_verifier',))
+    docs.grant(ed, 'general')
+    p = docs.page('guide', topic='general')
+    c = _login(app, ed)
+    data = {'title': 'Г', 'body': 'т', 'topic_id': p.topic_id, 'published': '1',
+            'visibility': 'roles', 'role_ids': [str(manager_role.id)]}
+    r = c.post('/uk/docs/guide/edit', data={**data, 'base_stamp': _stamp(c, 'guide')})
+    assert r.status_code == 200 and 'втратите доступ' in r.get_data(as_text=True)
+    admin = make_user('boss', roles=('admin',))
+    a = _login(app, admin)
+    r = a.post('/uk/docs/guide/edit', data={**data, 'base_stamp': _stamp(a, 'guide')})
+    assert r.status_code == 302
+    page = DocPage.query.filter_by(slug='guide').one()
+    assert page.visibility == 'roles' and [x.name for x in page.visible_roles] == ['manager']
+
+
+def test_bundle_roles_key(app, docs, make_user, make_role, tmp_path):
+    from app.docs.models import DocPage
+    make_role('manager')
+    make_user('boss', roles=('admin',))
+    md = UK_MD.replace('topic: ct', 'topic: general\nvisibility: roles\nroles: manager')
+    run = app.test_cli_runner().invoke
+    r = run(args=['docs', 'import', str(_bundle(tmp_path, md, image=False).parent / 'bundle'),
+                  '--author', 'boss', '--dry-run'])
+    assert 'image not found' in r.output  # UK_MD references a picture
+    (tmp_path / 'bundle' / 'images').mkdir(exist_ok=True)
+    Image.new('RGB', (10, 10)).save(tmp_path / 'bundle' / 'images' / 'scheme.png')
+    app.config['DOCS_UPLOAD_PATH'] = str(tmp_path / 'media')
+    r = run(args=['docs', 'import', str(tmp_path / 'bundle'), '--author', 'boss'])
+    assert r.exit_code == 0, r.output
+    page = DocPage.query.filter_by(slug='camera-trap-setup').one()
+    assert page.visibility == 'roles' and [x.name for x in page.visible_roles] == ['manager']
+    bad = md.replace('roles: manager', 'roles: nobody')
+    (tmp_path / 'bundle' / 'uk.md').write_text(bad, encoding='utf-8')
+    r = run(args=['docs', 'import', str(tmp_path / 'bundle'), '--author', 'boss', '--update', '--dry-run'])
+    assert r.exit_code != 0 and 'unknown role' in r.output
 
 
 # ── i18n ─────────────────────────────────────────────────────────────────────
