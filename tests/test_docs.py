@@ -621,6 +621,37 @@ def test_ukrainian_change_marks_english_outdated_and_shows_what_changed(app, doc
     assert 'Усі мовні версії узгоджені' in c.get('/uk/docs/translations').get_data(as_text=True)
 
 
+def test_fresh_bilingual_import_is_in_step(app, docs, make_user, tmp_path):
+    """Regression: a page created by import was flagged outdated in both languages."""
+    from app.docs import sync
+    from app.docs.models import DocPage
+    make_user('boss', roles=('admin',))
+    app.config['DOCS_UPLOAD_PATH'] = str(tmp_path / 'media')
+    r = app.test_cli_runner().invoke(args=['docs', 'import', str(_bundle(tmp_path, UK_MD, EN_MD)),
+                                           '--author', 'boss'])
+    assert r.exit_code == 0, r.output
+    p = DocPage.query.filter_by(slug='camera-trap-setup').one()
+    assert {s: sync.lang_state(p, s).status for s in ('uk', 'en')} == {'uk': 'ok', 'en': 'ok'}
+    assert all(t.synced_with_rev_id for t in p.translations)
+
+
+def test_adding_translation_in_browser_is_in_step(app, docs, make_user):
+    """Same bug in the web editor: the first English version, saved as matching."""
+    from app.docs import sync
+    ed = make_user('ed', roles=('viewer',))
+    docs.grant(ed, 'ct')
+    p = docs.page('p1')
+    c = _login(app, ed)
+    _, stamp = _edit_form(c, 'p1', 'uk')
+    c.post('/uk/docs/p1/edit?lang=uk', data={'title': 'С', 'body': 'Текст 2\n', 'topic_id': p.topic_id,
+                                             'published': '1', 'base_stamp': stamp})
+    html, stamp = _edit_form(c, 'p1', 'en')
+    r = c.post('/en/docs/p1/edit?lang=en', data={'title': 'P', 'body': 'Text 2\n', 'topic_id': p.topic_id,
+                                                 'published': '1', 'synced': '1', 'base_stamp': stamp})
+    assert r.status_code == 302
+    assert {s: sync.lang_state(p, s).status for s in ('uk', 'en')} == {'uk': 'ok', 'en': 'ok'}
+
+
 def test_minor_edit_keeps_other_language_in_step(app, docs, db_session, make_user):
     from app.docs import sync
     ed = make_user('ed', roles=('viewer',))
