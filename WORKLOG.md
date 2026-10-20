@@ -3,6 +3,58 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-19..20 — CT verification: anonymous verifiers, step-back, CLEANUP_DAYS=1
+
+Deployed 2026-10-20 07:49 UTC (biomon 72e3e40, myproject db55097, shared-ct 7d756b2).
+
+**1. Anonymous verifiers in the photo viewer** (`/observation/<id>/photo/<i>`).
+The right panel showed usernames of everyone who identified the photo, which
+breaks blind verification. `view_photo` no longer loads User rows; each
+identification gets `verifier_label` = "Верифікатор N", numbered by the
+earliest identification id across the whole observation, so the same person
+keeps the same number on every photo of a series. Tests:
+`tests/test_ct_photo_viewer_anonymity.py`. Other pages that may still show
+names (identify review mode, export) were not audited.
+
+**2. Step back on /identify to correct a submitted series.** Motivation (user):
+on long runs of empty series the hand clicks "Надіслати" by habit and the
+species is wrong; before this the only fix was editing the DB.
+- Narrow grey `<` button (34 px like 🚩, `#back-btn` in `camera_traps.css`)
+  before "Надіслати"; history of the last **3** submitted series, in page
+  memory only (lost on reload, a skipped re-opened series drops out).
+- Re-opening uses the existing `start_obs_id` path; it now returns
+  `my_identification` (species, quantity, comment, behavior_ids) and the form
+  is pre-filled over the AI suggestion.
+- `submit-identification` accepts `replace: true`: deletes the caller's own
+  rows on that series, decrements `photo.identification_count`, and if the
+  series was `completed` calls new `utils.reopen_observation` (series+photos
+  back to `pending`, `ai_predictions.was_correct` cleared), then inserts and
+  re-runs consensus. Without the flag the route stays insert-only, so a double
+  click never rewrites a vote. A correction never clears `is_favorite`
+  (shared flag, form doesn't know which photo was starred).
+- Verified on prod by the user (Козуля → Пусто on obs 92896: id 756588 gone,
+  replaced by 756589, identification_count stays 2).
+- Tests: `tests/test_ct_identify_step_back.py` (13). Gotcha found: the `app`
+  fixture keeps one app context for the whole test, so Flask-Login caches the
+  first client's user in `g._login_user`; multi-client tests must pop it
+  before each request.
+- Decided against: an "N same answers in a row" warning (user: not needed).
+- Considered, not done: delaying consensus closure by 5 min
+  (`consensus_due_at` column + cron sweeper). Not needed while step-back works.
+
+**3. `CLEANUP_DAYS` 0 → 1** (both `config.py` here and `myproject/app/config.py`).
+The nightly `flask cleanup-photos` (cron 20:45 UTC, runs from
+`/var/www/myproject`, so *its* config governs) archives completed series whose
+newest identification is older than `CLEANUP_DAYS`. The old comment said
+"0 = disabled"; in fact 0 archived everything closed that same day (706 series
+/ 761 photos on 2026-10-19). With 0 a corrected vote on a series closed
+earlier in the day pointed at deleted files. 1 keeps a day for corrections;
+a correction also refreshes the newest identification time, so it restarts
+the clock. Not in `.env`, code only.
+
+**Next:** stage 2, "Мої ідентифікації" page (deeper history, filter by
+species, uses the same `replace` path; hide/flag edit for `archived` series).
+
 ## 2026-10-19 — Vynnyky project: 5 locations + installation visits
 
 From the user's GPS export (installed 2026-10-09): VL2_MIXED, VL3_YAR,
