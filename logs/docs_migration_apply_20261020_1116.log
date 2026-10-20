@@ -1,0 +1,6 @@
+C:\Users\IuriiStrus\repositories\biomon\venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+  warnings.warn(
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade b93e7d21c604 -> d0c5a1b2c3e4, Docs module (shared-docs): topics, pages, translations, editors, revisions, images
+exit 0

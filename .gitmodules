@@ -7,3 +7,6 @@
 [submodule "app/sdm"]
 	path = app/sdm
 	url = https://github.com/yurastrus/shared-sdm.git
+[submodule "app/docs"]
+	path = app/docs
+	url = https://github.com/yurastrus/shared-docs.git

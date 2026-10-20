@@ -1,0 +1,7 @@
+db / alembic: [('biomon_project_db', 'b93e7d21c604')]
+public tables: 10
+doc_* tables: []
+rows user: 78
+rows role: 10
+rows institutions: 31
+rows user_institutions: 563

@@ -134,6 +134,11 @@ def create_app(config_name=None):
     from app.sdm import sdm_bp
     app.register_blueprint(sdm_bp, url_prefix='/<lang_code>/sdm')
 
+    # Docs / manual (submodule shared-docs): guides edited in the browser by
+    # per-topic editors; tables in the main DB (migration d0c5a1b2c3e4).
+    from app.docs import docs_bp
+    app.register_blueprint(docs_bp, url_prefix='/<lang_code>/docs')
+
     # SEO: /robots.txt and /sitemap.xml at the domain root (no lang prefix).
     from app.seo import seo_bp, INDEXABLE_ENDPOINTS
     app.register_blueprint(seo_bp)

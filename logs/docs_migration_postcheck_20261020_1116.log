@@ -1,0 +1,8 @@
+db / alembic: [('biomon_project_db', 'd0c5a1b2c3e4')]
+public tables: 16
+doc_* tables: ['doc_editor', 'doc_image', 'doc_page', 'doc_page_translation', 'doc_revision', 'doc_topic']
+rows user: 78
+rows role: 10
+rows institutions: 31
+rows user_institutions: 563
+doc_topic: [('ct', 'Фотопастки'), ('pam', 'Акустичний моніторинг (ПАМ)'), ('general', 'Загальне')]

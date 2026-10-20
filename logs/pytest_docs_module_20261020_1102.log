@@ -1,0 +1,230 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.3, pluggy-1.6.0
+rootdir: C:\Users\IuriiStrus\repositories\biomon
+configfile: pytest.ini
+testpaths: tests
+plugins: cov-7.1.0
+collected 2497 items
+
+tests\test_access_decorator.py ...............                           [  0%]
+tests\test_admin.py .................................................... [  2%]
+..........................                                               [  3%]
+tests\test_admin_i18n.py ....                                            [  3%]
+tests\test_admin_institution_ecoregion.py ...............                [  4%]
+tests\test_admin_users_list_badges.py ................                   [  5%]
+tests\test_ai_quantity_max.py ...                                        [  5%]
+tests\test_ai_species_cascade.py ......................                  [  6%]
+tests\test_analytics.py ..............                                   [  6%]
+tests\test_analytics_async.py .................ssssssss                  [  7%]
+tests\test_audio_path_safety.py ....                                     [  7%]
+tests\test_audit_broken_ct_photos.py ....                                [  8%]
+tests\test_auth_redirect.py ...                                          [  8%]
+tests\test_behavior_analysis.py ........................................ [  9%]
+.................................                                        [ 11%]
+tests\test_biomon_ai.py ................................................ [ 12%]
+                                                                         [ 12%]
+tests\test_biotope_autoassign.py ...............                         [ 13%]
+tests\test_camera_traps_cleanup.py .........ssssssssssssssssss           [ 14%]
+tests\test_camera_traps_deployments.py .............                     [ 15%]
+tests\test_camera_traps_models.py ........                               [ 15%]
+tests\test_camera_traps_upload_fast.py .............ssssssss             [ 16%]
+tests\test_camera_traps_utils.py ................                        [ 16%]
+tests\test_classification_import.py ............                         [ 17%]
+tests\test_cleanup_old_photos.py ssssssssss                              [ 17%]
+tests\test_config_default.py .                                           [ 17%]
+tests\test_cookie_security.py ......                                     [ 18%]
+tests\test_ct_activity_heatmap.py ..............                         [ 18%]
+tests\test_ct_admin_storage_stats.py ..........                          [ 19%]
+tests\test_ct_ai_calibration.py .....                                    [ 19%]
+tests\test_ct_ai_was_correct.py ....                                     [ 19%]
+tests\test_ct_cleanup_statistics_accuracy.py .....                       [ 19%]
+tests\test_ct_contributors.py .....................                      [ 20%]
+tests\test_ct_coverage_calendar.py ...........                           [ 20%]
+tests\test_ct_csv_backup.py ....................................         [ 22%]
+tests\test_ct_daily_activity_species_filter.py ....                      [ 22%]
+tests\test_ct_dashboard_biotope_fanout.py ...                            [ 22%]
+tests\test_ct_dashboard_location_param.py ...........                    [ 23%]
+tests\test_ct_deployment_form_guard.py .....                             [ 23%]
+tests\test_ct_deployment_legend.py ...                                   [ 23%]
+tests\test_ct_deployment_loc_edit_link.py ....                           [ 23%]
+tests\test_ct_expertise.py ............................................. [ 25%]
+...........................                                              [ 26%]
+tests\test_ct_export_scoping.py .........................                [ 27%]
+tests\test_ct_export_timewindow.py ....                                  [ 27%]
+tests\test_ct_filter_panel_css.py ...                                    [ 27%]
+tests\test_ct_flag_review.py ...........                                 [ 28%]
+tests\test_ct_gap_analysis.py ..............................             [ 29%]
+tests\test_ct_gap_metrics.py ................................            [ 30%]
+tests\test_ct_gap_routes.py ...........................                  [ 31%]
+tests\test_ct_gbif_cache.py .....................................        [ 33%]
+tests\test_ct_hub_order.py .                                             [ 33%]
+tests\test_ct_identification_comment.py .....                            [ 33%]
+tests\test_ct_identification_priority.py ....                            [ 33%]
+tests\test_ct_identification_stats.py ....                               [ 33%]
+tests\test_ct_identify_ai_group_filters.py ....................          [ 34%]
+tests\test_ct_identify_mobile_order.py ................                  [ 35%]
+tests\test_ct_identify_scope_votes.py ......                             [ 35%]
+tests\test_ct_identify_skip.py ....                                      [ 35%]
+tests\test_ct_identify_sort_options.py .......                           [ 35%]
+tests\test_ct_identify_species_grouping.py ........                      [ 36%]
+tests\test_ct_identify_step_back.py .............                        [ 36%]
+tests\test_ct_institution_stats_access.py .............                  [ 37%]
+tests\test_ct_location_validity.py .........                             [ 37%]
+tests\test_ct_locations_no_description_removed.py ..                     [ 37%]
+tests\test_ct_manage_locations.py ...................................... [ 39%]
+....................................................                     [ 41%]
+tests\test_ct_map_layers.py ................                             [ 41%]
+tests\test_ct_notifications.py ...                                       [ 42%]
+tests\test_ct_pages_access.py .......................................... [ 43%]
+.................                                                        [ 44%]
+tests\test_ct_photo_rights.py .........                                  [ 44%]
+tests\test_ct_photo_viewer_anonymity.py ...                              [ 44%]
+tests\test_ct_query_indexes.py ....                                      [ 45%]
+tests\test_ct_scope_default.py .......                                   [ 45%]
+tests\test_ct_stats_api.py ............................................. [ 47%]
+....                                                                     [ 47%]
+tests\test_ct_stats_locations_biotope_fanout.py ...                      [ 47%]
+tests\test_ct_top_contributors_api.py ......                             [ 47%]
+tests\test_ct_top_species_query_shape.py ......                          [ 47%]
+tests\test_ct_upload_originals_gate.py .........                         [ 48%]
+tests\test_ct_upload_stats.py ...............                            [ 48%]
+tests\test_ct_upload_time_shift.py ..................................... [ 50%]
+.................                                                        [ 51%]
+tests\test_ct_verification_import.py ..............                      [ 51%]
+tests\test_ct_video_access.py ..................                         [ 52%]
+tests\test_ct_video_timestamp.py ....................................... [ 53%]
+...................                                                      [ 54%]
+tests\test_ct_video_upload.py .....................                      [ 55%]
+tests\test_data_export.py .....................................          [ 56%]
+tests\test_delete_duplicate_ct_batch.py ..........                       [ 57%]
+tests\test_deployment_import.py ...........                              [ 57%]
+tests\test_docs.py ................                                      [ 58%]
+tests\test_export_filter.py ............                                 [ 58%]
+tests\test_gap_map_tools.py .......                                      [ 59%]
+tests\test_login_hardening.py ....                                       [ 59%]
+tests\test_mann_kendall.py ................                              [ 60%]
+tests\test_module_access_form.py ......                                  [ 60%]
+tests\test_module_access_reads.py ...............                        [ 60%]
+tests\test_nav_arrow_css.py ..                                           [ 60%]
+tests\test_notification_prefs.py ...........                             [ 61%]
+tests\test_notifications.py ..........                                   [ 61%]
+tests\test_pam_biotope_autoassign.py ..............                      [ 62%]
+tests\test_pam_cooccurrence.py ......................................... [ 63%]
+.........................................................                [ 66%]
+tests\test_pam_coverage_calendar.py ..............                       [ 66%]
+tests\test_pam_data_export.py .......................................... [ 68%]
+.........                                                                [ 68%]
+tests\test_pam_evaluation.py ........................................... [ 70%]
+..............                                                           [ 71%]
+tests\test_pam_evaluation_utils.py .......                               [ 71%]
+tests\test_pam_export_date_validation.py ................                [ 72%]
+tests\test_pam_gap_analysis.py ............................              [ 73%]
+tests\test_pam_gap_metrics.py ..........                                 [ 73%]
+tests\test_pam_gap_routes.py .........................                   [ 74%]
+tests\test_pam_import.py ............................................... [ 76%]
+........................................................................ [ 79%]
+............                                                             [ 79%]
+tests\test_pam_linking_utils.py ...                                      [ 79%]
+tests\test_pam_locations.py ............................................ [ 81%]
+..........................                                               [ 82%]
+tests\test_pam_map_layers.py ..........                                  [ 83%]
+tests\test_pam_pages_smoke.py ...................                        [ 83%]
+tests\test_pam_sample_window_filters.py ................................ [ 85%]
+..........                                                               [ 85%]
+tests\test_pam_segment_sampling.py .............................         [ 86%]
+tests\test_pam_spectrogram_interaction.py .....                          [ 86%]
+tests\test_pam_utils.py .............................................    [ 88%]
+tests\test_pam_verification_priorities_page.py ......                    [ 89%]
+tests\test_pam_verification_priority.py .....                            [ 89%]
+tests\test_pam_verification_rights.py ....                               [ 89%]
+tests\test_pam_verification_unknown.py ......................            [ 90%]
+tests\test_pam_verifiers_page.py ......                                  [ 90%]
+tests\test_pam_verify_xenocanto_link.py ....                             [ 90%]
+tests\test_pam_zip_bomb.py ....                                          [ 90%]
+tests\test_password_policy.py ........                                   [ 91%]
+tests\test_profile.py ..........                                         [ 91%]
+tests\test_public_scope_access.py .................                      [ 92%]
+tests\test_registration.py ...........................F................. [ 94%]
+.                                                                        [ 94%]
+tests\test_restore_broken_ct_photos.py .....                             [ 94%]
+tests\test_roles.py .......................                              [ 95%]
+tests\test_sdm_auth.py ..........                                        [ 95%]
+tests\test_secret_key.py ...                                             [ 95%]
+tests\test_security_fixes.py ...................                         [ 96%]
+tests\test_security_headers.py .......                                   [ 96%]
+tests\test_security_hygiene.py ...............                           [ 97%]
+tests\test_seo.py ...........................                            [ 98%]
+tests\test_verification_decision_email.py ...........                    [ 98%]
+tests\test_verification_institutions.py ............................     [100%]
+
+================================== FAILURES ===================================
+_____________________ test_duplicate_username_is_rejected _____________________
+venv\Lib\site-packages\sqlalchemy\engine\base.py:1963: in _exec_single_context
+    self.dialect.do_execute(
+venv\Lib\site-packages\sqlalchemy\engine\default.py:943: in do_execute
+    cursor.execute(statement, parameters)
+E   sqlite3.OperationalError: no such table: user
+
+The above exception was the direct cause of the following exception:
+tests\test_registration.py:336: in test_duplicate_username_is_rejected
+    make_user(username='taras')
+tests\conftest.py:112: in _make
+    db_session.commit()
+venv\Lib\site-packages\sqlalchemy\orm\scoping.py:599: in commit
+    return self._proxied.commit()
+           ^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\sqlalchemy\orm\session.py:2032: in commit
+    trans.commit(_to_root=True)
+<string>:2: in commit
+    ???
+venv\Lib\site-packages\sqlalchemy\orm\state_changes.py:139: in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\sqlalchemy\orm\session.py:1313: in commit
+    self._prepare_impl()
+<string>:2: in _prepare_impl
+    ???
+venv\Lib\site-packages\sqlalchemy\orm\state_changes.py:139: in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\sqlalchemy\orm\session.py:1288: in _prepare_impl
+    self.session.flush()
+venv\Lib\site-packages\sqlalchemy\orm\session.py:4345: in flush
+    self._flush(objects)
+venv\Lib\site-packages\sqlalchemy\orm\session.py:4480: in _flush
+    with util.safe_reraise():
+venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+venv\Lib\site-packages\sqlalchemy\orm\session.py:4441: in _flush
+    flush_context.execute()
+venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py:466: in execute
+    rec.execute(self)
+venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py:642: in execute
+    util.preloaded.orm_persistence.save_obj(
+venv\Lib\site-packages\sqlalchemy\orm\persistence.py:93: in save_obj
+    _emit_insert_statements(
+venv\Lib\site-packages\sqlalchemy\orm\persistence.py:1233: in _emit_insert_statements
+    result = connection.execute(
+venv\Lib\site-packages\sqlalchemy\engine\base.py:1415: in execute
+    return meth(
+venv\Lib\site-packages\sqlalchemy\sql\elements.py:523: in _execute_on_connection
+    return connection._execute_clauseelement(
+venv\Lib\site-packages\sqlalchemy\engine\base.py:1637: in _execute_clauseelement
+    ret = self._execute_context(
+venv\Lib\site-packages\sqlalchemy\engine\base.py:1842: in _execute_context
+    return self._exec_single_context(
+venv\Lib\site-packages\sqlalchemy\engine\base.py:1982: in _exec_single_context
+    self._handle_dbapi_exception(
+venv\Lib\site-packages\sqlalchemy\engine\base.py:2351: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+venv\Lib\site-packages\sqlalchemy\engine\base.py:1963: in _exec_single_context
+    self.dialect.do_execute(
+venv\Lib\site-packages\sqlalchemy\engine\default.py:943: in do_execute
+    cursor.execute(statement, parameters)
+E   sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: user
+E   [SQL: INSERT INTO user (username, password_hash, email, phone, created_at, created_by_id, first_name, last_name, is_active, email_confirmed_at, self_registered, locale, notify_ct_pending) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
+E   [parameters: ('taras', '$2b$12$H8QTU7i7k6xA.by0s4q63.au6/zd1PSigeeyF2dw/MbH2JjWG0Qre', None, None, '2026-10-20 08:08:20.645841', None, None, None, 1, None, 0, None, 1)]
+E   (Background on this error at: https://sqlalche.me/e/20/e3q8)
+=========================== short test summary info ===========================
+FAILED tests/test_registration.py::test_duplicate_username_is_rejected - sqla...
+=========== 1 failed, 2452 passed, 44 skipped in 359.87s (0:05:59) ============

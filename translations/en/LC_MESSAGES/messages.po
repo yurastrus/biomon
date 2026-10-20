@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-03 11:29+0300\n"
+"POT-Creation-Date: 2026-10-20 11:02+0300\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -181,7 +181,7 @@ msgstr ""
 msgid "Цей акаунт деактивовано. Зверніться до адміністратора."
 msgstr "This account is deactivated. Please contact an administrator."
 
-#: app/routes/main.py:133 app/routes/main.py:151 app/templates/base.html:98
+#: app/routes/main.py:133 app/routes/main.py:151 app/templates/base.html:99
 #: app/templates/login.html:2 app/templates/register.html:161
 msgid "Увійти"
 msgstr "Log in"
@@ -310,36 +310,40 @@ msgid "ФОТОПАСТКИ"
 msgstr "CAMERA TRAPS"
 
 #: app/templates/base.html:81
+msgid "ІНСТРУКЦІЇ"
+msgstr "GUIDES"
+
+#: app/templates/base.html:82
 msgid "ПРО ПРОЕКТ"
 msgstr "ABOUT"
 
-#: app/templates/base.html:83
+#: app/templates/base.html:84
 msgid "SDM"
 msgstr "SDM"
 
-#: app/templates/base.html:85
+#: app/templates/base.html:86
 msgid "КОНТАКТИ"
 msgstr "CONTACTS"
 
-#: app/templates/base.html:87
+#: app/templates/base.html:88
 msgid "АДМІН"
 msgstr "ADMIN"
 
-#: app/templates/base.html:94 app/templates/profile.html:2
+#: app/templates/base.html:95 app/templates/profile.html:2
 #: app/templates/profile.html:78
 msgid "Мій профіль"
 msgstr "My profile"
 
-#: app/templates/base.html:95
+#: app/templates/base.html:96
 msgid "Вийти"
 msgstr "Log out"
 
-#: app/templates/base.html:97 app/templates/register.html:2
+#: app/templates/base.html:98 app/templates/register.html:2
 #: app/templates/register.html:42
 msgid "Реєстрація"
 msgstr "Sign up"
 
-#: app/templates/base.html:137
+#: app/templates/base.html:138
 msgid "Проект БіоМон, ©"
 msgstr "BioMon Project, ©"
 
@@ -785,6 +789,18 @@ msgstr "Global configuration of system roles and their visibility for managers."
 msgid "Повідомлення з форми зворотного зв’язку: перегляд, статуси, видалення."
 msgstr "Contact form messages: view, statuses, deletion."
 
+#: app/templates/admin/admin_home.html:87
+msgid "Інструкції: редактори"
+msgstr "Docs: editors"
+
+#: app/templates/admin/admin_home.html:89
+msgid "Хто може редагувати інструкції і в яких темах (ПАМ, фотопастки, загальне)."
+msgstr "Who may edit the guides, and in which topics (PAM, camera traps, general)."
+
+#: app/templates/admin/admin_home.html:93
+msgid "Керувати редакторами"
+msgstr "Manage editors"
+
 #: app/templates/admin/admin_institution_form.html:18
 #: app/templates/admin/admin_role_form.html:18
 #: app/templates/admin/admin_user_form.html:18
@@ -1140,8 +1156,8 @@ msgid ""
 "означає ще й право завантажувати дані. Стрілка з назвою модуля означає "
 "експорт лише в тому модулі."
 msgstr ""
-"also means the right to download the data. An arrow labelled with a module "
-"means export in that module only."
+"also means the right to download the data. An arrow labelled with a "
+"module means export in that module only."
 
 #: app/templates/admin/admin_users_list.html:96
 #: app/templates/admin/admin_users_list.html:118
@@ -2022,4 +2038,7 @@ msgstr ""
 
 #~ msgid "ПАМ: доступ"
 #~ msgstr "PAM: access"
+
+#~ msgid "Налаштувати"
+#~ msgstr "Role settings"
 

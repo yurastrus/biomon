@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-03 11:29+0300\n"
+"POT-Creation-Date: 2026-10-20 11:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -176,7 +176,7 @@ msgstr ""
 msgid "Цей акаунт деактивовано. Зверніться до адміністратора."
 msgstr ""
 
-#: app/routes/main.py:133 app/routes/main.py:151 app/templates/base.html:98
+#: app/routes/main.py:133 app/routes/main.py:151 app/templates/base.html:99
 #: app/templates/login.html:2 app/templates/register.html:161
 msgid "Увійти"
 msgstr ""
@@ -296,36 +296,40 @@ msgid "ФОТОПАСТКИ"
 msgstr ""
 
 #: app/templates/base.html:81
+msgid "ІНСТРУКЦІЇ"
+msgstr ""
+
+#: app/templates/base.html:82
 msgid "ПРО ПРОЕКТ"
 msgstr ""
 
-#: app/templates/base.html:83
+#: app/templates/base.html:84
 msgid "SDM"
 msgstr ""
 
-#: app/templates/base.html:85
+#: app/templates/base.html:86
 msgid "КОНТАКТИ"
 msgstr ""
 
-#: app/templates/base.html:87
+#: app/templates/base.html:88
 msgid "АДМІН"
 msgstr ""
 
-#: app/templates/base.html:94 app/templates/profile.html:2
+#: app/templates/base.html:95 app/templates/profile.html:2
 #: app/templates/profile.html:78
 msgid "Мій профіль"
 msgstr ""
 
-#: app/templates/base.html:95
+#: app/templates/base.html:96
 msgid "Вийти"
 msgstr ""
 
-#: app/templates/base.html:97 app/templates/register.html:2
+#: app/templates/base.html:98 app/templates/register.html:2
 #: app/templates/register.html:42
 msgid "Реєстрація"
 msgstr ""
 
-#: app/templates/base.html:137
+#: app/templates/base.html:138
 msgid "Проект БіоМон, ©"
 msgstr ""
 
@@ -738,6 +742,18 @@ msgstr ""
 
 #: app/templates/admin/admin_home.html:76
 msgid "Повідомлення з форми зворотного зв’язку: перегляд, статуси, видалення."
+msgstr ""
+
+#: app/templates/admin/admin_home.html:87
+msgid "Інструкції: редактори"
+msgstr ""
+
+#: app/templates/admin/admin_home.html:89
+msgid "Хто може редагувати інструкції і в яких темах (ПАМ, фотопастки, загальне)."
+msgstr ""
+
+#: app/templates/admin/admin_home.html:93
+msgid "Керувати редакторами"
 msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:18

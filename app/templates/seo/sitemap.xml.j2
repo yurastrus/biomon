@@ -6,7 +6,9 @@
     {%- for alt in page.alternates %}
     <xhtml:link rel="alternate" hreflang="{{ alt.hreflang }}" href="{{ alt.href }}"/>
     {%- endfor %}
+    {%- if page.lastmod %}
     <lastmod>{{ page.lastmod }}</lastmod>
+    {%- endif %}
     <changefreq>{{ page.changefreq }}</changefreq>
     <priority>{{ page.priority }}</priority>
   </url>

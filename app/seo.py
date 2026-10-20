@@ -12,6 +12,8 @@ from datetime import date
 
 from flask import Blueprint, Response, current_app, render_template, url_for
 
+from app.docs.seo import ROBOTS_DISALLOW as DOCS_ROBOTS_DISALLOW
+
 seo_bp = Blueprint('seo', __name__)
 
 # Public, indexable pages → one <url> per language, with full hreflang clusters.
@@ -74,6 +76,8 @@ def robots_txt():
         # carry X-Robots-Tag: noindex (app/__init__.py) for anything already
         # known to Google; this stops new crawling of the filter combinations.
         'Disallow: /*?',
+        # Docs module: editor / history / admin screens (pages themselves stay open).
+        *DOCS_ROBOTS_DISALLOW,
         '',
         '# Stage 2 — do NOT enable yet. The clean dashboard URLs are still in',
         '# the index; blocking them here would hide the noindex header and',
@@ -123,6 +127,10 @@ def sitemap():
                 'priority': priority,
                 'alternates': alternates,
             })
+
+    # Docs module: published public guides, each only in the languages it has.
+    from app.docs.seo import sitemap_entries as docs_sitemap_entries
+    pages.extend(docs_sitemap_entries())
 
     xml = render_template('seo/sitemap.xml.j2', pages=pages)
     return Response(xml, mimetype='application/xml')

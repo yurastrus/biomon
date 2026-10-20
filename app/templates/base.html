@@ -13,7 +13,9 @@
     <link rel="canonical" href="{{ request.base_url }}">
 
     {# hreflang alternates — reciprocal cluster + x-default (mirrors sitemap.xml).
-       Only emitted for language-prefixed endpoints (those carrying lang_code). #}
+       Only emitted for language-prefixed endpoints (those carrying lang_code).
+       Overridable: the docs module emits only the languages a page really has. #}
+    {% block hreflang %}
     {% if request.endpoint and request.view_args and 'lang_code' in request.view_args %}
         {% for code in LANGUAGES.keys() %}
             {% set _alt_args = request.view_args.copy() %}
@@ -24,6 +26,7 @@
         {% do _xdef_args.update({'lang_code': 'uk'}) %}
         <link rel="alternate" hreflang="x-default" href="{{ url_for(request.endpoint, _external=True, **_xdef_args) }}">
     {% endif %}
+    {% endblock %}
 
     {# Open Graph #}
     <meta property="og:type" content="website">
@@ -81,6 +84,9 @@
                         <li class="{{ 'current' if request.endpoint == 'main.about' else '' }}"><a href="{{ url_for('main.about', lang_code=g.lang_code) }}">{{ _('ПРО ПРОЕКТ') }}</a></li>
                         {% if current_user.is_authenticated and current_user.has_role('admin') %}
                         <li class="{{ 'current' if request.blueprint == 'sdm' else '' }}"><a href="{{ url_for('sdm.dashboard') }}">{{ _('SDM') }}</a></li>
+                        {# Docs: admin-only in the menu while content is being written.
+                           The pages themselves are public and in the sitemap. #}
+                        <li class="{{ 'current' if request.blueprint == 'docs' else '' }}"><a href="{{ url_for('docs.index', lang_code=g.lang_code or 'uk') }}">{{ _('ІНСТРУКЦІЇ') }}</a></li>
                         {% endif %}
                         <li class="{{ 'current' if request.endpoint == 'main.contacts' else '' }}"><a href="{{ url_for('main.contacts', lang_code=g.lang_code) }}">{{ _('КОНТАКТИ') }}</a></li>
                         {% if current_user.is_authenticated and current_user.has_role('admin', 'manager') %}

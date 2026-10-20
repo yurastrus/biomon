@@ -80,6 +80,19 @@
                 {{ _('Переглянути') }}
             </a>
         </div>
+
+        <div class="stat-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; border-top: 4px solid #6c9a3c;">
+            <div>
+                <i class="fas fa-book" style="font-size: 3em; color: #6c9a3c; margin-bottom: 20px;"></i>
+                <h5 style="font-size: 20px; color: #333; margin-bottom: 10px;">{{ _('Інструкції: редактори') }}</h5>
+                <p style="color: #666; font-size: 14px; margin-bottom: 25px; line-height: 1.4;">
+                    {{ _('Хто може редагувати інструкції і в яких темах (ПАМ, фотопастки, загальне).') }}
+                </p>
+            </div>
+            <a href="{{ url_for('docs.admin_editors', lang_code=g.lang_code) }}" class="button" style="margin: 0; min-width: auto; width: 100%;">
+                {{ _('Керувати редакторами') }}
+            </a>
+        </div>
         {% endif %}
 
     </div>

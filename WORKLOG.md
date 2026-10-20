@@ -3,6 +3,76 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-20: Docs / manual module (`app/docs`, submodule shared-docs, private repo)
+
+Branch `feature/docs-module`. Code NOT deployed yet (owner deploys: needs sudo).
+
+**Production DB migrated** (owner's request, 2026-10-20 11:16 local) through the
+tunnel: read-only precheck (alembic b93e7d21c604, no `doc_*` tables, 10 public
+tables), offline SQL preview reviewed (only CREATE TABLE/INDEX of new tables,
+3 topic INSERTs, alembic version UPDATE; every "DELETE" in it is an `ON DELETE`
+FK rule of the new tables), then `flask db upgrade d0c5a1b2c3e4`. Postcheck:
+version d0c5a1b2c3e4, 16 tables, row counts of user/role/institutions/
+user_institutions unchanged (78/10/31/563). Logs:
+`logs/docs_migration_{precheck,sql_preview,apply,postcheck}_20261020_*`; script
+`scripts/docs_migration_precheck.py`. The running old code ignores the new
+tables, and update.sh's own `flask db upgrade` is now a no-op for this step.
+
+**Menu and search engines (owner's request).** The "ІНСТРУКЦІЇ" menu item sits
+right after SDM and, like SDM, is shown to admins only while content is being
+written. The pages themselves are public and meant to be found on the web:
+- published, non-members-only pages are `index, follow` and listed in
+  `/sitemap.xml` (via `app/docs/seo.py::sitemap_entries`), with `lastmod` from
+  the last edit and an hreflang cluster only for languages that really exist;
+- an English URL showing the Ukrainian fallback is `noindex, follow`;
+- `base.html` got a `{% block hreflang %}` so the docs layout can emit only the
+  real languages (the stock block needs `lang_code` in view_args, which the docs
+  blueprint pops into `g`, so docs pages had no hreflang at all);
+- robots.txt disallows only the editor/history/admin/preview/upload URLs
+  (`DOCS_ROBOTS_DISALLOW`); drafts return 404, members-only pages redirect to
+  sign-in and are not in the sitemap.
+Consequence to keep in mind: once a guide is published it can be found in
+Google even though the menu link is hidden. Keep unfinished pages as drafts.
+
+**Goal (owner).** A manual/wiki for guides and methods (camera traps, acoustic
+recorders, using the site) that several people edit in a simple web form, with
+"who changed it and when", pictures/diagrams in the text, per-topic editing
+rights granted in the admin, and admin-only protection of important pages
+(licence). Built as an independent module like shared-ct / shared-pam.
+
+**Decisions.** See `app/docs/WORKLOG.md` and `app/docs/README.md`. In short:
+DB-backed pages edited with EasyMDE (reused from myproject articles), topics
+table (ct, pam, general), `doc_editor` per-topic rights, `locked` per page,
+full-text `doc_revision` log with diff/restore, safe Markdown (no raw HTML),
+images re-encoded with EXIF/GPS stripped. Rejected: git-Markdown as source
+(editors are field staff), copying myproject `articles` as is (host-bound, no
+rights/history/images).
+
+**Host changes in biomon.**
+- `app/__init__.py`: register `docs_bp` at `/<lang_code>/docs`.
+- `migrations/versions/d0c5a1b2c3e4_add_docs_module_tables.py` (head was
+  b93e7d21c604): 6 new tables + 3 seeded topics. Only new tables.
+- `base.html`: nav item "ІНСТРУКЦІЇ"; `admin_home.html`: card "Інструкції:
+  редактори" (admins). Translations updated with the 4-step babel cycle.
+- `babel.cfg`: comment that app/docs has its own uk->en table.
+- `tests/test_docs.py`: 20 tests (rights, locks, drafts, concurrent edit, sitemap/robots/meta, admin-only menu,
+  restore, renderer safety, EXIF stripping, upload rejection, i18n coverage).
+  Note: `db_session` keeps one app context per test, so Flask-Login caches the
+  first user in `g`; `_login()` there drops `g._login_user` on every switch.
+  Full suite (`logs/pytest_docs_module_20261020_1102.log`): 2452 passed,
+  44 skipped, 1 failed: `test_registration.py::test_duplicate_username_is_rejected`
+  ("no such table: user"), green alone and together with test_docs.py. Same
+  kind of order-dependent flake as noted 2026-08-28 and later; the suite's
+  isolation problem is still open.
+- `scripts/docs_demo_server.py`: local demo on a throw-away SQLite DB
+  (`.claude/launch.json` entry `biomon-docs-demo`, port 5055).
+
+**Next.** Push shared-docs (private repo; the server reaches GitHub as
+yurastrus via its stored https token and SSH key, so `git submodule update
+--init` in update.sh can fetch it), merge to master, owner runs `./update.sh`.
+Then: add `instance/docs_uploads` to backups, grant editors, write first pages,
+submit the sitemap in Search Console once pages exist.
+
 ## 2026-10-19..20 — CT verification: anonymous verifiers, step-back, CLEANUP_DAYS=1
 
 Deployed 2026-10-20 07:49 UTC (biomon 72e3e40, myproject db55097, shared-ct 7d756b2).
