@@ -43,7 +43,7 @@ class Config:
         'SERIES_TIME_WINDOW': 60,  # seconds; grouping window for series detection
         'ALLOWED_EXTENSIONS': {'jpg', 'jpeg'},
         'MIN_IDENTIFICATIONS': 2,  # minimum identifications required for consensus
-        'CLEANUP_DAYS': 0,  # days after which to delete photos (0 = disabled)
+        'CLEANUP_DAYS': 1,  # days since the series' last identification before its photos are archived (0 = at the next nightly run, NOT disabled); 1 leaves a day to correct a vote
         'STALE_BATCH_HOURS': 0,  # age threshold for cleaning up failed batches (0 = immediately; active batches protected by probe)
         'ACTIVE_PROBE_SECONDS': 10,  # observation window for processed_files to detect active batches
         'CLEANUP_LOG_RETENTION_DAYS': 90,  # days to retain cleanup_log entries; pruned on analyze
