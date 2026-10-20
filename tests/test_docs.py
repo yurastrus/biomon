@@ -297,6 +297,146 @@ def test_menu_link_admin_only(app, client, docs, make_user):
     assert 'ІНСТРУКЦІЇ' in _login(app, admin).get('/uk/docs/').get_data(as_text=True)
 
 
+# ── bundles (agent / script path) ────────────────────────────────────────────
+
+def _bundle(tmp_path, uk=None, en=None, image=True):
+    folder = tmp_path / 'bundle'
+    (folder / 'images').mkdir(parents=True)
+    if image:
+        Image.new('RGB', (2400, 1200), 'blue').save(folder / 'images' / 'scheme.png')
+    if uk is not None:
+        (folder / 'uk.md').write_text(uk, encoding='utf-8')
+    if en is not None:
+        (folder / 'en.md').write_text(en, encoding='utf-8')
+    return folder
+
+
+UK_MD = """---
+title: Встановлення фотопастки
+slug: camera-trap-setup
+topic: ct
+note: імпорт з Word
+---
+
+## Кріплення
+
+![Схема](images/scheme.png)
+"""
+EN_MD = """---
+title: Camera trap setup
+---
+
+## Mounting
+
+![Diagram](images/scheme.png)
+"""
+
+
+def test_bundle_import_creates_bilingual_page_with_image(app, docs, make_user, tmp_path):
+    from app.docs.models import DocImage, DocPage, DocRevision
+    app.config['DOCS_UPLOAD_PATH'] = str(tmp_path / 'media')
+    ed = make_user('agent_owner', roles=('viewer',))
+    docs.grant(ed, 'ct')
+    folder = _bundle(tmp_path, UK_MD, EN_MD)
+    r = app.test_cli_runner().invoke(args=['docs', 'import', str(folder), '--author', 'agent_owner'])
+    assert r.exit_code == 0, r.output
+    page = DocPage.query.filter_by(slug='camera-trap-setup').one()
+    assert {t.lang for t in page.translations} == {'uk', 'en'}
+    uk = page.translation('uk')
+    assert 'images/scheme.png' not in uk.body and '/docs/media/' in uk.body
+    assert DocImage.query.count() == 1  # same file used by both languages: one upload
+    assert DocImage.query.one().page_id == page.id
+    revs = DocRevision.query.filter_by(page_id=page.id).all()
+    assert {(r.lang, r.user_id) for r in revs} == {('uk', ed.id), ('en', ed.id)}
+    assert next(r.note for r in revs if r.lang == 'uk') == 'імпорт з Word'
+
+
+def test_bundle_dry_run_writes_nothing(app, docs, make_user, tmp_path):
+    from app.docs.models import DocImage, DocPage
+    app.config['DOCS_UPLOAD_PATH'] = str(tmp_path / 'media')
+    ed = make_user('ed', roles=('viewer',))
+    docs.grant(ed, 'ct')
+    r = app.test_cli_runner().invoke(args=['docs', 'import', str(_bundle(tmp_path, UK_MD, EN_MD)),
+                                           '--author', 'ed', '--dry-run'])
+    assert r.exit_code == 0 and 'would create' in r.output
+    assert DocPage.query.count() == 0 and DocImage.query.count() == 0
+    assert not (tmp_path / 'media').exists() or not any((tmp_path / 'media').iterdir())
+
+
+def test_bundle_respects_rights_update_flag_and_locks(app, docs, make_user, tmp_path):
+    app.config['DOCS_UPLOAD_PATH'] = str(tmp_path / 'media')
+    pam_only = make_user('pam_ed', roles=('viewer',))
+    docs.grant(pam_only, 'pam')
+    folder = _bundle(tmp_path, UK_MD, image=True)
+    run = app.test_cli_runner().invoke
+    r = run(args=['docs', 'import', str(folder), '--author', 'pam_ed'])
+    assert r.exit_code != 0 and 'no editor rights' in r.output
+
+    ct_ed = make_user('ct_ed', roles=('viewer',))
+    docs.grant(ct_ed, 'ct')
+    assert run(args=['docs', 'import', str(folder), '--author', 'ct_ed']).exit_code == 0
+    r = run(args=['docs', 'import', str(folder), '--author', 'ct_ed'])
+    assert r.exit_code != 0 and '--update' in r.output
+
+    from app.docs.models import DocPage
+    DocPage.query.filter_by(slug='camera-trap-setup').one().locked = True
+    from app.extensions import db
+    db.session.commit()
+    r = run(args=['docs', 'import', str(folder), '--author', 'ct_ed', '--update'])
+    assert r.exit_code != 0 and 'locked' in r.output
+
+
+def test_bundle_export_import_round_trip(app, docs, make_user, tmp_path):
+    from app.docs.models import DocImage, DocRevision
+    app.config['DOCS_UPLOAD_PATH'] = str(tmp_path / 'media')
+    ed = make_user('ed', roles=('viewer',))
+    docs.grant(ed, 'ct')
+    run = app.test_cli_runner().invoke
+    assert run(args=['docs', 'import', str(_bundle(tmp_path, UK_MD, EN_MD)), '--author', 'ed']).exit_code == 0
+    out = tmp_path / 'exported'
+    r = run(args=['docs', 'export', 'camera-trap-setup', str(out)])
+    assert r.exit_code == 0, r.output
+    assert (out / 'uk.md').exists() and (out / 'en.md').exists()
+    assert len(list((out / 'images').iterdir())) == 1
+    before = DocRevision.query.count()
+    r = run(args=['docs', 'import', str(out), '--author', 'ed', '--update'])
+    assert r.exit_code == 0, r.output
+    assert 'text unchanged: uk, en' in r.output
+    assert DocRevision.query.count() == before  # nothing changed, nothing logged
+    assert DocImage.query.count() == 1          # the exported image was reused
+
+
+def test_bundle_rejects_missing_image_and_bad_front_matter(app, docs, make_user, tmp_path):
+    ed = make_user('ed', roles=('viewer',))
+    docs.grant(ed, 'ct')
+    run = app.test_cli_runner().invoke
+    r = run(args=['docs', 'import', str(_bundle(tmp_path, UK_MD, image=False)), '--author', 'ed',
+                  '--dry-run'])
+    assert r.exit_code != 0 and 'image not found' in r.output
+    bad = tmp_path / 'bad'
+    bad.mkdir()
+    (bad / 'uk.md').write_text('---\ntitle: X\ncolour: red\n---\ntext', encoding='utf-8')
+    r = run(args=['docs', 'import', str(bad), '--author', 'ed', '--dry-run'])
+    assert r.exit_code != 0 and 'unknown key' in r.output
+
+
+def test_example_bundle_is_valid_and_bilingual(app, docs, make_user):
+    """The worked example agents copy from (app/docs/examples) must import."""
+    from app.docs.models import DocPage
+    root = Path(__file__).resolve().parents[1] / 'app' / 'docs' / 'examples' / 'editing-guides'
+    admin = make_user('boss', roles=('admin',))
+    r = app.test_cli_runner().invoke(args=['docs', 'import', str(root), '--author', 'boss'])
+    assert r.exit_code == 0, r.output
+    page = DocPage.query.filter_by(slug='how-to-edit-guides').one()
+    assert {t.lang for t in page.translations} == {'uk', 'en'}
+    assert page.published is False
+    # Same structure in both languages: same number of sections and steps.
+    uk, en = page.translation('uk').body, page.translation('en').body
+    assert uk.count('\n## ') == en.count('\n## ')
+    assert len(re.findall(r'^\d+\. ', uk, re.M)) == len(re.findall(r'^\d+\. ', en, re.M))
+    assert '—' not in uk + en and '–' not in uk + en
+
+
 # ── i18n ─────────────────────────────────────────────────────────────────────
 
 def test_every_module_string_has_english():

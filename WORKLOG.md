@@ -67,6 +67,25 @@ rights/history/images).
 - `scripts/docs_demo_server.py`: local demo on a throw-away SQLite DB
   (`.claude/launch.json` entry `biomon-docs-demo`, port 5055).
 
+**Agent path (later the same day).** `flask docs list/import/export` and page
+bundles (uk.md + en.md + images/) so an AI agent can publish a guide it wrote
+from any source; the editorial rules live in `app/docs/AGENTS.md` (pointer added
+to CLAUDE.md), people's guide in `app/docs/USER_GUIDE.md`. Writing imports run
+on the server only. `tests/test_docs.py` now 26 tests (bundles, example page).
+`update.sh`: comment that the private submodule uses the server's stored GitHub
+credentials; checked: the server can `git ls-remote` shared-docs.
+
+**Flaky test follow-up.** Two more full runs after the failure: run 1 green
+(2457 passed, `logs/pytest_flaky_hunt_1_*`), `test_registration` also green
+with all `test_p*` files before it (3 runs). Not reproduced. Likely mechanism
+(not proven): the in-memory SQLite engine uses StaticPool, i.e. ONE connection
+shared by every thread, and the app starts fire-and-forget daemon threads
+(`app/utils/emails.py`, `app/utils/notifications.py`, CT/PAM background jobs)
+that open their own app context; a thread finishing during the next test can
+touch that shared connection between that test's `create_all` and its first
+insert. Candidate fix for a separate change: a per-test file-backed SQLite DB
+or patching `threading.Thread` for app-level fire-and-forget calls in tests.
+
 **Next.** Push shared-docs (private repo; the server reaches GitHub as
 yurastrus via its stored https token and SSH key, so `git submodule update
 --init` in update.sh can fetch it), merge to master, owner runs `./update.sh`.

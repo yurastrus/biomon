@@ -11,7 +11,10 @@ echo "--- Starting biomon update ---"
 git fetch origin
 git reset --hard origin/master
 
-# 2. Update all submodules (PAM, camera traps, SDM)
+# 2. Update all submodules (PAM, camera traps, SDM, docs).
+# shared-docs is a PRIVATE repo: the clone uses the server's stored GitHub
+# credentials (~/.git-credentials). If they lack access, set -e stops here,
+# before the restart, so the running site keeps serving the old code.
 git submodule update --init --recursive --force
 
 # 3. Install/update Python dependencies (if changed)
