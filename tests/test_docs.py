@@ -285,7 +285,9 @@ def test_page_meta_for_crawlers(client, docs):
 
 def test_robots_blocks_editor_screens_only(client):
     txt = client.get('/robots.txt').get_data(as_text=True)
-    assert 'Disallow: /*/docs/*/edit' in txt and 'Disallow: /*/docs/admin/' in txt
+    assert 'Disallow: /*/docs/*/edit$' in txt and 'Disallow: /*/docs/admin/' in txt
+    # Exact matches, so pages whose slug starts like a tool URL stay crawlable.
+    assert 'Disallow: /*/docs/new$' in txt and 'Disallow: /*/docs/changes$' in txt
     assert 'Disallow: /*/docs\n' not in txt
 
 
@@ -567,3 +569,139 @@ def test_browser_crlf_is_stored_as_lf(app, docs, make_user):
     c.post('/uk/docs/p1/edit', data={'title': 'T', 'body': 'a\r\nb\r\n', 'topic_id': p.topic_id,
                                      'published': '1', 'base_stamp': _stamp(c, 'p1')})
     assert p.translation('uk').body == 'a\nb\n'
+
+
+# ── change tracking and translation sync ─────────────────────────────────────
+
+def _pair(docs, db_session, slug='pair', uk='Перший рядок.\nДругий рядок.\n',
+          en='First line.\nSecond line.\n'):
+    """A page with both languages, confirmed in step (as after the migration)."""
+    from app.docs.models import DocPageTranslation, DocRevision
+    p = docs.page(slug, body=uk)
+    db_session.add(DocPageTranslation(page_id=p.id, lang='en', title='Page', body=en))
+    r_uk = DocRevision(page_id=p.id, page_slug=slug, lang='uk', action='create', title='С', body=uk)
+    r_en = DocRevision(page_id=p.id, page_slug=slug, lang='en', action='create', title='Page', body=en)
+    db_session.add_all([r_uk, r_en])
+    db_session.flush()
+    p.translation('uk').synced_with_rev_id = r_en.id
+    p.translation('en').synced_with_rev_id = r_uk.id
+    db_session.commit()
+    return p
+
+
+def _edit_form(c, slug, lang):
+    html = c.get(f'/{lang}/docs/{slug}/edit?lang={lang}').get_data(as_text=True)
+    return html, re.search(r'name="base_stamp" value="([^"]*)"', html).group(1)
+
+
+def test_ukrainian_change_marks_english_outdated_and_shows_what_changed(app, docs, db_session, make_user):
+    from app.docs import sync
+    ed = make_user('ed', roles=('viewer',))
+    docs.grant(ed, 'ct')
+    p = _pair(docs, db_session)
+    assert sync.lang_state(p, 'en').status == 'ok'
+    c = _login(app, ed)
+    _, stamp = _edit_form(c, 'pair', 'uk')
+    r = c.post('/uk/docs/pair/edit?lang=uk', data={
+        'title': 'С', 'body': 'Перший рядок.\nДругий рядок, змінений.\n', 'topic_id': p.topic_id,
+        'published': '1', 'base_stamp': stamp})
+    assert r.status_code == 302
+    assert sync.lang_state(p, 'en').status == 'outdated'
+    assert sync.lang_state(p, 'uk').status == 'ok'
+    # Readers of the English page are told; the translator gets the Ukrainian diff.
+    assert 'updated later' in c.get('/en/docs/pair').get_data(as_text=True)
+    edit_en, stamp = _edit_form(c, 'pair', 'en')
+    assert '<ins>, змінений</ins>' in edit_en
+    assert '/docs/pair' in c.get('/uk/docs/translations').get_data(as_text=True)
+    r = c.post('/en/docs/pair/edit?lang=en', data={
+        'title': 'Page', 'body': 'First line.\nSecond line, changed.\n', 'topic_id': p.topic_id,
+        'published': '1', 'synced': '1', 'base_stamp': stamp})
+    assert r.status_code == 302
+    assert sync.lang_state(p, 'en').status == 'ok' and sync.lang_state(p, 'uk').status == 'ok'
+    assert 'Усі мовні версії узгоджені' in c.get('/uk/docs/translations').get_data(as_text=True)
+
+
+def test_minor_edit_keeps_other_language_in_step(app, docs, db_session, make_user):
+    from app.docs import sync
+    ed = make_user('ed', roles=('viewer',))
+    docs.grant(ed, 'ct')
+    p = _pair(docs, db_session)
+    c = _login(app, ed)
+    _, stamp = _edit_form(c, 'pair', 'uk')
+    c.post('/uk/docs/pair/edit?lang=uk', data={
+        'title': 'С', 'body': 'Перший рядок.\nДругий рядок!\n', 'topic_id': p.topic_id,
+        'published': '1', 'minor': '1', 'base_stamp': stamp})
+    assert p.translation('uk').body.endswith('рядок!\n')
+    assert sync.lang_state(p, 'en').status == 'ok'
+
+
+def test_bundle_with_one_language_changed_warns_and_flags(app, docs, make_user, tmp_path):
+    from app.docs import sync
+    from app.docs.models import DocPage
+    make_user('boss', roles=('admin',))
+    run = app.test_cli_runner().invoke
+    folder = _bundle(tmp_path, UK_MD, EN_MD)
+    app.config['DOCS_UPLOAD_PATH'] = str(tmp_path / 'media')
+    assert run(args=['docs', 'import', str(folder), '--author', 'boss']).exit_code == 0
+    p = DocPage.query.filter_by(slug='camera-trap-setup').one()
+    assert sync.lang_state(p, 'uk').status == 'ok' and sync.lang_state(p, 'en').status == 'ok'
+    (folder / 'uk.md').write_text(UK_MD + '\nНовий абзац.\n', encoding='utf-8')
+    r = run(args=['docs', 'import', str(folder), '--author', 'boss', '--update'])
+    assert r.exit_code == 0 and 'WARNING' in r.output and 'en version' in r.output
+    assert sync.lang_state(p, 'en').status == 'outdated'
+    (folder / 'en.md').write_text(EN_MD + '\nNew paragraph.\n', encoding='utf-8')
+    r = run(args=['docs', 'import', str(folder), '--author', 'boss', '--update'])
+    assert 'matching each other' in r.output
+    assert sync.lang_state(p, 'en').status == 'ok' and sync.lang_state(p, 'uk').status == 'ok'
+
+
+def test_revision_diff_highlights_words_and_history_counts(app, docs, make_user):
+    from app.docs.models import DocRevision
+    ed = make_user('ed', roles=('viewer',))
+    docs.grant(ed, 'ct')
+    p = docs.page('p1', body='Висота кріплення 50 см.\n')
+    c = _login(app, ed)
+    for body in ('Висота кріплення 50 см.\n', 'Висота кріплення 60 см.\nНовий рядок.\n'):
+        _, stamp = _edit_form(c, 'p1', 'uk')
+        c.post('/uk/docs/p1/edit', data={'title': 'С2' if '60' in body else 'С1', 'body': body,
+                                         'topic_id': p.topic_id, 'published': '1', 'base_stamp': stamp})
+    last = DocRevision.query.filter_by(page_id=p.id).order_by(DocRevision.id.desc()).first()
+    html = c.get(f'/uk/docs/p1/history/{last.id}').get_data(as_text=True)
+    assert '<del>50</del>' in html and '<ins>60</ins>' in html and '<ins>Новий рядок.</ins>' in html
+    hist = c.get('/uk/docs/p1/history').get_data(as_text=True)
+    assert '+3' in hist and '−1' in hist
+
+
+def test_changes_feed_hides_pages_the_reader_cannot_see(app, docs, db_session, make_user, make_role):
+    from app.docs.models import DocRevision
+    make_role('manager')
+    pub = docs.page('public-page')
+    secret = docs.page('managers-page', topic='general')
+    _roles(secret, 'manager')
+    for p in (pub, secret):
+        db_session.add(DocRevision(page_id=p.id, page_slug=p.slug, lang='uk', action='edit',
+                                   title='x', body='y'))
+    db_session.commit()
+    viewer = make_user('v', roles=('viewer',))
+    html = _login(app, viewer).get('/uk/docs/changes').get_data(as_text=True)
+    assert 'public-page' in html and 'managers-page' not in html
+    assert _login(app, viewer).get('/uk/docs/translations').status_code == 403
+
+
+def test_diff_escapes_and_counts():
+    from app.docs.diffing import compare
+    rows, st = compare('a <b> c\nkeep\n', 'a <i> c\nkeep\n')
+    joined = ''.join(str(r.html) for r in rows)
+    assert '<del>b</del>' in joined and '<ins>i</ins>' in joined and '&lt;' in joined
+    assert (st.added, st.removed) == (1, 1)
+    assert compare('same\n', 'same\n')[0] == []
+
+
+def test_english_table_has_no_duplicate_keys():
+    import ast
+    src = (Path(__file__).resolve().parents[1] / 'app' / 'docs' / 'i18n.py').read_text(encoding='utf-8')
+    for node in ast.walk(ast.parse(src)):
+        if isinstance(node, ast.Dict):
+            keys = [k.value for k in node.keys if isinstance(k, ast.Constant)]
+            dups = {k for k in keys if keys.count(k) > 1}
+            assert not dups, dups
