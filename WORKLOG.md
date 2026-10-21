@@ -144,6 +144,14 @@ the clock. Not in `.env`, code only.
 **Next:** stage 2, "Мої ідентифікації" page (deeper history, filter by
 species, uses the same `replace` path; hide/flag edit for `archived` series).
 
+## 2026-10-21 — Vynnyky project: VL5_SOSNSHYL
+
+New PAM location VL5_SOSNSHYL (49.82427, 24.12048), institution 2 (VYNLIS),
+`state_province='Lviv Oblast'`, plus installation visit 2026-10-21 12:00
+("around noon"): NiMH 2500, 64 GB, 24 h/day, purpose 2, is_operational NULL.
+Institution inferred from the nearest locations (151 m from Vynnyky Forest p. 6).
+Script: `scripts/add_vynnyky_vl5_2026_10_21.py`.
+
 ## 2026-10-19 — Vynnyky project: 5 locations + installation visits
 
 From the user's GPS export (installed 2026-10-09): VL2_MIXED, VL3_YAR,
