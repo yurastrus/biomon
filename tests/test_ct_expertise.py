@@ -13,7 +13,7 @@ Covers:
   - both grouping modes — by verifier and by species — and the narrowing filter
     of the opposite axis;
   - Wilson interval and row building (min_n, ordering);
-  - access: admin only, plus the hub card shown to admins only.
+  - access: manager and admin, plus the hub card shown to them only.
 """
 
 import contextlib
@@ -508,9 +508,8 @@ class TestExpertiseAccess(ExpertiseRouteBase):
     def test_verifier_is_refused(self):
         self.assertEqual(self._get(user_id=self.verifier.id).status_code, 302)
 
-    def test_manager_is_refused(self):
-        """Admin only: the page names individuals and their error rate."""
-        self.assertEqual(self._get(user_id=self.manager.id).status_code, 302)
+    def test_manager_gets_the_page(self):
+        self.assertEqual(self._get(user_id=self.manager.id).status_code, 200)
 
     def test_admin_gets_the_page(self):
         self.assertEqual(self._get(user_id=self.admin.id).status_code, 200)
@@ -667,6 +666,11 @@ class TestExpertiseHubCard(ExpertiseRouteBase):
 
     def test_card_visible_to_admin(self):
         resp = self._hub(user_id=self.admin.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('/camera-traps/expertise', resp.get_data(as_text=True))
+
+    def test_card_visible_to_manager(self):
+        resp = self._hub(user_id=self.manager.id)
         self.assertEqual(resp.status_code, 200)
         self.assertIn('/camera-traps/expertise', resp.get_data(as_text=True))
 
