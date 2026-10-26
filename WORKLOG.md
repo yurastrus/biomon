@@ -50,7 +50,9 @@ biotope queries.
   forecast is exhausted; silent data with resources left is treated as a
   partial upload.
 
-**State:** committed and pushed; not deployed. Not checked in a browser
+**Deployed 2026-10-26** (git pull + HUP, no init scripts; biomon only, myproject has no shared-pam). Prod check as admin via test_client: status API 200, 99 locations in 0.34 s; single-location forecast, page and history 200.
+
+**State:** committed, pushed and deployed. Not checked in a browser
 (owner checks UI). Next: owner review of the plan table; consider an index
 `recordings(location_id, datetime_start)`; seasonal battery calibration once
 there are winter runs per type.
