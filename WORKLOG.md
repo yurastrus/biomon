@@ -3,6 +3,20 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-26: Song Meter Micro battery logs checked against the forecast
+
+Owner pointed to `F:/1_Acoustic_recordings/1_Hearable_recordings`: each
+deployment folder has a `*_Summary.txt` with voltage per minute. New read-only
+`scripts/analyze_songmeter_battery.py` (output in `logs/songmeter_battery_*`).
+208 deployments (2023-2026), all 24 kHz, 5-min files (~165 MB/h).
+- NiMH: 76 runs to cut-off, median 261 recorded hours (IQR 237-286). Matches
+  the biomon calibration (258 h, n=5).
+- Lithium: only 6 runs to cut-off, median 432 h; biomon log says 360 h (n=15).
+  Not resolved.
+- Voltage is flat down to 5.3 V (~250 h left), then 5.1 V ~135 h, 5.0 V ~68 h,
+  4.8 V ~27 h: a log's last voltage would give the real charge of "kept"
+  batteries. Not wired into biomon yet (needs a decision from the owner).
+
 ## 2026-10-26: PAM recorder service forecast reworked (manage-locations)
 
 Owner asked to improve the service ("Сервіс") logic of
