@@ -108,6 +108,44 @@ def _make_access_conn(has_access=True):
     return mock_conn
 
 
+def _make_status_conn(location_rows, last_rec_rows=(), visit_rows=()):
+    """
+    Mock conn for api_get_pam_locations_with_status, three executes:
+    1. locations (access-filtered), 2. last recording per location,
+    3. service visits with per-interval recording aggregates.
+    """
+    mock_conn = MagicMock()
+    locs = MagicMock(); locs.fetchall.return_value = list(location_rows)
+    last = MagicMock(); last.fetchall.return_value = list(last_rec_rows)
+    visits = MagicMock(); visits.fetchall.return_value = list(visit_rows)
+    mock_conn.execute.side_effect = [locs, last, visits]
+    return mock_conn
+
+
+def _make_last_rec_row(location_id, days_ago):
+    row = MagicMock()
+    row.location_id = location_id
+    row.last_data_date = datetime.now() - timedelta(days=days_ago)
+    return row
+
+
+def _make_visit_row(location_id, days_ago, purpose_id=1, hours=6, battery_type_id=1,
+                    rated_hours=300, capacity_gb=59.6, last_recording=None, recorded_hours=0):
+    """Row of routes.SERVICE_VISITS_SQL (naive datetimes are fine for the maths)."""
+    row = MagicMock()
+    row.location_id = location_id
+    row.visit_datetime = datetime.now() - timedelta(days=days_ago)
+    row.visit_purpose_id = purpose_id
+    row.recording_hours_per_day = hours
+    row.battery_type_id = battery_type_id
+    row.is_operational = None
+    row.estimated_recording_hours = rated_hours
+    row.capacity_gb = capacity_gb
+    row.last_recording = last_recording
+    row.recorded_hours = recorded_hours
+    return row
+
+
 # ── base test class ────────────────────────────────────────────────────────
 
 class PamLocationTestBase(unittest.TestCase):
@@ -335,15 +373,7 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
 
     def test_manager_with_institutions_returns_json_list(self):
         """With mock data, returns a list with a single record."""
-        # Three sequential executes: recordings, locations, service_visit
-        recs   = MagicMock(); recs.fetchall.return_value = []
-        loc_row = _make_location_row(101, 'PAM Локація')
-        locs   = MagicMock(); locs.fetchall.return_value = [loc_row]
-        visit  = MagicMock(); visit.fetchone.return_value = None
-
-        mock_conn = MagicMock()
-        mock_conn.execute.side_effect = [recs, locs, visit]
-
+        mock_conn = _make_status_conn([_make_location_row(101, 'PAM Локація')])
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
             resp = self.client.get(self.URL)
@@ -357,14 +387,7 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
 
     def test_admin_gets_json_list(self):
         """Admin is not restricted by institutions."""
-        recs  = MagicMock(); recs.fetchall.return_value = []
-        row   = _make_location_row(5, 'Адмін-локація')
-        locs  = MagicMock(); locs.fetchall.return_value = [row]
-        visit = MagicMock(); visit.fetchone.return_value = None
-
-        mock_conn = MagicMock()
-        mock_conn.execute.side_effect = [recs, locs, visit]
-
+        mock_conn = _make_status_conn([_make_location_row(5, 'Адмін-локація')])
         _login(self.client, self.admin.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
             resp = self.client.get(self.URL)
@@ -372,52 +395,46 @@ class TestPamLocationsWithStatus(PamLocationTestBase):
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.get_json(), list)
 
-    def test_institution_filter_param_accepted_without_error(self):
-        """?institution_id=X does not cause an error."""
-        recs  = MagicMock(); recs.fetchall.return_value = []
-        locs  = MagicMock(); locs.fetchall.return_value = []
-        mock_conn = MagicMock()
-        mock_conn.execute.side_effect = [recs, locs]
-
+    def test_no_locations_skips_heavy_queries(self):
+        """Empty location list → [] without reading recordings or visits."""
+        mock_conn = _make_status_conn([])
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
             resp = self.client.get(f'{self.URL}?institution_id={self.inst_a.id}')
-
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json(), [])
+        self.assertEqual(mock_conn.execute.call_count, 1)
 
     def test_institution_filter_param_injected_into_sql_params(self):
         """selected_inst_id ends up in the SQL query parameters."""
-        recs  = MagicMock(); recs.fetchall.return_value = []
-        locs  = MagicMock(); locs.fetchall.return_value = []
-        mock_conn = MagicMock()
-        mock_conn.execute.side_effect = [recs, locs]
-
+        mock_conn = _make_status_conn([])
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
             self.client.get(f'{self.URL}?institution_id={self.inst_a.id}')
+        _, loc_params = mock_conn.execute.call_args_list[0][0]
+        self.assertEqual(loc_params['selected_inst_id'], self.inst_a.id)
 
-        # Second call — locations query; check the parameters
-        calls = mock_conn.execute.call_args_list
-        if len(calls) >= 2:
-            _, loc_params = calls[1][0]
-            self.assertIn('selected_inst_id', loc_params)
-            self.assertEqual(loc_params['selected_inst_id'], self.inst_a.id)
+    def test_location_filter_param_injected_into_sql_params(self):
+        """?location_id=X (forecast block of the panel) narrows the locations query."""
+        mock_conn = _make_status_conn([])
+        _login(self.client, self.manager.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            self.client.get(f'{self.URL}?location_id=77')
+        sql, loc_params = mock_conn.execute.call_args_list[0][0]
+        self.assertEqual(loc_params['selected_loc_id'], 77)
+        self.assertIn('li_perm', str(sql))   # access condition still applies
 
     def test_location_response_has_required_fields(self):
         """Each JSON item contains the expected keys."""
-        recs  = MagicMock(); recs.fetchall.return_value = []
-        row   = _make_location_row(77, 'Перевірка полів')
-        locs  = MagicMock(); locs.fetchall.return_value = [row]
-        visit = MagicMock(); visit.fetchone.return_value = None
-        mock_conn = MagicMock()
-        mock_conn.execute.side_effect = [recs, locs, visit]
-
+        mock_conn = _make_status_conn([_make_location_row(77, 'Перевірка полів')])
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
             resp = self.client.get(self.URL)
 
         item = resp.get_json()[0]
-        for key in ('id', 'name', 'latitude', 'longitude', 'status', 'last_visit_date', 'status_reason'):
+        for key in ('id', 'name', 'latitude', 'longitude', 'status', 'last_visit_date',
+                    'status_reason', 'visit_by', 'limiting', 'lost_days', 'battery_source',
+                    'last_purpose_id', 'last_hours_per_day'):
             self.assertIn(key, item, f"Missing key: {key}")
 
 
@@ -922,29 +939,16 @@ class TestPamUpdateLocation(PamLocationTestBase):
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestPamLocationStatusForecast(PamLocationTestBase):
-    """Checks the battery_days_left / sd_card_days_left and status computation."""
+    """Route-level forecast: rows from the visits query reach service_forecast."""
 
     URL = '/uk/api/pam/locations-with-status'
 
-    def _make_visit_row(self, days_ago, recording_hours, estimated_hours,
-                        capacity_gb, purpose_id=1):
-        """Mock row of the latest service visit (with JOIN battery_types/sd_card_status)."""
-        row = MagicMock()
-        # Naive datetime (tzinfo=None) — the route does datetime.now(tzinfo)
-        row.visit_datetime = datetime.now() - timedelta(days=days_ago)
-        row.recording_hours_per_day = recording_hours
-        row.visit_purpose_id = purpose_id
-        row.estimated_recording_hours = estimated_hours
-        row.capacity_gb = capacity_gb
-        return row
-
-    def _fetch(self, visit_row, location_id=101):
-        recs  = MagicMock(); recs.fetchall.return_value = []          # recordings — empty
-        loc   = _make_location_row(location_id, 'PAM Локація')
-        locs  = MagicMock(); locs.fetchall.return_value = [loc]
-        visit = MagicMock(); visit.fetchone.return_value = visit_row
-        mock_conn = MagicMock()
-        mock_conn.execute.side_effect = [recs, locs, visit]
+    def _fetch(self, visit_rows, last_rec_days_ago=None, location_id=101):
+        last = []
+        if last_rec_days_ago is not None:
+            last = [_make_last_rec_row(location_id, last_rec_days_ago)]
+        mock_conn = _make_status_conn([_make_location_row(location_id, 'PAM Локація')],
+                                      last_rec_rows=last, visit_rows=visit_rows)
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
             resp = self.client.get(self.URL)
@@ -953,79 +957,194 @@ class TestPamLocationStatusForecast(PamLocationTestBase):
 
     def test_battery_and_sd_forecast_computed(self):
         """
-        10 days since visit, 6 h/day, battery rated for 600 h, 128 GB card.
-        battery_days_left = round(600/6 - 10) = 90
-        daily_gb = 6*290/1024 = 1.6992; sd = 128/1.6992 - 10 ~ 65
+        10 days since visit, 6 h/day, battery rated 600 h, 128 GB card, no history.
+        battery = 600/6 - 10 = 90; sd = 128 / (6*290/1024) - 10 ~ 65.
         """
-        row = self._make_visit_row(days_ago=10, recording_hours=6,
-                                   estimated_hours=600, capacity_gb=128)
-        item = self._fetch(row)
+        item = self._fetch([_make_visit_row(101, 10, rated_hours=600, capacity_gb=128)])
         self.assertEqual(item['battery_days_left'], 90)
         self.assertEqual(item['sd_card_days_left'], 65)
         self.assertEqual(item['status'], 'ok')
         self.assertEqual(item['days_since_visit'], 10)
+        self.assertEqual(item['limiting'], 'sd')
+        self.assertEqual(item['battery_source'], 'rated')
 
     def test_battery_critical_when_few_days_left(self):
         """Battery almost dead -> critical (<=3 days left)."""
-        # 98 days since visit, battery 600 h / 6 = 100 days -> 2 days left
-        row = self._make_visit_row(days_ago=98, recording_hours=6,
-                                   estimated_hours=600, capacity_gb=512)
-        item = self._fetch(row)
+        item = self._fetch([_make_visit_row(101, 98, rated_hours=600, capacity_gb=512)])
         self.assertEqual(item['battery_days_left'], 2)
         self.assertEqual(item['status'], 'critical')
 
-    def test_device_removed_marks_inactive(self):
-        """visit_purpose_id == 3 (dismounted) -> status inactive, no forecast."""
-        row = self._make_visit_row(days_ago=5, recording_hours=6,
-                                   estimated_hours=600, capacity_gb=128, purpose_id=3)
-        item = self._fetch(row)
-        self.assertEqual(item['status'], 'inactive')
+    def test_exhausted_forecast_is_overdue(self):
+        item = self._fetch([_make_visit_row(101, 120, rated_hours=600, capacity_gb=512)])
+        self.assertEqual(item['status'], 'overdue')
+        self.assertEqual(item['lost_days'], 20)
+
+    def test_device_removed(self):
+        """Last visit = removal -> status removed, no forecast."""
+        item = self._fetch([_make_visit_row(101, 5, purpose_id=3, battery_type_id=None,
+                                            rated_hours=None, capacity_gb=None)])
+        self.assertEqual(item['status'], 'removed')
         self.assertIsNone(item['battery_days_left'])
         self.assertIsNone(item['sd_card_days_left'])
 
-    def test_no_battery_data_leaves_battery_forecast_none(self):
-        """Without estimated_recording_hours the battery forecast = None, SD is still computed."""
-        row = self._make_visit_row(days_ago=10, recording_hours=6,
-                                   estimated_hours=None, capacity_gb=128)
-        item = self._fetch(row)
-        self.assertIsNone(item['battery_days_left'])
-        self.assertEqual(item['sd_card_days_left'], 65)
-
-    def _fetch_with_recordings(self, visit_row, last_recording_days_ago, location_id=101):
-        """Like _fetch, but with a non-empty recordings table (old activity date)."""
-        rec_row = MagicMock()
-        rec_row.location_id = location_id
-        rec_row.last_data_date = datetime.now() - timedelta(days=last_recording_days_ago)
-        recs  = MagicMock(); recs.fetchall.return_value = [rec_row]
-        loc   = _make_location_row(location_id, 'PAM Локація')
-        locs  = MagicMock(); locs.fetchall.return_value = [loc]
-        visit = MagicMock(); visit.fetchone.return_value = visit_row
-        mock_conn = MagicMock()
-        mock_conn.execute.side_effect = [recs, locs, visit]
-        _login(self.client, self.manager.id)
-        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
-            resp = self.client.get(self.URL)
-        self.assertEqual(resp.status_code, 200)
-        return resp.get_json()[0]
+    def test_recordings_without_log_is_no_log(self):
+        item = self._fetch([], last_rec_days_ago=20)
+        self.assertEqual(item['status'], 'no_log')
 
     def test_old_recordings_do_not_override_fresh_install(self):
         """
-        REGRESSION (reinstall): autumn recordings 240 days ago must NOT mark the location
-        inactive if a fresh install was logged in spring (16 days, purpose != removal).
+        REGRESSION (reinstall): old recordings must NOT mark the location inactive
+        if a fresh install was logged 16 days ago.
         """
-        visit = self._make_visit_row(days_ago=16, recording_hours=6,
-                                     estimated_hours=600, capacity_gb=64, purpose_id=2)
-        item = self._fetch_with_recordings(visit, last_recording_days_ago=240)
-        self.assertNotEqual(item['status'], 'inactive')      # key point: NOT greyed out
-        self.assertIsNotNone(item['battery_days_left'])      # forecast was computed
+        item = self._fetch([_make_visit_row(101, 16, purpose_id=2, rated_hours=600, capacity_gb=64)],
+                           last_rec_days_ago=240)
+        self.assertNotIn(item['status'], ('inactive', 'removed'))
+        self.assertIsNotNone(item['battery_days_left'])
         self.assertEqual(item['days_since_visit'], 16)
 
     def test_old_recordings_and_old_visit_still_inactive(self):
-        """If both the data AND the last visit are old (>200 days) -- stays inactive."""
-        visit = self._make_visit_row(days_ago=250, recording_hours=6,
-                                     estimated_hours=600, capacity_gb=64, purpose_id=1)
-        item = self._fetch_with_recordings(visit, last_recording_days_ago=240)
+        """If both the data AND the last visit are old (>200 days) -- inactive."""
+        item = self._fetch([_make_visit_row(101, 250, rated_hours=600, capacity_gb=64)],
+                           last_rec_days_ago=240)
         self.assertEqual(item['status'], 'inactive')
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 9. SERVICE LOG — VALIDATION, EDIT/DELETE RIGHTS, SQL PARAMETERS
+# ════════════════════════════════════════════════════════════════════════════
+
+def _make_visit_owner_conn(owner_id, location_id=101, has_access=True, found=True):
+    """Mock conn for update/delete: visit lookup, (access check), write."""
+    visit = MagicMock()
+    visit.fetchone.return_value = (MagicMock(location_id=location_id, user_id=owner_id)
+                                   if found else None)
+    access = MagicMock()
+    access.fetchone.return_value = (1,) if has_access else None
+    write = MagicMock()
+    mock_conn = MagicMock()
+    mock_conn.execute.side_effect = [visit, access, write]
+    return mock_conn
+
+
+class TestPamServiceVisitValidation(PamLocationTestBase):
+    """Purpose-dependent fields and sanity checks on create."""
+
+    URL = '/uk/api/pam/service-log/create'
+
+    def _post(self, **overrides):
+        payload = {
+            'location_id': '101', 'visit_datetime': '2026-04-17T10:00',
+            'visit_purpose_id': '1', 'sd_card_status_id': '3',
+            'recording_hours_per_day': '6', 'battery_type_id': '1',
+            'is_camera_operational': '', 'comments': '',
+        }
+        payload.update(overrides)
+        mock_conn = _make_access_conn(has_access=True)
+        _login(self.client, self.manager.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            resp = self.client.post(self.URL, json=payload)
+        return resp, mock_conn
+
+    def test_removal_needs_no_card_battery_or_schedule(self):
+        resp, conn = self._post(visit_purpose_id='3', sd_card_status_id='',
+                                recording_hours_per_day='', battery_type_id='4')
+        self.assertEqual(resp.status_code, 201)
+        params = conn.execute.call_args_list[-1][0][1]
+        self.assertEqual(params['sd_card_status_id'], 1)       # card stays in the removed device
+        self.assertEqual(params['recording_hours_per_day'], 0)
+        self.assertIsNone(params['battery_type_id'])
+
+    def test_routine_visit_still_requires_card_and_schedule(self):
+        resp, _ = self._post(sd_card_status_id='')
+        self.assertEqual(resp.status_code, 400)
+
+    def test_future_date_rejected(self):
+        future = (datetime.now() + timedelta(days=5)).strftime('%Y-%m-%dT%H:%M')
+        resp, _ = self._post(visit_datetime=future)
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('майбутньому', resp.get_json()['error'])
+
+    def test_hours_out_of_range_rejected(self):
+        resp, _ = self._post(recording_hours_per_day='25')
+        self.assertEqual(resp.status_code, 400)
+
+    def test_garbage_date_is_400_not_500(self):
+        resp, _ = self._post(visit_datetime='not-a-date')
+        self.assertEqual(resp.status_code, 400)
+
+
+class TestPamServiceVisitEditRights(PamLocationTestBase):
+    """Only the author (or an admin) may update or delete a record."""
+
+    PAYLOAD = {'visit_datetime': '2026-04-17T10:00', 'visit_purpose_id': '1',
+               'sd_card_status_id': '3', 'recording_hours_per_day': '6'}
+
+    def _call(self, action, user, owner_id, **kw):
+        mock_conn = _make_visit_owner_conn(owner_id, **kw)
+        _login(self.client, user.id)
+        url = f'/uk/api/pam/service-visit/55/{action}'
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            resp = self.client.post(url, json=self.PAYLOAD)
+        return resp, mock_conn
+
+    def test_author_can_delete(self):
+        resp, conn = self._call('delete', self.manager, self.manager.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('DELETE FROM service_visits', str(conn.execute.call_args_list[-1][0][0]))
+        conn.commit.assert_called_once()
+
+    def test_other_manager_cannot_delete(self):
+        resp, conn = self._call('delete', self.manager, owner_id=self.manager_b.id)
+        self.assertEqual(resp.status_code, 403)
+        conn.commit.assert_not_called()
+
+    def test_other_manager_cannot_update(self):
+        resp, conn = self._call('update', self.manager, owner_id=self.manager_b.id)
+        self.assertEqual(resp.status_code, 403)
+        conn.commit.assert_not_called()
+
+    def test_author_can_update(self):
+        resp, conn = self._call('update', self.manager, self.manager.id)
+        self.assertEqual(resp.status_code, 200)
+        conn.commit.assert_called_once()
+
+    def test_admin_can_delete_any(self):
+        mock_conn = MagicMock()
+        visit = MagicMock(); visit.fetchone.return_value = MagicMock(location_id=1, user_id=999)
+        mock_conn.execute.side_effect = [visit, MagicMock()]   # no access query for admin
+        _login(self.client, self.admin.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            resp = self.client.post('/uk/api/pam/service-visit/55/delete')
+        self.assertEqual(resp.status_code, 200)
+
+    def test_author_without_location_access_cannot_delete(self):
+        resp, _ = self._call('delete', self.manager, self.manager.id, has_access=False)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_missing_visit_is_404(self):
+        resp, _ = self._call('delete', self.manager, self.manager.id, found=False)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_verifier_cannot_delete(self):
+        _login(self.client, self.pam_verifier.id)
+        resp = self.client.post('/uk/api/pam/service-visit/55/delete')
+        self.assertEqual(resp.status_code, 403)
+
+
+class TestPamServiceHistorySqlParams(PamLocationTestBase):
+    """lang_code from the URL must reach SQL as a bound parameter, not as text."""
+
+    def test_lang_code_is_bound_not_interpolated(self):
+        history = MagicMock(); history.fetchall.return_value = []
+        mock_conn = MagicMock()
+        mock_conn.execute.return_value = history
+        _login(self.client, self.admin.id)
+        evil = "uk'--"
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            self.client.get(f'/{evil}/api/pam/location/1/service-history')
+        sql, params = mock_conn.execute.call_args_list[0][0]
+        self.assertNotIn(evil, str(sql))
+        self.assertEqual(params['lang'], evil)
 
 
 if __name__ == '__main__':

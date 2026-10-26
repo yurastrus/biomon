@@ -3,6 +3,58 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-26: PAM recorder service forecast reworked (manage-locations)
+
+Owner asked to improve the service ("Сервіс") logic of
+`/uk/pam/manage-locations`. Proposal first, then all four stages approved.
+
+**Diagnosis on the real log** (106 visits, 51 locations, joined with
+`recordings`): the SD forecast used a fixed 290 MB/h, so a 64 GB card was
+"full" after 35 days while real runs lasted 50-114 days, which made the card
+the limiting factor almost everywhere. "Batteries kept" was counted as 200
+fresh hours and a kept card as empty. Rated battery hours did not match the
+field (lithium AA rated 450 h, median of 15 real runs 360 h). Locations with
+recordings but no log looked like ordinary "unknown". The status endpoint ran
+one query per location; `lang_code` was pasted into SQL with an f-string
+(SQL injection for any logged-in user) in the service history and species
+biotope queries.
+
+**Done (shared-pam):**
+- `app/pam/service_forecast.py`: pure module. Visits are replayed with
+  carry-over of kept batteries and cards; battery capacity per type and the SD
+  rate per location are learned from completed runs; statuses ok / warning /
+  critical / overdue / stopped / removed / inactive / no_log / unknown; "visit by"
+  date and days of data lost.
+- `routes.py`: status API rewritten around one range join (~0.3 s instead of a
+  query per location; a `LATERAL MAX()` variant took ~5 s), `?location_id=`
+  for the panel; create/update share `_parse_service_visit` (purpose-dependent
+  fields, no future dates, hours 1-24); new delete endpoint; only author or
+  admin may edit/delete; `lang_code` bound as a parameter.
+- Template: new legend, tooltips, forecast block in the panel, form rules and
+  prefill from the last visit, delete button, service plan table; form hidden
+  for users who cannot save. CSS in `pam_style.css`. i18n: pam domain cycle,
+  all new strings translated.
+- Tests: `tests/test_pam_service_forecast.py` (new) and
+  `tests/test_pam_locations.py` (status tests rewritten for the new query
+  shape; validation, edit-rights and SQL-parameter tests added).
+
+**Decisions / assumptions:**
+- `is_operational` is not used for calibration: in the log it says "not working"
+  next to comments like "batteries still alive".
+- The SD rate bound is per location, not global: two runs show about 115 MB/h,
+  most others 210-290 MB/h (likely different sample rates), so one global
+  minimum would hide real alarms.
+- A removal stores card "kept" and 0 h instead of making the columns nullable
+  (no prod schema change).
+- "Stopped" only when the deployment's data are in, silent for 7+ days AND the
+  forecast is exhausted; silent data with resources left is treated as a
+  partial upload.
+
+**State:** committed and pushed; not deployed. Not checked in a browser
+(owner checks UI). Next: owner review of the plan table; consider an index
+`recordings(location_id, datetime_start)`; seasonal battery calibration once
+there are winter runs per type.
+
 ## 2026-10-26: Investigation: photo order inside a series on /identify (no fix yet)
 
 Owner report: in a series the animal sometimes "jumps back" (half way across
