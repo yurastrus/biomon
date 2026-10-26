@@ -59,12 +59,12 @@ def test_no_battery_change_is_treated_as_kept():
 
 
 def test_kept_card_carries_over_used_space():
-    # 64 GB card at 6 h/day x 290 MB/h = 1.699 GB/day → 35 days; 20 days used,
-    # card kept, 5 more days → ~10 days left (the old code reset it to 35 - 5).
-    visits = [visit(25, rated=None, card=59.6),
+    # 64 GB card at 6 h/day x 165 MB/h = 0.967 GB/day → 62 days; 50 days used,
+    # card kept, 5 more days → ~7 days left (the old code reset it to 62 - 5).
+    visits = [visit(55, rated=None, card=59.6),
               visit(5, rated=None, battery=None, card=None)]
     out = fc(visits)
-    assert out['sd_card_days_left'] == round(59.6 / (6 * 290 / 1024) - 25)
+    assert out['sd_card_days_left'] == round(59.6 / (6 * 165 / 1024) - 55)
     assert out['limiting'] == 'sd'
 
 
@@ -150,7 +150,7 @@ def _run(start_days_ago, stop_days_ago, next_days_ago, battery=4, rated=450,
 
 def test_battery_capacity_is_median_of_runs_that_stopped_early():
     history = {1: _run(300, 240, 200), 2: _run(300, 230, 200), 3: _run(300, 250, 200)}
-    cal = sf.calibrate(history)
+    cal = sf.calibrate(history, TODAY)
     hours, n = cal.battery_hours[4]
     assert n == 3
     assert hours == 60 * 6          # median of 50, 60, 70 days at 6 h/day
@@ -158,43 +158,38 @@ def test_battery_capacity_is_median_of_runs_that_stopped_early():
 
 def test_runs_still_recording_at_next_visit_are_not_samples():
     history = {i: _run(300, 201, 200) for i in range(5)}    # stopped 1 day before the visit
-    assert 4 not in sf.calibrate(history).battery_hours
+    assert 4 not in sf.calibrate(history, TODAY).battery_hours
 
 
 def test_too_few_runs_keep_rated_capacity():
-    cal = sf.calibrate({1: _run(300, 240, 200), 2: _run(300, 230, 200)})
+    cal = sf.calibrate({1: _run(300, 240, 200), 2: _run(300, 230, 200)}, TODAY)
     assert 4 not in cal.battery_hours
     v = visit(10, battery=4, rated=450)
     assert cal.battery_capacity(v) == (450.0, 'rated', 0)
 
 
 def test_card_limited_runs_do_not_calibrate_batteries():
-    # 64 GB card filled: 59.6 GB / 290 MB/h = 210 h written.
-    history = {i: _run(300, 260, 200, card=59.6, rec_hours=209) for i in range(4)}
-    assert 4 not in sf.calibrate(history).battery_hours
+    # 64 GB card filled: 59.6 GB / 165 MB/h = 370 h written.
+    history = {i: _run(300, 260, 200, card=59.6, rec_hours=360) for i in range(4)}
+    assert 4 not in sf.calibrate(history, TODAY).battery_hours
 
 
-def test_data_rate_is_tightest_bound_per_location():
-    # 59.6 GB card held 549 h → rate <= 111 MB/h at this recorder.
+def test_data_rate_is_song_meter_wav_rate():
+    # 24 kHz x 2 bytes x 3600 s = 164.8 MiB/h; history does not change it.
     history = {9: _run(300, 200, 190, card=59.6, rec_hours=549)}
-    cal = sf.calibrate(history)
-    assert cal.rate(9) == pytest.approx(59.6 * 1024 / 549)
-    assert cal.rate(10) == sf.DEFAULT_DATA_RATE_MB_PER_HOUR   # too few locations to learn a default
+    cal = sf.calibrate(history, TODAY)
+    assert cal.rate(9) == sf.DATA_RATE_MB_PER_HOUR == 165.0
+    assert fc([visit(10, rated=None, card=59.6)])['data_rate_mb_h'] == 165
 
 
-def test_data_rate_never_above_default_or_below_floor():
-    history = {1: _run(300, 290, 280, card=953.6, rec_hours=10),     # bound far above default
-               2: _run(300, 200, 190, card=1.0, rec_hours=1000)}     # absurd label
-    cal = sf.calibrate(history)
-    assert cal.rate(1) == sf.DEFAULT_DATA_RATE_MB_PER_HOUR
-    assert cal.rate(2) == sf.MIN_DATA_RATE_MB_PER_HOUR
-
-
-def test_default_rate_is_median_of_location_rates():
-    history = {i: _run(300, 200, 190, card=59.6, rec_hours=h)
-               for i, h in enumerate((300, 400, 500))}
-    cal = sf.calibrate(history)
-    assert cal.default_rate == pytest.approx(59.6 * 1024 / 400)
+def test_old_runs_do_not_calibrate():
+    # Brand changes under one battery type: runs older than a year are ignored.
+    old = {i: _run(500, 430, 400) for i in range(3)}
+    assert 4 not in sf.calibrate(old, TODAY).battery_hours
+    mixed = {**old, **{10 + i: _run(200, 150 + i * 5, 100) for i in range(3)}}
+    hours, n = sf.calibrate(mixed, TODAY).battery_hours[4]
+    assert n == 3
+    assert hours == 45 * 6        # only the recent runs: 50, 45, 40 days
 
 
 def test_calibrated_capacity_used_in_forecast():

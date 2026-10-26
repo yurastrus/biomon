@@ -3,6 +3,21 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-26: Forecast numbers set from the field data
+
+Owner's answers: every recorder is a Song Meter Micro; Summary logs stay on
+the F: drive (not uploaded); lithium brands differ (Energizer/Pixel until
+2025 ran ~3 months, Varta bought in 2026 last little longer than NiMH). No new
+site feature wanted, only right numbers.
+- SD rate fixed at 165 MB/h (24 kHz 16-bit mono WAV); per-location rate
+  learning removed (the sub-165 bounds it found were data errors).
+- Battery calibration only from runs of the last 365 days, so a brand change
+  under one type flows through: lithium now 339 h (n=12, 2026 Varta), NiMH
+  2500 252 h (n=3).
+- `battery_types.estimated_recording_hours` on prod set to field values with
+  `scripts/set_pam_battery_field_hours.py`: 1: 300->260, 2: 240->210,
+  3: 220->200, 4: 450->340 (log in `logs/set_pam_battery_field_hours_*`).
+
 ## 2026-10-26: Song Meter Micro battery logs checked against the forecast
 
 Owner pointed to `F:/1_Acoustic_recordings/1_Hearable_recordings`: each

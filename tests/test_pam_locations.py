@@ -957,12 +957,12 @@ class TestPamLocationStatusForecast(PamLocationTestBase):
 
     def test_battery_and_sd_forecast_computed(self):
         """
-        10 days since visit, 6 h/day, battery rated 600 h, 128 GB card, no history.
-        battery = 600/6 - 10 = 90; sd = 128 / (6*290/1024) - 10 ~ 65.
+        10 days since visit, 6 h/day, battery rated 600 h, 64 GB card, no history.
+        battery = 600/6 - 10 = 90; sd = 59.6 / (6*165/1024) - 10 ~ 52.
         """
-        item = self._fetch([_make_visit_row(101, 10, rated_hours=600, capacity_gb=128)])
+        item = self._fetch([_make_visit_row(101, 10, rated_hours=600, capacity_gb=59.6)])
         self.assertEqual(item['battery_days_left'], 90)
-        self.assertEqual(item['sd_card_days_left'], 65)
+        self.assertEqual(item['sd_card_days_left'], 52)
         self.assertEqual(item['status'], 'ok')
         self.assertEqual(item['days_since_visit'], 10)
         self.assertEqual(item['limiting'], 'sd')
