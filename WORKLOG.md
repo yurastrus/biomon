@@ -62,6 +62,18 @@ biomon 200, myproject 302. Prod check: `/api/next-observation-for-identification
 (before: `a, c, b`). Renumber applied: 103,990 photos updated, recheck 0.
 Server log: `/var/www/biomon/logs/deploy_renumber_series_photos_<ts>.log`.
 
+**Incident right after deploy (~10:04-10:07 UTC), myproject only.** /identify on
+myproject showed `Unexpected token '<', "<!DOCTYPE"...`: the API returned an HTML
+500, `AttributeError: 'Institution' object has no attribute 'label'` in shared-ct's
+`photo_rights_holder`. That call came with shared-ct 24a7505 (2026-09-18) and was
+already in the pointer pulled on 2026-10-20, but myproject's gunicorn evidently
+never reloaded after that pull (first traceback ever at 10:04 today, right after
+our HUP). myproject's own Institution model had no `label`. Fixed in myproject
+`bce12df` (copy of biomon's `label` + contract test that every `inst.<m>()` the
+submodule calls exists on myproject's model), deployed and HUPed; the endpoint
+returns JSON with the institution name for default, date_desc and start_obs_id.
+biomon was never affected.
+
 ## 2026-10-20: Docs / manual module (`app/docs`, submodule shared-docs, private repo)
 
 Branch `feature/docs-module`. Code NOT deployed yet (owner deploys: needs sudo).
