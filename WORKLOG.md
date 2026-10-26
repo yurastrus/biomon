@@ -3,6 +3,62 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-26: Investigation: photo order inside a series on /identify (no fix yet)
+
+Owner report: in a series the animal sometimes "jumps back" (half way across
+the frame, then at the start again). Investigation only, no code changed.
+
+**Cause (confirmed on prod ct_db, read-only).** Every viewer path
+(`routes.py` ~3323, ~4174, ~4387, ~4551) does
+`sorted(observation.photos, key=lambda p: p.captured_at)`. `Observation.photos`
+has no `order_by`, and `captured_at` has whole-second resolution (0 series with
+sub-second times). Burst cameras take 2-3 shots in the same second, so ties are
+broken by whatever order PostgreSQL returns rows (≈ heap order). With the
+parallel /upload-fast pool (4 concurrent `process-single`) rows are inserted in
+random order, so the heap order is not the camera order. The grouping SQL
+(`fast_upload.py`) also breaks ties by `photo_id`, so `sequence_number` is
+wrong in the same places.
+
+Numbers (`scripts/probe_series_photo_order.py`): 44,251 multi-photo series
+(pending/completed); 96.6 % contain ≥2 photos in the same second (IMG_ 100 %,
+I_ 99 %, IMAG 92 %); **6,888 series (15.6 %) are shown out of camera order**
+(6,805 pending, 83 completed). Example obs 115525: `I_00271a, I_00271c,
+I_00271b`. Not a clock-rounding problem in the cameras: they simply don't
+store sub-seconds; the filename counter (and a/b/c burst suffix) does hold
+the true order. Only 5 tie-free series disagree with filename order, all
+counter rollovers (IMG_0999 → IMG_0001), where time order is right.
+
+**"Дата (спочатку нові)".** That option only orders series by
+`series_start_time DESC`; photos inside a series are still ascending and the
+frontend never re-sorts. Likely perception: one long visit split into several
+series is walked end → start. Not a bug in the code.
+
+**Fix (same day, owner's go-ahead).** shared-ct `509a22d`:
+- `utils.sort_series_photos` + `SERIES_PHOTO_ORDER_SQL` =
+  `captured_at, original_filename COLLATE "C", id`, used by all four viewer
+  paths, the legacy `group_batch_into_series`, the flagged page's first photo
+  and `photos_chronological`.
+- `fast_upload.group_batch_into_series_sql`: one `shot_ord` window drives LAG,
+  the series index and `sequence_number`. Checked on prod (read-only SELECT)
+  for obs 115525: `I_00271a, b, c, I_00272a…` numbered 1..9.
+- Plain string order rather than natural sort, on purpose: Python `str`
+  comparison equals PG `COLLATE "C"`, so viewers and `sequence_number` agree.
+  Camera counters are zero-padded, so natural sort would add nothing.
+  Series boundaries don't change (tied photos have the same time).
+
+**Existing numbers:** `scripts/renumber_series_photos.py` (dry run by default,
+`--apply` writes, idempotent). Dry run on prod: 103,990 photos in 22,068 series
+would change. All of them are same-second ties: 35,496 match the old
+`(captured_at, id)` numbering, the rest came from the legacy path that sorted by
+`captured_at` alone. Not applied yet (owner deploys).
+
+Tests: `tests/test_ct_series_photo_order.py` (8). Full suite 2488 passed,
+44 skipped (`logs/pytest_series_order_20261026.log`).
+
+**Deploy:** code first (viewers sort on the fly, nothing else needed), then
+`venv/bin/python -m scripts.renumber_series_photos --apply`. Bump shared-ct in
+`/var/www/myproject` too.
+
 ## 2026-10-20: Docs / manual module (`app/docs`, submodule shared-docs, private repo)
 
 Branch `feature/docs-module`. Code NOT deployed yet (owner deploys: needs sudo).
