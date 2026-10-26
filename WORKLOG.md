@@ -55,9 +55,12 @@ would change. All of them are same-second ties: 35,496 match the old
 Tests: `tests/test_ct_series_photo_order.py` (8). Full suite 2488 passed,
 44 skipped (`logs/pytest_series_order_20261026.log`).
 
-**Deploy:** code first (viewers sort on the fly, nothing else needed), then
-`venv/bin/python -m scripts.renumber_series_photos --apply`. Bump shared-ct in
-`/var/www/myproject` too.
+**Deployed 2026-10-26 ~10:00 UTC** (owner's request): biomon `2b6ef88` and
+myproject `8557c37` (shared-ct bump, its pytest 231 passed) pulled, both HUPed;
+biomon 200, myproject 302. Prod check: `/api/next-observation-for-identification
+?start_obs_id=115525` as admin returns `I_00271a, b, c, I_00272a, b, c…`
+(before: `a, c, b`). Renumber applied: 103,990 photos updated, recheck 0.
+Server log: `/var/www/biomon/logs/deploy_renumber_series_photos_<ts>.log`.
 
 ## 2026-10-20: Docs / manual module (`app/docs`, submodule shared-docs, private repo)
 
