@@ -97,9 +97,18 @@ def user_list():
     filter_roles = sorted({role for user in users for role in user.roles},
                           key=lambda role: role.name)
 
+    # "No access" chip per user: the institutions the viewer may assign
+    # (admin: all, manager: the ones they manage) that the user lacks.
+    scope = sorted(UserService.get_available_institutions(current_user),
+                   key=lambda inst: label(inst).casefold())
+    missing = {user.id: [inst for inst in scope
+                         if inst.id not in {l.institution_id for l in grants[user.id]}]
+               for user in users}
+
     return render_template('admin_users_list.html',
                            users=users,
                            grants=grants,
+                           missing=missing,
                            inst_label=label,
                            filter_institutions=filter_institutions,
                            filter_roles=filter_roles)

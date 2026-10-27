@@ -220,8 +220,11 @@ def test_a_user_without_institutions_renders_the_placeholder(app, db_session,
                                                              admin_client):
     make_user(username='no_parks', roles=('viewer',))
     row = _row(admin_client.get('/uk/admin/users').get_data(as_text=True), 'no_parks')
-    assert 'inst-badge' not in row
+    # No granted badge; only the grey "no access" chip counting every park.
+    for kind in ('both', 'ct', 'pam'):
+        assert f'inst-badge-{kind}' not in row
     assert '---' in row
+    assert 'inst-badge-none' in row
 
 
 def test_the_row_carries_a_per_module_institution_list(app, db_session, make_user,
@@ -258,7 +261,7 @@ def test_the_legend_keeps_the_export_example_on_its_own_row(
     assert len(rows) == 2, 'colours in one row, the export example in another'
 
     colours_row, export_row = rows
-    assert colours_row.count('inst-badge-') == 3, 'three colour samples'
+    assert colours_row.count('inst-badge-') == 4, 'three colours plus the grey "no access"'
     assert 'inst-exp' not in colours_row, 'the arrow belongs to the second row'
     assert 'inst-exp' in export_row
     assert export_row.count('inst-badge-') == 1

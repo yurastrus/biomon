@@ -248,3 +248,15 @@ def test_user_list_links_to_the_review_for_admins_only(client_as, make_user):
     assert '/admin/access-review' in client_as(adm).get('/uk/admin/users').get_data(as_text=True)
     mgr = make_user(username='mgr', roles=('manager',))
     assert '/admin/access-review' not in client_as(mgr).get('/uk/admin/users').get_data(as_text=True)
+
+
+def test_user_list_shows_a_no_access_chip(client_as, db_session, parks, person, make_user):
+    a, b = parks
+    person('half', OLD, [(a, FULL)])
+    adm = make_user(username='adm', roles=('admin',))
+    html = client_as(adm).get('/uk/admin/users').get_data(as_text=True)
+    row = html[html.index('data-search="half'):]
+    row = row[:row.index('</tr>')]
+    assert 'inst-badge-none' in row
+    pop = row[row.index('inst-none-pop'):]
+    assert 'Парк Б' in pop and 'Парк А' not in pop

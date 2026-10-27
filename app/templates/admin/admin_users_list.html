@@ -91,11 +91,12 @@
             <span class="inst-badge inst-badge-both">{{ _('обидва модулі') }}</span>
             <span class="inst-badge inst-badge-ct">{{ _('лише фотопастки') }}</span>
             <span class="inst-badge inst-badge-pam">{{ _('лише звукозаписи') }}</span>
+            <span class="inst-badge inst-badge-none">{{ _('без доступу') }}</span>
         </div>
         <div class="inst-legend-row">
             <span class="inst-badge inst-badge-both">{{ _('установа') }}<span class="inst-exp">↓</span></span>
             {{ _('означає ще й право завантажувати дані. Стрілка з назвою модуля означає експорт лише в тому модулі.') }}
-            {{ _('Зірочка ★ означає, що людина керує цією установою.') }}
+            {{ _('Червона зірочка') }} <span class="inst-mgr inst-mgr-legend">★</span> {{ _('означає, що людина керує цією установою.') }}
         </div>
     </div>
 
@@ -142,11 +143,20 @@
                               title="{{ inst_label(link.institution) }} — {{ module_titles[kind] }}{% if exports %}; {{ _('експорт') }}: {{ exports | join(', ') }}{% endif %}">
                             {{ inst_label(link.institution) }}
                             {% if exports %}<span class="inst-exp">↓{% if not full_export %}{{ exports | join('') }}{% endif %}</span>{% endif %}
-                            {% if user_is_manager and ((link.can_manage_ct and link.can_view_ct) or (link.can_manage_pam and link.can_view_pam)) %}<span class="inst-exp" title="{{ _('керує') }}">★</span>{% endif %}
+                            {% if user_is_manager and ((link.can_manage_ct and link.can_view_ct) or (link.can_manage_pam and link.can_view_pam)) %}<span class="inst-mgr" title="{{ _('керує') }}">★</span>{% endif %}
                         </span>
                     {% else %}
                         <span style="color: gray;">---</span>
                     {% endfor %}
+                    {% set lacks = missing[user.id] %}
+                    {% if lacks %}
+                    {# One grey chip instead of a badge per park: the list of parks
+                       without access opens on hover or focus (tap on a phone). #}
+                    <span class="inst-badge inst-badge-none" tabindex="0">
+                        {{ _('без доступу') }}: {{ lacks | length }}
+                        <span class="inst-none-pop">{% for inst in lacks %}{{ inst_label(inst) }}{% if not loop.last %}<br>{% endif %}{% endfor %}</span>
+                    </span>
+                    {% endif %}
                 </td>
                 <td data-label="{{ _('Ролі') }}">
                     {% for role in user.roles %}
