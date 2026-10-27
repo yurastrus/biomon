@@ -69,10 +69,15 @@ script now uses its own SQLite engine with an assert.
 **Tests:** `tests/test_ct_manager_scope.py` (23), `tests/test_manager_scope_admin_pam.py`
 (20); 30 older test fixtures now give their managers explicit manage flags.
 
-**Deploy (not done):** `flask db upgrade` BEFORE the new code (the model declares
-the columns), then shared-ct and shared-pam pointers, HUP biomon; myproject
-pointer next (fallback keeps old meaning there). After deploy, re-run
-`scripts.audit_manager_scope` (it then reads real rows).
+**Deployed 2026-10-27 ~19:35 UTC.** Server: `git pull` + submodules, then
+`flask db upgrade` (f4a5b6c7d8e9 -> c3d9e1f27a40; log on the server in
+`logs/deploy_manager_split_upgrade_*`), seed set 105 manage flags per module =
+sum of the 7 managers' institutions (25+22+23+2+1+1+31), HUP. Smoke as admin and
+managers #29, #39 (11 CT/PAM/admin pages incl. review mode): all 200.
+`scripts.audit_manager_scope` on the real rows: no manager lost anything
+(`logs/manager_scope_after_deploy_*`). myproject: shared-ct bumped to 99c186d
+(commit 32136f2, its 233 tests pass), deployed and HUPed; admin and a manager
+(fallback path, manage ids = visible ids) get 200 on the CT pages.
 
 ## 2026-10-26: Forecast numbers set from the field data
 
