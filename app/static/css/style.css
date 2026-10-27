@@ -1328,7 +1328,12 @@ footer {
 .ia-scroll { overflow-x: auto; }
 .ia-table td { vertical-align: top; }
 .ia-table th { white-space: nowrap; }
-a.inst-badge.ia-person { text-decoration: none; }
+/* People are links to their user form; keep the badge's white text instead of
+   the global link blue, which is unreadable on these backgrounds. */
+a.inst-badge.ia-person,
+a.inst-badge.ia-person:visited,
+a.inst-badge.ia-person:hover,
+a.inst-badge.ia-person:focus { color: #fff; text-decoration: none; }
 a.inst-badge.ia-person:hover { filter: brightness(0.9); }
 .ia-gap {
     display: inline-block;
