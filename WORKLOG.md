@@ -78,6 +78,8 @@ managers #29, #39 (11 CT/PAM/admin pages incl. review mode): all 200.
 (`logs/manager_scope_after_deploy_*`). myproject: shared-ct bumped to 99c186d
 (commit 32136f2, its 233 tests pass), deployed and HUPed; admin and a manager
 (fallback path, manage ids = visible ids) get 200 on the CT pages.
+Follow-up (owner): person badges on the new page rendered in the global link
+blue; forced white text, style.css bumped to v=4, deployed (37010d2).
 
 ## 2026-10-26: Forecast numbers set from the field data
 
