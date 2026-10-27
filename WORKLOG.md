@@ -80,6 +80,16 @@ managers #29, #39 (11 CT/PAM/admin pages incl. review mode): all 200.
 (fallback path, manage ids = visible ids) get 200 on the CT pages.
 Follow-up (owner): person badges on the new page rendered in the global link
 blue; forced white text, style.css bumped to v=4, deployed (37010d2).
+Regression found and fixed the same day (owner removed manager from
+daria.svidzinska and ira.shpakovska; checking their access showed it):
+`/pam/manage-locations` is open to `pam_verifier`, but the split had narrowed its
+list to managed institutions, so verifiers saw an empty map; and a misplaced
+replacement had narrowed the read-only PAM service history to managers. Now the
+page lists what the user sees, marks only managed locations editable (read-only
+note otherwise) and offers only managed institutions in the editor; history is
+back to "sees the location". shared-pam 5d90be5, biomon 98b7970, deployed.
+On prod: daria 79 locations / 0 editable, ira 26 / 0, bohdan.datsko 26 / 26.
+Lesson: a page gated below `manager` must never be scoped by manage ids.
 
 ## 2026-10-26: Forecast numbers set from the field data
 
