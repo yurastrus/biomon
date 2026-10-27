@@ -38,6 +38,11 @@
     <div class="admin-view-switch">
         <a href="{{ url_for('admin.user_list', lang_code=g.lang_code) }}">{{ _('За користувачами') }}</a>
         <span class="is-current">{{ _('За установами') }}</span>
+        {% if is_admin %}
+        <a href="{{ url_for('admin.access_review', lang_code=g.lang_code, module='ct', right='export') }}"
+           style="margin-left: auto;">{{ _('Перегляд прав фотопасток') }}</a>
+        <a href="{{ url_for('admin.access_review', lang_code=g.lang_code, module='pam', right='export') }}">{{ _('Перегляд прав ПАМ') }}</a>
+        {% endif %}
     </div>
 
     <div class="dashboard-section" style="padding: 16px 20px; margin-bottom: 16px;">

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% set module_labels = {'ct': _('Фотопастки'), 'pam': _('ПАМ')} %}
+{% set right_labels = {'export': _('Експорт'), 'access': _('Доступ')} %}
+{% set direction_labels = {'revoke': _('Урізати'), 'grant': _('Надати')} %}
+{% set unit_labels = {'ct': _('серій'), 'pam': _('сегментів')} %}
+{% set skip_labels = {
+    'enough': _('верифікували достатньо'),
+    'too_few': _('верифікували замало'),
+    'no_access': _('немає доступу в модулі'),
+    'too_young': _('зареєстровані недавно'),
+    'manages': _('керують установою'),
+    'admin': _('адміністратори'),
+    'excluded': _('у винятках'),
+    'no_date': _('без дати реєстрації')
+} %}
+{% set note_labels = {
+    'no_export_role': _('немає ролі з експортом (analyst чи вище): право запишеться, але не діятиме'),
+    'no_verifier_role': _('немає ролі верифікатора цього модуля')
+} %}
+
+{% block content %}
+<div class="container" style="margin-top: 20px; margin-bottom: 50px;">
+
+    <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
+        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a>
+        &raquo; <a href="{{ url_for('admin.institution_access', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Доступ за установами') }}</a>
+        &raquo; <strong>{{ _('Перегляд прав') }}</strong>
+    </div>
+
+    <h2 style="text-align: left; margin-bottom: 10px;">{{ _('Перегляд прав') }}</h2>
+    <p style="color: #666; margin-bottom: 16px; max-width: 860px;">
+        {{ _('«Урізати» пропонує забрати право в установі в людей, які зареєстровані довше заданого строку, але верифікували там менше заданої кількості. «Надати» пропонує дати право тим, хто вже верифікував там щонайменше задану кількість. Фотопастки рахують серії, ПАМ рахує сегменти. Нічого не змінюється, доки ви не натиснете «Застосувати».') }}
+    </p>
+
+    <form method="get" action="{{ url_for('admin.access_review', lang_code=g.lang_code) }}"
+          class="dashboard-section" style="padding: 16px 20px; margin-bottom: 20px;">
+        <input type="hidden" name="analyze" value="1">
+        <div class="admin-filter-bar">
+            <div style="flex: 0 0 140px;">
+                <label class="admin-filter-label">{{ _('Дія') }}</label>
+                <select name="direction" id="ar-direction" class="admin-filter-input">
+                    {% for d in ['revoke', 'grant'] %}
+                    <option value="{{ d }}" {% if params.direction == d %}selected{% endif %}>{{ direction_labels[d] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="flex: 0 0 150px;">
+                <label class="admin-filter-label">{{ _('Модуль') }}</label>
+                <select name="module" class="admin-filter-input">
+                    {% for m in ['ct', 'pam'] %}
+                    <option value="{{ m }}" {% if params.module == m %}selected{% endif %}>{{ module_labels[m] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="flex: 0 0 140px;">
+                <label class="admin-filter-label">{{ _('Право') }}</label>
+                <select name="right" class="admin-filter-input">
+                    {% for r in ['export', 'access'] %}
+                    <option value="{{ r }}" {% if params.right == r %}selected{% endif %}>{{ right_labels[r] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="flex: 0 0 170px;" id="ar-months-box">
+                <label class="admin-filter-label">{{ _('Зареєстровані довше, міс.') }}</label>
+                <input type="number" name="months" min="0" max="240" value="{{ params.months }}" class="admin-filter-input">
+            </div>
+            <div style="flex: 0 0 170px;">
+                <label class="admin-filter-label">{{ _('Поріг верифікацій') }}</label>
+                <input type="number" name="min_units" min="0" max="100000" value="{{ params.min_units }}" class="admin-filter-input">
+            </div>
+            <div style="flex: 1 1 200px;">
+                <label class="admin-filter-label">{{ _('Винятки (логіни через пробіл)') }}</label>
+                <input type="text" name="exclude" value="{{ params.exclude | join(' ') }}" class="admin-filter-input">
+            </div>
+            <div style="flex: 0 0 auto; align-self: flex-end;">
+                <button type="submit" class="button" style="margin: 0;">{{ _('Проаналізувати') }}</button>
+            </div>
+        </div>
+        <small style="color: #a15c00; display: block; margin-top: 8px;">
+            {{ _('Менеджерам установи права в ній не урізаються. Зняття доступу знімає в цьому модулі також експорт. Надати експорт можна лише тим, хто вже має доступ у модулі. Строк реєстрації діє лише для «Урізати».') }}
+        </small>
+    </form>
+
+    {% if proposal %}
+    {% set unit = unit_labels[proposal.module] %}
+    {% set grant = proposal.direction == 'grant' %}
+    <div class="inst-legend" style="font-size: 13px;">
+        <div class="inst-legend-row">
+            <strong>{{ direction_labels[proposal.direction] }}: {{ module_labels[proposal.module] }}, {{ right_labels[proposal.right] | lower }}.</strong>
+            {% if not grant %}{{ _('Зареєстровані до') }} {{ proposal.cutoff.strftime('%Y-%m-%d') }},{% endif %}
+            {{ _('поріг') }} {{ proposal.min_units }} {{ unit }}.
+            {{ _('Пропозицій') }}: <strong>{{ proposal['items'] | length }}</strong>
+            ({{ proposal['items'] | map(attribute='user_id') | unique | list | length }} {{ _('людей') }}).
+        </div>
+        <div class="inst-legend-row">
+            {{ _('Не зачеплено') }}:
+            {% for key, entries in proposal.skipped.items() if entries %}
+                {{ skip_labels[key] }} {{ entries | length }}{% if not loop.last %}, {% endif %}
+            {% else %}—{% endfor %}
+        </div>
+    </div>
+
+    {% if proposal['items'] %}
+    <form method="post" action="{{ url_for('admin.access_review_apply', lang_code=g.lang_code) }}"
+          onsubmit="return confirm('{{ _('Надати вибрані права?') if grant else _('Забрати вибрані права?') }}');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% for key in ['direction', 'module', 'right', 'months', 'min_units'] %}
+        <input type="hidden" name="{{ key }}" value="{{ proposal[key] }}">
+        {% endfor %}
+        <input type="hidden" name="exclude" value="{{ proposal.exclude | join(' ') }}">
+
+        <table class="admin-table ar-table">
+            <thead>
+                <tr>
+                    <th style="width: 36px;"><input type="checkbox" id="ar-all" checked title="{{ _('Усі') }}"></th>
+                    <th>{{ _('Установа') }}</th>
+                    <th style="text-align: right;">{{ _('Верифіковано') }}</th>
+                    <th>{{ _('Зауваження') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for uid, rows in proposal['items'] | groupby('user_id') %}
+                {% set first = rows[0] %}
+                <tr class="ar-person">
+                    <td><input type="checkbox" class="ar-person-cb" data-user="{{ uid }}" checked
+                               title="{{ _('Усі рядки цієї людини') }}"></td>
+                    <td colspan="3">
+                        <a href="{{ url_for('admin.edit_user', lang_code=g.lang_code, user_id=uid) }}"><strong>{{ first.username }}</strong></a>
+                        {% if first.name %}<span style="color: #666;"> · {{ first.name }}</span>{% endif %}
+                        <span style="color: #888; font-size: 0.85em;"> · {{ _('зареєстрований') }} {{ first.created_at.strftime('%Y-%m-%d') if first.created_at else '?' }} · {{ rows | length }}</span>
+                    </td>
+                </tr>
+                {% for item in rows %}
+                <tr>
+                    <td style="padding-left: 22px;"><input type="checkbox" name="pair" class="ar-pair" data-user="{{ uid }}"
+                               value="{{ item.user_id }}:{{ item.institution_id }}" checked></td>
+                    <td data-label="{{ _('Установа') }}">{{ item.institution }} <span style="color: gray; font-size: 0.85em;">{{ item.code or '' }}</span></td>
+                    <td data-label="{{ _('Верифіковано') }}" style="text-align: right;">{{ item.units }}</td>
+                    <td data-label="{{ _('Зауваження') }}" style="color: #a15c00; font-size: 0.85em;">{{ note_labels[item.note] if item.note else '' }}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="admin-form-actions" style="justify-content: flex-start; gap: 14px; align-items: center;">
+            <button type="submit" class="{{ 'button' if grant else 'button-danger' }}" style="border: none; cursor: pointer; padding: 10px 22px; font-family: inherit; margin: 0;">
+                {{ _('Застосувати') }}
+            </button>
+            <span style="color: #666; font-size: 14px;">{{ _('Вибрано') }}: <span id="ar-count">{{ proposal['items'] | length }}</span></span>
+        </div>
+    </form>
+    <script>
+    (function () {
+        var pairs = document.querySelectorAll('.ar-pair');
+        function sync() {
+            var n = 0;
+            pairs.forEach(function (cb) { if (cb.checked) n++; });
+            document.getElementById('ar-count').textContent = n;
+            document.querySelectorAll('.ar-person-cb').forEach(function (p) {
+                var mine = document.querySelectorAll('.ar-pair[data-user="' + p.dataset.user + '"]');
+                var on = 0;
+                mine.forEach(function (cb) { if (cb.checked) on++; });
+                p.checked = on === mine.length;
+                p.indeterminate = on > 0 && on < mine.length;
+            });
+            var all = document.getElementById('ar-all');
+            all.checked = n === pairs.length;
+            all.indeterminate = n > 0 && n < pairs.length;
+        }
+        document.getElementById('ar-all').addEventListener('change', function () {
+            var on = this.checked;
+            pairs.forEach(function (cb) { cb.checked = on; });
+            sync();
+        });
+        document.querySelectorAll('.ar-person-cb').forEach(function (p) {
+            p.addEventListener('change', function () {
+                var on = this.checked;
+                document.querySelectorAll('.ar-pair[data-user="' + this.dataset.user + '"]')
+                    .forEach(function (cb) { cb.checked = on; });
+                sync();
+            });
+        });
+        pairs.forEach(function (cb) { cb.addEventListener('change', sync); });
+    })();
+    </script>
+    {% else %}
+    <p style="color: #28a745; margin-top: 10px;">{{ _('За цими умовами змінювати нічого не потрібно.') }}</p>
+    {% endif %}
+    {% endif %}
+</div>
+<script>
+(function () {
+    var dir = document.getElementById('ar-direction');
+    var box = document.getElementById('ar-months-box');
+    function toggle() { box.style.opacity = dir.value === 'grant' ? 0.4 : 1; }
+    dir.addEventListener('change', toggle);
+    toggle();
+})();
+</script>
+{% endblock %}

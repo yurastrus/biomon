@@ -3,6 +3,32 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-27: Rights review page (/admin/access-review)
+
+The two manual export cuts turned into an admin-only page, linked from
+"Access by institution" (two buttons: camera traps, PAM).
+- Form: action (revoke / grant), module, right (export / access), registered
+  longer than N months (default 6, revoke only), verification threshold
+  (default 50: series in CT, segments in PAM), exceptions (logins).
+- "Analyse" lists proposals grouped by person, with a checkbox per person and
+  per institution row; "Apply" changes only the ticked pairs, and only those the
+  rule still proposes when re-run server-side (stale or crafted forms change
+  nothing). Every apply is logged with the admin id and the pairs.
+- Grant (owner's addition): proposes the right to whoever verified at least N
+  there and lacks it; export only on top of access; a note warns when the
+  person lacks the role that makes the right effective.
+- Never revoked: admins, exceptions, young accounts, and (owner) the managers of
+  that institution: managing it in either module protects all rights there.
+- Revoking access also clears export and manage in that module and drops a row
+  that grants nothing; granting access creates the row if needed.
+- Logic in `app/admin/access_review.py`; `scripts/trim_ct_export.py` is now its
+  CLI twin (`--direction`, `--right`, `--months`, `--min-units`).
+- Prod dry run today (exceptions dbu, daria, bohdan): revoke export 0 / 0
+  (already cut), revoke access CT 178 rows / 24 people, PAM 171 / 15; grant
+  export CT 44 / 9, PAM 5 / 5; grant access CT 22 / 12, PAM 6 / 4. Nothing
+  applied from the page yet.
+- Tests: `tests/test_access_review.py` (18); full suite 2594 passed.
+
 ## 2026-10-27: Camera-trap export rights trimmed (first of a planned bulk cut)
 
 Owner's rule: a person registered more than 6 months ago (before 2026-04-27)

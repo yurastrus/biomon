@@ -306,6 +306,79 @@ def institution_access():
 
 
 # ===========================================================================
+# Access review: propose removing rights from people who do not verify
+# ===========================================================================
+
+def _access_review_params(source):
+    """Read and bound the review form. Returns a dict for access_review."""
+    from app.admin import access_review as ar
+
+    def _int(name, default, lo, hi):
+        try:
+            return max(lo, min(hi, int(source.get(name, default))))
+        except (TypeError, ValueError):
+            return default
+
+    module = source.get('module', 'ct')
+    right = source.get('right', 'export')
+    direction = source.get('direction', 'revoke')
+    raw_exclude = source.get('exclude', '')
+    return {
+        'module': module if module in ar.MODULES else 'ct',
+        'right': right if right in ar.RIGHTS else 'export',
+        'direction': direction if direction in ar.DIRECTIONS else 'revoke',
+        'months': _int('months', ar.DEFAULT_MONTHS, 0, 240),
+        'min_units': _int('min_units', ar.DEFAULT_MIN_UNITS, 0, 100000),
+        'exclude': [e for e in raw_exclude.replace(',', ' ').split() if e],
+    }
+
+
+@admin_bp.route('/access-review')
+@login_required
+@role_required('admin')
+def access_review():
+    """Analyse: who would lose (or gain) a right under the rule. Reads only."""
+    from app.admin import access_review as ar
+    params = _access_review_params(request.args)
+    proposal = ar.propose(**params) if request.args.get('analyze') else None
+    return render_template('admin_access_review.html', params=params,
+                           proposal=proposal)
+
+
+@admin_bp.route('/access-review/apply', methods=['POST'])
+@login_required
+@role_required('admin')
+def access_review_apply():
+    """Change the right for the ticked pairs (re-checked against the rule)."""
+    from app.admin import access_review as ar
+    params = _access_review_params(request.form)
+    pairs = []
+    for raw in request.form.getlist('pair'):
+        uid, _sep, iid = raw.partition(':')
+        if uid.isdigit() and iid.isdigit():
+            pairs.append((int(uid), int(iid)))
+    try:
+        changed = ar.apply(pairs=pairs, **params)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('access review apply failed')
+        flash(_('Помилка: права не змінено.'), 'danger')
+        return redirect(url_for('admin.access_review', lang_code=g.lang_code,
+                                analyze=1, **{k: v for k, v in params.items() if k != 'exclude'},
+                                exclude=' '.join(params['exclude'])))
+    current_app.logger.info(
+        "Access review by user_id=%s: %s %s %s on %d rows (months=%s, min_units=%s, "
+        "exclude=%s): %s", current_user.id, params['direction'], params['module'], params['right'],
+        len(changed), params['months'], params['min_units'], params['exclude'],
+        [(c['user_id'], c['institution_id']) for c in changed])
+    flash(_('Права змінено: %(n)s рядків.', n=len(changed)), 'success')
+    return redirect(url_for('admin.access_review', lang_code=g.lang_code, analyze=1,
+                            **{k: v for k, v in params.items() if k != 'exclude'},
+                            exclude=' '.join(params['exclude'])))
+
+
+# ===========================================================================
 # Institution management (admin only)
 # ===========================================================================
 
