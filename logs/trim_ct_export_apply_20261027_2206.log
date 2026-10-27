@@ -1,0 +1,40 @@
+cutoff (registered before): 2026-04-27, min series: 50
+revoke         rows   29  people 6
+keep           rows    4  people 4
+too_young      rows  109  people 38
+no_created_at  rows    0  people 0
+admins         rows    0  people 0
+excluded       rows   45  people 3
+
+TO REVOKE (user | institution | series identified there):
+  #13 marichkamartsiv (Марія Марців) | РЛП "Равське Розточчя" [RRRLP] | 0
+  #13 marichkamartsiv (Марія Марців) | Страдчівський НВЛК [SNVLK] | 0
+  #15 m.vysochyn (Максим Височин) | Верховинський НПП [VNNP] | 2
+  #15 m.vysochyn (Максим Височин) | Вижницький НПП [VZNNP] | 1
+  #15 m.vysochyn (Максим Височин) | Карпатський БЗ [KBR] | 0
+  #15 m.vysochyn (Максим Височин) | Карпатський НПП [CNNP] | 0
+  #15 m.vysochyn (Максим Височин) | Нобельський НПП [NNNP] | 0
+  #15 m.vysochyn (Максим Височин) | НПП "Гуцульщина" [HNNP] | 0
+  #15 m.vysochyn (Максим Височин) | НПП "Зачарований Край" [ZKNNP] | 1
+  #15 m.vysochyn (Максим Височин) | НПП "Прип'ять-Стохід" [PSNNP] | 2
+  #15 m.vysochyn (Максим Височин) | НПП "Синевир" [SNNP] | 0
+  #15 m.vysochyn (Максим Височин) | НПП "Синьогора" [SHNNP] | 1
+  #15 m.vysochyn (Максим Височин) | НПП "Сколівські Бескиди" [SBNNP] | 0
+  #15 m.vysochyn (Максим Височин) | ПЗ "Горгани" [GSNR] | 0
+  #15 m.vysochyn (Максим Височин) | Ужанський НПП [UNNP] | 0
+  #15 m.vysochyn (Максим Височин) | Черемоський НПП [CHNNP] | 0
+  #15 m.vysochyn (Максим Височин) | Яворівський НПП [YNNP] | 1
+  #27 Pavlo2007 (Павло) | Винниківській проект [VYNLIS] | 0
+  #27 Pavlo2007 (Павло) | РЛП "Равське Розточчя" [RRRLP] | 0
+  #27 Pavlo2007 (Павло) | Страдчівський НВЛК [SNVLK] | 0
+  #8 tonya.tarasova (Антоніна Тарасова) | Винниківській проект [VYNLIS] | 0
+  #8 tonya.tarasova (Антоніна Тарасова) | РЛП "Равське Розточчя" [RRRLP] | 0
+  #8 tonya.tarasova (Антоніна Тарасова) | Страдчівський НВЛК [SNVLK] | 0
+  #23 vasyl.mochan (Vasyl Mochan) | НПП "Сколівські Бескиди" [SBNNP] | 0
+  #3 vasylyna (Василина Струс) | Винниківській проект [VYNLIS] | 0
+  #3 vasylyna (Василина Струс) | Північні торфовища проект [northpeatlands] | 0
+  #3 vasylyna (Василина Струс) | РЛП "Равське Розточчя" [RRRLP] | 0
+  #3 vasylyna (Василина Струс) | Страдчівський НВЛК [SNVLK] | 0
+  #3 vasylyna (Василина Струс) | Яворівський НПП [YNNP] | 15
+
+APPLIED: can_export_ct switched off on 29 rows

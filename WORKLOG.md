@@ -3,6 +3,25 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-27: Camera-trap export rights trimmed (first of a planned bulk cut)
+
+Owner's rule: a person registered more than 6 months ago (before 2026-04-27)
+keeps `can_export_ct` for an institution only after verifying at least 50
+series on that institution's locations; otherwise the flag goes, for that
+institution only (view, PAM and manage untouched). Excluded by the owner:
+`dbu`, `daria.svidzinska`, `bohdan.datsko`.
+- New `scripts/trim_ct_export.py` (dry run by default, `--apply`, `--exclude`).
+  A series counts once if the person identified any photo of it; archived series
+  count (archival keeps identification rows).
+- Dry run first: 50 rows / 8 people; after the exclusions 29 rows / 6 people
+  (m.vysochyn 15, vasylyna 5, Pavlo2007 3, tonya.tarasova 3,
+  marichkamartsiv 2, vasyl.mochan 1). Applied in one transaction; a second dry
+  run shows 0 left. Kept: 4 rows with 50+ series; 38 people younger than
+  6 months not in scope.
+- The full list of switched-off rows (to revert by hand if needed):
+  `logs/trim_ct_export_before_apply_*.json` -> `revoke`; output in
+  `logs/trim_ct_export_apply_*.log`.
+
 ## 2026-10-27: Manager rights per institution + "access by institution" page
 
 Owner's problem: the global `manager` role made a person manager of every
