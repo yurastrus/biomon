@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-27 22:17+0200\n"
+"POT-Creation-Date: 2026-10-27 22:32+0200\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -730,6 +730,7 @@ msgstr "Access by institution"
 
 #: app/templates/admin/admin_access_review.html:28
 #: app/templates/admin/admin_access_review.html:31
+#: app/templates/admin/admin_institution_access.html:43
 msgid "Перегляд прав"
 msgstr "Rights review"
 
@@ -823,8 +824,8 @@ msgstr "All"
 
 #: app/templates/admin/admin_access_review.html:117
 #: app/templates/admin/admin_access_review.html:138
-#: app/templates/admin/admin_institution_access.html:84
-#: app/templates/admin/admin_institution_access.html:94
+#: app/templates/admin/admin_institution_access.html:83
+#: app/templates/admin/admin_institution_access.html:93
 #: app/templates/admin/admin_user_form.html:138
 #: app/templates/admin/admin_users_list.html:40
 msgid "Установа"
@@ -1090,14 +1091,14 @@ msgid "фотопастки і звукозаписи"
 msgstr "camera traps and sound recordings"
 
 #: app/templates/admin/admin_institution_access.html:24
-#: app/templates/admin/admin_institution_access.html:70
+#: app/templates/admin/admin_institution_access.html:69
 #: app/templates/admin/admin_users_list.html:5
 #: app/templates/admin/admin_users_list.html:88
 msgid "лише фотопастки"
 msgstr "camera traps only"
 
 #: app/templates/admin/admin_institution_access.html:25
-#: app/templates/admin/admin_institution_access.html:71
+#: app/templates/admin/admin_institution_access.html:70
 #: app/templates/admin/admin_users_list.html:6
 #: app/templates/admin/admin_users_list.html:89
 msgid "лише звукозаписи"
@@ -1113,57 +1114,49 @@ msgstr "By user"
 msgid "За установами"
 msgstr "By institution"
 
-#: app/templates/admin/admin_institution_access.html:43
-msgid "Перегляд прав фотопасток"
-msgstr "Camera-trap rights review"
-
-#: app/templates/admin/admin_institution_access.html:44
-msgid "Перегляд прав ПАМ"
-msgstr "PAM rights review"
-
-#: app/templates/admin/admin_institution_access.html:51
+#: app/templates/admin/admin_institution_access.html:50
 #: app/templates/admin/admin_users_list.html:34
 msgid "Пошук"
 msgstr "Search"
 
-#: app/templates/admin/admin_institution_access.html:53
+#: app/templates/admin/admin_institution_access.html:52
 msgid "Установа або людина..."
 msgstr "Institution or person..."
 
-#: app/templates/admin/admin_institution_access.html:57
+#: app/templates/admin/admin_institution_access.html:56
 msgid "Лише установи з прогалинами"
 msgstr "Only institutions with gaps"
 
-#: app/templates/admin/admin_institution_access.html:61
+#: app/templates/admin/admin_institution_access.html:60
 #: app/templates/admin/admin_users_list.html:75
 msgid "Показано:"
 msgstr "Shown:"
 
-#: app/templates/admin/admin_institution_access.html:68
+#: app/templates/admin/admin_institution_access.html:67
 msgid "Колір людини показує модулі, у яких вона це може:"
 msgstr "A person's colour shows the modules in which they can do it:"
 
-#: app/templates/admin/admin_institution_access.html:69
+#: app/templates/admin/admin_institution_access.html:68
 #: app/templates/admin/admin_users_list.html:87
 msgid "обидва модулі"
 msgstr "both modules"
 
-#: app/templates/admin/admin_institution_access.html:74
-#: app/templates/admin/admin_institution_access.html:106
+#: app/templates/admin/admin_institution_access.html:73
+#: app/templates/admin/admin_institution_access.html:105
 msgid "нікого"
 msgstr "nobody"
 
-#: app/templates/admin/admin_institution_access.html:75
+#: app/templates/admin/admin_institution_access.html:74
 msgid ""
 "означає, що в установі немає жодного менеджера або верифікатора цього "
 "модуля."
 msgstr "means the institution has no manager, or no verifier for that module."
 
-#: app/templates/admin/admin_institution_access.html:76
+#: app/templates/admin/admin_institution_access.html:75
 msgid "Ви бачите лише установи, якими керуєте."
 msgstr "You see only the institutions you manage."
 
-#: app/templates/admin/admin_institution_access.html:115
+#: app/templates/admin/admin_institution_access.html:114
 msgid "Немає установ, якими ви керуєте."
 msgstr "There are no institutions you manage."
 
@@ -2383,4 +2376,10 @@ msgstr ""
 
 #~ msgid "ІНСТРУКЦІЇ"
 #~ msgstr "GUIDES"
+
+#~ msgid "Перегляд прав фотопасток"
+#~ msgstr "Camera-trap rights review"
+
+#~ msgid "Перегляд прав ПАМ"
+#~ msgstr "PAM rights review"
 
