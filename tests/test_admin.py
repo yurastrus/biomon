@@ -93,7 +93,8 @@ class AdminTestBase(unittest.TestCase):
         self.manager = User(username='manager_user', password_hash=pw)
         self.manager.roles.append(self.role_manager)
         self.manager.institution_links.append(
-            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True)
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True,
+                can_manage_ct=True, can_manage_pam=True)
         )
         db.session.add(self.manager)
 

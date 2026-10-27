@@ -111,7 +111,8 @@ class CtLocationValidityBase(unittest.TestCase):
         self.manager = User(username='manager_user', password_hash=pw)
         self.manager.roles.append(role_manager)
         self.manager.institution_links.append(
-            UserInstitution(institution_id=inst.id, can_view_ct=True, can_view_pam=True)
+            UserInstitution(institution_id=inst.id, can_view_ct=True, can_view_pam=True,
+                can_manage_ct=True, can_manage_pam=True)
         )
         db.session.add(self.manager)
 

@@ -10,7 +10,7 @@ from app.utils.decorators import role_required
 from app.utils.utils import build_institution_groups
 from app.admin.forms import UserCreateForm, UserEditForm, InstitutionForm, RoleForm
 from app.admin.services import (UserService, InstitutionService, RoleService,
-                                VerificationRequestService)
+                                VerificationRequestService, InstitutionAccessService)
 from app.utils.emails import send_decision_email, send_rights_granted_email
 from app.utils import notification_prefs as notif_prefs
 from . import admin_bp
@@ -159,6 +159,7 @@ def add_user():
                            notification_prefs=notif_prefs.NOTIFICATION_PREFS,
                            notification_field_prefix=notif_prefs.FIELD_PREFIX,
                            can_edit_notifications=False,
+                           can_grant_manage=current_user.has_role('admin'),
                            title=_('Додати користувача'))
 
 
@@ -204,6 +205,7 @@ def edit_user(user_id):
                 new_password=form.password.data,
                 module_access=module_access,
                 selected_role_ids=list(selected_role_ids),
+                editor=current_user,
             )
             # Notification opt-outs belong to the person; only they and an admin
             # may flip them, so a manager's POST never touches these columns
@@ -255,6 +257,7 @@ def edit_user(user_id):
                            notification_prefs=notif_prefs.NOTIFICATION_PREFS,
                            notification_field_prefix=notif_prefs.FIELD_PREFIX,
                            can_edit_notifications=can_edit_notifications,
+                           can_grant_manage=current_user.has_role('admin'),
                            title=_('Редагувати користувача'))
 
 
@@ -279,6 +282,27 @@ def delete_user(user_id):
         flash(f'Помилка при видаленні: {str(e)}', 'danger')
 
     return redirect(url_for('admin.user_list', lang_code=g.lang_code))
+
+
+# ===========================================================================
+# Access by institution (who can do what, per park)
+# ===========================================================================
+
+@admin_bp.route('/institution-access')
+@login_required
+@role_required('admin', 'manager')
+def institution_access():
+    """The user list turned inside out: one row per institution, one column
+    per capability, people as badges. An admin sees every institution, a manager
+    the ones they manage."""
+    lang = g.lang_code
+    rows = InstitutionAccessService.matrix(current_user, lang)
+    return render_template('admin_institution_access.html',
+                           rows=rows,
+                           capabilities=InstitutionAccessService.CAPABILITIES,
+                           gap_caps=InstitutionAccessService.GAP_CAPABILITIES,
+                           inst_label=lambda inst: inst.label(lang),
+                           is_admin=current_user.has_role('admin'))
 
 
 # ===========================================================================

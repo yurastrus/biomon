@@ -238,7 +238,7 @@ def test_a_manager_decides_only_the_module_they_hold(db_session, make_user, two_
     manager = make_user(username='ct_only_manager', roles=('manager',))
     manager.institution_links.append(UserInstitution(
         institution_id=park.id,
-        can_view_ct=True, can_export_ct=False,
+        can_view_ct=True, can_export_ct=False, can_manage_ct=True,
         can_view_pam=False, can_export_pam=False))
 
     applicant = make_user(username='asks_both', roles=('viewer',))

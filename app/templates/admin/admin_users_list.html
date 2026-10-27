@@ -16,6 +16,11 @@
 
     <h2 style="text-align: left; margin-bottom: 15px;">{{ _('Керування користувачами') }}</h2>
 
+    <div class="admin-view-switch">
+        <span class="is-current">{{ _('За користувачами') }}</span>
+        <a href="{{ url_for('admin.institution_access', lang_code=g.lang_code) }}">{{ _('За установами') }}</a>
+    </div>
+
     <div class="admin-toolbar">
         <a href="{{ url_for('admin.add_user', lang_code=g.lang_code) }}" class="button" style="min-width: 200px; margin-top: 0;">
             + {{ _('Додати користувача') }}
@@ -86,6 +91,7 @@
         <div class="inst-legend-row">
             <span class="inst-badge inst-badge-both">{{ _('установа') }}<span class="inst-exp">↓</span></span>
             {{ _('означає ще й право завантажувати дані. Стрілка з назвою модуля означає експорт лише в тому модулі.') }}
+            {{ _('Зірочка ★ означає, що людина керує цією установою.') }}
         </div>
     </div>
 
@@ -104,6 +110,7 @@
             {# Access is per module, so the row carries one institution list per
                module; the module-blind list stays for the plain institution filter. #}
             {% set links = grants[user.id] %}
+            {% set user_is_manager = user.has_role('manager') %}
             {% set ct_ids = links | selectattr('can_view_ct') | map(attribute='institution_id') | list %}
             {% set pam_ids = links | selectattr('can_view_pam') | map(attribute='institution_id') | list %}
             <tr data-search="{{ user.username }} {{ user.full_name }}"
@@ -131,6 +138,7 @@
                               title="{{ inst_label(link.institution) }} — {{ module_titles[kind] }}{% if exports %}; {{ _('експорт') }}: {{ exports | join(', ') }}{% endif %}">
                             {{ inst_label(link.institution) }}
                             {% if exports %}<span class="inst-exp">↓{% if not full_export %}{{ exports | join('') }}{% endif %}</span>{% endif %}
+                            {% if user_is_manager and ((link.can_manage_ct and link.can_view_ct) or (link.can_manage_pam and link.can_view_pam)) %}<span class="inst-exp" title="{{ _('керує') }}">★</span>{% endif %}
                         </span>
                     {% else %}
                         <span style="color: gray;">---</span>

@@ -104,7 +104,8 @@ def manager_of(db_session, make_user):
         user.email = email
         for inst in institutions:
             user.institution_links.append(
-                UserInstitution(institution_id=inst.id, can_view_ct=True, can_view_pam=True))
+                UserInstitution(institution_id=inst.id, can_view_ct=True, can_view_pam=True,
+                    can_manage_ct=True, can_manage_pam=True))
         db_session.commit()
         return user
     return _make

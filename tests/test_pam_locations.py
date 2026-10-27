@@ -211,7 +211,8 @@ class PamLocationTestBase(unittest.TestCase):
         self.manager = User(username='manager_a', password_hash=pw)
         self.manager.roles.append(self.role_manager)
         self.manager.institution_links.append(
-            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True)
+            UserInstitution(institution_id=self.inst_a.id, can_view_ct=True, can_view_pam=True,
+                can_manage_ct=True, can_manage_pam=True)
         )
         db.session.add(self.manager)
 
@@ -219,7 +220,8 @@ class PamLocationTestBase(unittest.TestCase):
         self.manager_b = User(username='manager_b', password_hash=pw)
         self.manager_b.roles.append(self.role_manager)
         self.manager_b.institution_links.append(
-            UserInstitution(institution_id=self.inst_b.id, can_view_ct=True, can_view_pam=True)
+            UserInstitution(institution_id=self.inst_b.id, can_view_ct=True, can_view_pam=True,
+                can_manage_ct=True, can_manage_pam=True)
         )
         db.session.add(self.manager_b)
 

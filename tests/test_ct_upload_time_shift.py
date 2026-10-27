@@ -160,7 +160,9 @@ def test_offset_below_2010_is_refused(app, monkeypatch):
 # ── 3. /api/create-batch ────────────────────────────────────────────────────
 
 def _create(client, payload):
-    with patch('app.camera_traps.utils.create_upload_batch', return_value='b-1') as cub, \
+    # Location ownership is covered in test_ct_manager_scope.py; here the
+    # manager is taken to manage location 5.
+    with patch('app.camera_traps.routes._user_can_manage_location', return_value=True),          patch('app.camera_traps.utils.create_upload_batch', return_value='b-1') as cub, \
          patch('app.camera_traps.background_tasks.get_storage_disk_usage',
                return_value={'free_bytes': 100 * 1024 ** 3}), \
          patch('app.camera_traps.ai_runner.pause_ai_classification'):

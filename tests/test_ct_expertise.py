@@ -481,6 +481,14 @@ class ExpertiseRouteBase(unittest.TestCase):
         self.admin.roles.append(roles['admin'])
         self.manager = User(username='manager_u', password_hash=pw)
         self.manager.roles.append(roles['manager'])
+        # Manager of one park (per-institution manager rights, 2026-10-27);
+        # the hub shows manager cards only to someone who manages something.
+        from app.models import Institution, UserInstitution
+        park = Institution(name_uk='Парк', code='PARK')
+        db.session.add(park)
+        db.session.flush()
+        self.manager.institution_links.append(UserInstitution(
+            institution_id=park.id, can_view_ct=True, can_manage_ct=True))
         self.verifier = User(username='verifier_u', password_hash=pw)
         self.verifier.roles.append(roles['ct_verifier'])
         db.session.add_all([self.admin, self.manager, self.verifier])

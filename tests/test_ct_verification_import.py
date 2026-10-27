@@ -222,9 +222,11 @@ class CtVerificationRouteBase(unittest.TestCase):
 
     def _post(self, data, uid):
         self._login(uid)
-        return self.client.post(
-            '/uk/camera-traps/import-classification/verification/run',
-            data=data, headers={'X-CSRFToken': 'test'})
+        # Location ownership is covered in test_ct_manager_scope.py.
+        with patch('app.camera_traps.routes._user_can_manage_location', return_value=True):
+            return self.client.post(
+                '/uk/camera-traps/import-classification/verification/run',
+                data=data, headers={'X-CSRFToken': 'test'})
 
 
 class TestVerificationRunRoute(CtVerificationRouteBase):

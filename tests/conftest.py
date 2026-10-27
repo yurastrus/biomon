@@ -120,9 +120,20 @@ def auth_client(app, db_session, make_user):
     Factory for logged-in test clients.
     Usage: `c = auth_client(role='admin')` -> client with an admin session.
     """
-    def _login(role='admin', username=None):
+    def _login(role='admin', username=None, manages=False):
+        """``manages=True`` also makes the user manager of one new institution
+        in both modules (per-institution manager rights, 2026-10-27)."""
         username = username or f'test_{role}'
         u = make_user(username=username, roles=(role,))
+        if manages:
+            from app.models import Institution, UserInstitution
+            inst = Institution(name_uk=f'Установа {username}', code=f'T-{username}')
+            db_session.add(inst)
+            db_session.flush()
+            u.institution_links.append(UserInstitution(
+                institution_id=inst.id, can_view_ct=True, can_view_pam=True,
+                can_manage_ct=True, can_manage_pam=True))
+            db_session.commit()
         cl = app.test_client()
         with cl.session_transaction() as sess:
             sess['_user_id'] = str(u.id)

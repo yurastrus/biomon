@@ -310,8 +310,9 @@ def new_request_recipients(user, admin_email=None):
         role_names = {role.name for role in candidate.roles}
         if 'admin' in role_names:
             add(admins, candidate.email)
-        elif 'manager' in role_names and institution_ids & {
-                inst.id for inst in candidate.institutions}:
+        elif 'manager' in role_names and institution_ids & (
+                set(candidate.manage_institution_ids(UserModel.MODULE_CT))
+                | set(candidate.manage_institution_ids(UserModel.MODULE_PAM))):
             add(managers, candidate.email)
 
     return admins + managers

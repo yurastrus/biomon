@@ -16,6 +16,9 @@ from app.models import (User, Role, Institution, UserInstitution,
 EXPORT_ROLES = frozenset({'analyst', 'manager', 'admin'})
 # System roles that cannot be renamed or deleted
 SYSTEM_ROLES = frozenset({'admin', 'manager'})
+# Roles only an admin may grant, whatever ``Role.assignable_by`` says: managing
+# an institution is an admin's decision (2026-10-27).
+ADMIN_ONLY_ROLES = frozenset({'admin', 'manager'})
 
 
 # ===========================================================================
@@ -25,11 +28,25 @@ SYSTEM_ROLES = frozenset({'admin', 'manager'})
 class UserService:
 
     @staticmethod
+    def managed_institution_ids(requester):
+        """Institutions a non-admin requester manages in either module.
+
+        This is a manager's whole say over other people: they may grant access
+        to, and edit the users of, these institutions only. ``None`` = admin.
+        """
+        if requester.has_role('admin'):
+            return None
+        return (set(requester.manage_institution_ids(User.MODULE_CT))
+                | set(requester.manage_institution_ids(User.MODULE_PAM)))
+
+    @staticmethod
     def get_available_institutions(requester):
         """Return institutions the requester is allowed to assign."""
         if requester.has_role('admin'):
             return Institution.query.all()
-        return list(requester.institutions)
+        managed = UserService.managed_institution_ids(requester)
+        return [link.institution for link in requester.institution_links
+                if link.institution is not None and link.institution_id in managed]
 
     @staticmethod
     def get_available_roles(requester):
@@ -37,7 +54,8 @@ class UserService:
         if requester.has_role('admin'):
             return Role.query.all()
         return Role.query.filter(
-            or_(Role.assignable_by == None, Role.assignable_by == 'manager')
+            or_(Role.assignable_by == None, Role.assignable_by == 'manager'),
+            Role.name.notin_(ADMIN_ONLY_ROLES),
         ).all()
 
     @staticmethod
@@ -53,7 +71,7 @@ class UserService:
         if target.has_role('admin'):
             return False, 'Доступ заборонено: Ви не можете редагувати адміністратора сайту.'
 
-        my_ids = {i.id for i in requester.institutions}
+        my_ids = UserService.managed_institution_ids(requester)
         target_ids = {i.id for i in target.institutions}
         if not my_ids & target_ids:
             return False, 'Доступ заборонено: Цей користувач не належить до вашої установи.'
@@ -76,7 +94,7 @@ class UserService:
         if target.created_by_id != requester.id:
             return False, 'Доступ заборонено: Ви можете видаляти лише створених вами користувачів.'
 
-        my_ids = {i.id for i in requester.institutions}
+        my_ids = UserService.managed_institution_ids(requester)
         target_ids = {i.id for i in target.institutions}
         if not my_ids & target_ids:
             return False, 'Доступ заборонено: Цей користувач не належить до вашої установи.'
@@ -91,27 +109,44 @@ class UserService:
         int_ids = [int(x) for x in role_ids]
         return {r.name for r in Role.query.filter(Role.id.in_(int_ids)).all()}
 
-    #: The four per-module grants, in the order the form shows them.
-    ACCESS_FIELDS = ('view_ct', 'export_ct', 'view_pam', 'export_pam')
+    #: The per-module grants, in the order the form shows them. The two
+    #: ``manage_*`` columns are read from the form only when an admin submits it.
+    ACCESS_FIELDS = ('view_ct', 'export_ct', 'manage_ct',
+                     'view_pam', 'export_pam', 'manage_pam')
 
     @staticmethod
-    def _write_institution_links(user, module_access, will_have_export):
-        """Replace ``user.institution_links`` from a four-flag selection.
+    def _write_institution_links(user, module_access, will_have_export,
+                                 editor=None, will_be_manager=False):
+        """Replace ``user.institution_links`` from the per-module selection.
 
         Rules that live here rather than in the template, because a crafted POST
         must not be able to bypass them:
 
-        * export implies access in the same module — an export tick without the
+        * export and manage imply access in the same module — a tick without the
           matching access tick is dropped;
-        * a row is written only when it grants something. A park with all four
-          boxes clear leaves no row at all, which is the "no access" state the
-          model already used (see WORKLOG 2026-09-02 on the sparse table);
+        * a row is written only when it grants something. A park with every box
+          clear leaves no row at all, which is the "no access" state the model
+          already used (see WORKLOG 2026-09-02 on the sparse table);
         * without an export-capable role the export flags are not taken from the
           form (its boxes are disabled) — the stored ones are preserved, so a
-          temporary role change does not silently wipe them.
+          temporary role change does not silently wipe them. The manage flags
+          follow the same rule with the ``manager`` role;
+        * the manage flags are taken from the form **only when an admin edits**.
+          Anybody else keeps the stored ones: managing an institution is granted
+          by an admin alone (2026-10-27);
+        * a non-admin ``editor`` may change only the institutions they manage.
+          Rows for every other institution are kept exactly as stored, since the
+          editor never saw them in the form.
+
+        ``editor=None`` means a trusted caller (an admin or a script).
         """
+        editor_is_admin = editor is None or editor.has_role('admin')
+        editable = None if editor_is_admin else UserService.managed_institution_ids(editor)
+
         picked = {name: {int(i) for i in module_access.get(name, ()) if str(i).isdigit()}
                   for name in UserService.ACCESS_FIELDS}
+        if editable is not None:
+            picked = {name: ids & editable for name, ids in picked.items()}
         previous = {link.institution_id: link for link in user.institution_links}
 
         wanted_ids = sorted(set().union(*picked.values())) if picked else []
@@ -121,16 +156,24 @@ class UserService:
             if inst is None:
                 continue
 
+            old = previous.get(inst_id)
+            stored = old.module_flags(user) if old is not None else None
+
             view_ct = inst_id in picked['view_ct']
             view_pam = inst_id in picked['view_pam']
             export_ct = view_ct and inst_id in picked['export_ct']
             export_pam = view_pam and inst_id in picked['export_pam']
 
             if not will_have_export:
-                old = previous.get(inst_id)
-                stored = old.module_flags(user) if old is not None else None
                 export_ct = bool(stored and stored['export_ct'] and view_ct)
                 export_pam = bool(stored and stored['export_pam'] and view_pam)
+
+            if editor_is_admin and will_be_manager:
+                manage_ct = view_ct and inst_id in picked['manage_ct']
+                manage_pam = view_pam and inst_id in picked['manage_pam']
+            else:
+                manage_ct = bool(stored and stored['manage_ct'] and view_ct)
+                manage_pam = bool(stored and stored['manage_pam'] and view_pam)
 
             if not (view_ct or view_pam):
                 continue
@@ -139,9 +182,16 @@ class UserService:
                 institution_id=inst_id,
                 can_view_ct=view_ct,
                 can_export_ct=export_ct,
+                can_manage_ct=manage_ct,
                 can_view_pam=view_pam,
                 can_export_pam=export_pam,
+                can_manage_pam=manage_pam,
             ))
+
+        if editable is not None:
+            # Institutions outside the editor's say: keep the stored row as is.
+            links.extend(link for inst_id, link in previous.items()
+                         if inst_id not in editable)
 
         user.institution_links = links
         return links
@@ -176,7 +226,8 @@ class UserService:
         will_have_export = bool(role_names & EXPORT_ROLES)
 
         UserService._write_institution_links(
-            new_user, module_access or {}, will_have_export)
+            new_user, module_access or {}, will_have_export,
+            editor=creator, will_be_manager='manager' in role_names)
 
         for r_id in selected_role_ids:
             role = Role.query.get(int(r_id))
@@ -189,7 +240,8 @@ class UserService:
     @staticmethod
     def update_user(user, available_roles,
                     username, email, phone, first_name, last_name,
-                    new_password, module_access=None, selected_role_ids=()):
+                    new_password, module_access=None, selected_role_ids=(),
+                    editor=None):
         """Update an existing user in place (no commit).
 
         Args:
@@ -219,11 +271,14 @@ class UserService:
         available_role_ids = {r.id for r in available_roles}
         hidden_role_names = {r.name for r in user.roles if r.id not in available_role_ids}
         will_have_export = bool((selected_role_names | hidden_role_names) & EXPORT_ROLES)
+        will_be_manager = 'manager' in (selected_role_names | hidden_role_names)
 
-        # Writes the four per-module flags; preserves stored export flags when
-        # the role cannot export.
+        # Writes the per-module flags; preserves stored export / manage flags
+        # when the role does not allow them, and every institution a non-admin
+        # editor does not manage.
         UserService._write_institution_links(
-            user, module_access or {}, will_have_export)
+            user, module_access or {}, will_have_export,
+            editor=editor, will_be_manager=will_be_manager)
 
         # Retain roles not visible in the form so managers can't accidentally remove hidden roles.
         # Compare by ID — correct regardless of SQLAlchemy's identity map.
@@ -238,6 +293,115 @@ class UserService:
     def delete_user(user):
         """Delete the user from the session (no commit)."""
         db.session.delete(user)
+
+
+# ===========================================================================
+# Access by institution (the user list turned inside out)
+# ===========================================================================
+
+class InstitutionAccessService:
+    """Who can do what, per institution.
+
+    The user list answers "where may this person work"; this answers "who works
+    here, and as what", so a park with no manager or no PAM verifier, or one
+    with more exporters than it should have, shows at a glance.
+
+    Every capability is the *effective* one, computed the way the modules
+    compute it: a flag on the institution row and the role that unlocks it.
+    """
+
+    #: Column order on the page.
+    CAPABILITIES = ('manage', 'verify_ct', 'verify_pam', 'export', 'view_only')
+    #: Columns where nobody is a gap worth a colour. Export and "only sees" may
+    #: well be empty.
+    GAP_CAPABILITIES = ('manage', 'verify_ct', 'verify_pam')
+
+    @staticmethod
+    def visible_institutions(viewer):
+        """Admin: every institution. Manager: those they manage (either module)."""
+        if viewer.has_role('admin'):
+            return Institution.query.all()
+        managed = UserService.managed_institution_ids(viewer)
+        if not managed:
+            return []
+        return Institution.query.filter(Institution.id.in_(managed)).all()
+
+    @staticmethod
+    def _kind(ct, pam):
+        """Badge colour key, the same three as in the user list."""
+        if ct and pam:
+            return 'both'
+        return 'ct' if ct else 'pam'
+
+    @staticmethod
+    def classify(user, link):
+        """Capabilities ``user`` holds at ``link.institution_id``.
+
+        Returns:
+            dict[str, str|None]: capability -> badge kind ('both'/'ct'/'pam'),
+            or ``None`` when the capability is absent.
+        """
+        kind = InstitutionAccessService._kind
+        is_manager = user.has_role('manager')
+        can_export_role = user.has_role(*EXPORT_ROLES)
+
+        manage_ct = bool(is_manager and link.can_manage_ct and link.can_view_ct)
+        manage_pam = bool(is_manager and link.can_manage_pam and link.can_view_pam)
+        export_ct = bool(can_export_role and link.can_export_ct and link.can_view_ct)
+        export_pam = bool(can_export_role and link.can_export_pam and link.can_view_pam)
+        verify_ct = bool(link.can_view_ct and user.has_role('ct_verifier'))
+        verify_pam = bool(link.can_view_pam and user.has_role('pam_verifier'))
+
+        result = {
+            'manage': kind(manage_ct, manage_pam) if (manage_ct or manage_pam) else None,
+            'verify_ct': 'ct' if verify_ct else None,
+            'verify_pam': 'pam' if verify_pam else None,
+            'export': kind(export_ct, export_pam) if (export_ct or export_pam) else None,
+        }
+        sees = link.can_view_ct or link.can_view_pam
+        result['view_only'] = (kind(link.can_view_ct, link.can_view_pam)
+                               if sees and not any(result.values()) else None)
+        return result
+
+    @staticmethod
+    def matrix(viewer, lang='uk'):
+        """Rows for the page, sorted by institution name in ``lang``.
+
+        Inactive accounts are left out: they cannot sign in, so they hold no
+        working access, and listing them would hide the real gaps.
+
+        Returns:
+            list[dict]: ``{'institution', 'cells': {capability: [(user, kind)]},
+            'gaps': [capability, ...]}``
+        """
+        institutions = InstitutionAccessService.visible_institutions(viewer)
+        ids = [i.id for i in institutions]
+        links = (UserInstitution.query
+                 .filter(UserInstitution.institution_id.in_(ids or [-1]))
+                 .all())
+        by_inst = {}
+        for link in links:
+            user = User.query.get(link.user_id)
+            if user is None or not user.is_active:
+                continue
+            caps = InstitutionAccessService.classify(user, link)
+            cells = by_inst.setdefault(
+                link.institution_id,
+                {cap: [] for cap in InstitutionAccessService.CAPABILITIES})
+            for cap, badge in caps.items():
+                if badge:
+                    cells[cap].append((user, badge))
+
+        rows = []
+        for inst in sorted(institutions, key=lambda i: i.label(lang).casefold()):
+            cells = by_inst.get(
+                inst.id, {cap: [] for cap in InstitutionAccessService.CAPABILITIES})
+            for people in cells.values():
+                people.sort(key=lambda pair: pair[0].full_name.casefold())
+            rows.append({'institution': inst, 'cells': cells,
+                         'gaps': [cap for cap in InstitutionAccessService.GAP_CAPABILITIES
+                                  if not cells[cap]]})
+        return rows
 
 
 # ===========================================================================
@@ -418,9 +582,12 @@ class VerificationRequestService:
         """
         if decider.has_role('admin'):
             return None
+        # Since 2026-10-27 a manager judges applicants only for institutions
+        # they *manage*, not every one they can see.
         if module is None:
-            return {inst.id for inst in decider.institutions}
-        return set(decider.allowed_institution_ids(module))
+            return (set(decider.manage_institution_ids(User.MODULE_CT))
+                    | set(decider.manage_institution_ids(User.MODULE_PAM)))
+        return set(decider.manage_institution_ids(module))
 
     @staticmethod
     def scope_rows(request_obj, decider, status=None):

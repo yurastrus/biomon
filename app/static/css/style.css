@@ -1305,3 +1305,43 @@ footer {
        camera-traps and PAM dashboards, which keep their own padding. */
     .admin-form-card { padding: 16px !important; }
 }
+
+/* Access by institution (/admin/institution-access): the user list turned
+   inside out. Badges are the user list's .inst-badge; a cell nobody fills in a
+   column that should not be empty (manage, verify) gets .ia-gap. */
+.admin-view-switch {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 16px;
+    font-size: 14px;
+}
+.admin-view-switch a,
+.admin-view-switch .is-current {
+    padding: 5px 12px;
+    border: 1px solid #0779e4;
+    border-radius: 4px;
+    text-decoration: none;
+}
+.admin-view-switch a { color: #0779e4; background: #fff; }
+.admin-view-switch .is-current { color: #fff; background: #0779e4; }
+
+.ia-scroll { overflow-x: auto; }
+.ia-table td { vertical-align: top; }
+.ia-table th { white-space: nowrap; }
+a.inst-badge.ia-person { text-decoration: none; }
+a.inst-badge.ia-person:hover { filter: brightness(0.9); }
+.ia-gap {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #b02a37;
+    background: #f8d7da;
+}
+.ia-count {
+    display: inline-block;
+    font-size: 11px;
+    color: #777;
+    margin-left: 2px;
+}

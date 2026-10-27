@@ -3,6 +3,77 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-27: Manager rights per institution + "access by institution" page
+
+Owner's problem: the global `manager` role made a person manager of every
+institution they could see. Wanted: manager in park A, only verifier in park B;
+manager rights granted by an admin only. Plus a new page that shows access per
+institution (who manages / verifies / exports), to spot gaps and excess.
+
+**Model.** Two flags on `user_institutions`: `can_manage_ct`, `can_manage_pam`
+(migration `c3d9e1f27a40`). The role stays the gate, the flags say where:
+`User.manage_institution_ids(module)` = manager role AND manage flag AND view
+flag. Losing the role switches every flag off without touching rows.
+Alternatives rejected: a role per link (bigger change to every `has_role`
+call); deriving the role from the flags (hides who is a manager at all).
+
+**Migration seed.** Every current manager gets `can_manage_X = can_view_X`, so
+nothing changes on deploy; the admin narrows it afterwards.
+
+**Scoped actions** (shared-ct / shared-pam `access.py`: `manage_institution_ids`,
+`manages_any`, `can_manage_institutions`; hosts without the method, i.e.
+myproject, fall back to the old meaning):
+- CT: upload pages and location pickers, create-batch / process-single /
+  finalize / batch-status / uploaded-files (batch must sit on a managed
+  location; process-single also checks the location matches the batch),
+  classification and verification import, create-location (now manager-only and
+  the institution must be managed; was ct_verifier with any institution),
+  manage-locations, update/create location, validity toggle, deployments,
+  data quality, service log, location coverage, expertise, gallery favourites,
+  /identify review mode and the moderator vote.
+- PAM: manage-locations, location details/create/update (update had no
+  per-location check at all before), service log, coverage, import.
+- Admin: managers offer and edit only institutions they manage; the manage
+  column exists only in the admin's form and the flags are ignored in a
+  manager's POST; `admin`/`manager` roles are never offered to a manager
+  (`ADMIN_ONLY_ROLES`). Fixed on the way: a manager saving a user rewrote all
+  rows and dropped the parks the manager did not see; those rows are kept now.
+- Verification-request queue and "new request" emails go to managers of the
+  named park only.
+- Left global on purpose (no institution in the action): SDM, PAM segment ZIP
+  upload, PAM evaluation recalculation/cleanup, CT stats recalculation,
+  contributors' full names.
+
+**New page** `/admin/institution-access` (admin: all institutions, manager:
+those they manage): columns Manage / Verify photos / Verify sounds / Export /
+View only, people as badges in the user-list colours, red "nobody" where a park
+has no manager or no verifier, filter "only institutions with gaps". User list
+got a switch to it and a ★ on managed parks.
+
+**Audit of real managers** (`scripts/audit_manager_scope.py`, read-only on
+prod; before the migration it simulates it on a SQLite copy with the
+migration's own `seed_sql`): all 7 managers keep exactly the same institutions
+and locations (CT 916/879/882/3/108/48/916, PAM 79/26/26/0/0/0/99). Logs:
+`logs/manager_scope_before_*`, `logs/manager_scope_after_sim_*`.
+One intentional reduction: review mode used to include public locations of any
+institution. All 30 public CT locations belong to ПЗ "Розточчя" (445 series);
+5 managers without that park (#29, #33, #34, #39, #50) can no longer moderate
+them. They still see and verify them.
+
+**Incident (no harm):** the first simulation used `create_app('testing')`,
+which keeps the .env database URL, so `create_all()` and a role insert ran on
+the production main DB. The insert failed on the first row (unique key) and
+rolled back; prod is at alembic head with no new tables and 10 roles. The
+script now uses its own SQLite engine with an assert.
+
+**Tests:** `tests/test_ct_manager_scope.py` (23), `tests/test_manager_scope_admin_pam.py`
+(20); 30 older test fixtures now give their managers explicit manage flags.
+
+**Deploy (not done):** `flask db upgrade` BEFORE the new code (the model declares
+the columns), then shared-ct and shared-pam pointers, HUP biomon; myproject
+pointer next (fallback keeps old meaning there). After deploy, re-run
+`scripts.audit_manager_scope` (it then reads real rows).
+
 ## 2026-10-26: Forecast numbers set from the field data
 
 Owner's answers: every recorder is a Song Meter Micro; Summary logs stay on

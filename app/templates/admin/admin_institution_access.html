@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{# The user list turned inside out: one row per institution, one column per
+   capability, people as badges. Colours are the user list's own: green both
+   modules, blue camera traps only, orange PAM only. An empty cell is marked, so
+   a park without a manager or without verifiers stands out. #}
+
+{% set cap_titles = {
+    'manage': _('Керують'),
+    'verify_ct': _('Верифікують фото'),
+    'verify_pam': _('Верифікують звуки'),
+    'export': _('Експортують'),
+    'view_only': _('Лише бачать')
+} %}
+{% set cap_hints = {
+    'manage': _('Менеджери саме цієї установи: завантаження, локації, розгортання, журнал обслуговування, модерація.'),
+    'verify_ct': _('Мають доступ до фотопасток установи й роль верифікатора фото (або вищу).'),
+    'verify_pam': _('Мають доступ до ПАМ установи й роль верифікатора звуків (або вищу).'),
+    'export': _('Можуть завантажувати дані установи.'),
+    'view_only': _('Мають доступ, але жодної з ролей вище.')
+} %}
+{% set module_titles = {
+    'both': _('фотопастки і звукозаписи'),
+    'ct': _('лише фотопастки'),
+    'pam': _('лише звукозаписи')
+} %}
+
+{% block content %}
+<div class="container" style="margin-top: 20px; margin-bottom: 50px;">
+
+    <div style="margin-bottom: 20px; font-size: 15px; color: #666;">
+        <a href="{{ url_for('admin.home', lang_code=g.lang_code) }}" style="color: #0779e4; text-decoration: none;">{{ _('Адмін-панель') }}</a>
+        &raquo; <strong>{{ _('Доступ за установами') }}</strong>
+    </div>
+
+    <h2 style="text-align: left; margin-bottom: 10px;">{{ _('Доступ за установами') }}</h2>
+
+    <div class="admin-view-switch">
+        <a href="{{ url_for('admin.user_list', lang_code=g.lang_code) }}">{{ _('За користувачами') }}</a>
+        <span class="is-current">{{ _('За установами') }}</span>
+    </div>
+
+    <div class="dashboard-section" style="padding: 16px 20px; margin-bottom: 16px;">
+        <div class="admin-filter-bar">
+            <div style="flex: 1 1 220px;">
+                <label class="admin-filter-label">{{ _('Пошук') }}</label>
+                <input type="text" id="ia-search" class="admin-filter-input"
+                       placeholder="{{ _('Установа або людина...') }}">
+            </div>
+            <div style="flex: 0 0 auto; align-self: flex-end; padding-bottom: 6px;">
+                <label style="display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; font-size: 14px;">
+                    <input type="checkbox" id="ia-gaps"> {{ _('Лише установи з прогалинами') }}
+                </label>
+            </div>
+            <div style="flex: 0 0 auto; align-self: flex-end; font-size: 13px; color: #888; padding-bottom: 9px; white-space: nowrap;">
+                {{ _('Показано:') }} <span id="ia-count">{{ rows | length }}</span> / {{ rows | length }}
+            </div>
+        </div>
+    </div>
+
+    <div class="inst-legend">
+        <div class="inst-legend-row">
+            {{ _('Колір людини показує модулі, у яких вона це може:') }}
+            <span class="inst-badge inst-badge-both">{{ _('обидва модулі') }}</span>
+            <span class="inst-badge inst-badge-ct">{{ _('лише фотопастки') }}</span>
+            <span class="inst-badge inst-badge-pam">{{ _('лише звукозаписи') }}</span>
+        </div>
+        <div class="inst-legend-row">
+            <span class="ia-gap">{{ _('нікого') }}</span>
+            {{ _('означає, що в установі немає жодного менеджера або верифікатора цього модуля.') }}
+            {% if not is_admin %}{{ _('Ви бачите лише установи, якими керуєте.') }}{% endif %}
+        </div>
+    </div>
+
+    <div class="ia-scroll">
+    <table class="admin-table ia-table">
+        <thead>
+            <tr>
+                <th>{{ _('Установа') }}</th>
+                {% for cap in capabilities %}
+                <th title="{{ cap_hints[cap] }}">{{ cap_titles[cap] }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody id="ia-tbody">
+            {% for row in rows %}
+            <tr data-search="{{ inst_label(row.institution) }} {% for cap in capabilities %}{% for user, kind in row.cells[cap] %}{{ user.full_name }} {{ user.username }} {% endfor %}{% endfor %}"
+                data-gaps="{{ row.gaps | length }}">
+                <td data-label="{{ _('Установа') }}">
+                    <strong>{{ inst_label(row.institution) }}</strong>
+                    {% if row.institution.code %}<br><span style="font-size: 0.85em; color: gray;">{{ row.institution.code }}</span>{% endif %}
+                </td>
+                {% for cap in capabilities %}
+                {% set people = row.cells[cap] %}
+                <td data-label="{{ cap_titles[cap] }}">
+                    {% for user, kind in people %}
+                        <a class="inst-badge inst-badge-{{ kind }} ia-person"
+                           href="{{ url_for('admin.edit_user', lang_code=g.lang_code, user_id=user.id) }}"
+                           title="{{ user.username }} — {{ module_titles[kind] }}">{{ user.full_name }}</a>
+                    {% else %}
+                        {% if cap in gap_caps %}<span class="ia-gap">{{ _('нікого') }}</span>{% else %}<span style="color: #bbb;">—</span>{% endif %}
+                    {% endfor %}
+                    {% if people | length > 3 %}<span class="ia-count">{{ people | length }}</span>{% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{{ capabilities | length + 1 }}" style="text-align: center; padding: 30px; color: gray;">
+                    {{ _('Немає установ, якими ви керуєте.') }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<script>
+(function () {
+    var search = document.getElementById('ia-search');
+    var gapsOnly = document.getElementById('ia-gaps');
+    var rows = document.querySelectorAll('#ia-tbody tr[data-search]');
+    function apply() {
+        var q = search.value.toLowerCase();
+        var shown = 0;
+        rows.forEach(function (row) {
+            var ok = row.getAttribute('data-search').toLowerCase().indexOf(q) !== -1
+                && (!gapsOnly.checked || row.getAttribute('data-gaps') !== '0');
+            row.style.display = ok ? '' : 'none';
+            if (ok) shown++;
+        });
+        document.getElementById('ia-count').textContent = shown;
+    }
+    search.addEventListener('input', apply);
+    gapsOnly.addEventListener('change', apply);
+})();
+</script>
+{% endblock %}

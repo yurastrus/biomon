@@ -65,12 +65,14 @@ def test_unmeasurable_disk_does_not_block(app):
 
 def _post_photo(client, save_original='true'):
     import io
-    return client.post(PROCESS_URL, data={
-        'location_id': '1',
-        'batch_id': 'batch-test',
-        'save_original': save_original,
-        'file': (io.BytesIO(b'not-a-real-jpeg'), 'IMG_0001.JPG'),
-    }, content_type='multipart/form-data')
+    # Batch ownership is covered in test_ct_manager_scope.py.
+    with patch('app.camera_traps.routes._batch_access_error', return_value=None):
+        return client.post(PROCESS_URL, data={
+            'location_id': '1',
+            'batch_id': 'batch-test',
+            'save_original': save_original,
+            'file': (io.BytesIO(b'not-a-real-jpeg'), 'IMG_0001.JPG'),
+        }, content_type='multipart/form-data')
 
 
 def test_process_single_downgrades_save_original_when_low(auth_client):

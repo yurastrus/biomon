@@ -35,6 +35,16 @@ class UserInstitution(db.Model):
     can_export_pam = db.Column(db.Boolean, nullable=False, default=False,
                                server_default=db.false())
 
+    # Manager rights, per module (since 2026-10-27). Before that the global
+    # ``manager`` role made a person manager of every institution they could
+    # see. Now the role is the gate and these flags say *where*: a manager of
+    # park A may be a plain verifier in park B. Only an admin sets them (see
+    # UserService._write_institution_links); managing implies viewing.
+    can_manage_ct  = db.Column(db.Boolean, nullable=False, default=False,
+                               server_default=db.false())
+    can_manage_pam = db.Column(db.Boolean, nullable=False, default=False,
+                               server_default=db.false())
+
     institution = db.relationship('Institution')
 
     def module_flags(self, user=None):
@@ -52,6 +62,10 @@ class UserInstitution(db.Model):
             'export_ct': bool(self.can_export_ct),
             'view_pam': bool(self.can_view_pam),
             'export_pam': bool(self.can_export_pam),
+            # Raw flags; whether they take effect also depends on the manager
+            # role, see User.manage_institution_ids.
+            'manage_ct': bool(self.can_manage_ct),
+            'manage_pam': bool(self.can_manage_pam),
         }
 
 class Institution(db.Model):
@@ -154,6 +168,30 @@ class User(db.Model, UserMixin):
         key = 'export_pam' if module == self.MODULE_PAM else 'export_ct'
         return [link.institution_id for link in self.institution_links
                 if link.module_flags(self)[key]]
+
+    def manage_institution_ids(self, module='ct'):
+        """Ids of institutions this person **manages** in one module.
+
+        Needs both the ``manager`` role (the gate, granted by an admin) and the
+        per-institution ``can_manage_<module>`` flag, which also requires the
+        view flag of that module. Losing the role therefore switches every flag
+        off without touching the rows.
+
+        Like :meth:`module_institutions`, an admin gets their stored rows, not
+        "everything": callers keep their explicit ``has_role('admin')`` branch.
+        """
+        if not self.has_role('manager'):
+            return []
+        view = 'can_view_pam' if module == self.MODULE_PAM else 'can_view_ct'
+        manage = 'can_manage_pam' if module == self.MODULE_PAM else 'can_manage_ct'
+        return [link.institution_id for link in self.institution_links
+                if getattr(link, manage) and getattr(link, view)]
+
+    def manage_institutions(self, module='ct'):
+        """Institution objects of :meth:`manage_institution_ids`."""
+        ids = set(self.manage_institution_ids(module))
+        return [link.institution for link in self.institution_links
+                if link.institution is not None and link.institution_id in ids]
 
     @property
     def export_institutions(self):

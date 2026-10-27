@@ -106,7 +106,8 @@ class UploadFastAccessBase(unittest.TestCase):
         self.manager = User(username='m', password_hash=pw)
         self.manager.roles.append(r_manager)
         self.manager.institution_links.append(
-            UserInstitution(institution_id=self.inst.id, can_view_ct=True, can_view_pam=True))
+            UserInstitution(institution_id=self.inst.id, can_view_ct=True, can_view_pam=True,
+                can_manage_ct=True, can_manage_pam=True))
         self.viewer = User(username='v', password_hash=pw)
         self.viewer.roles.append(r_viewer)
         db.session.add_all([self.admin, self.manager, self.viewer])
@@ -215,7 +216,8 @@ class TestUploadedFilesRoute(UploadFastAccessBase):
         sess = _generic_session()
         sess.query.return_value.filter.return_value.all.return_value = []
         with patch('app.camera_traps.routes.get_ct_session', return_value=sess), \
-             patch('app.camera_traps.routes.close_ct_session'):
+             patch('app.camera_traps.routes.close_ct_session'), \
+             patch('app.camera_traps.routes._batch_access_error', return_value=None):
             resp = self.client.get('/uk/camera-traps/api/batch/abc/uploaded-files')
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
@@ -230,7 +232,8 @@ class TestUploadedFilesRoute(UploadFastAccessBase):
             ('a.jpg', ts), ('b.jpg', ts + timedelta(seconds=10)),
         ]
         with patch('app.camera_traps.routes.get_ct_session', return_value=sess), \
-             patch('app.camera_traps.routes.close_ct_session'):
+             patch('app.camera_traps.routes.close_ct_session'), \
+             patch('app.camera_traps.routes._batch_access_error', return_value=None):
             resp = self.client.get('/uk/camera-traps/api/batch/abc/uploaded-files')
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()

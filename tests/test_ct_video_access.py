@@ -61,7 +61,7 @@ def test_an_admin_gets_through_the_gate(auth_client, method, url):
 # fixture, not of this feature.
 
 def test_the_hub_hides_the_page_from_a_manager(auth_client):
-    page = auth_client(role='manager').get('/uk/camera-traps/')
+    page = auth_client(role='manager', manages=True).get('/uk/camera-traps/')
 
     assert b'upload-video' not in page.data
     # The photo upload stays exactly where it was for managers.
