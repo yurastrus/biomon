@@ -21,6 +21,12 @@ institution only (view, PAM and manage untouched). Excluded by the owner:
 - The full list of switched-off rows (to revert by hand if needed):
   `logs/trim_ct_export_before_apply_*.json` -> `revoke`; output in
   `logs/trim_ct_export_apply_*.log`.
+- Same rule for PAM (`--module pam`, flag `can_export_pam`). Unit = verified
+  segment (`segment_verifications` -> `segments` -> `recordings.location_id`),
+  threshold 50; the 13 legacy segments without a recording are ignored. Same
+  exclusions. Applied 23 rows / 4 people (m.vysochyn 15, Pavlo2007 4,
+  vasylyna 3, vasyl.mochan 1); re-run shows 0 left; 1 person keeps 3 rows,
+  14 people younger than 6 months. List: `logs/trim_pam_export_before_apply_*.json`.
 
 ## 2026-10-27: Manager rights per institution + "access by institution" page
 

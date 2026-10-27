@@ -1,0 +1,1545 @@
+{
+ "module": "pam",
+ "cutoff": "2026-04-27T20:09:11.430545",
+ "min_series": 50,
+ "revoke": [
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 7,
+   "institution": "Верховинський НПП",
+   "code": "VNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 16,
+   "institution": "Вижницький НПП",
+   "code": "VZNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 11,
+   "institution": "Карпатський БЗ",
+   "code": "KBR",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 12,
+   "institution": "Карпатський НПП",
+   "code": "CNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 19,
+   "institution": "Нобельський НПП",
+   "code": "NNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 10,
+   "institution": "НПП \"Гуцульщина\"",
+   "code": "HNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 17,
+   "institution": "НПП \"Зачарований Край\"",
+   "code": "ZKNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 18,
+   "institution": "НПП \"Прип'ять-Стохід\"",
+   "code": "PSNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 13,
+   "institution": "НПП \"Синевир\"",
+   "code": "SNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 14,
+   "institution": "НПП \"Синьогора\"",
+   "code": "SHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 9,
+   "institution": "ПЗ \"Горгани\"",
+   "code": "GSNR",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 15,
+   "institution": "Ужанський НПП",
+   "code": "UNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 8,
+   "institution": "Черемоський НПП",
+   "code": "CHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 15,
+   "username": "m.vysochyn",
+   "name": "Максим Височин",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 3,
+   "institution": "Яворівський НПП",
+   "code": "YNNP",
+   "series": 0
+  },
+  {
+   "user_id": 27,
+   "username": "Pavlo2007",
+   "name": "Павло",
+   "created_at": "2026-03-09T13:33:42.039654",
+   "institution_id": 2,
+   "institution": "Винниківській проект",
+   "code": "VYNLIS",
+   "series": 0
+  },
+  {
+   "user_id": 27,
+   "username": "Pavlo2007",
+   "name": "Павло",
+   "created_at": "2026-03-09T13:33:42.039654",
+   "institution_id": 1,
+   "institution": "ПЗ \"Розточчя\"",
+   "code": "RSNR",
+   "series": 0
+  },
+  {
+   "user_id": 27,
+   "username": "Pavlo2007",
+   "name": "Павло",
+   "created_at": "2026-03-09T13:33:42.039654",
+   "institution_id": 4,
+   "institution": "РЛП \"Равське Розточчя\"",
+   "code": "RRRLP",
+   "series": 0
+  },
+  {
+   "user_id": 27,
+   "username": "Pavlo2007",
+   "name": "Павло",
+   "created_at": "2026-03-09T13:33:42.039654",
+   "institution_id": 5,
+   "institution": "Страдчівський НВЛК",
+   "code": "SNVLK",
+   "series": 0
+  },
+  {
+   "user_id": 23,
+   "username": "vasyl.mochan",
+   "name": "Vasyl Mochan",
+   "created_at": "2026-03-10T10:04:04.168524",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 3,
+   "username": "vasylyna",
+   "name": "Василина Струс",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 2,
+   "institution": "Винниківській проект",
+   "code": "VYNLIS",
+   "series": 17
+  },
+  {
+   "user_id": 3,
+   "username": "vasylyna",
+   "name": "Василина Струс",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 4,
+   "institution": "РЛП \"Равське Розточчя\"",
+   "code": "RRRLP",
+   "series": 0
+  },
+  {
+   "user_id": 3,
+   "username": "vasylyna",
+   "name": "Василина Струс",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 5,
+   "institution": "Страдчівський НВЛК",
+   "code": "SNVLK",
+   "series": 0
+  }
+ ],
+ "keep": [
+  {
+   "user_id": 3,
+   "username": "vasylyna",
+   "name": "Василина Струс",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 1,
+   "institution": "ПЗ \"Розточчя\"",
+   "code": "RSNR",
+   "series": 3601
+  },
+  {
+   "user_id": 3,
+   "username": "vasylyna",
+   "name": "Василина Струс",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 28,
+   "institution": "Північні торфовища проект",
+   "code": "northpeatlands",
+   "series": 292
+  },
+  {
+   "user_id": 3,
+   "username": "vasylyna",
+   "name": "Василина Струс",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 3,
+   "institution": "Яворівський НПП",
+   "code": "YNNP",
+   "series": 635
+  }
+ ],
+ "too_young": [
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 7,
+   "institution": "Верховинський НПП",
+   "code": "VNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 16,
+   "institution": "Вижницький НПП",
+   "code": "VZNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 25,
+   "institution": "Древлянський ПЗ",
+   "code": "DNR",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 11,
+   "institution": "Карпатський БЗ",
+   "code": "KBR",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 12,
+   "institution": "Карпатський НПП",
+   "code": "CNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 19,
+   "institution": "Нобельський НПП",
+   "code": "NNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 22,
+   "institution": "НПП \"Бойківщина\"",
+   "code": "BNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 10,
+   "institution": "НПП \"Гуцульщина\"",
+   "code": "HNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 17,
+   "institution": "НПП \"Зачарований Край\"",
+   "code": "ZKNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 18,
+   "institution": "НПП \"Прип'ять-Стохід\"",
+   "code": "PSNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 27,
+   "institution": "НПП \"Пуща Радзивіла\"",
+   "code": "PRNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 13,
+   "institution": "НПП \"Синевир\"",
+   "code": "SNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 14,
+   "institution": "НПП \"Синьогора\"",
+   "code": "SHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 9,
+   "institution": "ПЗ \"Горгани\"",
+   "code": "GSNR",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 26,
+   "institution": "Поліський ПЗ",
+   "code": "PNR",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 15,
+   "institution": "Ужанський НПП",
+   "code": "UNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 8,
+   "institution": "Черемоський НПП",
+   "code": "CHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 23,
+   "institution": "Черемський ПЗ",
+   "code": "CHNR",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 24,
+   "institution": "Чорнобильський РЕБЗ",
+   "code": "CREBR",
+   "series": 0
+  },
+  {
+   "user_id": 47,
+   "username": "adam_smith",
+   "name": "Adam Smith",
+   "created_at": "2026-08-04T14:17:33.368309",
+   "institution_id": 3,
+   "institution": "Яворівський НПП",
+   "code": "YNNP",
+   "series": 0
+  },
+  {
+   "user_id": 76,
+   "username": "azazellj",
+   "name": "Volodymyr Nevmerzhytskyi",
+   "created_at": "2026-09-01T15:32:57.584601",
+   "institution_id": 31,
+   "institution": "Оброшинський проект",
+   "code": "OBROSHYNE",
+   "series": 0
+  },
+  {
+   "user_id": 76,
+   "username": "azazellj",
+   "name": "Volodymyr Nevmerzhytskyi",
+   "created_at": "2026-09-01T15:32:57.584601",
+   "institution_id": 5,
+   "institution": "Страдчівський НВЛК",
+   "code": "SNVLK",
+   "series": 0
+  },
+  {
+   "user_id": 52,
+   "username": "d.Yuzyk",
+   "name": "Діана Юзик",
+   "created_at": "2026-08-19T12:59:59.734258",
+   "institution_id": 8,
+   "institution": "Черемоський НПП",
+   "code": "CHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 36,
+   "username": "elleni.vendras",
+   "name": "Elleni Vendras",
+   "created_at": "2026-06-11T17:50:08.557709",
+   "institution_id": 25,
+   "institution": "Древлянський ПЗ",
+   "code": "DNR",
+   "series": 0
+  },
+  {
+   "user_id": 36,
+   "username": "elleni.vendras",
+   "name": "Elleni Vendras",
+   "created_at": "2026-06-11T17:50:08.557709",
+   "institution_id": 19,
+   "institution": "Нобельський НПП",
+   "code": "NNNP",
+   "series": 0
+  },
+  {
+   "user_id": 36,
+   "username": "elleni.vendras",
+   "name": "Elleni Vendras",
+   "created_at": "2026-06-11T17:50:08.557709",
+   "institution_id": 18,
+   "institution": "НПП \"Прип'ять-Стохід\"",
+   "code": "PSNNP",
+   "series": 0
+  },
+  {
+   "user_id": 36,
+   "username": "elleni.vendras",
+   "name": "Elleni Vendras",
+   "created_at": "2026-06-11T17:50:08.557709",
+   "institution_id": 27,
+   "institution": "НПП \"Пуща Радзивіла\"",
+   "code": "PRNNP",
+   "series": 0
+  },
+  {
+   "user_id": 36,
+   "username": "elleni.vendras",
+   "name": "Elleni Vendras",
+   "created_at": "2026-06-11T17:50:08.557709",
+   "institution_id": 26,
+   "institution": "Поліський ПЗ",
+   "code": "PNR",
+   "series": 0
+  },
+  {
+   "user_id": 36,
+   "username": "elleni.vendras",
+   "name": "Elleni Vendras",
+   "created_at": "2026-06-11T17:50:08.557709",
+   "institution_id": 23,
+   "institution": "Черемський ПЗ",
+   "code": "CHNR",
+   "series": 0
+  },
+  {
+   "user_id": 36,
+   "username": "elleni.vendras",
+   "name": "Elleni Vendras",
+   "created_at": "2026-06-11T17:50:08.557709",
+   "institution_id": 24,
+   "institution": "Чорнобильський РЕБЗ",
+   "code": "CREBR",
+   "series": 0
+  },
+  {
+   "user_id": 49,
+   "username": "i.lepesevych",
+   "name": "Іван Лепесевич",
+   "created_at": "2026-08-16T13:42:53.027724",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 7,
+   "institution": "Верховинський НПП",
+   "code": "VNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 16,
+   "institution": "Вижницький НПП",
+   "code": "VZNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 25,
+   "institution": "Древлянський ПЗ",
+   "code": "DNR",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 11,
+   "institution": "Карпатський БЗ",
+   "code": "KBR",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 12,
+   "institution": "Карпатський НПП",
+   "code": "CNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 19,
+   "institution": "Нобельський НПП",
+   "code": "NNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 22,
+   "institution": "НПП \"Бойківщина\"",
+   "code": "BNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 10,
+   "institution": "НПП \"Гуцульщина\"",
+   "code": "HNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 17,
+   "institution": "НПП \"Зачарований Край\"",
+   "code": "ZKNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 18,
+   "institution": "НПП \"Прип'ять-Стохід\"",
+   "code": "PSNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 27,
+   "institution": "НПП \"Пуща Радзивіла\"",
+   "code": "PRNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 13,
+   "institution": "НПП \"Синевир\"",
+   "code": "SNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 14,
+   "institution": "НПП \"Синьогора\"",
+   "code": "SHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 9,
+   "institution": "ПЗ \"Горгани\"",
+   "code": "GSNR",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 26,
+   "institution": "Поліський ПЗ",
+   "code": "PNR",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 15,
+   "institution": "Ужанський НПП",
+   "code": "UNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 8,
+   "institution": "Черемоський НПП",
+   "code": "CHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 23,
+   "institution": "Черемський ПЗ",
+   "code": "CHNR",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 24,
+   "institution": "Чорнобильський РЕБЗ",
+   "code": "CREBR",
+   "series": 0
+  },
+  {
+   "user_id": 33,
+   "username": "ira.shpakovska",
+   "name": "Ірина Шпаковська",
+   "created_at": "2026-05-22T11:56:24.419116",
+   "institution_id": 3,
+   "institution": "Яворівський НПП",
+   "code": "YNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 7,
+   "institution": "Верховинський НПП",
+   "code": "VNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 16,
+   "institution": "Вижницький НПП",
+   "code": "VZNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 25,
+   "institution": "Древлянський ПЗ",
+   "code": "DNR",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 11,
+   "institution": "Карпатський БЗ",
+   "code": "KBR",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 12,
+   "institution": "Карпатський НПП",
+   "code": "CNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 19,
+   "institution": "Нобельський НПП",
+   "code": "NNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 22,
+   "institution": "НПП \"Бойківщина\"",
+   "code": "BNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 10,
+   "institution": "НПП \"Гуцульщина\"",
+   "code": "HNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 17,
+   "institution": "НПП \"Зачарований Край\"",
+   "code": "ZKNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 18,
+   "institution": "НПП \"Прип'ять-Стохід\"",
+   "code": "PSNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 27,
+   "institution": "НПП \"Пуща Радзивіла\"",
+   "code": "PRNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 13,
+   "institution": "НПП \"Синевир\"",
+   "code": "SNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 14,
+   "institution": "НПП \"Синьогора\"",
+   "code": "SHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 9,
+   "institution": "ПЗ \"Горгани\"",
+   "code": "GSNR",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 26,
+   "institution": "Поліський ПЗ",
+   "code": "PNR",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 15,
+   "institution": "Ужанський НПП",
+   "code": "UNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 8,
+   "institution": "Черемоський НПП",
+   "code": "CHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 23,
+   "institution": "Черемський ПЗ",
+   "code": "CHNR",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 24,
+   "institution": "Чорнобильський РЕБЗ",
+   "code": "CREBR",
+   "series": 0
+  },
+  {
+   "user_id": 46,
+   "username": "lilli.stenger",
+   "name": "Lilli Stenger",
+   "created_at": "2026-08-04T14:13:52.070080",
+   "institution_id": 3,
+   "institution": "Яворівський НПП",
+   "code": "YNNP",
+   "series": 0
+  },
+  {
+   "user_id": 50,
+   "username": "o.pohribnyi",
+   "name": "Олег Погрібний",
+   "created_at": "2026-08-19T12:47:51.462452",
+   "institution_id": 10,
+   "institution": "НПП \"Гуцульщина\"",
+   "code": "HNNP",
+   "series": 0
+  },
+  {
+   "user_id": 71,
+   "username": "o.sashchuk",
+   "name": "Олександр Сащук",
+   "created_at": "2026-08-25T14:57:59.508111",
+   "institution_id": 18,
+   "institution": "НПП \"Прип'ять-Стохід\"",
+   "code": "PSNNP",
+   "series": 0
+  },
+  {
+   "user_id": 34,
+   "username": "Prylutskaa",
+   "name": "Альона Прилуцька",
+   "created_at": "2026-05-26T14:57:39.620483",
+   "institution_id": 20,
+   "institution": "ЛЗ \"Тарутинський степ\"",
+   "code": "LRTS",
+   "series": 0
+  },
+  {
+   "user_id": 34,
+   "username": "Prylutskaa",
+   "name": "Альона Прилуцька",
+   "created_at": "2026-05-26T14:57:39.620483",
+   "institution_id": 21,
+   "institution": "ПЗ \"Єлане́цький степ\"",
+   "code": "YSSNR",
+   "series": 0
+  },
+  {
+   "user_id": 85,
+   "username": "TetianaDavydenko",
+   "name": "Tetiana Davydenko",
+   "created_at": "2026-09-10T10:52:25.074829",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 38,
+   "username": "tim.milz",
+   "name": "Tim Milz",
+   "created_at": "2026-06-16T06:12:46.874716",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 39,
+   "username": "volodia.dovhanych",
+   "name": "Володимир Довганич",
+   "created_at": "2026-07-01T12:39:14.203875",
+   "institution_id": 11,
+   "institution": "Карпатський БЗ",
+   "code": "KBR",
+   "series": 0
+  },
+  {
+   "user_id": 54,
+   "username": "y.motruk",
+   "name": "Юрій  Мотрук",
+   "created_at": "2026-08-19T13:02:48.748442",
+   "institution_id": 12,
+   "institution": "Карпатський НПП",
+   "code": "CNNP",
+   "series": 0
+  }
+ ],
+ "no_created_at": [],
+ "admins": [],
+ "excluded": [
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 7,
+   "institution": "Верховинський НПП",
+   "code": "VNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 16,
+   "institution": "Вижницький НПП",
+   "code": "VZNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 25,
+   "institution": "Древлянський ПЗ",
+   "code": "DNR",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 11,
+   "institution": "Карпатський БЗ",
+   "code": "KBR",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 12,
+   "institution": "Карпатський НПП",
+   "code": "CNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 19,
+   "institution": "Нобельський НПП",
+   "code": "NNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 22,
+   "institution": "НПП \"Бойківщина\"",
+   "code": "BNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 10,
+   "institution": "НПП \"Гуцульщина\"",
+   "code": "HNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 17,
+   "institution": "НПП \"Зачарований Край\"",
+   "code": "ZKNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 18,
+   "institution": "НПП \"Прип'ять-Стохід\"",
+   "code": "PSNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 27,
+   "institution": "НПП \"Пуща Радзивіла\"",
+   "code": "PRNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 13,
+   "institution": "НПП \"Синевир\"",
+   "code": "SNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 14,
+   "institution": "НПП \"Синьогора\"",
+   "code": "SHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 9,
+   "institution": "ПЗ \"Горгани\"",
+   "code": "GSNR",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 26,
+   "institution": "Поліський ПЗ",
+   "code": "PNR",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 29,
+   "institution": "Рівненський ПЗ",
+   "code": "RVSNR",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 15,
+   "institution": "Ужанський НПП",
+   "code": "UNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 8,
+   "institution": "Черемоський НПП",
+   "code": "CHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 23,
+   "institution": "Черемський ПЗ",
+   "code": "CHNR",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 24,
+   "institution": "Чорнобильський РЕБЗ",
+   "code": "CREBR",
+   "series": 0
+  },
+  {
+   "user_id": 29,
+   "username": "bohdan.datsko",
+   "name": "Богдан Дацко",
+   "created_at": "2026-04-10T06:26:10.898538",
+   "institution_id": 3,
+   "institution": "Яворівський НПП",
+   "code": "YNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 7,
+   "institution": "Верховинський НПП",
+   "code": "VNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 16,
+   "institution": "Вижницький НПП",
+   "code": "VZNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 25,
+   "institution": "Древлянський ПЗ",
+   "code": "DNR",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 11,
+   "institution": "Карпатський БЗ",
+   "code": "KBR",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 12,
+   "institution": "Карпатський НПП",
+   "code": "CNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 19,
+   "institution": "Нобельський НПП",
+   "code": "NNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 22,
+   "institution": "НПП \"Бойківщина\"",
+   "code": "BNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 10,
+   "institution": "НПП \"Гуцульщина\"",
+   "code": "HNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 17,
+   "institution": "НПП \"Зачарований Край\"",
+   "code": "ZKNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 18,
+   "institution": "НПП \"Прип'ять-Стохід\"",
+   "code": "PSNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 27,
+   "institution": "НПП \"Пуща Радзивіла\"",
+   "code": "PRNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 13,
+   "institution": "НПП \"Синевир\"",
+   "code": "SNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 14,
+   "institution": "НПП \"Синьогора\"",
+   "code": "SHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 6,
+   "institution": "НПП \"Сколівські Бескиди\"",
+   "code": "SBNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 9,
+   "institution": "ПЗ \"Горгани\"",
+   "code": "GSNR",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 26,
+   "institution": "Поліський ПЗ",
+   "code": "PNR",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 29,
+   "institution": "Рівненський ПЗ",
+   "code": "RVSNR",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 15,
+   "institution": "Ужанський НПП",
+   "code": "UNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 8,
+   "institution": "Черемоський НПП",
+   "code": "CHNNP",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 23,
+   "institution": "Черемський ПЗ",
+   "code": "CHNR",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 24,
+   "institution": "Чорнобильський РЕБЗ",
+   "code": "CREBR",
+   "series": 0
+  },
+  {
+   "user_id": 20,
+   "username": "daria.svidzinska",
+   "name": "Daria Svidzinska",
+   "created_at": "2026-03-04T11:07:22.799627",
+   "institution_id": 3,
+   "institution": "Яворівський НПП",
+   "code": "YNNP",
+   "series": 0
+  },
+  {
+   "user_id": 41,
+   "username": "dbu",
+   "name": "",
+   "created_at": "2026-07-13T13:18:25.706517",
+   "institution_id": 1,
+   "institution": "ПЗ \"Розточчя\"",
+   "code": "RSNR",
+   "series": 0
+  }
+ ]
+}

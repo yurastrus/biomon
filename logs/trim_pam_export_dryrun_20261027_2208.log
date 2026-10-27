@@ -1,0 +1,2 @@
+usage: trim_ct_export.py [-h] [--apply] [--json JSON] [--exclude EXCLUDE]
+trim_ct_export.py: error: unrecognized arguments: --module pam

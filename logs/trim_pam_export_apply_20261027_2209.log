@@ -1,0 +1,34 @@
+module: pam, cutoff (registered before): 2026-04-27, min series: 50
+revoke         rows   23  people 4
+keep           rows    3  people 1
+too_young      rows   82  people 14
+no_created_at  rows    0  people 0
+admins         rows    0  people 0
+excluded       rows   45  people 3
+
+TO REVOKE (user | institution | series identified there):
+  #15 m.vysochyn (Максим Височин) | Верховинський НПП [VNNP] | 0
+  #15 m.vysochyn (Максим Височин) | Вижницький НПП [VZNNP] | 0
+  #15 m.vysochyn (Максим Височин) | Карпатський БЗ [KBR] | 0
+  #15 m.vysochyn (Максим Височин) | Карпатський НПП [CNNP] | 0
+  #15 m.vysochyn (Максим Височин) | Нобельський НПП [NNNP] | 0
+  #15 m.vysochyn (Максим Височин) | НПП "Гуцульщина" [HNNP] | 0
+  #15 m.vysochyn (Максим Височин) | НПП "Зачарований Край" [ZKNNP] | 0
+  #15 m.vysochyn (Максим Височин) | НПП "Прип'ять-Стохід" [PSNNP] | 0
+  #15 m.vysochyn (Максим Височин) | НПП "Синевир" [SNNP] | 0
+  #15 m.vysochyn (Максим Височин) | НПП "Синьогора" [SHNNP] | 0
+  #15 m.vysochyn (Максим Височин) | НПП "Сколівські Бескиди" [SBNNP] | 0
+  #15 m.vysochyn (Максим Височин) | ПЗ "Горгани" [GSNR] | 0
+  #15 m.vysochyn (Максим Височин) | Ужанський НПП [UNNP] | 0
+  #15 m.vysochyn (Максим Височин) | Черемоський НПП [CHNNP] | 0
+  #15 m.vysochyn (Максим Височин) | Яворівський НПП [YNNP] | 0
+  #27 Pavlo2007 (Павло) | Винниківській проект [VYNLIS] | 0
+  #27 Pavlo2007 (Павло) | ПЗ "Розточчя" [RSNR] | 0
+  #27 Pavlo2007 (Павло) | РЛП "Равське Розточчя" [RRRLP] | 0
+  #27 Pavlo2007 (Павло) | Страдчівський НВЛК [SNVLK] | 0
+  #23 vasyl.mochan (Vasyl Mochan) | НПП "Сколівські Бескиди" [SBNNP] | 0
+  #3 vasylyna (Василина Струс) | Винниківській проект [VYNLIS] | 17
+  #3 vasylyna (Василина Струс) | РЛП "Равське Розточчя" [RRRLP] | 0
+  #3 vasylyna (Василина Струс) | Страдчівський НВЛК [SNVLK] | 0
+
+APPLIED: can_export_pam switched off on 23 rows
