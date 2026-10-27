@@ -268,14 +268,56 @@ def _pam_manage_conn(rows):
     return conn
 
 
-def test_pam_manage_page_lists_only_managed_locations(client_as, split, parks):
+def test_pam_manage_page_lists_seen_locations_but_edits_only_managed(client_as, split, parks):
+    """Verifiers use the page read-only, so it lists what the user can see;
+    only locations of a managed institution are marked editable, and only
+    managed institutions are offered in the edit form."""
+    import json, re
     a, b, _ = parks
     with patch('app.pam.routes.get_pam_db_connection',
                return_value=_pam_manage_conn(_pam_rows(a, b))):
         resp = client_as(split).get('/uk/pam/manage-locations')
     assert resp.status_code == 200
-    assert 'ПАМ локація А'.encode() in resp.data
-    assert 'ПАМ локація Б'.encode() not in resp.data
+    html = resp.get_data(as_text=True)
+    assert 'ПАМ локація А' in html and 'ПАМ локація Б' in html
+    data = json.loads(re.search(r'const locationsData = (\[.*?\]);', html).group(1))
+    editable = {loc['name']: loc['editable'] for loc in data}
+    assert editable == {'ПАМ локація А': True, 'ПАМ локація Б': False}
+    # The institution picker of the edit form offers park A only.
+    picker = html[html.index('id="edit-form"'):]
+    assert 'Парк А' in picker and 'Парк Б' not in picker
+
+
+def test_pam_page_for_a_plain_verifier_is_read_only(client_as, db_session, make_user, parks):
+    a, b, _ = parks
+    ver = make_user(username='pv', roles=('pam_verifier',))
+    ver.institution_links.append(_link(a.id))
+    db_session.commit()
+    with patch('app.pam.routes.get_pam_db_connection',
+               return_value=_pam_manage_conn(_pam_rows(a, b))):
+        html = client_as(ver).get('/uk/pam/manage-locations').get_data(as_text=True)
+    assert 'ПАМ локація А' in html            # sees their park, as before
+    assert 'id="edit-form"' not in html        # but no editor
+
+
+def test_pam_service_history_is_readable_by_whoever_sees_the_location(app, db_session,
+                                                                     make_user, parks):
+    from flask_login import login_user
+    from app.pam.routes import api_get_pam_service_history
+    a, _, _ = parks
+    ver = make_user(username='pv2', roles=('pam_verifier',))
+    ver.institution_links.append(_link(a.id))
+    db_session.commit()
+    conn = MagicMock()
+    conn.execute.return_value.fetchone.return_value = (1,)
+    conn.execute.return_value.fetchall.return_value = []
+    with app.test_request_context(),          patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        login_user(ver)
+        resp = api_get_pam_service_history('uk', 1)
+    status = resp[1] if isinstance(resp, tuple) else resp.status_code
+    assert status == 200
+    access_params = conn.execute.call_args_list[0].args[1]
+    assert access_params['inst_ids'] == [a.id]
 
 
 def test_pam_edit_check_asks_with_managed_ids(app, split, parks):
