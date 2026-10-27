@@ -241,3 +241,10 @@ def test_page_grant_lists_people_with_person_checkboxes(client_as, db_session, p
                                   '&module=ct&right=export').get_data(as_text=True)
     assert html.count('class="ar-person-cb"') == 1
     assert html.count('name="pair"') == 2
+
+
+def test_user_list_links_to_the_review_for_admins_only(client_as, make_user):
+    adm = make_user(username='adm', roles=('admin',))
+    assert '/admin/access-review' in client_as(adm).get('/uk/admin/users').get_data(as_text=True)
+    mgr = make_user(username='mgr', roles=('manager',))
+    assert '/admin/access-review' not in client_as(mgr).get('/uk/admin/users').get_data(as_text=True)

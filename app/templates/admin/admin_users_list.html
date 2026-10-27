@@ -19,6 +19,10 @@
     <div class="admin-view-switch">
         <span class="is-current">{{ _('За користувачами') }}</span>
         <a href="{{ url_for('admin.institution_access', lang_code=g.lang_code) }}">{{ _('За установами') }}</a>
+        {% if current_user.has_role('admin') %}
+        <a href="{{ url_for('admin.access_review', lang_code=g.lang_code) }}"
+           style="margin-left: auto;">{{ _('Перегляд прав') }}</a>
+        {% endif %}
     </div>
 
     <div class="admin-toolbar">
