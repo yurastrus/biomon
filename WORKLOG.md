@@ -3,6 +3,48 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-29: Red Data Book of Ukraine 2021 status on species + species editors
+
+Goal: show which species are in the Red Book, later use it in filters
+across pages (step-by-step rollout; this is step 1).
+- Source: ministry order No. 29 of 19.01.2021 (the list replaced the printed
+  book). `scripts/redbook2021/extract_redbook_2021.py` turns the .doc (saved
+  as .docx) into `redbook2021_animals.csv`: all 687 taxa, every class, kept in
+  the repo so the import needs no Word.
+- Storage: one column `species.redbook2021` VARCHAR(30) in ct_db and pam_db
+  (no separate table: the two modules have independent species tables and a
+  join would only complicate queries). Values are language-neutral codes
+  (extinct, extinct_in_wild, endangered, vulnerable, rare, not_evaluated,
+  data_deficient), NULL = not listed; CHECK constraint. DDL:
+  `scripts/init_redbook2021.py` (= PAM migration 0008, same SQL for CT).
+- Import `scripts/redbook2021/import_redbook_2021.py` (dry run default,
+  `--apply`), Amphibia/Aves/Mammalia only. Match: exact binomial, then a
+  SYNONYMS table (typos in the order itself: allbicilla, Gallingo, Denrocopos;
+  taxonomy drift: Aquila clanga -> Clanga clanga, Parus cyanus -> Cyanistes
+  cyanus, Bison bonasus -> Bos bonasus as CT has it, etc.). Same Ukrainian
+  name with a different Latin is reported, never written. Re-run converges
+  (clears stale codes).
+- Applied on prod today: CT 16 of 90 species, PAM 95 of 344 (2 amphibians,
+  62 birds, 31 bats). Re-run shows 0 changes. Logs:
+  `logs/redbook2021_dryrun_*.log`, `logs/redbook2021_apply_*.log`.
+- Species editors (admin only, both submodules): `/<lang>/camera-traps/admin/species`
+  and `/<lang>/pam/admin/species`, cards in the hub admin blocks. Every column
+  editable; Latin and common names free text; taxonomy, category,
+  establishment means = dropdown of existing values + "add new"; picking a
+  genus/family fills the ranks above it. Red Book and PAM required_role are
+  fixed lists. CT system rows 'empty' / 'Homo sapiens' keep their Latin name
+  (ai_runner looks them up by it). No delete (identifications/detections FK).
+  Owner first wanted the pages outside /admin, then chose /admin as safer.
+- Tests: `tests/test_species_admin.py` (21). Full suite: 2616 passed, 1 failed
+  (`test_verification_institutions::test_the_form_carries_the_marker`) which
+  passes alone and without these changes: order-dependent flake, not this work.
+- Not verified in a browser: the dropdown JS (add-new toggle, taxonomy
+  autofill) is covered only by reading; server side is tested.
+- Deploy: `venv/bin/python -m scripts.init_redbook2021` already effectively
+  done (prod DB was altered from dev through the tunnel), then code: submodules
+  shared-ct 2c425ef, shared-pam 3d1f9f8 -> pointers in biomon and myproject.
+- Next: show the status on species pages, then add a Red Book filter.
+
 ## 2026-10-27: Rights review page (/admin/access-review)
 
 The two manual export cuts turned into an admin-only page, linked from

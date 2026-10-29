@@ -1,0 +1,688 @@
+no,phylum,class,order,scientific_name,authority,name_full,name_ua,category_ua,category
+1,Cnidaria,Hydrozoa,Anthoathecata,Odessia maeotica,"(Ostroumoff, 1896)","Odessia maeotica (Ostroumoff, 1896)",Меризія азовська,недостатньо відомий,data_deficient
+2,Cnidaria,Hydrozoa,Limnomedusae,Maeotias marginata,"(Modeer, 1791)","Maeotias marginata (Modeer, 1791)",Азовець облямований,недостатньо відомий,data_deficient
+3,Annelida,Polychaeta,Opheliida,Ophelia bicornis,"Savigny, 1822","Ophelia bicornis Savigny, 1822",Офелія дворога,зникаючий,endangered
+4,Annelida,Oligochaeta,Haplotaxida,Eisenia gordejeffi,"Michaelsen, 1899","Eisenia gordejeffi Michaelsen, 1899",Ейзенія Гордєєва,недостатньо відомий,data_deficient
+5,Annelida,Hirudinea,Hirudinida,Batracobdella algira,"(Moquin-Tandon, 1846)","Batracobdella algira (Moquin-Tandon, 1846)",Жабоп’явка алжирська,вразливий,vulnerable
+6,Annelida,Hirudinea,Hirudinida,Hirudo medicinalis,"Linnaeus, 1758","Hirudo medicinalis Linnaeus, 1758",П’явка медична,вразливий,vulnerable
+7,Annelida,Hirudinea,Hirudinida,Hirudo verbana,"Carena, 1820","Hirudo verbana Carena, 1820",П’явка аптечна,вразливий,vulnerable
+8,Annelida,Hirudinea,Hirudinida,Archaeobdella esmonti,"Grimm, 1876","Archaeobdella esmonti Grimm, 1876",Археобдела каспійська,зникаючий,endangered
+9,Annelida,Hirudinea,Hirudinida,Dina stschegolewi,"(Lukin et Epstein, 1960)","Dina stschegolewi (Lukin et Epstein, 1960)",Глотківка Щоголева,вразливий,vulnerable
+10,Annelida,Hirudinea,Hirudinida,Erpobdella vilnensis,"(Liskiewicz, 1925)","Erpobdella vilnensis (Liskiewicz, 1925)",Глотківка віленська,рідкісний,rare
+11,Annelida,Hirudinea,Hirudinida,Trocheta subviridis,"Dutrochet, 1817","Trocheta subviridis Dutrochet, 1817",Трохета потайна,зникаючий,endangered
+12,Annelida,Hirudinea,Hirudinida,Trocheta cylindrica,"Цrley, 1886","Trocheta cylindrica Цrley, 1886",Трохета струмкова,вразливий,vulnerable
+13,Annelida,Hirudinea,Hirudinida,Trocheta danastrica,"Stschegolew, 1938","Trocheta danastrica Stschegolew, 1938",Трохета дністровська,вразливий,vulnerable
+14,Annelida,Hirudinea,Hirudinida,Fadejewobdella quinqueannulata,"(Lukin, 1929)","Fadejewobdella quinqueannulata (Lukin, 1929)",Псевдотрохета п’ятикільчаста,зникаючий,endangered
+15,Mollusca,Gastropoda,Littorinimorpha,Caspia knipowitchi,"Makarov, 1938","Caspia knipowitchi Makarov, 1938",Каспія Кніповича,зникаючий,endangered
+16,Mollusca,Gastropoda,Littorinimorpha,Euxinipyrgula lincta,"(Milaschewitch, 1908)","Euxinipyrgula lincta (Milaschewitch, 1908)",Вежка льодяникова,вразливий,vulnerable
+17,Mollusca,Gastropoda,Littorinimorpha,Marstoniopsis insubrica,"(Kьster, 1853)","Marstoniopsis insubrica (Kьster, 1853)",Водяничка інсубрійська,рідкісний,rare
+18,Mollusca,Gastropoda,Littorinimorpha,Pomatias rivularis,"(Eichwald, 1829)","Pomatias rivularis (Eichwald, 1829)",Кругловустик струмковий,рідкісний,rare
+19,Mollusca,Gastropoda,Architaenioglossa,Acicula parcelineata,"(Clessin, 1911)","Acicula parcelineata (Clessin, 1911)",Скалочка карпатська,рідкісний,rare
+20,Mollusca,Gastropoda,Architaenioglossa,Platyla perpusilla,"(Reinhardt, 1880)","Platyla perpusilla (Reinhardt, 1880)",Скалочка крихітна,вразливий,vulnerable
+21,Mollusca,Gastropoda,Architaenioglossa,Platyla polita,"(Hartmann, 1840)","Platyla polita (Hartmann, 1840)",Скалочка блискуча,рідкісний,rare
+22,Mollusca,Gastropoda,Hygrophila,Lymnaea taurica,"(Clessin, 1880)","Lymnaea taurica (Clessin, 1880)",Петрик таврійський,зникаючий,endangered
+23,Mollusca,Gastropoda,Hygrophila,Ladislavella terebra,"(Westerlund, 1885)","Ladislavella terebra (Westerlund, 1885)",Петрик свердлоподібний,вразливий,vulnerable
+24,Mollusca,Gastropoda,Stylommatophora,Sphyradium doliolum,"(Bruguiиre, 1792)","Sphyradium doliolum (Bruguiиre, 1792)",Бочівка шипаста,рідкісний,rare
+25,Mollusca,Gastropoda,Stylommatophora,Argna bielzi,"(Rossmдssler, 1859)","Argna bielzi (Rossmдssler, 1859)",Аргна карпатська,рідкісний,rare
+26,Mollusca,Gastropoda,Stylommatophora,Pupilla alpicola,"(Charpentier, 1837)","Pupilla alpicola (Charpentier, 1837)",Крихітка альпійська,зникаючий,endangered
+27,Mollusca,Gastropoda,Stylommatophora,Pupilla sterrii,"(Forster, 1840)","Pupilla sterrii (Forster, 1840)",Крихітка скельова,зникаючий,endangered
+28,Mollusca,Gastropoda,Stylommatophora,Pupilla triplicata,"(Studer, 1820)","Pupilla triplicata (Studer, 1820)",Крихітка тризуба,рідкісний,rare
+29,Mollusca,Gastropoda,Stylommatophora,Vertigo moulinsiana,"(Dupuy, 1849)","Vertigo moulinsiana (Dupuy, 1849)",Закрутка трав’яна,зникаючий,endangered
+30,Mollusca,Gastropoda,Stylommatophora,Vertigo geyeri,"Lindholm, 1925","Vertigo geyeri Lindholm, 1925",Закрутка болотяна,зниклий,extinct
+31,Mollusca,Gastropoda,Stylommatophora,Vertigo angustior,"Jeffreys, 1830","Vertigo angustior Jeffreys, 1830",Закрутка вузькорота,рідкісний,rare
+32,Mollusca,Gastropoda,Stylommatophora,Truncatellina claustralis,"(Gredler, 1856)","Truncatellina claustralis (Gredler, 1856)",Циліндриця південна,рідкісний,rare
+33,Mollusca,Gastropoda,Stylommatophora,Granaria frumentum,"(Draparnaud, 1801)","Granaria frumentum (Draparnaud, 1801)",Бескидниця сутінкова,вразливий,vulnerable
+34,Mollusca,Gastropoda,Stylommatophora,Chondrina arcadica,"(Reinhardt, 1881)","Chondrina arcadica (Reinhardt, 1881)",Бескидниця аркадійська,рідкісний,rare
+35,Mollusca,Gastropoda,Stylommatophora,Rupestrella rhodia,"(Roth, 1839)","Rupestrella rhodia (Roth, 1839)",Бескидниця родоська,рідкісний,rare
+36,Mollusca,Gastropoda,Stylommatophora,Peristoma merduenianum,"Krynicki, 1833","Peristoma merduenianum Krynicki, 1833",Круглозубка ущелинна,вразливий,vulnerable
+37,Mollusca,Gastropoda,Stylommatophora,Ramusculus subulatus,"(Rossmдssler, 1837)","Ramusculus subulatus (Rossmдssler, 1837)",Пелюшниця струнка,зникаючий,endangered
+38,Mollusca,Gastropoda,Stylommatophora,Mastus bielzi,"(Kimakowicz, 1890)","Mastus bielzi (Kimakowicz, 1890)",Обжерка карпатська,рідкісний,rare
+39,Mollusca,Gastropoda,Stylommatophora,Serrulina serrulata,"(Pfeiffer, 1847)","Serrulina serrulata (Pfeiffer, 1847)",Серуліна зубчаста,зникаючий,endangered
+40,Mollusca,Gastropoda,Stylommatophora,Elia novorossica,"(Retowski, 1888)","Elia novorossica (Retowski, 1888)",Елія нагольняньська,зникаючий,endangered
+41,Mollusca,Gastropoda,Stylommatophora,Ruthenica filograna,"(Rossmдssler, 1836)","Ruthenica filograna (Rossmдssler, 1836)",Русинка тендітна,рідкісний,rare
+42,Mollusca,Gastropoda,Stylommatophora,Macrogastra borealis,"(Boettger, 1878)","Macrogastra borealis (Boettger, 1878)",Пралісниця північна,рідкісний,rare
+43,Mollusca,Gastropoda,Stylommatophora,Macrogastra plicatula,"(Draparnaud, 1801)","Macrogastra plicatula (Draparnaud, 1801)",Пралісниця струнка,вразливий,vulnerable
+44,Mollusca,Gastropoda,Stylommatophora,Macrogastra tumida,"(Rossmдssler, 1836)","Macrogastra tumida (Rossmдssler, 1836)",Пралісниця карпатська,рідкісний,rare
+45,Mollusca,Gastropoda,Stylommatophora,Clausilia pumila,"Pfeiffer, 1828","Clausilia pumila Pfeiffer, 1828",Заслонниця мала,вразливий,vulnerable
+46,Mollusca,Gastropoda,Stylommatophora,Clausilia cruciata,"(Studer, 1820)","Clausilia cruciata (Studer, 1820)",Заслонниця деревна,рідкісний,rare
+47,Mollusca,Gastropoda,Stylommatophora,Vestia elata,"(Rossmдssler, 1836)","Vestia elata (Rossmдssler, 1836)",Вестія шляхетна,вразливий,vulnerable
+48,Mollusca,Gastropoda,Stylommatophora,Pseudalinda fallax,"(Rossmдssler, 1836)","Pseudalinda fallax (Rossmдssler, 1836)",Веретенка оманлива,вразливий,vulnerable
+49,Mollusca,Gastropoda,Stylommatophora,Discus perspectivus,"(Megerle von Mьhlfeld, 1816)","Discus perspectivus (Megerle von Mьhlfeld, 1816)",Пупкалик пралісовий,вразливий,vulnerable
+50,Mollusca,Gastropoda,Stylommatophora,Vitrea nadejdae,"Lindholm, 1926","Vitrea nadejdae Lindholm, 1926",Кришталівка кримська,зникаючий,endangered
+51,Mollusca,Gastropoda,Stylommatophora,Taurinellushka babugana,"Balashov, 2014","Taurinellushka babugana Balashov, 2014",Таврінелятко бабуганське,рідкісний,rare
+52,Mollusca,Gastropoda,Stylommatophora,Oxychilus kobelti,"(Lindholm, 1910)","Oxychilus kobelti (Lindholm, 1910)",Лищак велетенський,вразливий,vulnerable
+53,Mollusca,Gastropoda,Stylommatophora,Mediterranea inopinata,"(Uličný, 1887)","Mediterranea inopinata (Uličný, 1887)",Лищак степовий,вразливий,vulnerable
+54,Mollusca,Gastropoda,Stylommatophora,Daudebardia rufa,"(Draparnaud, 1805)","Daudebardia rufa (Draparnaud, 1805)",Даудебардія руда,вразливий,vulnerable
+55,Mollusca,Gastropoda,Stylommatophora,Daudebardia brevipes,"(Draparnaud, 1805)","Daudebardia brevipes (Draparnaud, 1805)",Даудебардія коротконога,вразливий,vulnerable
+56,Mollusca,Gastropoda,Stylommatophora,Drobacia banatica,"(Rossmдssler, 1838)","Drobacia banatica (Rossmдssler, 1838)",Дробація банатська,вразливий,vulnerable
+57,Mollusca,Gastropoda,Stylommatophora,Arianta aethyops,"(Bielz, 1851)","Arianta aethyops (Bielz, 1851)",Аріанта чорна,рідкісний,rare
+58,Mollusca,Gastropoda,Stylommatophora,Trochulus villosulus,"(Rossmдssler, 1838)","Trochulus villosulus (Rossmдssler, 1838)",Волохатик довговолосий,вразливий,vulnerable
+59,Mollusca,Gastropoda,Stylommatophora,Trochulus bielzi,"(Bielz, 1860)","Trochulus bielzi (Bielz, 1860)",Волохатик карпатський,рідкісний,rare
+60,Mollusca,Gastropoda,Stylommatophora,Plicuteria lubomirskii,"(Ślósarski, 1881)","Plicuteria lubomirskii (Ślósarski, 1881)",Волохатик Любомирського,рідкісний,rare
+61,Mollusca,Gastropoda,Stylommatophora,Prostenomphalia carpathica,"Baidashnikov, 1985","Prostenomphalia carpathica Baidashnikov, 1985",Простеномфалія карпатська,вразливий,vulnerable
+62,Mollusca,Bivalvia,Venerida,Hypanis laeviuscula,"(Eichwald, 1829)","Hypanis laeviuscula (Eichwald, 1829)",Бужанка гладенька,вразливий,vulnerable
+63,Mollusca,Bivalvia,Venerida,Hypanis plicata,"(Eichwald, 1829)","Hypanis plicata (Eichwald, 1829)",Бужанка складчаста,вразливий,vulnerable
+64,Mollusca,Bivalvia,Venerida,Sphaerium nucleus,"(Studer, 1820)","Sphaerium nucleus (Studer, 1820)",Кулька кісточка,вразливий,vulnerable
+65,Mollusca,Bivalvia,Unionida,Unio crassus,"Philipsson, 1788","Unio crassus Philipsson, 1788",Перлівниця товста,вразливий,vulnerable
+66,Mollusca,Bivalvia,Unionida,Anodonta cygnea,"(Linnaeus, 1758)","Anodonta cygnea (Linnaeus, 1758)",Беззубка лебедина,вразливий,vulnerable
+67,Mollusca,Bivalvia,Unionida,Pseudanodonta complanata,"Rossmдssler, 1835","Pseudanodonta complanata Rossmдssler, 1835",Беззубка вузька,вразливий,vulnerable
+68,Mollusca,Bivalvia,Ostreoida,Ostrea edulis,"Linnaeus, 1758","Ostrea edulis Linnaeus, 1758",Устриця їстівна,зникаючий,endangered
+69,Arthropoda,Branchiopoda,Anostraca,Branchinecta ferox,"(Milne-Edwards, 1840)","Branchinecta ferox (Milne-Edwards, 1840)",Бранхінекта лякаюча,недостатньо відомий,data_deficient
+70,Arthropoda,Branchiopoda,Anostraca,Branchinecta minuta,"Smirnov, 1948","Branchinecta minuta Smirnov, 1948",Бранхінекта маленька,недостатньо відомий,data_deficient
+71,Arthropoda,Branchiopoda,Anostraca,Branchinecta orientalis,"Sars, 1901","Branchinecta orientalis Sars, 1901",Бранхінекта східна,зникаючий,endangered
+72,Arthropoda,Branchiopoda,Anostraca,Branchipus schaefferi,"Fischer, 1834","Branchipus schaefferi Fischer, 1834",Бранхіпус Шаффера,рідкісний,rare
+73,Arthropoda,Branchiopoda,Anostraca,Tanymastix stagnalis,"(Linnaeus, 1758)","Tanymastix stagnalis (Linnaeus, 1758)",Танімастикс ставковий,вразливий,vulnerable
+74,Arthropoda,Branchiopoda,Anostraca,Phallocryptus spinosa,"(Milne-Edwards, 1840)","Phallocryptus spinosa (Milne-Edwards, 1840)",Фалокриптус колючий,вразливий,vulnerable
+75,Arthropoda,Branchiopoda,Anostraca,Branchinectella media,"(Schmankewitsch, 1873)","Branchinectella media (Schmankewitsch, 1873)",Бранхінектела середня,вразливий,vulnerable
+76,Arthropoda,Branchiopoda,Anostraca,Drepanosurus birostratus,"(Fischer, 1851)","Drepanosurus birostratus (Fischer, 1851)",Дрепанозурус дволикий,вразливий,vulnerable
+77,Arthropoda,Branchiopoda,Diplostraca,Cyzicus tetracerus,"(Krynicki, 1830)","Cyzicus tetracerus (Krynicki, 1830)",Цизикус чотиривусий,вразливий,vulnerable
+78,Arthropoda,Branchiopoda,Diplostraca,Limnadia lenticularis,"(Linnaeus, 1761)","Limnadia lenticularis (Linnaeus, 1761)",Лімнадія опукла,вразливий,vulnerable
+79,Arthropoda,Copepoda,Calanoida,Hemidiaptomus rylovi,"Charin, 1928","Hemidiaptomus rylovi Charin, 1928",Гемідіаптом Рилова,зникаючий,endangered
+80,Arthropoda,Copepoda,Calanoida,Speodiaptomus birsteini,"Borutzky, 1962","Speodiaptomus birsteini Borutzky, 1962",Спеодіаптомус Бірштейна,недостатньо відомий,data_deficient
+81,Arthropoda,Copepoda,Calanoida,Acartia margalefi,"Alcaraz, 1976","Acartia margalefi Alcaraz, 1976",Акарція Маргалефа,зникаючий,endangered
+82,Arthropoda,Copepoda,Calanoida,Anomalocera patersoni,"Templeton, 1837","Anomalocera patersoni Templeton, 1837",Аномалоцера Патерсона,зникаючий,endangered
+83,Arthropoda,Copepoda,Calanoida,Pontella mediterranea,"(Claus, 1863)","Pontella mediterranea (Claus, 1863)",Понтела середземноморська,вразливий,vulnerable
+84,Arthropoda,Copepoda,Calanoida,Labidocera brunescens,"(Czerniavsky, 1868)","Labidocera brunescens (Czerniavsky, 1868)",Лабідоцера брунатна,зникаючий,endangered
+85,Arthropoda,Copepoda,Cyclopoida,Oithona nana,"Giesbrecht, 1893","Oithona nana Giesbrecht, 1893",Ойтона карликова,зникаючий,endangered
+86,Arthropoda,Copepoda,Cyclopoida,Sergiosmirnovia reducta,"(Monchenko, 1977)","Sergiosmirnovia reducta (Monchenko, 1977)",Смірновіела редукована,недостатньо відомий,data_deficient
+87,Arthropoda,Copepoda,Cyclopoida,Colpocyclops dulcis,"Monchenko, 1977","Colpocyclops dulcis Monchenko, 1977",Кольпоциклоп прісноводний,недостатньо відомий,data_deficient
+88,Arthropoda,Copepoda,Cyclopoida,Colpocyclops longispinosus,"(Monchenko, 1974)","Colpocyclops longispinosus (Monchenko, 1974)",Кольпоциклоп шипуватий,недостатньо відомий,data_deficient
+89,Arthropoda,Malacostraca,Mysida,Hemimysis serrata,"Bacescu, 1938","Hemimysis serrata Bacescu, 1938",Мізида зубчаста,зникаючий,endangered
+90,Arthropoda,Malacostraca,Mysida,Katamysis warpachowskyi,"Sars, 1893","Katamysis warpachowskyi Sars, 1893",Мізида Варпаховського,недостатньо відомий,data_deficient
+91,Arthropoda,Malacostraca,Amphipoda,Kuzmelina kusnezowi,"(Sowinsky, 1894)","Kuzmelina kusnezowi (Sowinsky, 1894)",Гмеліна Кузнецова,недостатньо відомий,data_deficient
+92,Arthropoda,Malacostraca,Amphipoda,Niphargogammarus intermedius,"(Carausu, 1943)","Niphargogammarus intermedius (Carausu, 1943)",Ніфаргогамарус середній,недостатньо відомий,data_deficient
+93,Arthropoda,Malacostraca,Amphipoda,Iphigenella shablensis,"Carausu, 1943","Iphigenella shablensis Carausu, 1943",Іфігенела шаблінська,недостатньо відомий,data_deficient
+94,Arthropoda,Malacostraca,Amphipoda,Iphigenella acanthopoda,"Sars, 1896","Iphigenella acanthopoda Sars, 1896",Іфігенела колючконога,недостатньо відомий,data_deficient
+95,Arthropoda,Malacostraca,Amphipoda,Iphigenella andrussowi,"Sars, 1894","Iphigenella andrussowi Sars, 1894",Іфігенела Андрусова,недостатньо відомий,data_deficient
+96,Arthropoda,Malacostraca,Amphipoda,Niphargus vadimi,"Birstein, 1961","Niphargus vadimi Birstein, 1961",Ніфаргус Вадима,вразливий,vulnerable
+97,Arthropoda,Malacostraca,Isopoda,Typhloligidium coecum,"(Carl, 1904)","Typhloligidium coecum (Carl, 1904)",Тифлолігідіум сліпий,вразливий,vulnerable
+98,Arthropoda,Malacostraca,Decapoda,Lysmata seticaudata,"(Risso, 1816)","Lysmata seticaudata (Risso, 1816)",Лісмата щетинконога,вразливий,vulnerable
+99,Arthropoda,Malacostraca,Decapoda,Astacus astacus,"(Linnaeus, 1758)","Astacus astacus (Linnaeus, 1758)",Рак широкопалий,вразливий,vulnerable
+100,Arthropoda,Malacostraca,Decapoda,Astacus pachypus,"Rathke, 1837","Astacus pachypus Rathke, 1837",Рак товстопалий,зникаючий,endangered
+101,Arthropoda,Malacostraca,Decapoda,Eriphia verrucosa,"(Forskеl, 1775)","Eriphia verrucosa (Forskеl, 1775)",Краб кам’яний,зникаючий,endangered
+102,Arthropoda,Malacostraca,Decapoda,Pachygrapsus marmoratus,"(Fabricius, 1787)","Pachygrapsus marmoratus (Fabricius, 1787)",Краб мармуровий,рідкісний,rare
+103,Arthropoda,Malacostraca,Decapoda,Potamon ibericum,"(Bieberstein, 1808)","Potamon ibericum (Bieberstein, 1808)",Краб прісноводний,зникаючий,endangered
+104,Arthropoda,Arachnida,Scorpiones,Euscorpius tauricus,"(Koch, 1837)","Euscorpius tauricus (Koch, 1837)",Скорпіон кримський,рідкісний,rare
+105,Arthropoda,Arachnida,Solifugae,Galeodes araneoides,"(Pallas, 1772)","Galeodes araneoides (Pallas, 1772)",Сольпуга звичайна,рідкісний,rare
+106,Arthropoda,Diplopoda,Polydesmida,Polydesmus montanus,"Daday, 1889","Polydesmus montanus Daday, 1889",Багатозв’яз гірський,недостатньо відомий,data_deficient
+107,Arthropoda,Diplopoda,Julida,Leptoiulus semenkevitschi,"Lohmander, 1928","Leptoiulus semenkevitschi Lohmander, 1928",Лептоюлус Семенкевича,недостатньо відомий,data_deficient
+108,Arthropoda,Diplopoda,Julida,Syrioiulus kovali,"(Golovatch, 2008)","Syrioiulus kovali (Golovatch, 2008)",Сиріоюлус Коваля,вразливий,vulnerable
+109,Arthropoda,Collembola,Poduromorpha,Taurogastrura skelica,"Vargovitsh, 2007","Taurogastrura skelica Vargovitsh, 2007",Таврогаструра скельська,вразливий,vulnerable
+110,Arthropoda,Collembola,Poduromorpha,Morulina verrucosa,"(Bцrner, 1903)","Morulina verrucosa (Bцrner, 1903)",Моруліна бородавчаста,рідкісний,rare
+111,Arthropoda,Collembola,Poduromorpha,Tetrodontophora bielanensis,"(Waga, 1842)","Tetrodontophora bielanensis (Waga, 1842)",Тетродонтофора блакитна,рідкісний,rare
+112,Arthropoda,Collembola,Poduromorpha,Protaphorura janosik,"Weiner, 1990","Protaphorura janosik Weiner, 1990",Протафорура Яношіка,вразливий,vulnerable
+113,Arthropoda,Collembola,Symphypleona,Pygmarrhopalites carpathicus,"(Vargovich, 1999)","Pygmarrhopalites carpathicus (Vargovich, 1999)",Пігмаропалітес карпатський,вразливий,vulnerable
+114,Arthropoda,Collembola,Symphypleona,Pygmarrhopalites tauricus,"Vargovitsh, 2009","Pygmarrhopalites tauricus Vargovitsh, 2009",Пігмаропалітес таврійський,рідкісний,rare
+115,Arthropoda,Insecta,Ephemeroptera,Palingenia fuliginosa,"(Georgi, 1802)","Palingenia fuliginosa (Georgi, 1802)",Палінгенія димчаста,зникаючий,endangered
+116,Arthropoda,Insecta,Ephemeroptera,Ecdyonurus solus,"Godunko, Kłonowska-Olejniket Prokopov, 2007","Ecdyonurus solus Godunko, Kłonowska-Olejniket Prokopov, 2007",Екдіонурус єдиний,зникаючий,endangered
+117,Arthropoda,Insecta,Ephemeroptera,Heptagenia samochai,"(Demoulin, 1973)","Heptagenia samochai (Demoulin, 1973)",Гептагенія Самоха,зникаючий,endangered
+118,Arthropoda,Insecta,Ephemeroptera,Isonychia ignota,"(Walker, 1853)","Isonychia ignota (Walker, 1853)",Ізоніхія невідома,вразливий,vulnerable
+119,Arthropoda,Insecta,Ephemeroptera,Baetopus tenellus,"(Albarda, 1878)","Baetopus tenellus (Albarda, 1878)",Бетопус ніжний,рідкісний,rare
+120,Arthropoda,Insecta,Ephemeroptera,Brachycercus harrisella,"Curtis, 1834","Brachycercus harrisella Curtis, 1834",Брахіцеркус Харриса,рідкісний,rare
+121,Arthropoda,Insecta,Ephemeroptera,Metreletus balcanicus,"(Ulmer, 1920)","Metreletus balcanicus (Ulmer, 1920)",Метрелетус балканський,рідкісний,rare
+122,Arthropoda,Insecta,Odonata,Calopteryx taurica,"(Selys, 1853)","Calopteryx taurica (Selys, 1853)",Красуня блискуча кримська,вразливий,vulnerable
+123,Arthropoda,Insecta,Odonata,Calopteryx virgo,"(Linnaeus, 1758)","Calopteryx virgo (Linnaeus, 1758)",Красуня-діва,вразливий,vulnerable
+124,Arthropoda,Insecta,Odonata,Nehalennia speciosa,"Charpentier, 1840","Nehalennia speciosa Charpentier, 1840",Негаленія чудова,вразливий,vulnerable
+125,Arthropoda,Insecta,Odonata,Coenagrion armatum,"Charpentier, 1840","Coenagrion armatum Charpentier, 1840",Стрілка озброєна,зникаючий,endangered
+126,Arthropoda,Insecta,Odonata,Erythromma lindenii,"(Selys, 1840)","Erythromma lindenii (Selys, 1840)",Стрілка Ліндена,рідкісний,rare
+127,Arthropoda,Insecta,Odonata,Anax imperator,"Leach, 1815","Anax imperator Leach, 1815",Дозорець-імператор,вразливий,vulnerable
+128,Arthropoda,Insecta,Odonata,Cordulegaster boltoni,"(Donovan, 1807)","Cordulegaster boltoni (Donovan, 1807)",Кордулегастер кільчастий,вразливий,vulnerable
+129,Arthropoda,Insecta,Odonata,Cordulegaster bidendata,"Selys, 1843","Cordulegaster bidendata Selys, 1843",Кордулегастер двозубчастий,зникаючий,endangered
+130,Arthropoda,Insecta,Odonata,Ophiogomphus cecilia,"(Fourcroy, 1785)","Ophiogomphus cecilia (Fourcroy, 1785)",Офіогомфус Цецилія,вразливий,vulnerable
+131,Arthropoda,Insecta,Odonata,Leucorrhinia albifrons,"(Burmeister, 1832)","Leucorrhinia albifrons (Burmeister, 1832)",Левкоринія білолоба,зникаючий,endangered
+132,Arthropoda,Insecta,Odonata,Sympetrum pedemontanus,"(Allioni, 1776)","Sympetrum pedemontanus (Allioni, 1776)",Бабка перев’язана,вразливий,vulnerable
+133,Arthropoda,Insecta,Odonata,Somatochlora arctica,"(Zetterstedt, 1840)","Somatochlora arctica (Zetterstedt, 1840)",Зеленотілка північна,вразливий,vulnerable
+134,Arthropoda,Insecta,Mantoptera,Empusa fasciata,"Brullи, 1836","Empusa fasciata Brullи, 1836",Емпуза смугаста,вразливий,vulnerable
+135,Arthropoda,Insecta,Mantoptera,Empusa pennicornis,"(Pallas, 1773)","Empusa pennicornis (Pallas, 1773)",Емпуза піщана,вразливий,vulnerable
+136,Arthropoda,Insecta,Mantoptera,Iris polystictica,"(Fischer-Waldheim, 1846)","Iris polystictica (Fischer-Waldheim, 1846)",Ірис плямистий,рідкісний,rare
+137,Arthropoda,Insecta,Mantoptera,Bolivaria brachyptera,"(Pallas, 1773)","Bolivaria brachyptera (Pallas, 1773)",Боліварія короткокрила,вразливий,vulnerable
+138,Arthropoda,Insecta,Orthoptera,Poecilimon schmidti,"(Fieber, 1853)","Poecilimon schmidti (Fieber, 1853)",Пилкохвіст лісовий,вразливий,vulnerable
+139,Arthropoda,Insecta,Orthoptera,Poecilimon scythicus,"Stchelkanovtzev, 1911","Poecilimon scythicus Stchelkanovtzev, 1911",Пилкохвіст скіфський,вразливий,vulnerable
+140,Arthropoda,Insecta,Orthoptera,Poecilimon pliginskii,"Miram, 1929","Poecilimon pliginskii Miram, 1929",Пилкохвіст Плігінського,зникаючий,endangered
+141,Arthropoda,Insecta,Orthoptera,Poecilimon ukrainicus,"Bey-Bienko, 1951","Poecilimon ukrainicus Bey-Bienko, 1951",Пилкохвіст український,вразливий,vulnerable
+142,Arthropoda,Insecta,Orthoptera,Saga pedo,"(Pallas, 1771)","Saga pedo (Pallas, 1771)",Дибка степова,рідкісний,rare
+143,Arthropoda,Insecta,Orthoptera,Callimenus multituberculatus,"(Fischer-Waldheim, 1833)","Callimenus multituberculatus (Fischer-Waldheim, 1833)",Коник-товстун,зникаючий,endangered
+144,Arthropoda,Insecta,Orthoptera,Isophya zubowskii,"Bey-Bienko, 1954","Isophya zubowskii Bey-Bienko, 1954",Ізофія Зубовського,зникаючий,endangered
+145,Arthropoda,Insecta,Orthoptera,Isophya modesta,"(Frivaldszky, 1868)","Isophya modesta (Frivaldszky, 1868)",Ізофія непримітна,вразливий,vulnerable
+146,Arthropoda,Insecta,Orthoptera,Pholidoptera frivaldszkyi,"(Herman, 1871)","Pholidoptera frivaldszkyi (Herman, 1871)",Фолідоптера Фрівальдського,вразливий,vulnerable
+147,Arthropoda,Insecta,Orthoptera,Anadrymadusa retowskii,"(Adelung, 1907)","Anadrymadusa retowskii (Adelung, 1907)",Анадримадуза Ретовського,вразливий,vulnerable
+148,Arthropoda,Insecta,Orthoptera,Pseudomogoplistes buzantius,"Gorochov, 1995","Pseudomogoplistes buzantius Gorochov, 1995",Цвіркун візантійський,вразливий,vulnerable
+149,Arthropoda,Insecta,Orthoptera,Bryodemella tuberculata,"(Fabricius, 1775)","Bryodemella tuberculata (Fabricius, 1775)",Тріскачка ширококрила,зникаючий,endangered
+150,Arthropoda,Insecta,Plecoptera,Leuctra crimeana,"Zhiltzova, 1967","Leuctra crimeana Zhiltzova, 1967",Левктра кримська,вразливий,vulnerable
+151,Arthropoda,Insecta,Plecoptera,Isoperla prokopovi,"Zhiltzova et Zwick, 2012","Isoperla prokopovi Zhiltzova et Zwick, 2012",Ізоперла Прокопова,вразливий,vulnerable
+152,Arthropoda,Insecta,Plecoptera,Palingenia longicuada,"(Olivier, 1791)","Palingenia longicuada (Olivier, 1791)",Палінгенія довгохвоста,зникаючий,endangered
+153,Arthropoda,Insecta,Embioptera,Haploembia solieri,"(Rambur, 1842)","Haploembia solieri (Rambur, 1842)",Ембія реліктова,рідкісний,rare
+154,Arthropoda,Insecta,Homoptera,Porphyrophora polonica,"(Linneaeus, 1758)","Porphyrophora polonica (Linneaeus, 1758)",Кошеніль польська,недостатньо відомий,data_deficient
+155,Arthropoda,Insecta,Hemiptera,Coranus griseus,"(Rossi, 1790)","Coranus griseus (Rossi, 1790)",Коранус сірий,рідкісний,rare
+156,Arthropoda,Insecta,Hemiptera,Oncocephalus paternus,"Putshkov, 1984","Oncocephalus paternus Putshkov, 1984",Онкоцефал кримський,недостатньо відомий,data_deficient
+157,Arthropoda,Insecta,Hemiptera,Brachynema germari,(Kolenati 1846),Brachynema germari (Kolenati 1846),Брахінема Ґермара,рідкісний,rare
+158,Arthropoda,Insecta,Hemiptera,Jalla dumosa,"(Linnaeus, 1758)","Jalla dumosa (Linnaeus, 1758)",Ялла овальна,рідкісний,rare
+159,Arthropoda,Insecta,Hemiptera,Aphelocheirus aestivalis,"(Fabricius, 1794)","Aphelocheirus aestivalis (Fabricius, 1794)",Афелохерій (плавт) літній,рідкісний,rare
+160,Arthropoda,Insecta,Hemiptera,Velia saulii,"Tamanini, 1947","Velia saulii Tamanini, 1947",Велія Саэлі,рідкісний,rare
+161,Arthropoda,Insecta,Hemiptera,Aquarius najas,"(De Geer, 1773)","Aquarius najas (De Geer, 1773)",Водомірка наяда,рідкісний,rare
+162,Arthropoda,Insecta,Coleoptera,Rhysodes sulcatus,"(Fabricius, 1787)","Rhysodes sulcatus (Fabricius, 1787)",Різодес борозенчастий,вразливий,vulnerable
+163,Arthropoda,Insecta,Coleoptera,Cephalota atrata,"(Pallas, 1776)","Cephalota atrata (Pallas, 1776)",Стрибун темний,рідкісний,rare
+164,Arthropoda,Insecta,Coleoptera,Cephalota besseri,"(Dejean, 1826)","Cephalota besseri (Dejean, 1826)",Стрибун Бессера,рідкісний,rare
+165,Arthropoda,Insecta,Coleoptera,Calosoma sycophanta,"(Linnaeus, 1758)","Calosoma sycophanta (Linnaeus, 1758)",Красотіл пахучий,вразливий,vulnerable
+166,Arthropoda,Insecta,Coleoptera,Carabus scabrosus,"(Bonelli, 1811)","Carabus scabrosus (Bonelli, 1811)","Слимакоїд кримський, турун кримський",вразливий,vulnerable
+167,Arthropoda,Insecta,Coleoptera,Carabus hungaricus,"(Fabricius, 1792)","Carabus hungaricus (Fabricius, 1792)",Турун угорський,вразливий,vulnerable
+168,Arthropoda,Insecta,Coleoptera,Carabus bessarabicus,"(Fischer von Waldheim, 1823)","Carabus bessarabicus (Fischer von Waldheim, 1823)",Турун бесарабський,вразливий,vulnerable
+169,Arthropoda,Insecta,Coleoptera,Carabus estreicheri,"(Fischer von Waldheim, 1822)","Carabus estreicheri (Fischer von Waldheim, 1822)",Турун Ештрайхера,вразливий,vulnerable
+170,Arthropoda,Insecta,Coleoptera,Carabus menetriesi,"(Hummel, 1827)","Carabus menetriesi (Hummel, 1827)",Турун Менетріє,вразливий,vulnerable
+171,Arthropoda,Insecta,Coleoptera,Carabus nitens,"Linnaeus, 1758","Carabus nitens Linnaeus, 1758",Турун блискучий,рідкісний,rare
+172,Arthropoda,Insecta,Coleoptera,Carabus stscheglowi,"(Mannerheim, 1827)","Carabus stscheglowi (Mannerheim, 1827)",Турун Щеглова,рідкісний,rare
+173,Arthropoda,Insecta,Coleoptera,Miscodera arctica,"(Paykull, 1798)","Miscodera arctica (Paykull, 1798)",Міскодера арктична,рідкісний,rare
+174,Arthropoda,Insecta,Coleoptera,Parazuphium chevrolati,"(Castelnau, 1833)","Parazuphium chevrolati (Castelnau, 1833)",Жужелиця Шевролата,рідкісний,rare
+175,Arthropoda,Insecta,Coleoptera,Carterus dama,"(Rossi, 1792)","Carterus dama (Rossi, 1792)",Жужелиця дама,рідкісний,rare
+176,Arthropoda,Insecta,Coleoptera,Pseudophaenops jacobsoni,"(Pliginsky, 1912)","Pseudophaenops jacobsoni (Pliginsky, 1912)",Псевдофенопс Якобсона,вразливий,vulnerable
+177,Arthropoda,Insecta,Coleoptera,Taurocimmerites dublanskii,"Belousov, 1998","Taurocimmerites dublanskii Belousov, 1998",Турун печерний Дублянського,рідкісний,rare
+178,Arthropoda,Insecta,Coleoptera,Dytiscus latissimus,"(Linnaeus, 1758)","Dytiscus latissimus (Linnaeus, 1758)",Плавунець широкий,недостатньо відомий,data_deficient
+179,Arthropoda,Insecta,Coleoptera,Graphoderes bilineatus,"(De Geer, 1774)","Graphoderes bilineatus (De Geer, 1774)",Плавунець дволінійний,недостатньо відомий,data_deficient
+180,Arthropoda,Insecta,Coleoptera,Orectochilus villosus,"(Mьller, 1776)","Orectochilus villosus (Mьller, 1776)",Вертик сутінковий,рідкісний,rare
+181,Arthropoda,Insecta,Coleoptera,Emus hirtus,"(Linnaeus, 1758)","Emus hirtus (Linnaeus, 1758)",Стафілін волохатий,рідкісний,rare
+182,Arthropoda,Insecta,Coleoptera,Ocypus curtipennis,"(Motschulsky, 1849)","Ocypus curtipennis (Motschulsky, 1849)",Бистрик короткокрилий,вразливий,vulnerable
+183,Arthropoda,Insecta,Coleoptera,Tasgius pliginskii,"(Bernhauer, 1915)","Tasgius pliginskii (Bernhauer, 1915)",Стафілін Плігінського,вразливий,vulnerable
+184,Arthropoda,Insecta,Coleoptera,Quedius transsilvanicus,"(Weise, 1875)","Quedius transsilvanicus (Weise, 1875)",Кведій карпатський,вразливий,vulnerable
+185,Arthropoda,Insecta,Coleoptera,Ceratophyus polyceros,"(Pallas, 1771)","Ceratophyus polyceros (Pallas, 1771)",Цератофій багаторогий,вразливий,vulnerable
+186,Arthropoda,Insecta,Coleoptera,Bolbelasmus unicornis,"(Schrank, 1789)","Bolbelasmus unicornis (Schrank, 1789)",Больбелязм однорогий,вразливий,vulnerable
+187,Arthropoda,Insecta,Coleoptera,Protaetia speciosa,"(Adams, 1817)","Protaetia speciosa (Adams, 1817)",Бронзівка особлива,вразливий,vulnerable
+188,Arthropoda,Insecta,Coleoptera,Osmoderma barnabita,"(Motschulsky, 1845)","Osmoderma barnabita (Motschulsky, 1845)",Жук-самітник,вразливий,vulnerable
+189,Arthropoda,Insecta,Coleoptera,Acrossus bimaculatus,"(Laxmann, 1770)","Acrossus bimaculatus (Laxmann, 1770)",Гнойовичок двоплямистий,рідкісний,rare
+190,Arthropoda,Insecta,Coleoptera,Lucanus cervus,"(Linnaeus, 1758)","Lucanus cervus (Linnaeus, 1758)","Жук-олень, рогач звичайний",рідкісний,rare
+191,Arthropoda,Insecta,Coleoptera,Cerambyx cerdo,"(Linnaeus, 1758)","Cerambyx cerdo (Linnaeus, 1758)",Вусач великий дубовий західний,вразливий,vulnerable
+192,Arthropoda,Insecta,Coleoptera,Rosalia alpina,"(Linnaeus, 1758)","Rosalia alpina (Linnaeus, 1758)",Вусач альпійський,вразливий,vulnerable
+193,Arthropoda,Insecta,Coleoptera,Trichoferus pallidus,"(Olivier, 1790)","Trichoferus pallidus (Olivier, 1790)",Вусач-волосяник блідий,вразливий,vulnerable
+194,Arthropoda,Insecta,Coleoptera,Ropalopus insubricus,"(Germar, 1824)","Ropalopus insubricus (Germar, 1824)",Вусач-булавоніг дубовий,рідкісний,rare
+195,Arthropoda,Insecta,Coleoptera,Ropalopus hungaricus,"(Fabricius, 1775)","Ropalopus hungaricus (Fabricius, 1775)",Вусач-булавоніг кленовий,рідкісний,rare
+196,Arthropoda,Insecta,Coleoptera,Purpuricenus kaehleri,"(Linnaeus, 1758)","Purpuricenus kaehleri (Linnaeus, 1758)",Вусач-червонокрил Келера,вразливий,vulnerable
+197,Arthropoda,Insecta,Coleoptera,Dorcadion equestre,"(Laxmann, 1770)","Dorcadion equestre (Laxmann, 1770)",Вусач земляний хрестоносець (Коренеїд хрестоносець),вразливий,vulnerable
+198,Arthropoda,Insecta,Coleoptera,Dorcadion mokrzeckii,"(Jacobson, 1902)","Dorcadion mokrzeckii (Jacobson, 1902)",Земляний вусач Мокржецького,рідкісний,rare
+199,Arthropoda,Insecta,Coleoptera,Aromia moschata,"(Linnaeus, 1758)","Aromia moschata (Linnaeus, 1758)",Вусач мускусний,вразливий,vulnerable
+200,Arthropoda,Insecta,Coleoptera,Morimus funereus,"(Mulsant, 1863)","Morimus funereus (Mulsant, 1863)",Морімус темний,вразливий,vulnerable
+201,Arthropoda,Insecta,Coleoptera,Phytoecia tigrina,"(Mulsant, 1851)","Phytoecia tigrina (Mulsant, 1851)",Стеблівниця тигрова,рідкісний,rare
+202,Arthropoda,Insecta,Coleoptera,Cornumutila quadrivittata,"(Gebler, 1830)","Cornumutila quadrivittata (Gebler, 1830)",Вусачик чотирикрапковий,рідкісний,rare
+203,Arthropoda,Insecta,Coleoptera,Pseudogaurotina excellens,"(Brancsik, 1874)","Pseudogaurotina excellens (Brancsik, 1874)",Вусачик чудовий,вразливий,vulnerable
+204,Arthropoda,Insecta,Coleoptera,Buprestis splendens,"(Fabricius, 1774)","Buprestis splendens (Fabricius, 1774)",Златка блискуча,зниклий,extinct
+205,Arthropoda,Insecta,Coleoptera,Eurythyrea aurata,"(Pallas, 1776)","Eurythyrea aurata (Pallas, 1776)",Евритирея золота,рідкісний,rare
+206,Arthropoda,Insecta,Coleoptera,Eurythyrea quercus,"(Herbst, 1780)","Eurythyrea quercus (Herbst, 1780)",Евритирея дубова,рідкісний,rare
+207,Arthropoda,Insecta,Coleoptera,Cucujus cinnabarinus,"(Scopoli, 1763)","Cucujus cinnabarinus (Scopoli, 1763)",Плоскотілка червона,вразливий,vulnerable
+208,Arthropoda,Insecta,Coleoptera,Lacon querceus,"(Herbst, 1784)","Lacon querceus (Herbst, 1784)",Лакон дубовий,рідкісний,rare
+209,Arthropoda,Insecta,Coleoptera,Elater ferrugineus,"Linnaeus, 1758","Elater ferrugineus Linnaeus, 1758",Ковалик іржаво-бурий,вразливий,vulnerable
+210,Arthropoda,Insecta,Coleoptera,Alaus parreyssi,"(Steven, 1830)","Alaus parreyssi (Steven, 1830)",Ковалик Паррейса,зникаючий,endangered
+211,Arthropoda,Insecta,Coleoptera,Neopristilophus depressus,"(Coеrmar, 1822)","Neopristilophus depressus (Coеrmar, 1822)",Ковалик сплощений,рідкісний,rare
+212,Arthropoda,Insecta,Coleoptera,Cecchiniola platyscelidina,"(Jacobson, 1908)","Cecchiniola platyscelidina (Jacobson, 1908)",Чекініола пластисцелідина,зникаючий,endangered
+213,Arthropoda,Insecta,Coleoptera,Chrysolina carpathica,"(Fuss, 1856)","Chrysolina carpathica (Fuss, 1856)",Хризоліна карпатська,зникаючий,endangered
+214,Arthropoda,Insecta,Coleoptera,Oreina plagiata,"(Sufrian, 1861)","Oreina plagiata (Sufrian, 1861)",Ореїна плагіата,рідкісний,rare
+215,Arthropoda,Insecta,Coleoptera,Oreina viridis,"(Duftschmidt, 1825)","Oreina viridis (Duftschmidt, 1825)",Ореїна зелена,рідкісний,rare
+216,Arthropoda,Insecta,Coleoptera,Boros schneideri,"(Panzer, 1795)","Boros schneideri (Panzer, 1795)",Борос Шнайдера,рідкісний,rare
+217,Arthropoda,Insecta,Coleoptera,Pedilus rubricollis,"(Motschulsky, 1858)","Pedilus rubricollis (Motschulsky, 1858)",Педилюс червоногорлий,вразливий,vulnerable
+218,Arthropoda,Insecta,Coleoptera,Brachycerus sinuatus,"(Olivier, 1807)","Brachycerus sinuatus (Olivier, 1807)",Брахіцерус зморшкуватий,недостатньо відомий,data_deficient
+219,Arthropoda,Insecta,Coleoptera,Leucomigus candidatus,"(Pallas, 1771)","Leucomigus candidatus (Pallas, 1771)",Левкомігус білосніжний,рідкісний,rare
+220,Arthropoda,Insecta,Coleoptera,Lixus canescens,"(Fischer-Waldheim, 1835)","Lixus canescens (Fischer-Waldheim, 1835)",Ліксус катрановий,рідкісний,rare
+221,Arthropoda,Insecta,Coleoptera,Liparus laevigatus,"(Gyllenhal, 1834)","Liparus laevigatus (Gyllenhal, 1834)",Жиряк гладенький,неоцінений,not_evaluated
+222,Arthropoda,Insecta,Neuroptera,Libelloides macaronius,"(Scopoli, 1763)","Libelloides macaronius (Scopoli, 1763)",Аскалаф строкатий,вразливий,vulnerable
+223,Arthropoda,Insecta,Neuroptera,Acanthaclisis occitanica,"(Villers, 1789)","Acanthaclisis occitanica (Villers, 1789)",Велетенський мурашиний лев західний,зникаючий,endangered
+224,Arthropoda,Insecta,Neuroptera,Mantispa styriaca,"(Poda, 1761)","Mantispa styriaca (Poda, 1761)",Мантіспа штирійська,рідкісний,rare
+225,Arthropoda,Insecta,Mecoptera,Bittacus italicus,"(Mьller, 1786)","Bittacus italicus (Mьller, 1786)",Комарівка італійська,вразливий,vulnerable
+226,Arthropoda,Insecta,Mecoptera,Boreus westwoodi,"Hagen, 1866","Boreus westwoodi Hagen, 1866",Льодовичник Вествуда,вразливий,vulnerable
+227,Arthropoda,Insecta,Trichoptera,Oxyethira flavicornis,"(Pictet, 1834)","Oxyethira flavicornis (Pictet, 1834)",Оксієтира жовтовуса,вразливий,vulnerable
+228,Arthropoda,Insecta,Lepidoptera,Zerynthia polyxena,"(Deniset Schiffermьller, 1775)","Zerynthia polyxena (Deniset Schiffermьller, 1775)",Поліксена,вразливий,vulnerable
+229,Arthropoda,Insecta,Lepidoptera,Parnassius apollo,"(Linnaeus, 1758)","Parnassius apollo (Linnaeus, 1758)",Аполлон,зникаючий,endangered
+230,Arthropoda,Insecta,Lepidoptera,Parnassius mnemosyne,"(Linnaeus, 1758)","Parnassius mnemosyne (Linnaeus, 1758)",Мнемозина,вразливий,vulnerable
+231,Arthropoda,Insecta,Lepidoptera,Euchloe ausonia,"(Hьbner, 1804)","Euchloe ausonia (Hьbner, 1804)",Аврора біла,вразливий,vulnerable
+232,Arthropoda,Insecta,Lepidoptera,Zegris eupheme,"(Esper, 1805)","Zegris eupheme (Esper, 1805)",Зегрис Евфема,зникаючий,endangered
+233,Arthropoda,Insecta,Lepidoptera,Colias chrysotheme,"(Esper, 1777)","Colias chrysotheme (Esper, 1777)",Жовтюх золотистий,зникаючий,endangered
+234,Arthropoda,Insecta,Lepidoptera,Colias myrmidone,"(Esper, 1777)","Colias myrmidone (Esper, 1777)","Жовтюх шапранець, мірмідон",зникаючий,endangered
+235,Arthropoda,Insecta,Lepidoptera,Colias palaeno,"(Linnaeus, 1761)","Colias palaeno (Linnaeus, 1761)",Жовтюх торф’яний,зникаючий,endangered
+236,Arthropoda,Insecta,Lepidoptera,Hamearis lucina,"(Linnaeus, 1758)","Hamearis lucina (Linnaeus, 1758)",Люцина,вразливий,vulnerable
+237,Arthropoda,Insecta,Lepidoptera,Lycaena helle,"(Denis et Schiffermьller, 1775)","Lycaena helle (Denis et Schiffermьller, 1775)","Дукачик блакитнуватий, Гелла",вразливий,vulnerable
+238,Arthropoda,Insecta,Lepidoptera,Tomares nogelii,"(Herrich-Schдffer, 1851)","Tomares nogelii (Herrich-Schдffer, 1851)",Томарес Ногеля,вразливий,vulnerable
+239,Arthropoda,Insecta,Lepidoptera,Tomares callimachus,"(Eversmann, 1848)","Tomares callimachus (Eversmann, 1848)",Томарес Каллімах,вразливий,vulnerable
+240,Arthropoda,Insecta,Lepidoptera,Pseudophilotes bavius,"(Eversmann, 1832)","Pseudophilotes bavius (Eversmann, 1832)",Синявець Бавій,вразливий,vulnerable
+241,Arthropoda,Insecta,Lepidoptera,Phengaris alcon,"(Deniset Schiffermьller, 1775)","Phengaris alcon (Deniset Schiffermьller, 1775)",Синявець Алькон,зникаючий,endangered
+242,Arthropoda,Insecta,Lepidoptera,Kretania pylaon,"(Fischer v. Waldheim, 1832)","Kretania pylaon (Fischer v. Waldheim, 1832)",Синявець Пілаон,вразливий,vulnerable
+243,Arthropoda,Insecta,Lepidoptera,Agriades dardanus,"(Freyer, 1843)","Agriades dardanus (Freyer, 1843)",Синявець Дарданус,вразливий,vulnerable
+244,Arthropoda,Insecta,Lepidoptera,Polyommatus damon,"(Denis et Schiffermьller, 1775)","Polyommatus damon (Denis et Schiffermьller, 1775)",Синявець Дамон,зникаючий,endangered
+245,Arthropoda,Insecta,Lepidoptera,Polyommatus damone,"(Eversmann, 1841)","Polyommatus damone (Eversmann, 1841)",Синявець Дамоне,вразливий,vulnerable
+246,Arthropoda,Insecta,Lepidoptera,Polyommatus dorylas,"(Denis et Schiffermьller, 1775)","Polyommatus dorylas (Denis et Schiffermьller, 1775)","Синявець туркусовий, Дорилас",зникаючий,endangered
+247,Arthropoda,Insecta,Lepidoptera,Polyommatus eros,"(Ochsenheimer, 1808)","Polyommatus eros (Ochsenheimer, 1808)",Синявець Ерос,зникаючий,endangered
+248,Arthropoda,Insecta,Lepidoptera,Kirinia climene,"(Esper, 1783)","Kirinia climene (Esper, 1783)",Клімена,вразливий,vulnerable
+249,Arthropoda,Insecta,Lepidoptera,Coenonympha hero,"(Linnaeus, 1761)","Coenonympha hero (Linnaeus, 1761)",Прочанок Геро,вразливий,vulnerable
+250,Arthropoda,Insecta,Lepidoptera,Coenonympha oedippus,"(Fabricius, 1787)","Coenonympha oedippus (Fabricius, 1787)",Прочанок Едип,зникаючий,endangered
+251,Arthropoda,Insecta,Lepidoptera,Triphysa phryne,"(Pallas, 1771)","Triphysa phryne (Pallas, 1771)",Трифіза Фрина,вразливий,vulnerable
+252,Arthropoda,Insecta,Lepidoptera,Proterebia phegea,"(Borkhausen, 1788)","Proterebia phegea (Borkhausen, 1788)",Гірняк Феґея,вразливий,vulnerable
+253,Arthropoda,Insecta,Lepidoptera,Erebia manto,"(Deniset Schiffermьller, 1775)","Erebia manto (Deniset Schiffermьller, 1775)",Гірняк Манто,рідкісний,rare
+254,Arthropoda,Insecta,Lepidoptera,Melanargia russiae,"(Esper, 1783)","Melanargia russiae (Esper, 1783)",Мереживниця руська,зникаючий,endangered
+255,Arthropoda,Insecta,Lepidoptera,Hipparchia statilinus,"(Hufnagel, 1766)","Hipparchia statilinus (Hufnagel, 1766)",Сатир залізний,рідкісний,rare
+256,Arthropoda,Insecta,Lepidoptera,Chazara briseis,"(Linnaeus, 1764)","Chazara briseis (Linnaeus, 1764)",Сатир Бризеїда,вразливий,vulnerable
+257,Arthropoda,Insecta,Lepidoptera,Pseudochazara euxina,"(Kusnezov, 1909)","Pseudochazara euxina (Kusnezov, 1909)",Сатир евксинський,рідкісний,rare
+258,Arthropoda,Insecta,Lepidoptera,Apatura iris,"(Linnaeus, 1758)","Apatura iris (Linnaeus, 1758)",Райдужниця велика,вразливий,vulnerable
+259,Arthropoda,Insecta,Lepidoptera,Limenitis populi,"(Linnaeus, 1758)","Limenitis populi (Linnaeus, 1758)",Стрічкарка тополева,вразливий,vulnerable
+260,Arthropoda,Insecta,Lepidoptera,Euphydryas aurinia,"(Rottemburg, 1775)","Euphydryas aurinia (Rottemburg, 1775)",Рябець Авринія,вразливий,vulnerable
+261,Arthropoda,Insecta,Lepidoptera,Euphydryas maturna,"(Linnaeus, 1758)","Euphydryas maturna (Linnaeus, 1758)",Рябець матурна,вразливий,vulnerable
+262,Arthropoda,Insecta,Lepidoptera,Boloria aquilonaris,"(Stichel, 1908)","Boloria aquilonaris (Stichel, 1908)",Перлівець північний,зникаючий,endangered
+263,Arthropoda,Insecta,Lepidoptera,Boloria eunomia,"(Esper, 1800)","Boloria eunomia (Esper, 1800)",Перлівець Евномія,вразливий,vulnerable
+264,Arthropoda,Insecta,Lepidoptera,Marumba quercus,"(Deniset Schiffermьller, 1775)","Marumba quercus (Deniset Schiffermьller, 1775)",Бражник дубовий,рідкісний,rare
+265,Arthropoda,Insecta,Lepidoptera,Hemaris croatica,"(Esper, 1779)","Hemaris croatica (Esper, 1779)",Бражник хорватський,рідкісний,rare
+266,Arthropoda,Insecta,Lepidoptera,Hemaris tityus,"(Linnaeus, 1758)","Hemaris tityus (Linnaeus, 1758)",Бражник скабіозовий,рідкісний,rare
+267,Arthropoda,Insecta,Lepidoptera,Sphingonaepiopsis gorgoniades,"(Hьbner, 1819)","Sphingonaepiopsis gorgoniades (Hьbner, 1819)",Бражник карликовий,рідкісний,rare
+268,Arthropoda,Insecta,Lepidoptera,Proserpinus proserpina,"(Pallas, 1772)","Proserpinus proserpina (Pallas, 1772)",Бражник Прозерпіна,рідкісний,rare
+269,Arthropoda,Insecta,Lepidoptera,Hyles nicaea,"(De Prunner, 1798)","Hyles nicaea (De Prunner, 1798)",Бражник південний молочайний,рідкісний,rare
+270,Arthropoda,Insecta,Lepidoptera,Saturnia pyri,"(Deniset Schiffermьller, 1775)","Saturnia pyri (Deniset Schiffermьller, 1775)",Сатурнія велика,вразливий,vulnerable
+271,Arthropoda,Insecta,Lepidoptera,Eudia pavonia,"(Linnaeus, 1758)","Eudia pavonia (Linnaeus, 1758)",Сатурнія мала,рідкісний,rare
+272,Arthropoda,Insecta,Lepidoptera,Eudia spini,"(Denis et Schiffermьller, 1775)","Eudia spini (Denis et Schiffermьller, 1775)",Сатурнія середня,зникаючий,endangered
+273,Arthropoda,Insecta,Lepidoptera,Lemonia taraxaci,"(Deniset Schiffermьller, 1775)","Lemonia taraxaci (Deniset Schiffermьller, 1775)",Шовкопряд кульбабовий,вразливий,vulnerable
+274,Arthropoda,Insecta,Lepidoptera,Lemonia bellioni,"(Christoph, 1888)","Lemonia bellioni (Christoph, 1888)",Шовкопряд белліона,рідкісний,rare
+275,Arthropoda,Insecta,Lepidoptera,Eriogaster catax,"(Linnaeus, 1758)","Eriogaster catax (Linnaeus, 1758)",Коконопряд золотистий,зникаючий,endangered
+276,Arthropoda,Insecta,Lepidoptera,Catocala dilecta,"(Hьbner, 1808)","Catocala dilecta (Hьbner, 1808)",Стрічкарка велика червона,рідкісний,rare
+277,Arthropoda,Insecta,Lepidoptera,Catocala disjuncta,"(Geyer, 1828)","Catocala disjuncta (Geyer, 1828)",Стрічкарка диз’юнктивна,рідкісний,rare
+278,Arthropoda,Insecta,Lepidoptera,Catocala diversa,"(Geyer, 1828)","Catocala diversa (Geyer, 1828)",Стрічкарка червоно-жовта,рідкісний,rare
+279,Arthropoda,Insecta,Lepidoptera,Catocala neonympha,"(Esper, 1805)","Catocala neonympha (Esper, 1805)",Стрічкарка жовта східна,зникаючий,endangered
+280,Arthropoda,Insecta,Lepidoptera,Catocala pacta,"(Linnaeus, 1758)","Catocala pacta (Linnaeus, 1758)",Стрічкарка рожева,вразливий,vulnerable
+281,Arthropoda,Insecta,Lepidoptera,Arytrura musculus,"(Mйnйtriйs, 1859)","Arytrura musculus (Mйnйtriйs, 1859)",Аритрура мишаста,вразливий,vulnerable
+282,Arthropoda,Insecta,Lepidoptera,Catocala sponsa,"(Linnaeus, 1767)","Catocala sponsa (Linnaeus, 1767)",Стрічкарка орденська малинова,рідкісний,rare
+283,Arthropoda,Insecta,Lepidoptera,Cucullia magnifica,"(Freyer, 1840)","Cucullia magnifica (Freyer, 1840)",Каптурниця пишна,рідкісний,rare
+284,Arthropoda,Insecta,Lepidoptera,Cucullia splendida,"(Stoll, 1782)","Cucullia splendida (Stoll, 1782)",Каптурниця блискуча,рідкісний,rare
+285,Arthropoda,Insecta,Lepidoptera,Cucullia argentina,"(Fabricius, 1787)","Cucullia argentina (Fabricius, 1787)",Каптурниця срібляста,рідкісний,rare
+286,Arthropoda,Insecta,Lepidoptera,Cucullia argentea,"(Hufnagel, 1766)","Cucullia argentea (Hufnagel, 1766)",Каптурниця срібна,рідкісний,rare
+287,Arthropoda,Insecta,Lepidoptera,Cucullia lactea,"(Fabricius, 1787)","Cucullia lactea (Fabricius, 1787)",Каптурниця молочно-біла,вразливий,vulnerable
+288,Arthropoda,Insecta,Lepidoptera,Divaena haywardi,"(Tams, 1926)","Divaena haywardi (Tams, 1926)",Совка Гайварда,рідкісний,rare
+289,Arthropoda,Insecta,Lepidoptera,Rhyacia lucipeta,"(Deniset Schiffermьller, 1775)","Rhyacia lucipeta (Deniset Schiffermьller, 1775)",Совка Люціпета,зникаючий,endangered
+290,Arthropoda,Insecta,Lepidoptera,Phlogophora scita,"(Hьbner, 1790)","Phlogophora scita (Hьbner, 1790)",Совка агатова зелена,вразливий,vulnerable
+291,Arthropoda,Insecta,Lepidoptera,Mormo maura,"(Linnaeus, 1758)","Mormo maura (Linnaeus, 1758)",Совка велика похмура,вразливий,vulnerable
+292,Arthropoda,Insecta,Lepidoptera,Staurophora celsia,"(Linnaeus, 1758)","Staurophora celsia (Linnaeus, 1758)",Совка розкішна,рідкісний,rare
+293,Arthropoda,Insecta,Lepidoptera,Euchalcia variabilis,"(Pilleret Mitterpacher, 1783)","Euchalcia variabilis (Pilleret Mitterpacher, 1783)",Евхальція різнобарвна,рідкісний,rare
+294,Arthropoda,Insecta,Lepidoptera,Aedophron rhodites,"(Eversmann, 1851)","Aedophron rhodites (Eversmann, 1851)",Совка залізнякова рожева,зникаючий,endangered
+295,Arthropoda,Insecta,Lepidoptera,Heliothis incarnata,"(Freyer, 1838)","Heliothis incarnata (Freyer, 1838)",Совка лещицева,зникаючий,endangered
+296,Arthropoda,Insecta,Lepidoptera,Periphanes cora,"(Eversmann, 1837)","Periphanes cora (Eversmann, 1837)","Совка рутвицева денна, Кора",зникаючий,endangered
+297,Arthropoda,Insecta,Lepidoptera,Periphanes treitschkei,"(Frivaldsky, 1835)","Periphanes treitschkei (Frivaldsky, 1835)",Совка Трейчке,рідкісний,rare
+298,Arthropoda,Insecta,Lepidoptera,Panchrysia deaurata,"(Esper, 1787)","Panchrysia deaurata (Esper, 1787)",Панхризія золочена,зникаючий,endangered
+299,Arthropoda,Insecta,Lepidoptera,Diachrysia zosimi,"(Hьbner, 1822)","Diachrysia zosimi (Hьbner, 1822)",Металовидка родовикова,вразливий,vulnerable
+300,Arthropoda,Insecta,Lepidoptera,Pericallia matronula,"(Linnaeus, 1758)","Pericallia matronula (Linnaeus, 1758)",Ведмедиця велика,вразливий,vulnerable
+301,Arthropoda,Insecta,Lepidoptera,Callimorpha dominula,"(Linnaeus, 1758)","Callimorpha dominula (Linnaeus, 1758)",Ведмедиця-господиня,вразливий,vulnerable
+302,Arthropoda,Insecta,Lepidoptera,Chelis maculosa,"(Deniset Schiffermьller, 1775)","Chelis maculosa (Deniset Schiffermьller, 1775)",Ведмедиця плямиста,вразливий,vulnerable
+303,Arthropoda,Insecta,Lepidoptera,Rhyparioides metelkana,"(Lederer, 1861)","Rhyparioides metelkana (Lederer, 1861)",Ведмедиця Метелькана,зникаючий,endangered
+304,Arthropoda,Insecta,Lepidoptera,Watsonarctia deserta,"(Bartel, 1902)","Watsonarctia deserta (Bartel, 1902)",Ведмедиця чиста,вразливий,vulnerable
+305,Arthropoda,Insecta,Lepidoptera,Euplocamus anthracinalis,"(Scopoli, 1763)","Euplocamus anthracinalis (Scopoli, 1763)",Міль перистовуса букова,вразливий,vulnerable
+306,Arthropoda,Insecta,Lepidoptera,Orgyia dubia,"(Tauscher, 1806)","Orgyia dubia (Tauscher, 1806)",Китицехвіст степовий,вразливий,vulnerable
+307,Arthropoda,Insecta,Lepidoptera,Zygaena laeta,"(Hьbner, 1790)","Zygaena laeta (Hьbner, 1790)",Красик (Пістрянка) веселий,зникаючий,endangered
+308,Arthropoda,Insecta,Lepidoptera,Zygaena sedi,"(Fabricius, 1787)","Zygaena sedi (Fabricius, 1787)",Красик (Пістрянка) понтійський,рідкісний,rare
+309,Arthropoda,Insecta,Lepidoptera,Scardia boletella,"(Fabricius, 1794)","Scardia boletella (Fabricius, 1794)",Міль трутовикова велетенська,вразливий,vulnerable
+310,Arthropoda,Insecta,Lepidoptera,Celypha ermolenkoi,"Kostjuk, 1980","Celypha ermolenkoi Kostjuk, 1980",Листовійка Єрмоленка,вразливий,vulnerable
+311,Arthropoda,Insecta,Lepidoptera,Pelatea verucha,"Nedoshivina et Zolotuhin, 2005","Pelatea verucha Nedoshivina et Zolotuhin, 2005",Листовійка півонієва Віри,вразливий,vulnerable
+312,Arthropoda,Insecta,Lepidoptera,Eugnosta medvedevi,"(Gerasimov, 1930)","Eugnosta medvedevi (Gerasimov, 1930)",Листовійка Медведєва,вразливий,vulnerable
+313,Arthropoda,Insecta,Lepidoptera,Glyphipterix loricatella,"(Treitschke, 1833)","Glyphipterix loricatella (Treitschke, 1833)",Гліфіптерикс півниковий угорський,вразливий,vulnerable
+314,Arthropoda,Insecta,Hymenoptera,Pleroneura coniferarum,"(Hartig, 1837)","Pleroneura coniferarum (Hartig, 1837)",Плероневра хвойна,зникаючий,endangered
+315,Arthropoda,Insecta,Hymenoptera,Blasticotoma filiceti,"Klug, 1834","Blasticotoma filiceti Klug, 1834",Бластикотома папоротева,рідкісний,rare
+316,Arthropoda,Insecta,Hymenoptera,Urocerus augur,"(Klug, 1803)","Urocerus augur (Klug, 1803)",Рогохвіст-авгур,рідкісний,rare
+317,Arthropoda,Insecta,Hymenoptera,Xiphidria picta,"Konow,1897","Xiphidria picta Konow,1897",Ксифідрія строката,вразливий,vulnerable
+318,Arthropoda,Insecta,Hymenoptera,Konowia markewitshi,"Ermolenko, 1960","Konowia markewitshi Ermolenko, 1960",Коновія Маркевича,зникаючий,endangered
+319,Arthropoda,Insecta,Hymenoptera,Orussus abietinus,"(Scopoli, 1763)","Orussus abietinus (Scopoli, 1763)",Орусcус паразитичний,вразливий,vulnerable
+320,Arthropoda,Insecta,Hymenoptera,Orussus unicolor,"Latreille,1812","Orussus unicolor Latreille,1812",Орусcус чорний,недостатньо відомий,data_deficient
+321,Arthropoda,Insecta,Hymenoptera,Pachycephus cruentatus,"(Eversmann, 1847)","Pachycephus cruentatus (Eversmann, 1847)",Пахіцефус степовий,зникаючий,endangered
+322,Arthropoda,Insecta,Hymenoptera,Janus femoratus,"(Curtis, 1830)","Janus femoratus (Curtis, 1830)",Янус червононогий,вразливий,vulnerable
+323,Arthropoda,Insecta,Hymenoptera,Calameuta idolon,"(Rossi, 1794)","Calameuta idolon (Rossi, 1794)",Каламевта жовта,вразливий,vulnerable
+324,Arthropoda,Insecta,Hymenoptera,Cephus zahaikevitshi,"(Ermolenko, 1971)","Cephus zahaikevitshi (Ermolenko, 1971)",Цефус Загайкевича,вразливий,vulnerable
+325,Arthropoda,Insecta,Hymenoptera,Characopygus scythicus,"Dovnar-Zapolskij, 1931","Characopygus scythicus Dovnar-Zapolskij, 1931",Харакопіг скіфський,зникаючий,endangered
+326,Arthropoda,Insecta,Hymenoptera,Caenolyda reticulata,"(Linnaeus, 1758)","Caenolyda reticulata (Linnaeus, 1758)",Ценеліда сітчаста,вразливий,vulnerable
+327,Arthropoda,Insecta,Hymenoptera,Acantholyda flaviceps,"(Retzius, 1783)","Acantholyda flaviceps (Retzius, 1783)",Акантоліда жовтоголова,зникаючий,endangered
+328,Arthropoda,Insecta,Hymenoptera,Megalodontes medius,"Konow, 1897","Megalodontes medius Konow, 1897",Мегалодонт середній,рідкісний,rare
+329,Arthropoda,Insecta,Hymenoptera,Abia fulgens,"Zaddach, 1863","Abia fulgens Zaddach, 1863",Абія виблискуюча,рідкісний,rare
+330,Arthropoda,Insecta,Hymenoptera,Abia nitens,"(Linnaeus, 1758)","Abia nitens (Linnaeus, 1758)",Абія блискуча,рідкісний,rare
+331,Arthropoda,Insecta,Hymenoptera,Agre beckeri,"(Tournier, 1889)","Agre beckeri (Tournier, 1889)",Агре Беккера,рідкісний,rare
+332,Arthropoda,Insecta,Hymenoptera,Arge pleuritica,"(Klug,1834)","Arge pleuritica (Klug,1834)",Арге терновий,рідкісний,rare
+333,Arthropoda,Insecta,Hymenoptera,Macrophya teutona,"(Panzer, 1799)","Macrophya teutona (Panzer, 1799)",Макрофія тевтонська,зникаючий,endangered
+334,Arthropoda,Insecta,Hymenoptera,Siobla sturmi,"(Klug, 1817)","Siobla sturmi (Klug, 1817)",Сіобла бальзамінова,рідкісний,rare
+335,Arthropoda,Insecta,Hymenoptera,Tenthredo propingua,"Klug, 1817","Tenthredo propingua Klug, 1817",Трач схожий,неоцінений,not_evaluated
+336,Arthropoda,Insecta,Hymenoptera,Dolerus ciliatus,"Konow, 1891","Dolerus ciliatus Konow, 1891",Долерус степовий,рідкісний,rare
+337,Arthropoda,Insecta,Hymenoptera,Dolerus subalatus,"Kerensky, 1926","Dolerus subalatus Kerensky, 1926",Долерус короткокрилий,вразливий,vulnerable
+338,Arthropoda,Insecta,Hymenoptera,Corynis amoena,"(Klug, 1834)","Corynis amoena (Klug, 1834)",Кориніс блідо-жовтий,недостатньо відомий,data_deficient
+339,Arthropoda,Insecta,Hymenoptera,Trichiosoma aenescens,"Gussakovskij, 1947","Trichiosoma aenescens Gussakovskij, 1947",Трихіозома бронзована,зникаючий,endangered
+340,Arthropoda,Insecta,Hymenoptera,Zaraea fasciata,"(Linnaeus,1758)","Zaraea fasciata (Linnaeus,1758)",Зарея перев’язанокрила,рідкісний,rare
+341,Arthropoda,Insecta,Hymenoptera,Rhyssa kriechbaumeri,"Ozols, 1973","Rhyssa kriechbaumeri Ozols, 1973",Рисcа Кріхбаумера,рідкісний,rare
+342,Arthropoda,Insecta,Hymenoptera,Megarhyssa superba,"(Schrank, 1781)","Megarhyssa superba (Schrank, 1781)",Мегарисса рогохвостова,рідкісний,rare
+343,Arthropoda,Insecta,Hymenoptera,Megarhyssa perlata,"(Christ, 1791)","Megarhyssa perlata (Christ, 1791)",Мегарисса перлата,рідкісний,rare
+344,Arthropoda,Insecta,Hymenoptera,Megarhyssa rixator,"Schellenberg, 1802","Megarhyssa rixator Schellenberg, 1802",Мегарисcа сперечальниця,рідкісний,rare
+345,Arthropoda,Insecta,Hymenoptera,Megarhyssa vagatoria,"(Fabricius, 1793)","Megarhyssa vagatoria (Fabricius, 1793)",Мегарисcа блукальниця,рідкісний,rare
+346,Arthropoda,Insecta,Hymenoptera,Dolichomitus cephalotes,"(Holmgren, 1859)","Dolichomitus cephalotes (Holmgren, 1859)",Доліхомітус головастий,рідкісний,rare
+347,Arthropoda,Insecta,Hymenoptera,Coleocentrus heteropus,"Thompson, 1894","Coleocentrus heteropus Thompson, 1894",Колеоцентрус різноніг,рідкісний,rare
+348,Arthropoda,Insecta,Hymenoptera,Stephanus serrator,"(Fabrixius, 1798)","Stephanus serrator (Fabrixius, 1798)",Стефанус пильшик,рідкісний,rare
+349,Arthropoda,Insecta,Hymenoptera,Archirileya inopinata,"Silvestri, 1920","Archirileya inopinata Silvestri, 1920",Архірилея чорна,рідкісний,rare
+350,Arthropoda,Insecta,Hymenoptera,Tetramesa punctata,"Zerova, 1965","Tetramesa punctata Zerova, 1965",Тетрамеза пунктирована,рідкісний,rare
+351,Arthropoda,Insecta,Hymenoptera,Ibalia rufipes,"Cresson, 1879","Ibalia rufipes Cresson, 1879",Горіхотворка велетенська,вразливий,vulnerable
+352,Arthropoda,Insecta,Hymenoptera,Polochrum repandum,"Spinola, 1805","Polochrum repandum Spinola, 1805",Сапіга-полохрум,вразливий,vulnerable
+353,Arthropoda,Insecta,Hymenoptera,Megascolia maculata,"(Drury, 1773)","Megascolia maculata (Drury, 1773)",Сколія-гігант,неоцінений,not_evaluated
+354,Arthropoda,Insecta,Hymenoptera,Scolia galbula,"(Pallas, 1771)","Scolia galbula (Pallas, 1771)",Сколія односмугова,вразливий,vulnerable
+355,Arthropoda,Insecta,Hymenoptera,Campsoscolia klugii,"(Vander Linden, 1827)","Campsoscolia klugii (Vander Linden, 1827)",Кампсосколія жовтоволоса,зникаючий,endangered
+356,Arthropoda,Insecta,Hymenoptera,Discoelius zonalis,"(Panzer, 1801)","Discoelius zonalis (Panzer, 1801)",Дисцелія зональна,рідкісний,rare
+357,Arthropoda,Insecta,Hymenoptera,Celonites abbreviatus,"(Villers, 1789)","Celonites abbreviatus (Villers, 1789)",Целонітес кримський,вразливий,vulnerable
+358,Arthropoda,Insecta,Hymenoptera,Eumenes tripunctatus,"(Christ, 1791)","Eumenes tripunctatus (Christ, 1791)",Евмен трикрапковий,вразливий,vulnerable
+359,Arthropoda,Insecta,Hymenoptera,Onychopterocheilus pallasii,"(Klug, 1805)","Onychopterocheilus pallasii (Klug, 1805)",Оніхоптерохеілюс Паласа,зникаючий,endangered
+360,Arthropoda,Insecta,Hymenoptera,Paravespa rex,"(Schulthes, 1923)","Paravespa rex (Schulthes, 1923)",Паравеспа царська,вразливий,vulnerable
+361,Arthropoda,Insecta,Hymenoptera,Cryptocheilus annulatus,"(Fabricius, 1798)","Cryptocheilus annulatus (Fabricius, 1798)",Криптохіл кільчастий,рідкісний,rare
+362,Arthropoda,Insecta,Hymenoptera,Cryptocheilus rubellus,"(Eversmann, 1846)","Cryptocheilus rubellus (Eversmann, 1846)",Криптохіл червонуватий,рідкісний,rare
+363,Arthropoda,Insecta,Hymenoptera,Anoplius samariensis,"(Pallas, 1771)","Anoplius samariensis (Pallas, 1771)",Аноплій самарський,рідкісний,rare
+364,Arthropoda,Insecta,Hymenoptera,Ammophila sareptana,"Kohl, 1884","Ammophila sareptana Kohl, 1884",Амофіла сарептська,рідкісний,rare
+365,Arthropoda,Insecta,Hymenoptera,Cerceris tuberculata,"(Villers, 1787)","Cerceris tuberculata (Villers, 1787)",Церцеріс горбкуватий,рідкісний,rare
+366,Arthropoda,Insecta,Hymenoptera,Sphex flavipennis,"Fabricius, 1793","Sphex flavipennis Fabricius, 1793",Сфекс жовтокрилий,рідкісний,rare
+367,Arthropoda,Insecta,Hymenoptera,Sphex rufocinctus,"Gussakovskij, 1934","Sphex rufocinctus Gussakovskij, 1934",Сфекс рудуватий,неоцінений,not_evaluated
+368,Arthropoda,Insecta,Hymenoptera,Larra anathema,"(Rossi, 1790)","Larra anathema (Rossi, 1790)",Лярра анафемська,неоцінений,not_evaluated
+369,Arthropoda,Insecta,Hymenoptera,Stizus bipunctatus,"(Smith, 1856)","Stizus bipunctatus (Smith, 1856)",Стиз двокрапковий,рідкісний,rare
+370,Arthropoda,Insecta,Hymenoptera,Stizus fasciatus,"(Fabricius, 1781)","Stizus fasciatus (Fabricius, 1781)",Стиз смугастий,рідкісний,rare
+371,Arthropoda,Insecta,Hymenoptera,Stizoides tridentatus,"(Fabricius, 1775)","Stizoides tridentatus (Fabricius, 1775)",Стизоїд тризубий,рідкісний,rare
+372,Arthropoda,Insecta,Hymenoptera,Melitturga clavicornis,"(Latreille, 1806)","Melitturga clavicornis (Latreille, 1806)",Мелітурга булавоуса,вразливий,vulnerable
+373,Arthropoda,Insecta,Hymenoptera,Andrena stigmatica,"Morawitz, 1895","Andrena stigmatica Morawitz, 1895",Андрена червоноплямиста,рідкісний,rare
+374,Arthropoda,Insecta,Hymenoptera,Andrena magna,"Warncke, 1965","Andrena magna Warncke, 1965",Андрена велика,рідкісний,rare
+375,Arthropoda,Insecta,Hymenoptera,Andrena chrysopus,"Pйrez, 1903","Andrena chrysopus Pйrez, 1903",Андрена золотонога,рідкісний,rare
+376,Arthropoda,Insecta,Hymenoptera,Andrena ornata,"Morawitz, 1866","Andrena ornata Morawitz, 1866",Андрена ошатна,рідкісний,rare
+377,Arthropoda,Insecta,Hymenoptera,Andrena stepposa,"Osytshnjuk, 1977","Andrena stepposa Osytshnjuk, 1977",Андрена степова,рідкісний,rare
+378,Arthropoda,Insecta,Hymenoptera,Andrena tridentata,(Kirby 1802),Andrena tridentata (Kirby 1802),Андрена тризубчаста,зникаючий,endangered
+379,Arthropoda,Insecta,Hymenoptera,Colletes caspicus,Morawitz 1874,Colletes caspicus Morawitz 1874,Колет каспійський,зникаючий,endangered
+380,Arthropoda,Insecta,Hymenoptera,Colletes graeffei,"Alfken, 1900","Colletes graeffei Alfken, 1900",Колет Ґреффе,зникаючий,endangered
+381,Arthropoda,Insecta,Hymenoptera,Colletes punctatus,"Moczary, 1877","Colletes punctatus Moczary, 1877",Колет пунктирований,зникаючий,endangered
+382,Arthropoda,Insecta,Hymenoptera,Melitta melanura,"(Nylander, 1852)","Melitta melanura (Nylander, 1852)",Меліта чорнохвіста,зникаючий,endangered
+383,Arthropoda,Insecta,Hymenoptera,Dasypoda braccata,"Eversmann, 1852","Dasypoda braccata Eversmann, 1852",Дазипода куляста,зникаючий,endangered
+384,Arthropoda,Insecta,Hymenoptera,Dasypoda spinigera,"Kohl, 1905","Dasypoda spinigera Kohl, 1905",Дазипода (мохнонога бджола) шипоносна,рідкісний,rare
+385,Arthropoda,Insecta,Hymenoptera,Halictus luganicus,"Blьthgen, 1936","Halictus luganicus Blьthgen, 1936",Галікт луганський,рідкісний,rare
+386,Arthropoda,Insecta,Hymenoptera,Seladonia semitecta,"(Morawitz, 1873)","Seladonia semitecta (Morawitz, 1873)",Селадонія напіввкрита,зникаючий,endangered
+387,Arthropoda,Insecta,Hymenoptera,Evylaeus laevis,"(Kirby, 1802)","Evylaeus laevis (Kirby, 1802)",Евілей блискучий,зникаючий,endangered
+388,Arthropoda,Insecta,Hymenoptera,Evylaeus quadrisignatus,"(Schenck, 1853)","Evylaeus quadrisignatus (Schenck, 1853)",Евілей чотирьохплямистий,зникаючий,endangered
+389,Arthropoda,Insecta,Hymenoptera,Lasioglossum subfasciatum,"(Imhoff, 1832)","Lasioglossum subfasciatum (Imhoff, 1832)",Лазіоглос смугастенький,зникаючий,endangered
+390,Arthropoda,Insecta,Hymenoptera,Megachile lefebvrei,"(Lepeletier, 1841)","Megachile lefebvrei (Lepeletier, 1841)",Бджола-муляр (Бджола-ліпниця) Лефебвра,зникаючий,endangered
+391,Arthropoda,Insecta,Hymenoptera,Megachile giraudi,"Gerstaecker, 1869","Megachile giraudi Gerstaecker, 1869",Мегахіла Жіро (Бджола-листоріз Жіро),рідкісний,rare
+392,Arthropoda,Insecta,Hymenoptera,Hoplitis fulva,"(Eversmann, 1852)","Hoplitis fulva (Eversmann, 1852)",Гоплітіс рудий,рідкісний,rare
+393,Arthropoda,Insecta,Hymenoptera,Trachusa interrupta,"(Fabricius, 1781)","Trachusa interrupta (Fabricius, 1781)",Трахуза скабіозова,зникаючий,endangered
+394,Arthropoda,Insecta,Hymenoptera,Trachusa pubescens,"(Morawitz, 1872)","Trachusa pubescens (Morawitz, 1872)",Трахуза мохната,рідкісний,rare
+395,Arthropoda,Insecta,Hymenoptera,Stelis annulata,"(Lepeletier, 1841)","Stelis annulata (Lepeletier, 1841)",Стеліс кільчастий,рідкісний,rare
+396,Arthropoda,Insecta,Hymenoptera,Anthophora atricilla,"Eversmann, 1846","Anthophora atricilla Eversmann, 1846",Антофора чорновійчаста,рідкісний,rare
+397,Arthropoda,Insecta,Hymenoptera,Anthophora robusta,"(Klug, 1845)","Anthophora robusta (Klug, 1845)",Антофора коренаста,рідкісний,rare
+398,Arthropoda,Insecta,Hymenoptera,Cubitalia morio,"(Friese, 1922)","Cubitalia morio (Friese, 1922)",Кубіталія чорна,рідкісний,rare
+399,Arthropoda,Insecta,Hymenoptera,Eucera armeniaca,"(Morawitz, 1878)","Eucera armeniaca (Morawitz, 1878)",Евцера (Довговуса бджола) вірменська,рідкісний,rare
+400,Arthropoda,Insecta,Hymenoptera,Xylocopa valga,"Gerstaecker, 1872","Xylocopa valga Gerstaecker, 1872",Ксилокопа звичайна (Бджола-тесляр звичайна),рідкісний,rare
+401,Arthropoda,Insecta,Hymenoptera,Xylocopa violacea,"(Linnaeus, 1758)","Xylocopa violacea (Linnaeus, 1758)",Ксилокопа фіолетова (Бджола-тесляр фіолетова),рідкісний,rare
+402,Arthropoda,Insecta,Hymenoptera,Xylocopa iris,"(Christ, 1791)","Xylocopa iris (Christ, 1791)",Ксилокопа райдужна (Бджола-тесляр райдужна),зникаючий,endangered
+403,Arthropoda,Insecta,Hymenoptera,Bombus muscorum,"(Linnaeus, 1758)","Bombus muscorum (Linnaeus, 1758)",Джміль моховий,рідкісний,rare
+404,Arthropoda,Insecta,Hymenoptera,Bombus fragrans,"(Pallas, 1771)","Bombus fragrans (Pallas, 1771)",Джміль пахучий,зникаючий,endangered
+405,Arthropoda,Insecta,Hymenoptera,Bombus argillaceus,"(Scopoli, 1763)","Bombus argillaceus (Scopoli, 1763)",Джміль глинистий,вразливий,vulnerable
+406,Arthropoda,Insecta,Hymenoptera,Bombus armeniacus,"Radoszkowski, 1877","Bombus armeniacus Radoszkowski, 1877",Джміль вірменський,зникаючий,endangered
+407,Arthropoda,Insecta,Hymenoptera,Bombus pomorum,"(Panzer, 1805)","Bombus pomorum (Panzer, 1805)",Джміль яскравий,вразливий,vulnerable
+408,Arthropoda,Insecta,Hymenoptera,Bombus laesus,"Morawitz, 1875","Bombus laesus Morawitz, 1875",Джміль лезус,вразливий,vulnerable
+409,Arthropoda,Insecta,Hymenoptera,Bombus ruderatus,"(Fabricius, 1775)","Bombus ruderatus (Fabricius, 1775)",Джміль червонуватий,рідкісний,rare
+410,Arthropoda,Insecta,Hymenoptera,Bombus zonatus,"Smith, 1854","Bombus zonatus Smith, 1854",Джміль оперезаний,рідкісний,rare
+411,Arthropoda,Insecta,Hymenoptera,Liometopum microcephalum,"(Panzer, 1798)","Liometopum microcephalum (Panzer, 1798)",Ліометопум звичайний,рідкісний,rare
+412,Arthropoda,Insecta,Hymenoptera,Tapinoma kinburni,"Karawajew, 1937","Tapinoma kinburni Karawajew, 1937",Тапінома кінбурнська,рідкісний,rare
+413,Arthropoda,Insecta,Diptera,Ctenophora festiva,"Meigen, 1804","Ctenophora festiva Meigen, 1804",Ктенофора прикрашена,вразливий,vulnerable
+414,Arthropoda,Insecta,Diptera,Satanas gigas,"(Eversmann, 1855)","Satanas gigas (Eversmann, 1855)",Ктир велетенський,вразливий,vulnerable
+415,Arthropoda,Insecta,Diptera,Asilus crabroniformis,"(Linnaeus, 1758)","Asilus crabroniformis (Linnaeus, 1758)",Ктир шершенеподібний,вразливий,vulnerable
+416,Arthropoda,Insecta,Diptera,Caliprobola speciosa,"(Rossi, 1790)","Caliprobola speciosa (Rossi, 1790)",Каліпробола особлива,вразливий,vulnerable
+417,Arthropoda,Insecta,Diptera,Pocota personata,"(Harris, 1780)","Pocota personata (Harris, 1780)",Покота химерна,вразливий,vulnerable
+418,Arthropoda,Insecta,Diptera,Temnostoma meridionale,"Krivosheina et Mamaev, 1962","Temnostoma meridionale Krivosheina et Mamaev, 1962",Пилкоротиця південна,вразливий,vulnerable
+419,Arthropoda,Insecta,Diptera,Merodon femoratoides,"Paramonov, 1925","Merodon femoratoides Paramonov, 1925",Зубарик стегнуватий,вразливий,vulnerable
+420,Arthropoda,Insecta,Diptera,Merodon crassifemoris,"Paramonov, 1925","Merodon crassifemoris Paramonov, 1925",Зубарик грубоклубий,зникаючий,endangered
+421,Arthropoda,Insecta,Diptera,Merodon nigritarsis,"Rondani, 1845","Merodon nigritarsis Rondani, 1845",Зубарик чорнолапий,рідкісний,rare
+422,Arthropoda,Insecta,Diptera,Pelecocera latifrons,"Loew, 1856","Pelecocera latifrons Loew, 1856",Пелекоцера широколоба,вразливий,vulnerable
+423,Arthropoda,Insecta,Diptera,Callicera macquarti,"Rondani, 1844","Callicera macquarti Rondani, 1844",Красновуска Маккара,зникаючий,endangered
+424,Arthropoda,Insecta,Diptera,Psarus abdominalis,"(Fabricius, 1794)","Psarus abdominalis (Fabricius, 1794)",Псарус черевастий,вразливий,vulnerable
+425,Arthropoda,Insecta,Diptera,Eriozona syrphoides,"(Fallйn, 1817)","Eriozona syrphoides (Fallйn, 1817)",Еріозона сирфоподібна,вразливий,vulnerable
+426,Arthropoda,Insecta,Diptera,Urophora dzieduszyckii,"Frauenfeld, 1863","Urophora dzieduszyckii Frauenfeld, 1863",Урофора Дідушицького,рідкісний,rare
+427,Chordata,Petromyzontida,Petromyzontiformes,Eudontomyzon danfordi,"Regan, 1911","Eudontomyzon danfordi Regan, 1911",Мінога карпатська,зникаючий,endangered
+428,Chordata,Petromyzontida,Petromyzontiformes,Eudontomyzon mariae,"Berg, 1931","Eudontomyzon mariae Berg, 1931",Мінога українська,зникаючий,endangered
+429,Chordata,Actinopterygii,Acipenseriformes,Acipenser nudiventris,"Lovetsky, 1828","Acipenser nudiventris Lovetsky, 1828",Осетер шип,зникаючий,endangered
+430,Chordata,Actinopterygii,Acipenseriformes,Acipenser ruthenus,"Linnaeus, 1758","Acipenser ruthenus Linnaeus, 1758",Стерлядь прісноводна,вразливий,vulnerable
+431,Chordata,Actinopterygii,Acipenseriformes,Acipenser sturio,"Linnaeus, 1758","Acipenser sturio Linnaeus, 1758",Осетер атлантичний,зниклий,extinct
+432,Chordata,Actinopterygii,Acipenseriformes,Acipenser gueldenstaedtii,"Brandt et Ratzeburg, 1833","Acipenser gueldenstaedtii Brandt et Ratzeburg, 1833",Осетер російський,зникаючий,endangered
+433,Chordata,Actinopterygii,Acipenseriformes,Acipenser stellatus,"Pallas, 1771","Acipenser stellatus Pallas, 1771",Севрюга звичайна,зникаючий,endangered
+434,Chordata,Actinopterygii,Acipenseriformes,Huso huso,"(Linnaeus, 1758)","Huso huso (Linnaeus, 1758)",Білуга звичайна,зникаючий,endangered
+435,Chordata,Actinopterygii,Anguiliformes,Anguila anguila,"(Linnaeus, 1758)","Anguila anguila (Linnaeus, 1758)",Вугор європейський,зникаючий,endangered
+436,Chordata,Actinopterygii,Cypriniformes,Leuciscus idus,"(Linnaeus, 1758)","Leuciscus idus (Linnaeus, 1758)",В’язь звичайний,вразливий,vulnerable
+437,Chordata,Actinopterygii,Cypriniformes,Leuciscus leuciscus,"(Linnaeus, 1758)","Leuciscus leuciscus (Linnaeus, 1758)",Ялець звичайний,вразливий,vulnerable
+438,Chordata,Actinopterygii,Cypriniformes,Leuciscus danilewskii,"(Kessler, 1877)","Leuciscus danilewskii (Kessler, 1877)",Ялець Данилевського,зникаючий,endangered
+439,Chordata,Actinopterygii,Cypriniformes,Telestes souffia,"Risso, 1827","Telestes souffia Risso, 1827",Ялець-андруга європейський,вразливий,vulnerable
+440,Chordata,Actinopterygii,Cypriniformes,Rutilus frisii,"(Nordmann, 1840)","Rutilus frisii (Nordmann, 1840)",Вирезуб причорноморський,зникаючий,endangered
+441,Chordata,Actinopterygii,Cypriniformes,Rutilus virgo,"(Heckel, 1852)","Rutilus virgo (Heckel, 1852)",Плітка паннонська,рідкісний,rare
+442,Chordata,Actinopterygii,Cypriniformes,Chondrostoma variabile,"Jakovlev, 1870","Chondrostoma variabile Jakovlev, 1870",Підуст волзький,вразливий,vulnerable
+443,Chordata,Actinopterygii,Cypriniformes,Chodrostoma nasus,"(Linnaeus, 1758)","Chodrostoma nasus (Linnaeus, 1758)",Підуст звичайний,вразливий,vulnerable
+444,Chordata,Actinopterygii,Cypriniformes,Alburnoides rossicus,"Berg, 1924","Alburnoides rossicus Berg, 1924",Бистрянка російська,вразливий,vulnerable
+445,Chordata,Actinopterygii,Cypriniformes,Alburnus leobergi,"Freyhof et Kottelat, 2007","Alburnus leobergi Freyhof et Kottelat, 2007",Шемая азовська,вразливий,vulnerable
+446,Chordata,Actinopterygii,Cypriniformes,Alburnus sarmaticus,"Freyhof et Kottelat, 2007","Alburnus sarmaticus Freyhof et Kottelat, 2007",Шемая чорноморська,вразливий,vulnerable
+447,Chordata,Actinopterygii,Cypriniformes,Albunus mentoides,"(Kessler, 1859)","Albunus mentoides (Kessler, 1859)",Шемая кримська,зникаючий,endangered
+448,Chordata,Actinopterygii,Cypriniformes,Eupallasella percnurus,"(Pallas, 1814)","Eupallasella percnurus (Pallas, 1814)",Гольян озерний,зникаючий,endangered
+449,Chordata,Actinopterygii,Cypriniformes,Vimba tenella,"(Nordmann, 1840)","Vimba tenella (Nordmann, 1840)",Рибець малий,зниклий,extinct
+450,Chordata,Actinopterygii,Cypriniformes,Gobio uranoscopus,"(Agassiz, 1828)","Gobio uranoscopus (Agassiz, 1828)",Пічкур дунайський,зникаючий,endangered
+451,Chordata,Actinopterygii,Cypriniformes,Romanogobio kesslerii,"(Dybowski, 1862)","Romanogobio kesslerii (Dybowski, 1862)",Білоперий пічкур дністровський,вразливий,vulnerable
+452,Chordata,Actinopterygii,Cypriniformes,Barbus barbus,"(Linnaeus, 1758)","Barbus barbus (Linnaeus, 1758)",Марена звичайна,вразливий,vulnerable
+453,Chordata,Actinopterygii,Cypriniformes,Barbus borysthenicus,"Dybowski, 1862","Barbus borysthenicus Dybowski, 1862",Марена дніпровська,зникаючий,endangered
+454,Chordata,Actinopterygii,Cypriniformes,Barbus tauricus,"(Kessler, 1877)","Barbus tauricus (Kessler, 1877)",Марена кримська,зникаючий,endangered
+455,Chordata,Actinopterygii,Cypriniformes,Barbus waleckii,"Rolik, 1970","Barbus waleckii Rolik, 1970",Марена Валецького,вразливий,vulnerable
+456,Chordata,Actinopterygii,Cypriniformes,Barbus carpathicus,"Kotlik, Tsigenopoulos, Rab et Berrebi, 2002","Barbus carpathicus Kotlik, Tsigenopoulos, Rab et Berrebi, 2002",Марена карпатська,вразливий,vulnerable
+457,Chordata,Actinopterygii,Cypriniformes,Carassius carassius,"(Linnaeus, 1758)","Carassius carassius (Linnaeus, 1758)","Карась звичайний, Карась золотий",вразливий,vulnerable
+458,Chordata,Actinopterygii,Esociformes,Umbra krameri,"Walbaum, 1792","Umbra krameri Walbaum, 1792",Умбра звичайна,вразливий,vulnerable
+459,Chordata,Actinopterygii,Salmoniformes,Salmo labrax,"Pallas, 1814","Salmo labrax Pallas, 1814",Лосось чорноморський,зникаючий,endangered
+460,Chordata,Actinopterygii,Salmoniformes,Hucho hucho,"Linnaeus, 1758","Hucho hucho Linnaeus, 1758","Лосось дунайський, Головатиця",зникаючий,endangered
+461,Chordata,Actinopterygii,Salmoniformes,Thymallus thymallus,"(Linnaeus, 1758)","Thymallus thymallus (Linnaeus, 1758)",Харіус європейський,вразливий,vulnerable
+462,Chordata,Actinopterygii,Gadiformes,Lota lota,"(Linnaeus, 1758)","Lota lota (Linnaeus, 1758)",Минь річковий,вразливий,vulnerable
+463,Chordata,Actinopterygii,Mugiliformes,Liza ramada,"(Risso, 1827)","Liza ramada (Risso, 1827)",Кефаль рамада,рідкісний,rare
+464,Chordata,Actinopterygii,Lophiiformes,Lophius piscatorius,"Linnaeus, 1758","Lophius piscatorius Linnaeus, 1758",Морський чорт європейський,вразливий,vulnerable
+465,Chordata,Actinopterygii,Zeiformes,Zeus faber,"Linnaeus, 1758","Zeus faber Linnaeus, 1758","Зеус звичайний, Сонцевик звичайний",рідкісний,rare
+466,Chordata,Actinopterygii,Gasterosteiformes,Syngnathus variegatus,"Pallas, 1814","Syngnathus variegatus Pallas, 1814",Морська голка товсторила,вразливий,vulnerable
+467,Chordata,Actinopterygii,Gasterosteiformes,Syngnathus tenuirostris,"Rathke, 1837","Syngnathus tenuirostris Rathke, 1837",Морська голка тонкорила,вразливий,vulnerable
+468,Chordata,Actinopterygii,Gasterosteiformes,Hippocampus guttulatus,"Cuvier, 1829","Hippocampus guttulatus Cuvier, 1829",Морський коник довгорилий,вразливий,vulnerable
+469,Chordata,Actinopterygii,Scorpaeniformes,Chelidonichthys lucerna,"(Linnaeus, 1758)","Chelidonichthys lucerna (Linnaeus, 1758)","Тригла жовта, Морський півень жовтий",рідкісний,rare
+470,Chordata,Actinopterygii,Perciformes,Dicentrarchus labrax,"(Linnaeus, 1758)","Dicentrarchus labrax (Linnaeus, 1758)",Лаврак європейський,неоцінений,not_evaluated
+471,Chordata,Actinopterygii,Perciformes,Serranus scriba,"(Linnaeus, 1758)","Serranus scriba (Linnaeus, 1758)",Кам’яний окунь зебра,рідкісний,rare
+472,Chordata,Actinopterygii,Perciformes,Sander marinus,"(Cuvier, 1828)","Sander marinus (Cuvier, 1828)","Судак морський, Судак буговець",зникаючий,endangered
+473,Chordata,Actinopterygii,Perciformes,Sander volgensis,"(Gmelin, 1789)","Sander volgensis (Gmelin, 1789)","Судак волзький, Берш",зникаючий,endangered
+474,Chordata,Actinopterygii,Perciformes,Zingel zingel,"(Linnaeus, 1766)","Zingel zingel (Linnaeus, 1766)","Чоп звичайний, Чоп великий",вразливий,vulnerable
+475,Chordata,Actinopterygii,Perciformes,Zingel streber,"(Siebold, 1863)","Zingel streber (Siebold, 1863)",Чоп малий,вразливий,vulnerable
+476,Chordata,Actinopterygii,Perciformes,Percarina demidoffii,"Nordmann, 1840","Percarina demidoffii Nordmann, 1840",Перкарина чорноморська,рідкісний,rare
+477,Chordata,Actinopterygii,Perciformes,Percarina maeotica,"Kuznetsov, 1888","Percarina maeotica Kuznetsov, 1888",Перкарина азовська,рідкісний,rare
+478,Chordata,Actinopterygii,Perciformes,Gymnocephalus acerinus,"(Gьldenstдdt, 1774)","Gymnocephalus acerinus (Gьldenstдdt, 1774)",Йорж носар,зникаючий,endangered
+479,Chordata,Actinopterygii,Perciformes,Gymnocephalus schraester,"(Linnaeus, 1758)","Gymnocephalus schraester (Linnaeus, 1758)",Йорж смугастий,вразливий,vulnerable
+480,Chordata,Actinopterygii,Perciformes,Diplodus puntazzo,"(Cetti, 1777)","Diplodus puntazzo (Cetti, 1777)",Зубарик звичайний,неоцінений,not_evaluated
+481,Chordata,Actinopterygii,Perciformes,Pagellus erythrinus,"(Linnaeus, 1758)","Pagellus erythrinus (Linnaeus, 1758)",Пагель червоний,недостатньо відомий,data_deficient
+482,Chordata,Actinopterygii,Perciformes,Boops boops,"(Linnaeus, 1758)","Boops boops (Linnaeus, 1758)",Бопс смугастий,недостатньо відомий,data_deficient
+483,Chordata,Actinopterygii,Perciformes,Sciaena umbra,"Linnaeus, 1758","Sciaena umbra Linnaeus, 1758",Горбань темний,рідкісний,rare
+484,Chordata,Actinopterygii,Perciformes,Umbrina cirrosa,"(Linnaeus, 1758)","Umbrina cirrosa (Linnaeus, 1758)","Умбріна світла, Горбань світлий",рідкісний,rare
+485,Chordata,Actinopterygii,Perciformes,Chromis chromis,"(Linnaeus, 1758)","Chromis chromis (Linnaeus, 1758)","Хроміс звичайний, Морська ластівка",неоцінений,not_evaluated
+486,Chordata,Actinopterygii,Perciformes,Ctenolabrus rupestris,"(Linnaeus, 1758)","Ctenolabrus rupestris (Linnaeus, 1758)",Гребінчастий губань золотистий,рідкісний,rare
+487,Chordata,Actinopterygii,Perciformes,Symphodus rostratus,"(Bloch, 1791)","Symphodus rostratus (Bloch, 1791)",Зеленушка носата,вразливий,vulnerable
+488,Chordata,Actinopterygii,Perciformes,Labrus viridis,"Linnaeus, 1758","Labrus viridis Linnaeus, 1758",Губань зелений,рідкісний,rare
+489,Chordata,Actinopterygii,Perciformes,Tripterygion tripteronotus,"(Risso, 1810)","Tripterygion tripteronotus (Risso, 1810)",Трьохперка чорноголова,вразливий,vulnerable
+490,Chordata,Actinopterygii,Perciformes,Lepadogaster lepadogaster,"(Bonnaterre, 1788)","Lepadogaster lepadogaster (Bonnaterre, 1788)",Риба-присосок європейська,рідкісний,rare
+491,Chordata,Actinopterygii,Perciformes,Lepadogaster candolii,"Risso, 1810","Lepadogaster candolii Risso, 1810",Риба-присосок товсторила,рідкісний,rare
+492,Chordata,Actinopterygii,Perciformes,Diplecogaster bimaculatus,"(Bonnaterre, 1788)","Diplecogaster bimaculatus (Bonnaterre, 1788)",Короткопера риба-присосок двоплямиста,рідкісний,rare
+493,Chordata,Actinopterygii,Perciformes,Callionymus risso,"Lesueur, 1814","Callionymus risso Lesueur, 1814",Піскара сіра,рідкісний,rare
+494,Chordata,Actinopterygii,Perciformes,Callionymus pusilus,"Delaroche, 1809","Callionymus pusilus Delaroche, 1809",Піскара бура,рідкісний,rare
+495,Chordata,Actinopterygii,Perciformes,Gobius paganellus,"Linnaeus, 1758","Gobius paganellus Linnaeus, 1758",Бичок паганель,рідкісний,rare
+496,Chordata,Actinopterygii,Perciformes,Gobius bucchichi,"Steindachner, 1870","Gobius bucchichi Steindachner, 1870","Бичок Букчича, Бичок рись",рідкісний,rare
+497,Chordata,Actinopterygii,Perciformes,Gammogobius steinitzi,"Bath, 1971","Gammogobius steinitzi Bath, 1971",Бичок Штайниця,рідкісний,rare
+498,Chordata,Actinopterygii,Perciformes,Chromogobius quadrivittatus,"(Steindachner, 1863)","Chromogobius quadrivittatus (Steindachner, 1863)",Хромогобіус чотирьохсмугий,рідкісний,rare
+499,Chordata,Actinopterygii,Perciformes,Caspiosoma caspium,"(Kesssler, 1877)","Caspiosoma caspium (Kesssler, 1877)",Бичок-каспіосома каспійський,рідкісний,rare
+500,Chordata,Actinopterygii,Perciformes,Benthophiloides brauneri,"Beling et Iljin, 1927","Benthophiloides brauneri Beling et Iljin, 1927",Бичок-пуголовочок Браунера,рідкісний,rare
+501,Chordata,Actinopterygii,Perciformes,Benthophilus magistri,"Iljin, 1927","Benthophilus magistri Iljin, 1927",Бичок-пуголовок азовський,зникаючий,endangered
+502,Chordata,Actinopterygii,Perciformes,Benthophilus stellatus,"(Sauvage, 1874)","Benthophilus stellatus (Sauvage, 1874)",Бичок-пуголовок зірчастий,рідкісний,rare
+503,Chordata,Actinopterygii,Pleuronectiformes,Arnoglossus kessleri,"Schmidt, 1915","Arnoglossus kessleri Schmidt, 1915","Арноглось середземноморська, Камбала Кесслера",вразливий,vulnerable
+504,Chordata,Amphibia,Caudata,Salamandra salamandra,"(Linnaeus, 1758)","Salamandra salamandra (Linnaeus, 1758)",Саламандра плямиста,вразливий,vulnerable
+505,Chordata,Amphibia,Caudata,Triturus cristatus,"(Laurenti, 1768)","Triturus cristatus (Laurenti, 1768)",Тритон гребінчастий,вразливий,vulnerable
+506,Chordata,Amphibia,Caudata,Triturus dobrogicus,"(Kiritzescu, 1903)","Triturus dobrogicus (Kiritzescu, 1903)",Тритон дунайський,вразливий,vulnerable
+507,Chordata,Amphibia,Caudata,Triturus karelinii,"(Strauch, 1870)","Triturus karelinii (Strauch, 1870)",Тритон Кареліна,вразливий,vulnerable
+508,Chordata,Amphibia,Caudata,Ichthyosaura alpestris,"(Laurenti, 1768)","Ichthyosaura alpestris (Laurenti, 1768)",Тритон альпійський,вразливий,vulnerable
+509,Chordata,Amphibia,Caudata,Lissotriton montandoni,"(Boulenger, 1880)","Lissotriton montandoni (Boulenger, 1880)",Тритон карпатський,вразливий,vulnerable
+510,Chordata,Amphibia,Anura,Epidalea calamita,"(Laurenti, 1768)","Epidalea calamita (Laurenti, 1768)",Ропуха очеретяна,вразливий,vulnerable
+511,Chordata,Amphibia,Anura,Bombina variegata,"(Linnaeus, 1758)","Bombina variegata (Linnaeus, 1758)",Кумка жовточерева,вразливий,vulnerable
+512,Chordata,Amphibia,Anura,Rana dalmatina,"Fitzinger in Bonaparte, 1839","Rana dalmatina Fitzinger in Bonaparte, 1839",Прудка жаба,вразливий,vulnerable
+513,Chordata,Reptilia,Sauria,Mediodactylus danilewskii,"(Strauch, 1887)","Mediodactylus danilewskii (Strauch, 1887)",Гекон кримський,зникаючий,endangered
+514,Chordata,Reptilia,Sauria,Pseudopus apodus,"(Pallas, 1775)","Pseudopus apodus (Pallas, 1775)","Жовтопуз безногий, або жовтопузик",вразливий,vulnerable
+515,Chordata,Reptilia,Sauria,Lacerta viridis,"(Laurenti, 1768)","Lacerta viridis (Laurenti, 1768)",Ящірка зелена,вразливий,vulnerable
+516,Chordata,Reptilia,Sauria,Darevskia lindholmi,"(Lantz et Cyrйn, 1936)","Darevskia lindholmi (Lantz et Cyrйn, 1936)",Ящірка Ліндгольма,вразливий,vulnerable
+517,Chordata,Reptilia,Serpentes,Coronella austriaca,"Laurenti, 1768","Coronella austriaca Laurenti, 1768",Мідянка звичайна,вразливий,vulnerable
+518,Chordata,Reptilia,Serpentes,Dolichophis caspius,"(Gmelin, 1789)","Dolichophis caspius (Gmelin, 1789)","Полоз жовточеревий, або каспійський",вразливий,vulnerable
+519,Chordata,Reptilia,Serpentes,Elaphe dione,"(Pallas, 1773)","Elaphe dione (Pallas, 1773)",Полоз візерунковий,вразливий,vulnerable
+520,Chordata,Reptilia,Serpentes,Elaphe sauromates,"(Pallas, 1814)","Elaphe sauromates (Pallas, 1814)","Полоз сарматський, або палласів",вразливий,vulnerable
+521,Chordata,Reptilia,Serpentes,Zamenis longissimus,"(Laurenti, 1768)","Zamenis longissimus (Laurenti, 1768)","Полоз лісовий, або ескулапів",зникаючий,endangered
+522,Chordata,Reptilia,Serpentes,Zamenis situla,"(Linnaeus, 1758)","Zamenis situla (Linnaeus, 1758)",Полоз леопардовий,зникаючий,endangered
+523,Chordata,Reptilia,Serpentes,Vipera renardi,"(Christoph, 1861)","Vipera renardi (Christoph, 1861)",Гадюка степова,вразливий,vulnerable
+524,Chordata,Aves,Podicipediformes,Podiceps auritus,"(Linnaeus, 1758)","Podiceps auritus (Linnaeus, 1758)",Пірникоза червоношия,вразливий,vulnerable
+525,Chordata,Aves,Podicipediformes,Podiceps grisegena,"(Boddaert, 1783)","Podiceps grisegena (Boddaert, 1783)",Пірникоза сірощока,вразливий,vulnerable
+526,Chordata,Aves,Pelecaniformes,Pelecanus onocrotalus,"Linnaeus, 1758","Pelecanus onocrotalus Linnaeus, 1758",Пелікан рожевий,зникаючий,endangered
+527,Chordata,Aves,Pelecaniformes,Pelecanus crispus,"Bruch, 1832","Pelecanus crispus Bruch, 1832",Пелікан кучерявий,зникаючий,endangered
+528,Chordata,Aves,Pelecaniformes,Phalacrocorax aristotelis,"(Linnaeus, 1761)","Phalacrocorax aristotelis (Linnaeus, 1761)",Баклан чубатий,зникаючий,endangered
+529,Chordata,Aves,Pelecaniformes,Phalacrocorax pygmaeus,"(Pallas, 1773)","Phalacrocorax pygmaeus (Pallas, 1773)",Баклан малий,зникаючий,endangered
+530,Chordata,Aves,Ciconiiformes,Ardeola ralloides,"(Scopoli, 1769)","Ardeola ralloides (Scopoli, 1769)",Чапля жовта,рідкісний,rare
+531,Chordata,Aves,Ciconiiformes,Platalea leucorodia,"Linnaeus, 1758","Platalea leucorodia Linnaeus, 1758",Косар,вразливий,vulnerable
+532,Chordata,Aves,Ciconiiformes,Plegadis falcinellus,"(Linnaeus, 1766)","Plegadis falcinellus (Linnaeus, 1766)",Коровайка,вразливий,vulnerable
+533,Chordata,Aves,Ciconiiformes,Ciconia nigra,"(Linnaeus, 1758)","Ciconia nigra (Linnaeus, 1758)",Лелека чорний,рідкісний,rare
+534,Chordata,Aves,Anseriformes,Rufibrenta ruficollis,"(Pallas, 1769)","Rufibrenta ruficollis (Pallas, 1769)",Казарка червоновола,вразливий,vulnerable
+535,Chordata,Aves,Anseriformes,Anser erythropus,"(Linnaeus, 1758)","Anser erythropus (Linnaeus, 1758)",Гуска мала,вразливий,vulnerable
+536,Chordata,Aves,Anseriformes,Cygnus bewickii,"Yarrell, 1830","Cygnus bewickii Yarrell, 1830",Лебідь малий,рідкісний,rare
+537,Chordata,Aves,Anseriformes,Tadorna ferruginea,"(Pallas, 1764)","Tadorna ferruginea (Pallas, 1764)",Огар,вразливий,vulnerable
+538,Chordata,Aves,Anseriformes,Anas strepera,"Linnaeus, 1758","Anas strepera Linnaeus, 1758",Нерозень,рідкісний,rare
+539,Chordata,Aves,Anseriformes,Netta rufina,"(Pallas, 1773)","Netta rufina (Pallas, 1773)",Чернь червонодзьоба,рідкісний,rare
+540,Chordata,Aves,Anseriformes,Aythya nyroca,"(Guldenstadt, 1770)","Aythya nyroca (Guldenstadt, 1770)",Чернь білоока,вразливий,vulnerable
+541,Chordata,Aves,Anseriformes,Bucephala clangula,"(Linnaeus, 1758)","Bucephala clangula (Linnaeus, 1758)",Гоголь,рідкісний,rare
+542,Chordata,Aves,Anseriformes,Somateria mollissima,"(Linnaeus, 1758)","Somateria mollissima (Linnaeus, 1758)",Пухівка,вразливий,vulnerable
+543,Chordata,Aves,Anseriformes,Oxyura leucocephala,"(Scopoli, 1769)","Oxyura leucocephala (Scopoli, 1769)",Савка,зникаючий,endangered
+544,Chordata,Aves,Anseriformes,Mergus serrator,"Linnaeus, 1758","Mergus serrator Linnaeus, 1758",Крех середній,вразливий,vulnerable
+545,Chordata,Aves,Falconiformes,Pandion haliaetus,"(Linnaeus, 1758)","Pandion haliaetus (Linnaeus, 1758)",Скопа,зникаючий,endangered
+546,Chordata,Aves,Falconiformes,Milvus milvus,"(Linnaeus, 1758)","Milvus milvus (Linnaeus, 1758)",Шуліка рудий,зникаючий,endangered
+547,Chordata,Aves,Falconiformes,Milvus migrans,"(Boddaert, 1783)","Milvus migrans (Boddaert, 1783)",Шуліка чорний,вразливий,vulnerable
+548,Chordata,Aves,Falconiformes,Circus cyaneus,"(Linnaeus, 1766)","Circus cyaneus (Linnaeus, 1766)",Лунь польовий,рідкісний,rare
+549,Chordata,Aves,Falconiformes,Circus macrourus,"(Gmelin, 1771)","Circus macrourus (Gmelin, 1771)",Лунь степовий,зникаючий,endangered
+550,Chordata,Aves,Falconiformes,Circus pygargus,"(Linnaeus, 1758)","Circus pygargus (Linnaeus, 1758)",Лунь лучний,вразливий,vulnerable
+551,Chordata,Aves,Falconiformes,Accipiter brevipes,"(Severtzov, 1850)","Accipiter brevipes (Severtzov, 1850)",Яструб коротконогий,зникаючий,endangered
+552,Chordata,Aves,Falconiformes,Buteo rufinus,"(Cretzschmar, 1827)","Buteo rufinus (Cretzschmar, 1827)",Канюк степовий,рідкісний,rare
+553,Chordata,Aves,Falconiformes,Circaetus gallicus,"(Gmelin, 1788)","Circaetus gallicus (Gmelin, 1788)",Змієїд,рідкісний,rare
+554,Chordata,Aves,Falconiformes,Hieraaetus pennatus,"(Gmelin, 1788)","Hieraaetus pennatus (Gmelin, 1788)",Орел-карлик,рідкісний,rare
+555,Chordata,Aves,Falconiformes,Aquila rapax,"(Temminck, 1828)","Aquila rapax (Temminck, 1828)",Орел степовий,зникаючий,endangered
+556,Chordata,Aves,Falconiformes,Aquila clanga,"Pallas, 1811","Aquila clanga Pallas, 1811",Підорлик великий,рідкісний,rare
+557,Chordata,Aves,Falconiformes,Aquila pomarina,"Brehm, 1831","Aquila pomarina Brehm, 1831",Підорлик малий,рідкісний,rare
+558,Chordata,Aves,Falconiformes,Aquila heliaca,"Savigny, 1809","Aquila heliaca Savigny, 1809",Могильник,рідкісний,rare
+559,Chordata,Aves,Falconiformes,Aquila chrysaetos,"(Linnaeus, 1758)","Aquila chrysaetos (Linnaeus, 1758)",Беркут,вразливий,vulnerable
+560,Chordata,Aves,Falconiformes,Haliaeetus allbicilla,"(Linnaeus, 1758)","Haliaeetus allbicilla (Linnaeus, 1758)",Орлан-білохвіст,рідкісний,rare
+561,Chordata,Aves,Falconiformes,Neophron percnopterus,"(Linnaeus, 1758)","Neophron percnopterus (Linnaeus, 1758)",Стерв’ятник,зникаючий,endangered
+562,Chordata,Aves,Falconiformes,Aegypius monachus,"(Linnaeus, 1766)","Aegypius monachus (Linnaeus, 1766)",Гриф чорний,вразливий,vulnerable
+563,Chordata,Aves,Falconiformes,Gyps fulvus,"(Hablizl, 1783)","Gyps fulvus (Hablizl, 1783)",Сип білоголовий,вразливий,vulnerable
+564,Chordata,Aves,Falconiformes,Falco cherrug,"Gray, 1834","Falco cherrug Gray, 1834",Балабан,вразливий,vulnerable
+565,Chordata,Aves,Falconiformes,Falco peregrinus,"Tunstall, 1771","Falco peregrinus Tunstall, 1771",Сапсан,рідкісний,rare
+566,Chordata,Aves,Falconiformes,Falco naumanni,"Fleischer, 1818","Falco naumanni Fleischer, 1818",Боривітер степовий,зникаючий,endangered
+567,Chordata,Aves,Galliformes,Lyrurus tetrix,"(Linnaeus, 1758)","Lyrurus tetrix (Linnaeus, 1758)",Тетерук,зникаючий,endangered
+568,Chordata,Aves,Galliformes,Tetrao urogallus,"(Linnaeus, 1758)","Tetrao urogallus (Linnaeus, 1758)",Глушець,зникаючий,endangered
+569,Chordata,Aves,Galliformes,Tetrastes bonasia,"(Linnaeus, 1758)","Tetrastes bonasia (Linnaeus, 1758)",Орябок,вразливий,vulnerable
+570,Chordata,Aves,Gruiformes,Grus grus,"(Linnaeus, 1758)","Grus grus (Linnaeus, 1758)",Журавель сірий,рідкісний,rare
+571,Chordata,Aves,Gruiformes,Anthropoides virgo,"(Linnaeus, 1758)","Anthropoides virgo (Linnaeus, 1758)",Журавель степовий,зникаючий,endangered
+572,Chordata,Aves,Gruiformes,Otis tarda,"Linnaeus, 1758","Otis tarda Linnaeus, 1758",Дрохва,зникаючий,endangered
+573,Chordata,Aves,Gruiformes,Tetrax tetrax,"(Linnaeus, 1758)","Tetrax tetrax (Linnaeus, 1758)",Хохітва,зникаючий,endangered
+574,Chordata,Aves,Charadriiformes,Burhinus oedicnemus,"(Linnaeus, 1758)","Burhinus oedicnemus (Linnaeus, 1758)",Лежень,неоцінений,not_evaluated
+575,Chordata,Aves,Charadriiformes,Charadrius hiaticula,"Linnaeus, 1758","Charadrius hiaticula Linnaeus, 1758",Пісочник великий,рідкісний,rare
+576,Chordata,Aves,Charadriiformes,Charadrius alexandrinus,"(Linnaeus, 1758)","Charadrius alexandrinus (Linnaeus, 1758)",Пісочник морський,вразливий,vulnerable
+577,Chordata,Aves,Charadriiformes,Himantopus himantopus,"(Linnaeus, 1758)","Himantopus himantopus (Linnaeus, 1758)",Кулик-довгоніг,вразливий,vulnerable
+578,Chordata,Aves,Charadriiformes,Recurvirostra avosetta,"Linnaeus, 1758","Recurvirostra avosetta Linnaeus, 1758",Чоботар,рідкісний,rare
+579,Chordata,Aves,Charadriiformes,Haematopus ostralegus,"(Linnaeus, 1758)","Haematopus ostralegus (Linnaeus, 1758)",Кулик-сорока,вразливий,vulnerable
+580,Chordata,Aves,Charadriiformes,Tringa stagnatilis,"(Bechstein, 1803)","Tringa stagnatilis (Bechstein, 1803)",Коловодник ставковий,зникаючий,endangered
+581,Chordata,Aves,Charadriiformes,Gallingo media,"(Latham, 1787)","Gallingo media (Latham, 1787)",Баранець великий,зникаючий,endangered
+582,Chordata,Aves,Charadriiformes,Numenius tenuirostris,"Vieillot, 1817","Numenius tenuirostris Vieillot, 1817",Кульон тонкодзьобий,зникаючий,endangered
+583,Chordata,Aves,Charadriiformes,Numenius arquata,"(Linnaeus, 1758)","Numenius arquata (Linnaeus, 1758)",Кульон великий,зникаючий,endangered
+584,Chordata,Aves,Charadriiformes,Numenius phaeopus,"(Linnaeus, 1758)","Numenius phaeopus (Linnaeus, 1758)",Кульон середній,зникаючий,endangered
+585,Chordata,Aves,Charadriiformes,Limosa limosa,"(Linnaeus, 1758)","Limosa limosa (Linnaeus, 1758)",Грицик великий,вразливий,vulnerable
+586,Chordata,Aves,Charadriiformes,Glareola pratincola,"(Linnaeus, 1766)","Glareola pratincola (Linnaeus, 1766)",Дерихвіст лучний,рідкісний,rare
+587,Chordata,Aves,Charadriiformes,Glareola nordmanni,"Nordmann, 1842","Glareola nordmanni Nordmann, 1842",Дерихвіст степовий,зникаючий,endangered
+588,Chordata,Aves,Charadriiformes,Larus ichthyaetus,"Pallas, 1773","Larus ichthyaetus Pallas, 1773",Мартин каспійський,зникаючий,endangered
+589,Chordata,Aves,Charadriiformes,Hydroprogne caspia,"(Pallas, 1770)","Hydroprogne caspia (Pallas, 1770)",Крячок каспійський,вразливий,vulnerable
+590,Chordata,Aves,Charadriiformes,Sterna albifrons,"Pallas, 1764","Sterna albifrons Pallas, 1764",Крячок малий,рідкісний,rare
+591,Chordata,Aves,Columbiformes,Columba oenas,"Linnaeus, 1758","Columba oenas Linnaeus, 1758",Голуб-синяк,вразливий,vulnerable
+592,Chordata,Aves,Strigiformes,Bubo bubo,"(Linnaeus, 1758)","Bubo bubo (Linnaeus, 1758)",Пугач,рідкісний,rare
+593,Chordata,Aves,Strigiformes,Asio flammeus,"(Pontoppidan, 1763)","Asio flammeus (Pontoppidan, 1763)",Сова болотяна,рідкісний,rare
+594,Chordata,Aves,Strigiformes,Otus scops,"(Linnaeus, 1758)","Otus scops (Linnaeus, 1758)",Совка,рідкісний,rare
+595,Chordata,Aves,Strigiformes,Aegolius funereus,"(Linnaeus, 1758)","Aegolius funereus (Linnaeus, 1758)",Сич волохатий,рідкісний,rare
+596,Chordata,Aves,Strigiformes,Glaucidium passerinum,"(Linnaeus, 1758)","Glaucidium passerinum (Linnaeus, 1758)",Сичик-горобець,вразливий,vulnerable
+597,Chordata,Aves,Strigiformes,Strix uralensis,"Pallas, 1771","Strix uralensis Pallas, 1771",Сова довгохвоста,недостатньо відомий,data_deficient
+598,Chordata,Aves,Strigiformes,Strix nebulosa,"Forster, 1772","Strix nebulosa Forster, 1772",Сова бородата,рідкісний,rare
+599,Chordata,Aves,Strigiformes,Tyto alba,"(Scopoli, 1769)","Tyto alba (Scopoli, 1769)",Сипуха,зникаючий,endangered
+600,Chordata,Aves,Coraciiformes,Coracias garrulus,"Linnaeus, 1758","Coracias garrulus Linnaeus, 1758",Сиворакша,зникаючий,endangered
+601,Chordata,Aves,Piciformes,Picus viridis,"Linnaeus, 1758","Picus viridis Linnaeus, 1758",Жовна зелена,вразливий,vulnerable
+602,Chordata,Aves,Piciformes,Denrocopos leucotos,"(Bechstein, 1803)","Denrocopos leucotos (Bechstein, 1803)",Дятел білоспинний,рідкісний,rare
+603,Chordata,Aves,Piciformes,Picoides tridactylus,"(Linnaeus, 1758)","Picoides tridactylus (Linnaeus, 1758)",Дятел трипалий,вразливий,vulnerable
+604,Chordata,Aves,Passeriformes,Calandrella rufescens,"(Vieillot, 1820)","Calandrella rufescens (Vieillot, 1820)",Жайворонок сірий,неоцінений,not_evaluated
+605,Chordata,Aves,Passeriformes,Lanius senator,"Linnaeus, 1758","Lanius senator Linnaeus, 1758",Сорокопуд червоноголовий,рідкісний,rare
+606,Chordata,Aves,Passeriformes,Lanius excubitor,"Linnaeus, 1758","Lanius excubitor Linnaeus, 1758",Сорокопуд сірий,рідкісний,rare
+607,Chordata,Aves,Passeriformes,Sturnus roseus,"(Linnaeus, 1758)","Sturnus roseus (Linnaeus, 1758)",Шпак рожевий,рідкісний,rare
+608,Chordata,Aves,Passeriformes,Prunella collaris,"(Scopoli, 1769)","Prunella collaris (Scopoli, 1769)",Тинівка альпійська,вразливий,vulnerable
+609,Chordata,Aves,Passeriformes,Acrocephalus paludicola,"(Vieillot, 1817)","Acrocephalus paludicola (Vieillot, 1817)",Очеретянка прудка,зникаючий,endangered
+610,Chordata,Aves,Passeriformes,Regulus ignicapillus,"(Temminck, 1820)","Regulus ignicapillus (Temminck, 1820)",Золотомушка червоночуба,неоцінений,not_evaluated
+611,Chordata,Aves,Passeriformes,Monticola saxatilis,"(Linnaeus, 1766)","Monticola saxatilis (Linnaeus, 1766)",Скеляр строкатий,рідкісний,rare
+612,Chordata,Aves,Passeriformes,Parus cyanus,"Pallas, 1770","Parus cyanus Pallas, 1770",Синиця біла,рідкісний,rare
+613,Chordata,Aves,Passeriformes,Emberiza aureola,"Pallas, 1773","Emberiza aureola Pallas, 1773","Дібровник, або вівсянка лучна",зникаючий,endangered
+614,Chordata,Aves,Passeriformes,Emberiza melanocephala,"Scopoli, 1769","Emberiza melanocephala Scopoli, 1769",Вівсянка чорноголова,рідкісний,rare
+615,Chordata,Mammalia,Insectivora,Hemiechinus auritus,"(Gmelin, 1770)","Hemiechinus auritus (Gmelin, 1770)",Їжак вухатий,зникаючий,endangered
+616,Chordata,Mammalia,Insectivora,Desmana moschata,"(Linnaeus, 1758)","Desmana moschata (Linnaeus, 1758)",Хохуля руська,зникаючий,endangered
+617,Chordata,Mammalia,Insectivora,Crocidura leucodon,"(Hermann, 1780)","Crocidura leucodon (Hermann, 1780)",Білозубка велика,недостатньо відомий,data_deficient
+618,Chordata,Mammalia,Insectivora,Sorex alpinus,"(Schinz, 1837)","Sorex alpinus (Schinz, 1837)",Бурозубка альпійська,вразливий,vulnerable
+619,Chordata,Mammalia,Insectivora,Neomys anomalus,"(Cabrera, 1907)","Neomys anomalus (Cabrera, 1907)",Кутора мала,вразливий,vulnerable
+620,Chordata,Mammalia,Chiroptera,Rhinolophus hipposideros,"(Borkhausen, 1797)","Rhinolophus hipposideros (Borkhausen, 1797)",Підковоніс малий,вразливий,vulnerable
+621,Chordata,Mammalia,Chiroptera,Rhinolophus ferrumequinum,"(Schreber, 1774)","Rhinolophus ferrumequinum (Schreber, 1774)",Підковоніс великий,вразливий,vulnerable
+622,Chordata,Mammalia,Chiroptera,Miniopterus schreibersii,"(Kuhl, 1817)","Miniopterus schreibersii (Kuhl, 1817)",Довгокрил європейський,зниклий,extinct
+623,Chordata,Mammalia,Chiroptera,Myotis blythii,"(Tomes, 1857)","Myotis blythii (Tomes, 1857)",Нічниця гостровуха,вразливий,vulnerable
+624,Chordata,Mammalia,Chiroptera,Myotis myotis,"(Borkhausen, 1797)","Myotis myotis (Borkhausen, 1797)",Нічниця велика,вразливий,vulnerable
+625,Chordata,Mammalia,Chiroptera,Myotis bechsteinii,"(Kuhl, 1817)","Myotis bechsteinii (Kuhl, 1817)",Нічниця довговуха,зникаючий,endangered
+626,Chordata,Mammalia,Chiroptera,Myotis nattereri,"(Kuhl, 1817)","Myotis nattereri (Kuhl, 1817)",Нічниця Наттерера,зникаючий,endangered
+627,Chordata,Mammalia,Chiroptera,Myotis emarginatus,"(Geoffroy, 1806)","Myotis emarginatus (Geoffroy, 1806)",Нічниця триколірна,зникаючий,endangered
+628,Chordata,Mammalia,Chiroptera,Myotis dasycneme,"(Boie, 1825)","Myotis dasycneme (Boie, 1825)",Нічниця ставкова,зникаючий,endangered
+629,Chordata,Mammalia,Chiroptera,Myotis brandtii,"(Eversmann, 1845)","Myotis brandtii (Eversmann, 1845)",Нічниця Брандта,вразливий,vulnerable
+630,Chordata,Mammalia,Chiroptera,Myotis mystacinus,"(Kuhl, 1817)","Myotis mystacinus (Kuhl, 1817)",Нічниця вусата,вразливий,vulnerable
+631,Chordata,Mammalia,Chiroptera,Myotis aurascens,"Kuzyakin, 1935","Myotis aurascens Kuzyakin, 1935",Нічниця степова,вразливий,vulnerable
+632,Chordata,Mammalia,Chiroptera,Myotis alcathoe,"von Helversen et Heller, 2001","Myotis alcathoe von Helversen et Heller, 2001",Нічниця мала,зникаючий,endangered
+633,Chordata,Mammalia,Chiroptera,Myotis daubentonii,"(Kuhl, 1817)","Myotis daubentonii (Kuhl, 1817)",Нічниця водяна,вразливий,vulnerable
+634,Chordata,Mammalia,Chiroptera,Plecotus auritus,"(Linnaeus, 1758)","Plecotus auritus (Linnaeus, 1758)",Вухань бурий,вразливий,vulnerable
+635,Chordata,Mammalia,Chiroptera,Plecotus austriacus,"(Fischer, 1829)","Plecotus austriacus (Fischer, 1829)",Вухань сірий,вразливий,vulnerable
+636,Chordata,Mammalia,Chiroptera,Barbastella barbastellus,"(Schreber, 1774)","Barbastella barbastellus (Schreber, 1774)",Широковух європейський,зникаючий,endangered
+637,Chordata,Mammalia,Chiroptera,Nyctalus noctula,"(Schreber, 1774)","Nyctalus noctula (Schreber, 1774)",Вечірниця руда,вразливий,vulnerable
+638,Chordata,Mammalia,Chiroptera,Nyctalus leisleri,"(Kuhl, 1817)","Nyctalus leisleri (Kuhl, 1817)",Вечірниця мала,вразливий,vulnerable
+639,Chordata,Mammalia,Chiroptera,Nyctalus lasiopterus,"(Schreber, 1780)","Nyctalus lasiopterus (Schreber, 1780)",Вечірниця велетенська,зникаючий,endangered
+640,Chordata,Mammalia,Chiroptera,Pipistrellus pipistrellus,"(Schreber, 1774)","Pipistrellus pipistrellus (Schreber, 1774)",Нетопир малий,вразливий,vulnerable
+641,Chordata,Mammalia,Chiroptera,Pipistrellus pygmaeus,"(Leach, 1825)","Pipistrellus pygmaeus (Leach, 1825)",Нетопир пігмей,вразливий,vulnerable
+642,Chordata,Mammalia,Chiroptera,Pipistrellus kuhlii,"(Kuhl, 1817)","Pipistrellus kuhlii (Kuhl, 1817)",Нетопир білосмугий,вразливий,vulnerable
+643,Chordata,Mammalia,Chiroptera,Pipistrellus nathusii,"(Keyserling et Blasius, 1839)","Pipistrellus nathusii (Keyserling et Blasius, 1839)",Нетопир Натузіуса,вразливий,vulnerable
+644,Chordata,Mammalia,Chiroptera,Hypsugo savii,"(Bonaparte, 1837)","Hypsugo savii (Bonaparte, 1837)",Нетопир скельний,зникаючий,endangered
+645,Chordata,Mammalia,Chiroptera,Vespertilio murinus,"Linnaeus,1758","Vespertilio murinus Linnaeus,1758",Лилик двоколірний,вразливий,vulnerable
+646,Chordata,Mammalia,Chiroptera,Eptesicus serotinus,"(Schreber, 1774)","Eptesicus serotinus (Schreber, 1774)",Кажан пізній,вразливий,vulnerable
+647,Chordata,Mammalia,Chiroptera,Eptesicus nilssonii,"(Keyserling et Blasius, 1839)","Eptesicus nilssonii (Keyserling et Blasius, 1839)",Кажан північний,вразливий,vulnerable
+648,Chordata,Mammalia,Lagomorpha,Lepus timidus,"Linnaeus, 1758","Lepus timidus Linnaeus, 1758",Заєць білий,вразливий,vulnerable
+649,Chordata,Mammalia,Rodentia,Spermophilus citellus,"(Linnaeus, 1766)","Spermophilus citellus (Linnaeus, 1766)",Ховрах європейський,зникаючий,endangered
+650,Chordata,Mammalia,Rodentia,Spermophilus suslicus,"(Gьldenstaedt, 1770)","Spermophilus suslicus (Gьldenstaedt, 1770)",Ховрах крапчастий,зникаючий,endangered
+651,Chordata,Mammalia,Rodentia,Spermophilus odessanus,"Nordmann, 1840","Spermophilus odessanus Nordmann, 1840",Ховрах одеський,зникаючий,endangered
+652,Chordata,Mammalia,Rodentia,Spermophilus pygmaeus,"(Pallas, 1779)","Spermophilus pygmaeus (Pallas, 1779)",Ховрах малий,зникаючий,endangered
+653,Chordata,Mammalia,Rodentia,Marmota bobak,"(Muller, 1776)","Marmota bobak (Muller, 1776)",Бабак степовий,зникаючий,endangered
+654,Chordata,Mammalia,Rodentia,Nannospalax leucodon,"(Nordman,1840)","Nannospalax leucodon (Nordman,1840)",Сліпак білозубий,вразливий,vulnerable
+655,Chordata,Mammalia,Rodentia,Spalax zemni,"(Erxleben, 1777)","Spalax zemni (Erxleben, 1777)",Сліпак подільський,вразливий,vulnerable
+656,Chordata,Mammalia,Rodentia,Spalax arenarius,"Reshetnik, 1939","Spalax arenarius Reshetnik, 1939",Сліпак піщаний,вразливий,vulnerable
+657,Chordata,Mammalia,Rodentia,Spalax graecus,"Nehring, 1898","Spalax graecus Nehring, 1898",Сліпак буковинський,вразливий,vulnerable
+658,Chordata,Mammalia,Rodentia,Eliomys quercinus,"(Linnaeus, 1766)","Eliomys quercinus (Linnaeus, 1766)",Соня садова,зникаючий,endangered
+659,Chordata,Mammalia,Rodentia,Allactaga major,"(Kerr, 1792)","Allactaga major (Kerr, 1792)",Тушканчик великий,зникаючий,endangered
+660,Chordata,Mammalia,Rodentia,Stylodipus telum,"(Lichtenstein, 1823)","Stylodipus telum (Lichtenstein, 1823)",Ємуранчик звичайний,вразливий,vulnerable
+661,Chordata,Mammalia,Rodentia,Sicista betulina,"(Pallas, 1779)","Sicista betulina (Pallas, 1779)",Мишівка лісова,вразливий,vulnerable
+662,Chordata,Mammalia,Rodentia,Sicista strandi,"Formosov, 1931","Sicista strandi Formosov, 1931",Мишівка Штранда,вразливий,vulnerable
+663,Chordata,Mammalia,Rodentia,Sicista lorigera,"(Nordman, 1839)","Sicista lorigera (Nordman, 1839)",Мишівка Нордмана,зникаючий,endangered
+664,Chordata,Mammalia,Rodentia,Sicista cimlanica,"(Kovalskaya et al., 2000)","Sicista cimlanica (Kovalskaya et al., 2000)",Мишівка цимлянська,вразливий,vulnerable
+665,Chordata,Mammalia,Rodentia,Cricetus cricetus,"(Linnaeus, 1758)","Cricetus cricetus (Linnaeus, 1758)",Хом’як звичайний,вразливий,vulnerable
+666,Chordata,Mammalia,Rodentia,Nothocricetulus migratorius,"(Pallas, 1773)","Nothocricetulus migratorius (Pallas, 1773)",Хом’ячок сірий,вразливий,vulnerable
+667,Chordata,Mammalia,Rodentia,Microtus tatricus,"(Kratochvil, 1952)","Microtus tatricus (Kratochvil, 1952)",Полівка татранська,вразливий,vulnerable
+668,Chordata,Mammalia,Rodentia,Chionomys nivalis,"(Martins, 1842)","Chionomys nivalis (Martins, 1842)",Полівка снігова,вразливий,vulnerable
+669,Chordata,Mammalia,Rodentia,Lagurus lagurus,"(Pallas, 1773)","Lagurus lagurus (Pallas, 1773)",Строкатка степова,зникаючий,endangered
+670,Chordata,Mammalia,Rodentia,Ellobius talpinus,"(Pallas, 1770)","Ellobius talpinus (Pallas, 1770)",Сліпачок звичайний,зникаючий,endangered
+671,Chordata,Mammalia,Carnivora,Ursus arctos,"(Linnaeus, 1758)","Ursus arctos (Linnaeus, 1758)",Ведмідь бурий,зникаючий,endangered
+672,Chordata,Mammalia,Carnivora,Vormela peregusna,"(Gьldenstдdt, 1770)","Vormela peregusna (Gьldenstдdt, 1770)",Перегузня,вразливий,vulnerable
+673,Chordata,Mammalia,Carnivora,Mustela erminea,"(Linnaeus, 1758)","Mustela erminea (Linnaeus, 1758)",Горностай,вразливий,vulnerable
+674,Chordata,Mammalia,Carnivora,Mustela lutreola,"Linnaeus, 1758","Mustela lutreola Linnaeus, 1758",Норка європейська,зникаючий,endangered
+675,Chordata,Mammalia,Carnivora,Mustela eversmanii,"Lesson, 1827","Mustela eversmanii Lesson, 1827",Тхір степовий,зникаючий,endangered
+676,Chordata,Mammalia,Carnivora,Mustela putorius,"Linnaeus, 1758","Mustela putorius Linnaeus, 1758",Тхір лісовий,вразливий,vulnerable
+677,Chordata,Mammalia,Carnivora,Lutra lutra,"Linnaeus, 1758","Lutra lutra Linnaeus, 1758",Видра річкова,вразливий,vulnerable
+678,Chordata,Mammalia,Carnivora,Vulpes corsac,"Linnaeus, 1758","Vulpes corsac Linnaeus, 1758",Корсак,вразливий,vulnerable
+679,Chordata,Mammalia,Carnivora,Felis silvestris,"Schreber, 1777","Felis silvestris Schreber, 1777",Кіт лісовий,вразливий,vulnerable
+680,Chordata,Mammalia,Carnivora,Lynx lynx,"(Linnaeus, 1758)","Lynx lynx (Linnaeus, 1758)",Рись,вразливий,vulnerable
+681,Chordata,Mammalia,Pinnipedia,Monachus monachus,"(Hermann, 1779)","Monachus monachus (Hermann, 1779)",Тюлень-монах,зниклий,extinct
+682,Chordata,Mammalia,Cetacea,Tursiops truncatus,"(Montagu, 1821)","Tursiops truncatus (Montagu, 1821)",Афаліна,вразливий,vulnerable
+683,Chordata,Mammalia,Cetacea,Phocoena phocoena,"(Linnaeus, 1758)","Phocoena phocoena (Linnaeus, 1758)",Морська свиня,зникаючий,endangered
+684,Chordata,Mammalia,Cetacea,Delphinus delphis,"Linnaeus, 1758","Delphinus delphis Linnaeus, 1758",Дельфін звичайний,вразливий,vulnerable
+685,Chordata,Mammalia,Artiodactyla,Bison bonasus,"(Linnaeus, 1758)","Bison bonasus (Linnaeus, 1758)",Зубр,зниклий в природі,extinct_in_wild
+686,Chordata,Mammalia,Artiodactla,Alces alces,"(Linnaeus, 1758)","Alces alces (Linnaeus, 1758)",Лось європейський,вразливий,vulnerable
+687,Chordata,Mammalia,Perrisodactyla,Equus gmelini,"Antonius, 1912","Equus gmelini Antonius, 1912",Кінь дикий,зниклий,extinct
