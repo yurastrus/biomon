@@ -3,6 +3,27 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-29 (later): Species list polish, Red Book on pam_overview, species-page filters
+
+All deployed to biomon (and shared-ct to myproject) on the owner's go-ahead.
+- uk catalog bug: `pybabel update` put fuzzy guesses into the uk .po and
+  `compile -f` shipped them ("Додати вид" showed as "стан невідомий"; the
+  older "Невідомий вид" too). Cleared; `tests/test_uk_catalogs_no_fuzzy_guesses.py`
+  now fails on any fuzzy uk msgstr in any domain.
+- Species lists (CT, PAM): row lines, zebra on visible rows, Red Book names in
+  red, sort by any column (Red Book by severity), PAM species visible to one
+  role dimmed, viewport-high scroll box with sticky header and sticky
+  "Edit" first column (horizontal scrollbar was only at the page bottom).
+- pam_overview ranking: "ЧКУ" column (code/label/severity from
+  `get_species_ranking`, constants in `app/pam/redbook.py`), sortable columns.
+- pam_detailed did not restore filters from species links: it ignored dates,
+  institutions and model, reset the URL confidence to 0.95 when evaluation
+  thresholds loaded (species without a threshold), and clamped non-BirdNET
+  confidence to 0.7 (model handler bound after the restore). Fixed; checked in
+  the browser with two filter sets.
+- One slip: the zebra and red-name commits went out while the owner's
+  "don't commit/deploy yet" was in flight; the owner kept them.
+
 ## 2026-10-29: Red Data Book of Ukraine 2021 status on species + species editors
 
 Goal: show which species are in the Red Book, later use it in filters
