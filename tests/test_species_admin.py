@@ -225,3 +225,14 @@ def test_red_book_rows_are_marked_for_red_names(auth_client, pam_engine):
         c.execute(text("UPDATE species SET redbook2021 = 'rare' WHERE species_id = 1"))
     page = auth_client(role='admin').get('/uk/pam/admin/species').get_data(as_text=True)
     assert 'data-redlisted="1"' in page
+
+
+def test_list_headers_sort_and_restricted_rows_are_flagged(auth_client, pam_engine):
+    with pam_engine.begin() as c:
+        c.execute(text("UPDATE species SET redbook2021 = 'vulnerable', required_role = 'admin' "
+                       "WHERE species_id = 1"))
+    page = auth_client(role='admin').get('/uk/pam/admin/species').get_data(as_text=True)
+    assert page.count('<th data-sortable>') == 9
+    assert 'data-restricted="1"' in page
+    # Red Book sorts by severity order of REDBOOK_CODES, not alphabetically.
+    assert 'data-sort="03"' in page
