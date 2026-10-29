@@ -97,6 +97,20 @@
                 {% for cap in capabilities %}
                 {% set people = row.cells[cap] %}
                 <td data-label="{{ cap_titles[cap] }}">
+                    {% if cap in editable and (editable[cap] is none or row.institution.id in editable[cap]) %}
+                    <div class="ia-edit">
+                        <button type="button" class="ia-round ia-round-add" data-mode="add"
+                                data-inst="{{ row.institution.id }}" data-module="{{ cap[7:] }}"
+                                data-title="{{ cap_titles[cap] }}: {{ inst_label(row.institution) }}"
+                                title="{{ _('Додати верифікаторів') }}" aria-label="{{ _('Додати верифікаторів') }}">+</button>
+                        {% if people %}
+                        <button type="button" class="ia-round ia-round-remove" data-mode="remove"
+                                data-inst="{{ row.institution.id }}" data-module="{{ cap[7:] }}"
+                                data-title="{{ cap_titles[cap] }}: {{ inst_label(row.institution) }}"
+                                title="{{ _('Забрати доступ') }}" aria-label="{{ _('Забрати доступ') }}">&minus;</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                     {% for user, kind in people %}
                         <a class="inst-badge inst-badge-{{ kind }} ia-person"
                            href="{{ url_for('admin.edit_user', lang_code=g.lang_code, user_id=user.id) }}"
@@ -120,7 +134,149 @@
     </div>
 </div>
 
+<div id="ia-modal" class="ia-modal" hidden>
+    <div class="ia-modal-box" role="dialog" aria-modal="true" aria-labelledby="ia-modal-title">
+        <div class="ia-modal-head">
+            <strong id="ia-modal-title"></strong>
+            <button type="button" class="ia-modal-x" data-close aria-label="{{ _('Закрити') }}">&times;</button>
+        </div>
+        <div id="ia-modal-hint" class="ia-modal-hint"></div>
+        <div class="ia-modal-list">
+            <table class="ia-modal-table">
+                <thead><tr><th>{{ _('Користувач') }}</th><th>{{ _('Логін') }}</th><th></th></tr></thead>
+                <tbody id="ia-modal-body"></tbody>
+            </table>
+        </div>
+        <div class="ia-modal-foot">
+            <span id="ia-modal-status" class="ia-modal-status"></span>
+            <button type="button" class="button" data-close style="background: #6c757d;">{{ _('Скасувати') }}</button>
+            <button type="button" class="button" id="ia-modal-save" disabled>{{ _('Зберегти') }}</button>
+        </div>
+    </div>
+</div>
+
 <script>
+(function () {
+    // "+" / "-" popups of the verifier cells. "+" lists everyone not verifying
+    // here yet, unticked; "-" lists those who do, ticked: untick to revoke.
+    var modal = document.getElementById('ia-modal');
+    var body = document.getElementById('ia-modal-body');
+    var save = document.getElementById('ia-modal-save');
+    var status = document.getElementById('ia-modal-status');
+    var hint = document.getElementById('ia-modal-hint');
+    var csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    var baseUrl = {{ url_for('admin.institution_access', lang_code=g.lang_code) | tojson }};
+    var T = {
+        loading: {{ _('Завантаження...') | tojson }},
+        empty: {{ _('Нікого немає.') | tojson }},
+        failed: {{ _('Не вдалося завантажити список.') | tojson }},
+        saving: {{ _('Збереження...') | tojson }},
+        saveFailed: {{ _('Не вдалося зберегти.') | tojson }},
+        hintAdd: {{ _('Позначте людей, які мають верифікувати дані цієї установи. Хто ще не має ролі верифікатора, отримає її.') | tojson }},
+        hintRemove: {{ _('Зніміть позначку, щоб забрати доступ до даних цієї установи в цьому модулі. Роль верифікатора лишається: людина може верифікувати для інших установ.') | tojson }},
+        locked: {{ _('Не можна забрати: це ви самі або людина вашого рівня чи вище.') | tojson }},
+        also: {
+            'export': {{ _('також втратить експорт') | tojson }},
+            'manage': {{ _('також перестане керувати') | tojson }}
+        }
+    };
+    var current = null;
+
+    function changedIds() {
+        var ids = [];
+        body.querySelectorAll('input[type=checkbox]').forEach(function (box) {
+            if (box.checked !== box.defaultChecked) ids.push(parseInt(box.value, 10));
+        });
+        return ids;
+    }
+    function refreshSave() {
+        var n = changedIds().length;
+        save.disabled = n === 0;
+        status.textContent = n ? '(' + n + ')' : '';
+    }
+    function textCell(text) {
+        var td = document.createElement('td');
+        td.textContent = text;
+        return td;
+    }
+    function message(text) {
+        body.innerHTML = '';
+        var tr = document.createElement('tr');
+        var td = textCell(text);
+        td.colSpan = 3;
+        tr.appendChild(td);
+        body.appendChild(tr);
+    }
+    function render(users) {
+        if (!users.length) { message(T.empty); return; }
+        body.innerHTML = '';
+        users.forEach(function (u) {
+            var tr = document.createElement('tr');
+            var name = textCell(u.name);
+            (u.also || []).forEach(function (key) {
+                var note = document.createElement('div');
+                note.className = 'ia-modal-note';
+                note.textContent = T.also[key];
+                name.appendChild(note);
+            });
+            tr.appendChild(name);
+            tr.appendChild(textCell(u.username));
+            var tick = document.createElement('td');
+            var box = document.createElement('input');
+            box.type = 'checkbox';
+            box.value = u.id;
+            box.checked = box.defaultChecked = current.mode === 'remove';
+            box.disabled = !!u.locked;
+            if (u.locked) { tr.className = 'is-locked'; tr.title = T.locked; }
+            box.addEventListener('change', refreshSave);
+            tick.appendChild(box);
+            tr.appendChild(tick);
+            body.appendChild(tr);
+        });
+    }
+    function open(btn) {
+        current = {mode: btn.dataset.mode,
+                   url: baseUrl + '/' + btn.dataset.inst + '/verifiers/' + btn.dataset.module};
+        document.getElementById('ia-modal-title').textContent = btn.dataset.title;
+        hint.textContent = current.mode === 'add' ? T.hintAdd : T.hintRemove;
+        modal.classList.toggle('is-remove', current.mode === 'remove');
+        message(T.loading);
+        save.disabled = true;
+        status.textContent = '';
+        modal.hidden = false;
+        fetch(current.url + '?mode=' + current.mode, {credentials: 'same-origin'})
+            .then(function (r) { if (!r.ok) throw r; return r.json(); })
+            .then(function (data) { render(data.users); })
+            .catch(function () { message(T.failed); });
+    }
+    function close() { modal.hidden = true; current = null; }
+
+    document.querySelectorAll('.ia-round').forEach(function (btn) {
+        btn.addEventListener('click', function () { open(btn); });
+    });
+    modal.querySelectorAll('[data-close]').forEach(function (el) {
+        el.addEventListener('click', close);
+    });
+    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !modal.hidden) close();
+    });
+    save.addEventListener('click', function () {
+        var ids = changedIds();
+        if (!ids.length) return;
+        save.disabled = true;
+        status.textContent = T.saving;
+        fetch(current.url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+            body: JSON.stringify({mode: current.mode, user_ids: ids})
+        }).then(function (r) { if (!r.ok) throw r; return r.json(); })
+          .then(function () { window.location.reload(); })
+          .catch(function () { save.disabled = false; status.textContent = T.saveFailed; });
+    });
+})();
+
 (function () {
     var search = document.getElementById('ia-search');
     var gapsOnly = document.getElementById('ia-gaps');

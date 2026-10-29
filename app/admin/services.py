@@ -405,6 +405,184 @@ class InstitutionAccessService:
 
 
 # ===========================================================================
+# Verifiers of one institution, in bulk (the "+" / "-" popups)
+# ===========================================================================
+
+class InstitutionVerifierService:
+    """Grant or revoke verification of one institution's data for many people.
+
+    "Verifies here" is the matrix's own definition: the module's view flag on
+    the institution row plus the global verifier role. The role is site-wide,
+    so revoking never touches it: the person may verify for another park.
+    Revoking removes the module's access to this institution (and with it
+    export and manage of that module there); public locations stay open to
+    every verifier, as everywhere else.
+
+    Who may act: an admin anywhere, a manager in the institutions they manage
+    **in that module**. A manager may add anyone, but take away only people
+    ranked below them (not admins, not other managers); nobody unticks
+    themselves.
+    """
+
+    MODULES = (User.MODULE_CT, User.MODULE_PAM)
+
+    @staticmethod
+    def _fields(module):
+        suffix = 'pam' if module == User.MODULE_PAM else 'ct'
+        return f'can_view_{suffix}', f'can_export_{suffix}', f'can_manage_{suffix}'
+
+    @staticmethod
+    def can_edit(editor, institution_id, module):
+        """Return True if ``editor`` may open the popups of this cell."""
+        if module not in InstitutionVerifierService.MODULES:
+            return False
+        if editor.has_role('admin'):
+            return True
+        return institution_id in editor.manage_institution_ids(module)
+
+    @staticmethod
+    def editable_institution_ids(editor, module):
+        """Institutions whose cell shows the buttons. ``None`` means all."""
+        if editor.has_role('admin'):
+            return None
+        return set(editor.manage_institution_ids(module))
+
+    @staticmethod
+    def _link(user, institution_id):
+        return next((l for l in user.institution_links
+                     if l.institution_id == institution_id), None)
+
+    @staticmethod
+    def verifies(user, institution_id, module):
+        """The matrix's "verifies here": view flag + verifier role."""
+        view, _, _ = InstitutionVerifierService._fields(module)
+        link = InstitutionVerifierService._link(user, institution_id)
+        return bool(link is not None and getattr(link, view)
+                    and user.has_role(VerificationRequest.ROLE_BY_MODULE[module]))
+
+    @staticmethod
+    def can_revoke(editor, target):
+        """Rank rule for "-": below the editor, never the editor themselves."""
+        if target.id == editor.id:
+            return False
+        if editor.has_role('admin'):
+            return True
+        return not target.has_role('manager')
+
+    @staticmethod
+    def _sorted(users):
+        return sorted(users, key=lambda u: (u.full_name.casefold(), u.username.casefold()))
+
+    @staticmethod
+    def candidates_to_add(institution_id, module):
+        """Active non-admin users who do not verify here yet, by name."""
+        return InstitutionVerifierService._sorted(
+            u for u in User.query.filter(User.is_active.is_(True)).all()
+            if not u.has_role('admin')
+            and not InstitutionVerifierService.verifies(u, institution_id, module))
+
+    @staticmethod
+    def current_verifiers(institution_id, module):
+        """Active users who verify here, by name."""
+        links = UserInstitution.query.filter_by(institution_id=institution_id).all()
+        users = (User.query.get(l.user_id) for l in links)
+        return InstitutionVerifierService._sorted(
+            u for u in users
+            if u is not None and u.is_active
+            and InstitutionVerifierService.verifies(u, institution_id, module))
+
+    @staticmethod
+    def removal_note(user, institution_id, module):
+        """What else disappears with the tick: 'export', 'manage' or both."""
+        _, export, manage = InstitutionVerifierService._fields(module)
+        link = InstitutionVerifierService._link(user, institution_id)
+        if link is None:
+            return []
+        return [name for name, field in (('export', export), ('manage', manage))
+                if getattr(link, field)]
+
+    @staticmethod
+    def _approve_pending_request(user, institution_id, module, editor):
+        """Answer the person's pending request for this park, if they filed one.
+
+        Only this institution's row is approved; the request stays open for the
+        other parks it names. A request naming no institution is closed: the
+        role it asked for is now held.
+        """
+        now = datetime.utcnow()
+        req = VerificationRequest.query.filter_by(
+            user_id=user.id, module=module,
+            status=VerificationRequest.STATUS_PENDING).first()
+        if req is None:
+            return
+        rows = req.institution_rows()
+        for row in req.institution_rows(VerificationRequest.STATUS_PENDING):
+            if row.institution_id == institution_id:
+                row.status = VerificationRequest.STATUS_APPROVED
+                row.decided_at = now
+                row.decided_by_id = editor.id
+        if not rows or not req.institution_rows(VerificationRequest.STATUS_PENDING):
+            req.status = VerificationRequest.STATUS_APPROVED
+            req.decided_at = now
+            req.decided_by_id = editor.id
+
+    @staticmethod
+    def grant(editor, institution_id, module, user_ids):
+        """Make each user a verifier of this institution's module (no commit).
+
+        Returns:
+            dict: ``granted`` (users who got access) and ``role_granted`` (the
+            subset who got the verifier role just now; they deserve a letter).
+        """
+        from app.utils.registration import get_or_create_role
+        role_name = VerificationRequest.ROLE_BY_MODULE[module]
+        granted, role_granted = [], []
+        for user_id in user_ids:
+            user = User.query.get(user_id)
+            if (user is None or not user.is_active or user.has_role('admin')
+                    or InstitutionVerifierService.verifies(user, institution_id, module)):
+                continue
+            VerificationRequestService._grant_institution(user, institution_id, module)
+            if not user.has_role(role_name):
+                user.roles.append(get_or_create_role(role_name))
+                role_granted.append(user)
+            InstitutionVerifierService._approve_pending_request(
+                user, institution_id, module, editor)
+            granted.append(user)
+        return {'granted': granted, 'role_granted': role_granted}
+
+    @staticmethod
+    def revoke(editor, institution_id, module, user_ids):
+        """Take this institution's module away from each user (no commit).
+
+        The verifier role stays. Rows the rank rule protects are skipped.
+
+        Returns:
+            dict: ``revoked`` and ``skipped`` user lists.
+        """
+        view, export, manage = InstitutionVerifierService._fields(module)
+        revoked, skipped = [], []
+        for user_id in user_ids:
+            user = User.query.get(user_id)
+            if user is None:
+                continue
+            link = InstitutionVerifierService._link(user, institution_id)
+            if link is None or not getattr(link, view):
+                continue
+            if not InstitutionVerifierService.can_revoke(editor, user):
+                skipped.append(user)
+                continue
+            setattr(link, view, False)
+            setattr(link, export, False)
+            setattr(link, manage, False)
+            # The table is sparse: a row that grants nothing goes away.
+            if not (link.can_view_ct or link.can_view_pam):
+                user.institution_links.remove(link)
+            revoked.append(user)
+        return {'revoked': revoked, 'skipped': skipped}
+
+
+# ===========================================================================
 # Institution service
 # ===========================================================================
 

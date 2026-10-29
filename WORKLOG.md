@@ -3,6 +3,54 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-29 (evening): Bulk verifier editing on /admin/institution-access
+
+Problem: adding several people as verifiers of one park meant opening each
+user's form. Now each "Verify photos" / "Verify sounds" cell has two small
+round buttons; other columns (manage, export) are out of scope.
+
+What it does
+- Green "+": every active non-admin user who does not verify that module in
+  that institution yet, unticked. Tick + Save = `can_view_<module>` on the
+  institution row (row extended, not replaced, via
+  `VerificationRequestService._grant_institution`) and the global
+  `ct_verifier` / `pam_verifier` role if missing (then the "rights granted"
+  email). A pending verification request is approved for this park only;
+  it stays open for other parks it names.
+- Red "-": people who verify there, ticked. Untick + Save = view, export and
+  manage of that module in that institution off (row deleted when it grants
+  nothing). The role stays: the person may verify for another park. A red
+  note under the name warns when export / manage go with it.
+- Rows show name and login only, no email (a manager sees the whole list).
+- Who: admin everywhere; a manager only in cells of parks they manage IN THAT
+  MODULE. A manager may add anyone but revoke only people below them (not
+  admins, not other managers); nobody revokes themselves (rows disabled,
+  server skips them too).
+
+Decisions and rejected alternatives (all owner's calls, same day)
+- Untick removing the global role: rejected, hits every park.
+- A per-institution `can_verify_*` flag: rejected, migration plus ~44 role
+  checks in shared-ct, shared-pam and myproject.
+- Search-to-add: rejected, you have to know names. Hence full lists.
+- Manager's "+" limited to people already in their parks: rejected.
+- Public locations (`visibility_level = 0`) stay open to every verifier, as
+  before: untick removes the park's restricted locations only, and someone
+  unticked from their only park becomes a public-only verifier who no longer
+  shows on this page.
+- Did not reuse `UserService._write_institution_links`: it rebuilds all of a
+  user's rows from a form dict; flipping one row directly is safer here.
+
+Where: `InstitutionVerifierService` in `app/admin/services.py`; routes
+`GET/POST /admin/institution-access/<id>/verifiers/<ct|pam>` in
+`app/admin/routes.py`; popup + JS in `admin_institution_access.html`; CSS at
+the end of `static/css/style.css`; tests `tests/test_institution_verifiers.py`
+(12). Root i18n domain updated (en translated, uk fuzzy guesses cleared).
+Not checked in a browser (dev server runs on the prod DB behind login); the
+owner chose to skip it. No migration, nothing to run on deploy.
+
+Separate, found on the way: CT `flag/unflag` series routes check only the
+role, not location access.
+
 ## 2026-10-29 (later): Species list polish, Red Book on pam_overview, species-page filters
 
 All deployed to biomon (and shared-ct to myproject) on the owner's go-ahead.

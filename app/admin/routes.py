@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-from flask import render_template, g, request, redirect, url_for, flash, current_app
+from flask import (render_template, g, request, redirect, url_for, flash, current_app,
+                   jsonify, abort)
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 
@@ -10,7 +11,8 @@ from app.utils.decorators import role_required
 from app.utils.utils import build_institution_groups
 from app.admin.forms import UserCreateForm, UserEditForm, InstitutionForm, RoleForm
 from app.admin.services import (UserService, InstitutionService, RoleService,
-                                VerificationRequestService, InstitutionAccessService)
+                                VerificationRequestService, InstitutionAccessService,
+                                InstitutionVerifierService)
 from app.utils.emails import send_decision_email, send_rights_granted_email
 from app.utils import notification_prefs as notif_prefs
 from . import admin_bp
@@ -306,12 +308,91 @@ def institution_access():
     the ones they manage."""
     lang = g.lang_code
     rows = InstitutionAccessService.matrix(current_user, lang)
+    # Cells whose verifiers this person may change: the "+" / "-" buttons.
+    editable = {}
+    for module, cap in ((User.MODULE_CT, 'verify_ct'), (User.MODULE_PAM, 'verify_pam')):
+        editable[cap] = InstitutionVerifierService.editable_institution_ids(
+            current_user, module)
     return render_template('admin_institution_access.html',
                            rows=rows,
+                           editable=editable,
                            capabilities=InstitutionAccessService.CAPABILITIES,
                            gap_caps=InstitutionAccessService.GAP_CAPABILITIES,
                            inst_label=lambda inst: inst.label(lang),
                            is_admin=current_user.has_role('admin'))
+
+
+def _verifier_cell_or_404(institution_id, module):
+    """The institution of a "+" / "-" request, after the permission check."""
+    institution = Institution.query.get_or_404(institution_id)
+    if not InstitutionVerifierService.can_edit(current_user, institution_id, module):
+        abort(403)
+    return institution
+
+
+@admin_bp.route('/institution-access/<int:institution_id>/verifiers/<module>')
+@login_required
+@role_required('admin', 'manager')
+def institution_verifiers(institution_id, module):
+    """People for one popup: ``mode=add`` (not verifying here yet) or
+    ``mode=remove`` (verifying here). Logins and names only, no emails: a
+    manager sees the whole user list here."""
+    _verifier_cell_or_404(institution_id, module)
+    svc = InstitutionVerifierService
+    if request.args.get('mode') == 'remove':
+        users = [{'id': u.id, 'username': u.username, 'name': u.full_name,
+                  'locked': not svc.can_revoke(current_user, u),
+                  'also': svc.removal_note(u, institution_id, module)}
+                 for u in svc.current_verifiers(institution_id, module)]
+    else:
+        users = [{'id': u.id, 'username': u.username, 'name': u.full_name,
+                  'locked': False, 'also': []}
+                 for u in svc.candidates_to_add(institution_id, module)]
+    return jsonify({'users': users})
+
+
+@admin_bp.route('/institution-access/<int:institution_id>/verifiers/<module>',
+                methods=['POST'])
+@login_required
+@role_required('admin', 'manager')
+def institution_verifiers_save(institution_id, module):
+    """Apply one popup: ``{"mode": "add"|"remove", "user_ids": [...]}``."""
+    institution = _verifier_cell_or_404(institution_id, module)
+    data = request.get_json(silent=True) or {}
+    try:
+        user_ids = [int(i) for i in data.get('user_ids') or []]
+    except (TypeError, ValueError):
+        return jsonify({'error': _('Неправильний формат даних.')}), 400
+    mode = data.get('mode')
+    if mode not in ('add', 'remove'):
+        return jsonify({'error': _('Неправильний формат даних.')}), 400
+
+    svc = InstitutionVerifierService
+    try:
+        if mode == 'add':
+            result = svc.grant(current_user, institution_id, module, user_ids)
+            changed = result['granted']
+        else:
+            result = svc.revoke(current_user, institution_id, module, user_ids)
+            changed = result['revoked']
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(
+            "Verifier %s at institution_id=%s (%s) failed", mode, institution_id, module)
+        return jsonify({'error': _('Помилка при збереженні.')}), 500
+
+    current_app.logger.info(
+        "Verifiers %s at institution_id=%s (%s) by user_id=%s: %s",
+        mode, institution_id, module, current_user.id,
+        ','.join(str(u.id) for u in changed) or '-')
+    if mode == 'add':
+        for user in result['role_granted']:
+            if user.email:
+                send_rights_granted_email(user, [module])
+    return jsonify({'changed': len(changed),
+                    'skipped': len(result.get('skipped', [])),
+                    'institution': institution.label(g.lang_code)})
 
 
 # ===========================================================================

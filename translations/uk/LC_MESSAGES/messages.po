@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-27 22:44+0200\n"
+"POT-Creation-Date: 2026-10-29 13:18+0200\n"
 "PO-Revision-Date: 2025-08-05 22:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -24,6 +24,7 @@ msgid "Пароль має містити і літери, і цифри."
 msgstr ""
 
 #: app/admin/forms.py:31 app/admin/forms.py:50
+#: app/templates/admin/admin_institution_access.html:146
 #: app/templates/admin/admin_users_list.html:106
 #: app/templates/admin/admin_users_list.html:126
 msgid "Логін"
@@ -93,79 +94,87 @@ msgstr ""
 msgid "Призначається"
 msgstr ""
 
-#: app/admin/routes.py:172 app/templates/admin/admin_users_list.html:30
+#: app/admin/routes.py:174 app/templates/admin/admin_users_list.html:30
 msgid "Додати користувача"
 msgstr ""
 
-#: app/admin/routes.py:270
+#: app/admin/routes.py:272
 msgid "Редагувати користувача"
 msgstr ""
 
-#: app/admin/routes.py:375
+#: app/admin/routes.py:365 app/admin/routes.py:368
+msgid "Неправильний формат даних."
+msgstr ""
+
+#: app/admin/routes.py:383
+msgid "Помилка при збереженні."
+msgstr ""
+
+#: app/admin/routes.py:456
 msgid "Помилка: права не змінено."
 msgstr ""
 
-#: app/admin/routes.py:384
+#: app/admin/routes.py:465
 #, python-format
 msgid "Права змінено: %(n)s рядків."
 msgstr ""
 
-#: app/admin/routes.py:408
+#: app/admin/routes.py:489
 msgid "Редагувати установу"
 msgstr ""
 
-#: app/admin/routes.py:408 app/templates/admin/admin_institutions_list.html:15
+#: app/admin/routes.py:489 app/templates/admin/admin_institutions_list.html:15
 msgid "Додати установу"
 msgstr ""
 
-#: app/admin/routes.py:487
+#: app/admin/routes.py:568
 msgid "Редагувати роль"
 msgstr ""
 
-#: app/admin/routes.py:487 app/templates/admin/admin_roles_list.html:15
+#: app/admin/routes.py:568 app/templates/admin/admin_roles_list.html:15
 msgid "Додати роль"
 msgstr ""
 
-#: app/admin/routes.py:581
+#: app/admin/routes.py:662
 msgid "Невідомий статус."
 msgstr ""
 
-#: app/admin/routes.py:586
+#: app/admin/routes.py:667
 msgid "Статус оновлено."
 msgstr ""
 
-#: app/admin/routes.py:601
+#: app/admin/routes.py:682
 msgid "Звернення видалено."
 msgstr ""
 
-#: app/admin/routes.py:652
+#: app/admin/routes.py:733
 msgid "Невідома дія."
 msgstr ""
 
-#: app/admin/routes.py:698
+#: app/admin/routes.py:779
 #, python-format
 msgid "Запит підтверджено для: %(names)s."
 msgstr ""
 
-#: app/admin/routes.py:703
+#: app/admin/routes.py:784
 #, python-format
 msgid "Галочок не залишилося, тож запит відхилено для: %(names)s."
 msgstr ""
 
-#: app/admin/routes.py:706
+#: app/admin/routes.py:787
 msgid "Запит підтверджено."
 msgstr ""
 
-#: app/admin/routes.py:708
+#: app/admin/routes.py:789
 msgid "Запит відхилено."
 msgstr ""
 
-#: app/admin/routes.py:710
+#: app/admin/routes.py:791
 #, python-format
 msgid "Вилучено зі запиту: %(names)s."
 msgstr ""
 
-#: app/admin/routes.py:712
+#: app/admin/routes.py:793
 msgid "Запит залишається в черзі, бо очікує рішення інших установ."
 msgstr ""
 
@@ -1079,7 +1088,7 @@ msgid "обидва модулі"
 msgstr ""
 
 #: app/templates/admin/admin_institution_access.html:73
-#: app/templates/admin/admin_institution_access.html:105
+#: app/templates/admin/admin_institution_access.html:119
 msgid "нікого"
 msgstr ""
 
@@ -1093,8 +1102,82 @@ msgstr ""
 msgid "Ви бачите лише установи, якими керуєте."
 msgstr ""
 
-#: app/templates/admin/admin_institution_access.html:114
+#: app/templates/admin/admin_institution_access.html:105
+msgid "Додати верифікаторів"
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:110
+msgid "Забрати доступ"
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:128
 msgid "Немає установ, якими ви керуєте."
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:141
+msgid "Закрити"
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:146
+#: app/templates/admin/admin_verification_requests.html:38
+#: app/templates/admin/admin_verification_requests.html:51
+msgid "Користувач"
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:152
+#: app/templates/admin/admin_institution_form.html:96
+#: app/templates/admin/admin_role_form.html:71
+#: app/templates/admin/admin_user_form.html:370
+msgid "Скасувати"
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:153
+msgid "Зберегти"
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:170
+msgid "Завантаження..."
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:171
+msgid "Нікого немає."
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:172
+msgid "Не вдалося завантажити список."
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:173
+msgid "Збереження..."
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:174
+msgid "Не вдалося зберегти."
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:175
+msgid ""
+"Позначте людей, які мають верифікувати дані цієї установи. Хто ще не має "
+"ролі верифікатора, отримає її."
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:176
+msgid ""
+"Зніміть позначку, щоб забрати доступ до даних цієї установи в цьому "
+"модулі. Роль верифікатора лишається: людина може верифікувати для інших "
+"установ."
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:177
+msgid "Не можна забрати: це ви самі або людина вашого рівня чи вище."
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:179
+msgid "також втратить експорт"
+msgstr ""
+
+#: app/templates/admin/admin_institution_access.html:180
+msgid "також перестане керувати"
 msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:18
@@ -1151,12 +1234,6 @@ msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:87
 msgid "Новий регіон (Англійською)"
-msgstr ""
-
-#: app/templates/admin/admin_institution_form.html:96
-#: app/templates/admin/admin_role_form.html:71
-#: app/templates/admin/admin_user_form.html:370
-msgid "Скасувати"
 msgstr ""
 
 #: app/templates/admin/admin_institution_form.html:99
@@ -1478,11 +1555,6 @@ msgstr ""
 
 #: app/templates/admin/admin_verification_requests.html:24
 msgid "Відхилені"
-msgstr ""
-
-#: app/templates/admin/admin_verification_requests.html:38
-#: app/templates/admin/admin_verification_requests.html:51
-msgid "Користувач"
 msgstr ""
 
 #: app/templates/admin/admin_verification_requests.html:39
