@@ -218,3 +218,10 @@ def test_redbook_matcher_exact_synonym_and_ukrainian_name():
     assert [(sp['id'], row['scientific_name']) for sp, row in ua_only] == [(3, 'Foo bar')]
     assert [sp['id'] for sp in clears] == [4, 3] or [sp['id'] for sp in clears] == [3, 4] or \
         [sp['id'] for sp in clears] == [4]
+
+
+def test_red_book_rows_are_marked_for_red_names(auth_client, pam_engine):
+    with pam_engine.begin() as c:
+        c.execute(text("UPDATE species SET redbook2021 = 'rare' WHERE species_id = 1"))
+    page = auth_client(role='admin').get('/uk/pam/admin/species').get_data(as_text=True)
+    assert 'data-redlisted="1"' in page
