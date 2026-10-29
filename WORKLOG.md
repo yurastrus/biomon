@@ -3,6 +3,23 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-29 (late): Species search box on /identify
+
+A search field at the top of the species panel, right above "Загальні опції",
+filters the list as you type (shared-ct `identification.html` + CSS).
+- Every query word must be the START of a word in the label (split on spaces,
+  hyphens, brackets), case-insensitive, apostrophe variants folded. Plain
+  substring was tried first and rejected: "кун" also matched Єнот-полоскун.
+  Latin names work too ("martes").
+- Group titles with no visible species hide; "Нічого не знайдено" when empty.
+- Enter ticks the first visible species and never submits; Esc clears.
+- The input has no `name` (never sent with the identification); sticky inside
+  the scrolling panel; the filter is reset after `form.reset()` on each new
+  series.
+- Tests: `tests/test_ct_identify_species_search.py` (static contract); the
+  behaviour was checked in the browser on the local dev server.
+- State: committed, pushed and deployed (biomon + myproject) on request.
+
 ## 2026-10-29 (evening): Bulk verifier editing on /admin/institution-access
 
 Problem: adding several people as verifiers of one park meant opening each
