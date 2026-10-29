@@ -22,7 +22,7 @@ All deployed to biomon (and shared-ct to myproject) on the owner's go-ahead.
   confidence to 0.7 (model handler bound after the restore). Fixed; checked in
   the browser with two filter sets.
 - One slip: the zebra and red-name commits went out while the owner's
-  "don't commit/deploy yet" was in flight; the owner kept them.
+  "don't commit/deploy yet" was in flight; not rolled back.
 
 ## 2026-10-29: Red Data Book of Ukraine 2021 status on species + species editors
 
