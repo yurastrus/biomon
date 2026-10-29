@@ -44,6 +44,12 @@ across pages (step-by-step rollout; this is step 1).
   done (prod DB was altered from dev through the tunnel), then code: submodules
   shared-ct 2c425ef, shared-pam 3d1f9f8 -> pointers in biomon and myproject.
 - Next: show the status on species pages, then add a Red Book filter.
+- Deployed the same day on the owner's request: biomon 9c5389a (init script
+  re-run, idempotent; HUP; admin smoke of both editors 200, 90 and 344 rows).
+  myproject: shared-ct pointer only (78d4479), its pytest 233 passed, admin
+  smoke incl. the identification API 200, then HUP. myproject's shared-pam
+  pointer was left where it was (f5bd0a2, 5 commits behind): PAM changes have
+  been going to biomon only.
 
 ## 2026-10-27: Rights review page (/admin/access-review)
 
