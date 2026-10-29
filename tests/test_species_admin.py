@@ -236,3 +236,31 @@ def test_list_headers_sort_and_restricted_rows_are_flagged(auth_client, pam_engi
     assert 'data-restricted="1"' in page
     # Red Book sorts by severity order of REDBOOK_CODES, not alphabetically.
     assert 'data-sort="03"' in page
+
+
+def test_pam_ranking_carries_red_book_status(app):
+    """pam_overview's ranking API returns the code, a label and a severity rank."""
+    from unittest.mock import MagicMock
+    from app.pam import utils as pam_utils
+
+    conn = MagicMock()
+    conn.execute.return_value.mappings.return_value.fetchall.return_value = [
+        {'scientific_name': 'Crex crex', 'common_name_en': 'Corncrake',
+         'common_name_uk': 'Деркач', 'redbook2021': None, 'detection_count': 9},
+        {'scientific_name': 'Bubo bubo', 'common_name_en': 'Eagle-owl',
+         'common_name_uk': 'Пугач', 'redbook2021': 'rare', 'detection_count': 3},
+    ]
+    admin = MagicMock(is_authenticated=True)
+    admin.has_role.return_value = True
+    admin.roles = [MagicMock()]
+    admin.roles[0].name = 'admin'
+    with app.test_request_context('/uk/api/pam/get-species-ranking'), \
+         patch.object(pam_utils, 'get_pam_db_connection', return_value=conn), \
+         patch.object(pam_utils, 'current_user', admin), \
+         patch.object(pam_utils.pam_access, 'allowed_institution_ids', return_value=None):
+        ranking = pam_utils.get_species_ranking('uk')
+    assert ranking[0]['redbook2021'] is None and ranking[0]['redbook_rank'] is None
+    assert ranking[1]['redbook2021'] == 'rare'
+    assert ranking[1]['redbook_label'] == 'рідкісний'
+    assert ranking[1]['redbook_rank'] == 4
+    assert 's.redbook2021' in str(conn.execute.call_args[0][0])
