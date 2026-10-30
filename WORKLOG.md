@@ -3,7 +3,7 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
-## 2026-10-30: Flagged series keep their photos; closing rule for multi-species series (NOT committed, NOT deployed)
+## 2026-10-30: Flagged series keep their photos; closing rule for multi-species series (deployed 2026-10-30)
 
 ### Why
 - Owner noticed photos disappearing from series flagged for re-review.
@@ -41,7 +41,7 @@
   test now uses an admin; Postgres-only cleanup test schema got `flagged`.
   Full suite: 2711 passed.
 
-### Deploy (when the owner says so)
+### Deployed 2026-10-30 (shared-ct d1404ac, biomon b093030, myproject c388bf1)
 No schema change (`flagged` already exists). shared-ct -> bump biomon and
 myproject -> pull, HUP both. **myproject matters most**: the nightly
 `cleanup-photos` cron runs from /var/www/myproject with ITS code.
