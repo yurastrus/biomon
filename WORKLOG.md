@@ -3,7 +3,7 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
-## 2026-10-29 (night): Several species per camera-trap series (committed 2026-10-30, deploy below)
+## 2026-10-29 (night): Several species per camera-trap series (deployed 2026-10-30)
 
 Owner's request: a frame or a series can hold several species (fox and badger),
 but /identify took one. Owner's conditions: "very careful, prod database, no
@@ -107,12 +107,27 @@ current statistics".
   mobile-order tests. Full suite green except the known order-dependent
   main-DB email/registration tests (also failing in earlier logs today).
 
-### Deploy plan (when the owner says so)
-1. `venv/bin/python -m scripts.init_multi_species` (dry run), then `--apply`
-   on prod, BEFORE the code. Old code works with the new key.
-2. Commit shared-ct, bump in biomon and myproject, pull, HUP both.
-3. Sandbox can be dropped afterwards: `pg_ctl -D .../ms_sandbox/pgdata stop`,
-   `rm -rf /mnt/HC_Volume_104588395/ms_sandbox`.
+### Deployed 2026-10-30 (owner asked), no downtime
+1. Re-audit of prod (read-only) the same morning: still 0 multi-species
+   answers, 0 duplicate (photo, user) rows; dry run unchanged.
+2. Backup: `pg_dump` of ct_db -> `/home/yura/backups/manual/
+   ct_db_before_multi_species_20261030_1001.dump` (33 MB; outside
+   `postgres/`, which the nightly backup rotates after a day).
+3. shared-ct ba12753, biomon 84c5f81, myproject e8c0a54 (its suite: 233
+   passed on the new submodule).
+4. Prod: pull biomon, dry run on the server, `--apply` (2.2 s incl. app start;
+   log in `/var/www/biomon/logs/deploy_init_multi_species_*.log`), then HUP
+   biomon. Smoke: public pages 200, CSS v=45; as admin (read-only test
+   client) identify page has the "+ ще вид" button, next-observation,
+   expertise, gallery, export, distribution map, gap analysis all 200.
+5. myproject: pull, same admin smoke before HUP (5/5), HUP, 200.
+6. HUP replaces gunicorn workers gracefully, so the site never stopped; the
+   DDL held writes to identifications for ~1-2 s only.
+7. Sandbox cluster stopped and deleted; local tunnel and dev server stopped.
+
+Rollback if ever needed: code first (submodule back to 3d19400, HUP); the
+new unique key can stay, old code works with it. `init_multi_species
+--revert` only works while nobody has saved two species in one answer.
 
 ## 2026-10-29 (late): Species search box on /identify
 
