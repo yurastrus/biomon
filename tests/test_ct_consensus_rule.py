@@ -149,3 +149,39 @@ def test_page_tie_break_does_not_change_accepted_species_with_majority(conn):
 def test_has_majority_counts_people(votes, expected):
     per_species, voters = tally_votes(votes * 4)  # four photos
     assert has_majority(per_species, voters) is expected
+
+
+# ── closing rule (owner's rule 2026-10-30) ──────────────────────────────────
+from app.camera_traps.consensus import can_close, is_multi_species  # noqa: E402
+
+H, D, C = 5, 8, 9   # human, dog, cat
+
+
+@pytest.mark.parametrize('votes,closes', [
+    # one species per verifier: the old rule, unchanged
+    ([(1, H), (2, H)], True),
+    ([(1, D), (2, H)], False),
+    ([(1, D), (2, H), (3, H)], True),
+    # someone named two: the second species at exactly half -> wait
+    ([(1, H), (1, D), (2, H)], False),
+    # ... a third verifier decides it either way
+    ([(1, H), (1, D), (2, H), (3, H)], True),           # dog 1/3: rejected
+    ([(1, H), (1, D), (2, H), (3, H), (3, D)], True),   # dog 2/3: accepted
+    # both named the same pair: both 2/2, decided
+    ([(1, H), (1, D), (2, H), (2, D)], True),
+    # the extra species decided, but the top is not a majority -> still open
+    ([(1, H), (1, D), (2, C), (3, C), (4, H)], False),
+])
+def test_can_close(votes, closes):
+    per_species, voters = tally_votes([v + (1,) for v in votes] * 3)
+    multi = is_multi_species(votes)
+    assert can_close(per_species, voters, multi) is closes
+
+
+def test_single_species_data_closes_exactly_like_has_majority():
+    rng = random.Random(30)
+    for _ in range(2000):
+        votes = [(u, rng.choice([H, D, C]), 1) for u in rng.sample(range(1, 9), rng.randint(1, 6))]
+        per_species, voters = tally_votes(votes)
+        assert not is_multi_species(votes)
+        assert can_close(per_species, voters, False) is has_majority(per_species, voters)

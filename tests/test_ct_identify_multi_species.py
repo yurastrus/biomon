@@ -230,3 +230,24 @@ def test_review_mode_shows_every_species_of_a_verifier(ct, series, species, vote
     assert multi['quantity'] is None
     assert (single['species_name'], single['quantity']) == ('Кабан', 3)
     assert set(single) == {'username', 'species_name', 'quantity', 'comment', 'created_at'}
+
+
+def test_second_species_at_half_waits_for_the_next_verifier(ct, series, species, voters):
+    """Owner's rule: fox+badger and fox -> badger 1/2 is undecided, the
+    series stays open; the third verifier settles it."""
+    fox, badger, _, _ = species
+    _post(voters[0], series, [_e(fox), _e(badger)])
+    _post(voters[1], series, [_e(fox)])
+    ct.expire_all()
+    assert series.status == 'pending'
+    _post(voters[2], series, [_e(fox)])
+    ct.expire_all()
+    assert series.status == 'completed'
+
+
+def test_single_species_series_closes_as_before(ct, series, species, voters):
+    fox, *_ = species
+    _post(voters[0], series, [_e(fox)])
+    _post(voters[1], series, [_e(fox)])
+    ct.expire_all()
+    assert series.status == 'completed'

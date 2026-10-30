@@ -65,7 +65,9 @@ class TestCleanupOldPhotos:
                     photo_count INTEGER DEFAULT 0,
                     status VARCHAR(20) DEFAULT 'pending',
                     uploaded_by_id INTEGER NOT NULL,
-                    created_at TIMESTAMP DEFAULT NOW()
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    flagged BOOLEAN NOT NULL DEFAULT FALSE,
+                    flag_note TEXT
                 )"""))
             conn.execute(text(f"""
                 CREATE TABLE {self.schema}.upload_batches (

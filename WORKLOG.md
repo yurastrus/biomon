@@ -3,6 +3,49 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-30: Flagged series keep their photos; closing rule for multi-species series (NOT committed, NOT deployed)
+
+### Why
+- Owner noticed photos disappearing from series flagged for re-review.
+  Prod check (read-only): 3 flagged series, 107 photos, 0 raw files left.
+  72329 and 88709 were archived by the nightly cleanup (flag notes: "two
+  raccoon dogs", "multiple species within a single series"); 92786 is
+  `completed` with 3 thumbnails left and was due tonight (CLEANUP_DAYS=1,
+  last vote 2026-10-29 11:38). Raw files of all three were already gone.
+- Owner asked what happens when one verifier says dog and two say human:
+  the series closes with human, the dog is lost. An auto-flag for such
+  series was proposed and rejected by the owner (too many: 249 series/year
+  for "any unaccepted species"). The narrow auto-flag (verifier named all
+  accepted + one more) was coded and then REPLACED by the owner's rule below.
+
+### What changed (shared-ct)
+- `background_tasks.cleanup_old_photos` and its admin estimate
+  `get_cleanup_statistics`: skip `Observation.flagged`. The "delete raw
+  files of all non-favourites" button (`delete_unfavorited_raw_files`) skips
+  photos of flagged series too. `cleanup.py` (orphans without a series) is
+  unaffected by design.
+- Unflag route: `admin` only (was any ct_verifier). The flag now decides
+  whether photos may be deleted.
+- Closing rule, `consensus.can_close` (owner's rule): if every verifier
+  named one species, the old rule (top species > half). If someone named
+  several, additionally every named species must be decided: named by more
+  than half (accepted) or by fewer than half (rejected); exactly half keeps
+  the series pending for the next verifier. Not naming a species counts as
+  "not there". Same rule in the admin recalc button's SQL.
+  On prod right now it changes nothing: no multi-species pending series;
+  the recalc query closes 0 series with or without the new clause.
+- Tests: `test_ct_flag_protects_from_cleanup.py` (cleanup, estimate, raw
+  purge, unflag roles), closing-rule cases in `test_ct_consensus_rule.py`
+  (+ 2000 random single-species series: can_close == old has_majority),
+  two submit-level cases in `test_ct_identify_multi_species.py`; old unflag
+  test now uses an admin; Postgres-only cleanup test schema got `flagged`.
+  Full suite: 2711 passed.
+
+### Deploy (when the owner says so)
+No schema change (`flagged` already exists). shared-ct -> bump biomon and
+myproject -> pull, HUP both. **myproject matters most**: the nightly
+`cleanup-photos` cron runs from /var/www/myproject with ITS code.
+
 ## 2026-10-29 (night): Several species per camera-trap series (deployed 2026-10-30)
 
 Owner's request: a frame or a series can hold several species (fox and badger),

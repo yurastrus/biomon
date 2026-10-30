@@ -54,7 +54,9 @@ def test_unflag_clears(auth_client, db_session, ct_route_session,
     obs.flagged = True
     obs.flag_note = 'x'
     ct_route_session.commit()
-    cl = auth_client(role='ct_verifier')
+    # Admin only since 2026-10-30: the flag now also keeps the photos from the
+    # nightly cleanup (test_ct_flag_protects_from_cleanup.py).
+    cl = auth_client(role='admin')
     cl.post(f'/uk/camera-traps/observation/{obs.id}/unflag', data={})
     ct_route_session.refresh(obs)
     assert obs.flagged is False
