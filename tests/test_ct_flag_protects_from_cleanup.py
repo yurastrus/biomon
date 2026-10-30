@@ -108,3 +108,83 @@ def test_only_admin_removes_the_flag(auth_client, db_session, ct_route_session,
     cl.post(f'/uk/camera-traps/observation/{obs.id}/unflag', data={})
     ct_route_session.refresh(obs)
     assert obs.flagged is (not cleared)
+
+
+# ── "Other species" keeps a series only when it is the consensus ─────────────
+
+def _series_with_votes(ct_session, make_ct_observation, make_ct_photo, name, votes):
+    from app.camera_traps.models import Identification
+    obs = make_ct_observation(status='completed')
+    photo = make_ct_photo(observation=obs, status='completed', is_favorite=False,
+                          system_filename=name)
+    old = datetime.utcnow() - timedelta(days=10)
+    for uid, sp in votes:
+        ct_session.add(Identification(photo_id=photo.id, user_id=uid, species_id=sp,
+                                      created_at=old))
+    ct_session.commit()
+    return obs
+
+
+@pytest.fixture
+def other_species(ct_session):
+    from app.camera_traps.models import Species
+    roe = Species(id=4, scientific_name='Capreolus capreolus', category='mammals',
+                  common_name_ua='Козуля')
+    other = Species(id=-2, scientific_name='other', category='other',
+                    common_name_ua='Інший вид')
+    ct_session.add_all([roe, other])
+    ct_session.commit()
+    return roe.id, other.id
+
+
+def test_lone_other_vote_no_longer_keeps_a_roe_deer_series(
+        env, ct_session, make_ct_observation, make_ct_photo, other_species):
+    from app.camera_traps.background_tasks import cleanup_old_photos
+    raw, thumb = env
+    roe, other = other_species
+    minority = _series_with_votes(ct_session, make_ct_observation, make_ct_photo, 'm.jpg',
+                                  [(1, other), (2, roe), (3, roe)])
+    consensus = _series_with_votes(ct_session, make_ct_observation, make_ct_photo, 'c.jpg',
+                                   [(1, other), (2, other), (3, roe)])
+    _files(raw, thumb, 'm.jpg')
+    _files(raw, thumb, 'c.jpg')
+
+    cleanup_old_photos()
+
+    ct_session.expire_all()
+    assert minority.status == 'archived' and not (raw / 'm.jpg').exists()
+    assert consensus.status == 'completed' and (raw / 'c.jpg').exists()
+
+
+def test_estimate_follows_the_same_other_rule(
+        env, ct_session, make_ct_observation, make_ct_photo, other_species):
+    from app.camera_traps.background_tasks import get_cleanup_statistics
+    raw, thumb = env
+    roe, other = other_species
+    _series_with_votes(ct_session, make_ct_observation, make_ct_photo, 'm.jpg',
+                       [(1, other), (2, roe), (3, roe)])
+    _series_with_votes(ct_session, make_ct_observation, make_ct_photo, 'c.jpg',
+                       [(1, other), (2, other), (3, roe)])
+    _files(raw, thumb, 'm.jpg')
+    _files(raw, thumb, 'c.jpg')
+    assert get_cleanup_statistics()['observations_count'] == 1
+
+
+def test_unidentifiable_with_few_verifiers_is_kept(env, ct_session, make_ct_observation,
+                                                   make_ct_photo):
+    from app.camera_traps.models import Species
+    from app.camera_traps.background_tasks import cleanup_old_photos
+    raw, thumb = env
+    ct_session.add(Species(id=-6, scientific_name='not identifiable', category='other',
+                           common_name_ua='Неможливо визначити'))
+    ct_session.commit()
+    few = _series_with_votes(ct_session, make_ct_observation, make_ct_photo, 'few.jpg',
+                             [(1, -6), (2, -6), (3, -6)])
+    five = _series_with_votes(ct_session, make_ct_observation, make_ct_photo, 'five.jpg',
+                              [(u, -6) for u in range(1, 6)])
+    _files(raw, thumb, 'few.jpg')
+    _files(raw, thumb, 'five.jpg')
+    cleanup_old_photos()
+    ct_session.expire_all()
+    assert few.status == 'completed' and (raw / 'few.jpg').exists()
+    assert five.status == 'archived' and not (raw / 'five.jpg').exists()

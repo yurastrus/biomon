@@ -46,6 +46,34 @@ No schema change (`flagged` already exists). shared-ct -> bump biomon and
 myproject -> pull, HUP both. **myproject matters most**: the nightly
 `cleanup-photos` cron runs from /var/www/myproject with ITS code.
 
+### Follow-up: "Інший вид" keeps a series only as consensus (NOT deployed yet)
+Owner spotted that the cleanup skipped a series if ANY verifier said
+"Інший вид" (-2), even when everyone else agreed on roe deer. Prod
+(read-only): of 4204 completed series 436 had an "Other" vote, 39 have it
+as consensus, 397 (1913 photos) were kept forever by a minority vote.
+Now `background_tasks._kept_by_consensus_ids` (consensus.py rule)
+decides: only consensus-"Other" series are kept. Owner accepted that the
+397 series become eligible and their photos are deleted on the first night
+after deploy (flagged series and favourites stay protected). Prod check of
+the new query: 39 series, as expected. Tests: two cases in
+`test_ct_flag_protects_from_cleanup.py` (cleanup and estimate).
+
+### Follow-up: "Неможливо визначити" needs five verifiers (NOT deployed yet)
+Owner: a series closed as "not identifiable" (-6) after 2-3 votes is soon
+cleaned away, although someone else might still recognise the animal.
+Prod (read-only): 346 archived -6 series (342 with < 5 voters, photos gone),
+80 completed (48 with 3-4 voters, 171 photos), 59 pending.
+- `consensus.can_close`: if the top species is -6, at least
+  UNIDENTIFIABLE_MIN_VOTERS = 5 verifiers; otherwise the series waits.
+  Someone naming a real species keeps the old rule. Same in the recalc SQL.
+- Cleanup keeps completed -6 series with < 5 voters (same helper), so the 48
+  are safe from the moment of deploy.
+- `scripts/reopen_unidentifiable.py` (dry run by default, `--apply`): sends
+  those 48 back to the queue via `reopen_observation` (votes kept). Prod dry
+  run: 48 series, 171 photos. Archived ones are not touched (no photos).
+- Cleanup guard on prod after both rules: 87 series (39 + 48).
+- Full suite: 2719 passed.
+
 ## 2026-10-29 (night): Several species per camera-trap series (deployed 2026-10-30)
 
 Owner's request: a frame or a series can hold several species (fox and badger),

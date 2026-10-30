@@ -185,3 +185,18 @@ def test_single_species_data_closes_exactly_like_has_majority():
         per_species, voters = tally_votes(votes)
         assert not is_multi_species(votes)
         assert can_close(per_species, voters, False) is has_majority(per_species, voters)
+
+
+U = -6  # "not identifiable"
+
+
+@pytest.mark.parametrize('votes,closes', [
+    ([(1, U), (2, U)], False),                               # 2/2 unidentifiable: wait
+    ([(1, U), (2, U), (3, U), (4, U)], False),               # still under five
+    ([(1, U), (2, U), (3, U), (4, U), (5, U)], True),        # five: close
+    ([(1, U), (2, U), (3, U), (4, H), (5, H)], True),        # 3/5 unidentifiable: close
+    ([(1, U), (2, H), (3, H)], True),                        # someone recognised it: old rule
+])
+def test_unidentifiable_needs_five_verifiers(votes, closes):
+    per_species, voters = tally_votes([v + (1,) for v in votes])
+    assert can_close(per_species, voters, is_multi_species(votes)) is closes
