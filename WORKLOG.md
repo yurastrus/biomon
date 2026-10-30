@@ -46,7 +46,7 @@ No schema change (`flagged` already exists). shared-ct -> bump biomon and
 myproject -> pull, HUP both. **myproject matters most**: the nightly
 `cleanup-photos` cron runs from /var/www/myproject with ITS code.
 
-### Follow-up: "Інший вид" keeps a series only as consensus (NOT deployed yet)
+### Follow-up: "Інший вид" keeps a series only as consensus (deployed 2026-10-30)
 Owner spotted that the cleanup skipped a series if ANY verifier said
 "Інший вид" (-2), even when everyone else agreed on roe deer. Prod
 (read-only): of 4204 completed series 436 had an "Other" vote, 39 have it
@@ -58,7 +58,7 @@ after deploy (flagged series and favourites stay protected). Prod check of
 the new query: 39 series, as expected. Tests: two cases in
 `test_ct_flag_protects_from_cleanup.py` (cleanup and estimate).
 
-### Follow-up: "Неможливо визначити" needs five verifiers (NOT deployed yet)
+### Follow-up: "Неможливо визначити" needs five verifiers (deployed 2026-10-30)
 Owner: a series closed as "not identifiable" (-6) after 2-3 votes is soon
 cleaned away, although someone else might still recognise the animal.
 Prod (read-only): 346 archived -6 series (342 with < 5 voters, photos gone),
@@ -73,6 +73,14 @@ Prod (read-only): 346 archived -6 series (342 with < 5 voters, photos gone),
   run: 48 series, 171 photos. Archived ones are not touched (no photos).
 - Cleanup guard on prod after both rules: 87 series (39 + 48).
 - Full suite: 2719 passed.
+- Deployed both follow-ups together: shared-ct 4b1c479, biomon 6413963,
+  myproject 5303233 (233 passed), HUP both, no downtime. Cleanup guard on
+  prod: 87 series; nightly candidates 2154 -> 2503 series (5718 -> 7460
+  photos), i.e. the minority-"Other" series are released as agreed.
+  `reopen_unidentifiable --apply`: 48 series reopened (log
+  /var/www/biomon/logs/deploy_reopen_unidentifiable_*.log); now -6 series:
+  107 pending (all 913 thumbnails on disk), 32 completed (>= 5 voters),
+  346 archived.
 
 ## 2026-10-29 (night): Several species per camera-trap series (deployed 2026-10-30)
 
