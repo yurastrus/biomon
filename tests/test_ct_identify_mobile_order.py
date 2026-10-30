@@ -24,6 +24,7 @@ EXPECTED_ORDER = [
     'photo-viewer',              # фото
     'action-buttons-container',  # надіслати / пропустити — одразу під фото
     'quantity-panel',            # кількість особин + у вибране
+    'species-entries',           # уже додані види, одразу під кількістю
     'species-selection-panel',   # списки видів
     'identification-form-main',  # теги поведінки + коментар (одна карточка)
 ]

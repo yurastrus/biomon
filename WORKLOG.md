@@ -3,6 +3,117 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-10-29 (night): Several species per camera-trap series (committed 2026-10-30, deploy below)
+
+Owner's request: a frame or a series can hold several species (fox and badger),
+but /identify took one. Owner's conditions: "very careful, prod database, no
+commit, test locally with triple attention, dry run first, check the effect on
+current statistics".
+
+### Design (decided with the owner)
+- Storage: one row per (photo, user, SPECIES). Unique key changes from
+  `(photo_id, user_id)` to `UNIQUE NULLS NOT DISTINCT (photo_id, user_id,
+  species_id)`. No new table. Each species row has its own count and tags;
+  the comment is shared.
+- Consensus rule, one place: `app/camera_traps/consensus.py`.
+  accepted = old top-ranked winner (always) + any other species named by MORE
+  THAN HALF of the series' verifiers. Votes are people, not rows.
+  Why the winner stays unconditionally: 395 closed series on prod have no
+  strict majority (imports, moderators); requiring one would drop them.
+  Why nothing moves today: with one species per verifier a second species can
+  never exceed half, so accepted = {old winner}.
+- Closing a pending series: unchanged meaning (top species named by > half of
+  the verifiers, at least MIN_IDENTIFICATIONS people).
+- Rejected: a child table per identification (every reader would need another
+  join); "every species anyone named" (one careless vote would add species).
+
+### What changed (shared-ct unless noted)
+- `consensus.py` (new): SQL CTE `consensus_ctes(source_sql, rank_order)` with
+  `RankedConsensus.accepted`, plus Python `tally_votes / accepted_species /
+  has_majority`. Tests pin SQL and Python to each other.
+- `utils.check_consensus_for_observation`: counts people (it counted distinct
+  (user, species) pairs, which would have kept 2-people x 2-species series
+  pending forever). `mark_observation_complete(accepted_species_ids=)`: AI is
+  correct if it named any accepted species.
+- `utils.migrate_pending_observations_to_single_identification` (admin
+  "recalculate consensus" button): rewritten on the same rule. The old one
+  compared ROWS with one species' voters: on the prod copy it would close 200
+  pending series, 39 of them without a majority; the new one closes 161.
+- `get_user_ct_stats`: COUNT(DISTINCT photo) instead of rows (same today).
+- Submit (`routes.submit_identification`): accepts `entries` [{species_id,
+  quantity, behaviors}], keeps the old one-species payload. Validation: 1..10
+  species, no duplicates, "Пусто" (-1) alone, count >= 1. A photo the caller
+  already answered is still left alone without `replace` (stale second tab
+  must not add species). identification_count counts people per photo.
+- Step back: `my_identifications` (all species); `my_identification` kept.
+- Review mode: one line per verifier, "Лисиця ×2 + Борсук ×1".
+- `verification_import`: rewrites a single-row answer as before, leaves a
+  multi-species answer alone.
+- Readers switched to `accepted`: top species, species filter cache,
+  distribution map, activity heatmap, daily activity, gap analysis, location
+  stats (series counted DISTINCT), export (one row per accepted species; the
+  primary keeps its plain occurrenceID, others get `:taxon:<id>`; aggregation
+  now joins on (series, species)), gallery (a series is found under each of
+  its species), expertise (generalised to sets, identical numbers on
+  single-species data, frozen old implementation in the test as reference).
+- Tie-break: the readers that had none now resolve ties by species_id DESC
+  (as the top-species chart already did). See "Effect on statistics".
+- UI (`identification.html`): "+ ще вид" button, chips (click = back into
+  the form, × = remove), entries sent on submit; CSS v=45; mobile order for
+  the chips. EN translations added (CT domain).
+- Not changed on purpose: `analytics_calculator` (monthly activity, trends)
+  counts ANY species anyone named in a closed series, already before this
+  change; it will count second species the same way.
+- biomon: `scripts/init_multi_species.py` (DDL, dry run by default, --apply,
+  --revert refuses once multi rows exist), `scripts/audit_multi_species.py`
+  (read-only prod audit), `scripts/snapshot_ct_stats.py` (snapshot + diff of
+  31 stats endpoints and 5 tables, sandbox-only), `scripts/sandbox_server.py`
+  (dev server on the sandbox, port 5001, launch config `biomon-sandbox`),
+  `scripts/sandbox_multi_species_e2e.py`.
+
+### Safety setup
+- The local `.env` CT_DATABASE_URL tunnels to PROD. All writes went to a
+  private sandbox: a separate Postgres 16 cluster run as yura on the server,
+  `/mnt/HC_Volume_104588395/ms_sandbox` (port 5544, localhost only), restored
+  from `pg_dump` of prod ct_db (33 MB dump, 809k identifications). Tunnel:
+  `ssh -N -L 5545:localhost:5544 yurastrus.dev`. Every script that writes
+  checks `inet_server_port() == 5544` and refuses otherwise.
+- Against prod only read-only work: the audit (READ ONLY transaction) and the
+  migration dry run.
+
+### Results
+- Prod audit: 0 verifiers with >1 species per series, 0 duplicate (photo,
+  user) rows, 11 NULL-species rows, 395 closed series without majority, 31
+  closed series tied at the top.
+- New consensus SQL on the whole DB: identical result to the old one, ~10%
+  slower (1.0 s vs 0.9 s for all 99,490 decided series).
+- Snapshot diff, old vs new code on the same data: identical for top species,
+  all three export modes, gallery, monthly activity, AI accuracy table,
+  statuses, expertise, behaviours, locations. Differences only where the old
+  ROW_NUMBER had no tie-break; proven read-only that every differing series is
+  a tie, 0 outside ties, 0 series with a second accepted species. The old
+  arbitrary pick cannot be reproduced (it follows the query plan), so ties now
+  resolve deterministically (species_id DESC). Final run on a clean copy:
+  24 of 69,631 closed series (0.03%) change species; the largest shift is
+  14 series moving from "Неможливо визначити" to a real species that tied
+  with it (deer +5, others +1..+2). Logs: `logs/ms_snapshots/`.
+- Sandbox writes: UI submit (roe x3 + tag, fox x1) wrote 2 rows per photo,
+  counter = people; e2e with two pseudo-verifiers: series closes on the
+  second, export gives 2 rows with stable IDs, both species in top species,
+  map, heatmap; location stats +1 series (not +2); AI naming the second
+  species counts as correct.
+- Tests: new `test_ct_consensus_rule.py`, `test_ct_identify_multi_species.py`,
+  `test_ct_expertise_multi_species.py`; updated import, export-scoping and
+  mobile-order tests. Full suite green except the known order-dependent
+  main-DB email/registration tests (also failing in earlier logs today).
+
+### Deploy plan (when the owner says so)
+1. `venv/bin/python -m scripts.init_multi_species` (dry run), then `--apply`
+   on prod, BEFORE the code. Old code works with the new key.
+2. Commit shared-ct, bump in biomon and myproject, pull, HUP both.
+3. Sandbox can be dropped afterwards: `pg_ctl -D .../ms_sandbox/pgdata stop`,
+   `rm -rf /mnt/HC_Volume_104588395/ms_sandbox`.
+
 ## 2026-10-29 (late): Species search box on /identify
 
 A search field at the top of the species panel, right above "Загальні опції",

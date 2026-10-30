@@ -122,8 +122,12 @@ class TestRunOrchestration(unittest.TestCase):
             if model is Observation:
                 q.filter.return_value.all.return_value = [obs_pending]  # only pending fetched
             elif model is Identification:
-                q.filter_by.return_value.first.side_effect = \
-                    lambda *a, **k: next(ident_iter, None)
+                # One entry per photo: None (no row), one row, or a list of
+                # rows (a verifier who named several species by hand).
+                def _rows(*a, **k):
+                    v = next(ident_iter, None)
+                    return [] if v is None else (v if isinstance(v, list) else [v])
+                q.filter_by.return_value.all.side_effect = _rows
             return q
         session.query.side_effect = query_side_effect
 
@@ -163,6 +167,17 @@ class TestRunOrchestration(unittest.TestCase):
         self.assertEqual(report['identifications_updated'], 2)
         self.assertEqual(e1.species_id, 4)
         self.assertEqual(e2.species_id, 4)
+
+    def test_multi_species_answer_is_left_alone(self):
+        """A verifier who named two species by hand: the import must not
+        rewrite one of them into the mode species, nor add a third row."""
+        a, b = MagicMock(), MagicMock()
+        a.species_id, b.species_id = 99, 98
+        report, added, _ = self._run(existing_list=[[a, b], [a, b]])
+        self.assertEqual(report['identifications_added'], 0)
+        self.assertEqual(report['identifications_updated'], 0)
+        self.assertEqual((a.species_id, b.species_id), (99, 98))
+        self.assertEqual(added, [])
 
 
 # ── route: access / validation / verifier guard / success ───────────────────

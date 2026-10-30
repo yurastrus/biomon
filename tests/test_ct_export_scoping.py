@@ -90,15 +90,23 @@ def test_scope_cte_is_always_present(build_sql, mode):
 
 @pytest.mark.parametrize('mode', ALL_MODES)
 def test_consensus_cte_joins_the_scope(build_sql, mode):
-    """The aggregation must see the park's observations, not every one of them."""
+    """The aggregation must see the park's observations, not every one of them.
+
+    Since multi-species consensus (consensus.py) the scan of identifications
+    happens in ObservationVotes; ObservationConsensus and the voter count only
+    read that already-scoped CTE.
+    """
     for sql in build_sql(export_mode=mode):
         body = _normalise(sql)
-        start = body.index('ObservationConsensus AS (')
+        start = body.index('ObservationVotes AS (')
         segment = body[start:start + 400]
         assert 'JOIN ScopedObs' in segment, (
-            f'{mode}: ObservationConsensus aggregates unscoped — this is the '
+            f'{mode}: ObservationVotes aggregates unscoped — this is the '
             f'regression that made a small park take nine minutes'
         )
+        consensus = body[body.index('ObservationConsensus AS ('):][:400]
+        assert 'FROM ObservationVotes' in consensus
+        assert 'identifications' not in consensus
 
 
 @pytest.mark.parametrize('mode', ALL_MODES)
