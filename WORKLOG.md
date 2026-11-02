@@ -3,6 +3,33 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-11-02: /identify answer only after every frame was viewed (not deployed)
+
+### Why
+- Owner: a multi-photo series must not be submitted before all frames were
+  shown. Guards against free-riders answering by the first frame, and against
+  the owner's own slip of forgetting to restart autoplay after pausing it.
+
+### What was done (shared-ct `identification.html`, CSS `?v=50`)
+- Every frame shown by `displayCurrentPhoto()` (arrows, Home/End, autoplay,
+  any jump) goes into `seenPhotos`; reset per series.
+- Until all are seen, "Надіслати" carries `.submit-gated` + `aria-disabled`,
+  shows `N/M` and a permanent hover title "view every photo first… not yet
+  viewed: K". Not the `disabled` attribute: a disabled button shows no hover
+  title in some browsers. A click does nothing (submit handler returns).
+- Ctrl+Enter while gated shows the same text in `#unseen-warning` for 2 s
+  (owner's spec), no jump to the unseen frame.
+- Not gated: one-photo series, correcting one's own answer via "<"
+  (`editingSubmitted`). Skip and Flag stay available.
+- Client-side only: a determined user can still POST via the API. Owner's aim
+  is habit and slips, not an adversary.
+- i18n: one new string in the CT domain, en translated, compiled.
+- Tests: `tests/test_ct_identify_view_all.py` (6). Harness: gated 1/6, click
+  ignored, Ctrl+Enter warning visible then gone after 2 s, browsing all six
+  ungates, submit works, next series gated again, autoplay counts frames.
+  "<" could not be exercised in the harness (its fake API ignores
+  `start_obs_id`); covered by the template test.
+
 ## 2026-11-02: /identify switch to the next series took ~1 s (prefetch + cheaper query, deployed 2026-11-02)
 
 ### Why
