@@ -58,8 +58,12 @@
   `scripts.backfill_pam_device_type --apply` set it on 41 installation visits
   (41 locations, no older installs exist); log
   `logs/backfill_pam_device_type_20261102.log` lists the ids for undo. Active
-  points without an installation record in the log (e.g. contora PZR spruce,
-  Stavchany owl site) stay "unknown": the model is only read from installs.
+  points without an installation record in the log got it too, on the owner's
+  OK: `--locations 110,33,12,279 --apply` put the model on the first visit of
+  the current deployment (visits 4, 5, 6, 1). Because such a visit is routine,
+  the update route now keeps a stored model (`COALESCE(:device_type_id,
+  device_type_id)`), otherwise editing it would wipe the model (pam 2aed04d,
+  deployed). Prod check: all 37 active points show SM Micro 2.
 - The SD data rate (165 MB/h) is still one constant for every recorder; once
   models are recorded, other devices may need their own rate.
 
