@@ -135,6 +135,15 @@
   wrote an inline `display: block`. Badges are now shown with
   `.css('display', '')`. A reload with keys already on hid the bug.
   shared-ct f2f691a, biomon 28a3ca8, myproject 5051f44; soft reload.
+- User noticed Space "did something strange" with keys off. Cause: with the
+  handler returning early, the browser default ran, and a mouse click leaves
+  focus on the button, so Space or Enter pressed Skip/Send again (arrows move
+  the species radio). Now, outside text fields: keys off -> Space, Enter and
+  arrows are swallowed; keys on -> Enter is swallowed too (Space and arrows
+  already had meanings). Ctrl+Enter stays the only key that sends. Side effect:
+  arrows and Space no longer scroll the page there. Checked with real key
+  presses in the harness (series id unchanged). shared-ct ac539f6, biomon
+  412e626, myproject aabd7a0; soft reload.
 
 ## 2026-11-02: Keyboard shortcuts and help on /identify (deployed 2026-11-02)
 
