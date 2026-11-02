@@ -92,6 +92,20 @@
   Ctrl+Enter stops; tag badges hide), and a 1.2 s yellow flash on a tag row
   or the count field whenever a key changes it. CSS ?v=48. shared-ct 1d5f5c6,
   biomon 2e4d474, myproject 187b727; soft reload, CSS served from prod.
+- Hotkeys are now OFF until the user turns them on (user request), then
+  remembered. New localStorage key `ct-hotkeys-enabled`: the first version
+  wrote `ct-hotkeys-on=1` for everyone who merely opened the page, so reusing
+  it would have left them on.
+- Filter bar: "Регіон / Установа" and "AI вид" are select2 with search (same
+  CDN build as the CT dashboards). "Пусто" (-1) is third in the AI list,
+  right after "Не пусто", both in the template and in the JS rebuild after a
+  scope change. CSS: the global `.select2-container { width: 100% !important }`
+  also stretched the open dropdown (appended to <body>) across the page, and a
+  38px !important rule made the field taller than its neighbours; both
+  overridden for the bar only. CSS ?v=49. Harness now has 10 institutions and
+  an AI list. Prod check as admin: options "Будь-який, Не пусто, Пусто
+  (50287), Лише тварини, ...". shared-ct fb68b5a, biomon 6bc2e24, myproject
+  8dbd718; soft reload.
 
 ## 2026-11-02: Keyboard shortcuts and help on /identify (deployed 2026-11-02)
 
