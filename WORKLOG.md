@@ -80,6 +80,12 @@
   the key sets the count of the current species only.
 - Checked in the harness by dispatched key events; shared-ct 491f5b5,
   biomon 4807738, myproject 552ec5e; both apps HUPed (soft reload), 200/302.
+- Follow-up (user report): Shift+numpad digit still toggled a tag. With
+  NumLock on, Windows drops Shift and sends the navigation key (End,
+  PageDown, Insert...) with code NumpadN and shiftKey false. `digitShifted()`
+  treats NumpadN + non-digit e.key + NumLock on as Shift. jQuery's event has
+  no getModifierState, hence `e.originalEvent`. shared-ct 987d4e1, deployed
+  with a soft reload.
 
 ## 2026-11-02: Keyboard shortcuts and help on /identify (deployed 2026-11-02)
 
