@@ -86,6 +86,12 @@
   treats NumpadN + non-digit e.key + NumLock on as Shift. jQuery's event has
   no getModifierState, hence `e.originalEvent`. shared-ct 987d4e1, deployed
   with a soft reload.
+- Follow-up (user request): a digit pressed before clicking into the count
+  field silently toggles a tag. Two guards: an on/off button "⌨ увімк./вимк."
+  next to "⌨ ?" (localStorage `ct-hotkeys-on`, on by default, everything but
+  Ctrl+Enter stops; tag badges hide), and a 1.2 s yellow flash on a tag row
+  or the count field whenever a key changes it. CSS ?v=48. shared-ct 1d5f5c6,
+  biomon 2e4d474, myproject 187b727; soft reload, CSS served from prod.
 
 ## 2026-11-02: Keyboard shortcuts and help on /identify (deployed 2026-11-02)
 
