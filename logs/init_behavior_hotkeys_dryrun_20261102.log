@@ -1,0 +1,39 @@
+C:\Users\IuriiStrus\repositories\biomon\venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+  warnings.warn(
+Database: ct_db on server port 5432
+
+Behaviour tags: 14, with a key already: 0
+
+Keys to give (current /identify order):
+   key 1: Переміщення / Moving  (6536 series)
+   key 2: Самець / Male  (1334 series)
+   key 3: Харчування / Feeding  (1024 series)
+   key 4: Обслуговування фотопасток / Photo traps maintenance  (759 series)
+   key 5: Самиця / Female  (544 series)
+   key 6: Пильність / Vigilance  (502 series)
+   key 7: Дорослий з потомством / Adult with juveniles  (273 series)
+   key 8: Вигул собак(и) / Dog walking  (134 series)
+   key 9: Молода особина / Juvenile  (132 series)
+   key 0: Відпочинок / Resting  (120 series)
+   no key: Соціальна взаємодія / Social interaction  (95 series)
+   no key: Їзда на велосипеді / Biking  (82 series)
+   no key: Догляд за собою / Grooming  (31 series)
+   no key: Маркування території / Territory marking  (14 series)
+
+Planned SQL (one transaction):
+    SET LOCAL lock_timeout = '5s';
+    ALTER TABLE behavior_types ADD COLUMN IF NOT EXISTS hotkey INTEGER;
+    ALTER TABLE behavior_types ADD CONSTRAINT behavior_types_hotkey_key UNIQUE (hotkey);
+    ALTER TABLE behavior_types ADD CONSTRAINT behavior_types_hotkey_range CHECK (hotkey BETWEEN 1 AND 10);
+    UPDATE behavior_types SET hotkey = 1 WHERE id = 3;
+    UPDATE behavior_types SET hotkey = 2 WHERE id = 8;
+    UPDATE behavior_types SET hotkey = 3 WHERE id = 1;
+    UPDATE behavior_types SET hotkey = 4 WHERE id = -1;
+    UPDATE behavior_types SET hotkey = 5 WHERE id = 9;
+    UPDATE behavior_types SET hotkey = 6 WHERE id = 7;
+    UPDATE behavior_types SET hotkey = 7 WHERE id = 11;
+    UPDATE behavior_types SET hotkey = 8 WHERE id = -3;
+    UPDATE behavior_types SET hotkey = 9 WHERE id = 10;
+    UPDATE behavior_types SET hotkey = 10 WHERE id = 2;
+
+DRY RUN: nothing changed. Add --apply to execute.

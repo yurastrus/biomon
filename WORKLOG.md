@@ -3,6 +3,62 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-11-02: Keyboard shortcuts and help on /identify (NOT deployed)
+
+### Why
+- Owner asked for hotkeys on /identify (autoplay on/off, switching series,
+  behaviour tags) plus a short help block at the bottom of the page.
+- Before: only ←/→, Space (pause only) and an undocumented Ctrl+Shift+T.
+  Bug found on the way: the handler bailed out on ANY focused input, so
+  after a click on a species radio the keys went dead, and the browser's own
+  ←/→ on a focused radio silently switched the chosen species.
+
+### Decisions
+- Tags get FIXED digit keys stored in the DB: `behavior_types.hotkey`
+  (1..10, 10 = key "0", UNIQUE + CHECK). Owner's call: the usage ranking
+  reorders tags with close counts, and learnt keys must not move. Seeded
+  once from today's on-screen order (usage ranking); new tags get no key;
+  moving a key is a deliberate UPDATE. Owner may revisit the approach later.
+  Rejected: positional digits by ranking (keys drift), two-digit timed entry
+  (every press waits for a timeout), letter mnemonics (differ uk/en, clash),
+  per-user keys in localStorage (per browser, no shared instructions).
+- Any number of tags stays reachable: `T` opens a tag search; while a query
+  is typed the badges renumber the matches 1..9, 0 and a digit/Enter ticks one.
+- Keys matched on `e.code` (physical key), so the Ukrainian layout works;
+  fallback to `e.key` when a device sends no code.
+- Ctrl+Enter submits (bare Enter is too easy to hit by accident). Flag 🚩 has
+  no key (it opens a prompt).
+
+### What changed
+- shared-ct `models.py`: `BehaviorType.hotkey`.
+- shared-ct `routes.py` `identify()`: keyed tags first in key order, the rest
+  by usage; `behavior_hotkeys` passed to the template.
+- shared-ct `identification.html`: one keydown handler (←/→, Home/End, Space
+  toggles autoplay, [ ] speed, Shift+→ skip, Shift+← back, Ctrl+Enter, 1..9 0
+  tags, T tag search, / species search, F favourite, I invert, ? help, Esc);
+  digit badges on tags; `<details>` help table at the bottom (open state in
+  localStorage); key hints in button titles. Species search: Enter now also
+  leaves the field, Esc on an empty field leaves it.
+- `camera_traps.css` (+ `?v=47`), CT translations (en).
+- `scripts/init_behavior_hotkeys.py` (dry run by default, `--apply`).
+  Dry run on prod (read-only, `logs/init_behavior_hotkeys_dryrun_20261102.log`):
+  14 tags; keys 1 Moving, 2 Male, 3 Feeding, 4 Photo traps maintenance,
+  5 Female, 6 Vigilance, 7 Adult with juveniles, 8 Dog walking, 9 Juvenile,
+  0 Resting; no key: Social interaction, Biking, Grooming, Territory marking.
+- `scripts/identify_hotkeys_ui_harness.py` (+ launch config
+  `identify-hotkeys-ui`, port 5079): SQLite-only page for clicking through
+  the keys. Checked there by real key presses: radio focus + ←, digits,
+  F, [ ], Space, End, T search + digit, / search + Enter, Ctrl+Enter submit
+  payload, Shift+→, ? help, dark theme.
+- Tests: `tests/test_ct_identify_hotkeys.py` (order, badges, help rows,
+  key range/uniqueness).
+
+### Deploy (when the owner asks)
+1. `venv/bin/python -m scripts.init_behavior_hotkeys --apply` BEFORE the code
+   (the model declares the column; without it /identify 500s). ct_db is shared
+   with myproject, one run covers both.
+2. shared-ct commit → bump in biomon and `/var/www/myproject`, pull, HUP.
+
 ## 2026-10-30: Flagged series keep their photos; closing rule for multi-species series (deployed 2026-10-30)
 
 ### Why
