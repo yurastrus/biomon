@@ -67,6 +67,28 @@
 - The SD data rate (165 MB/h) is still one constant for every recorder; once
   models are recorded, other devices may need their own rate.
 
+## 2026-11-02: AI hint showed English labels ("cow") without pre-selecting
+
+- Verifier report: the AI hint on /identify sometimes shows the classifier's
+  English label and does not tick the species (example: a cow).
+- Cause: 10,001 DeepFaune predictions written 15-26 May 2026, before those
+  labels got a row in `ai_label_map`, kept `prediction_species_id` NULL. Later
+  predictions map fine, so no new cases appear. Labels: cow, equid, bird,
+  mustelid, golden jackal, fallow deer, sheep, goat (~300 pending series).
+- Fix 1 (data): `scripts/backfill_ai_prediction_species.py` fills the id from
+  `ai_label_map`, NULL rows only (dry run by default). Applied on prod with
+  the user's OK: 10,001 rows; logs/backfill_ai_species_*_20261102.log.
+- Fix 2 (code, safety net): `get_observation_ai_prediction()` looks a NULL
+  species up in `ai_label_map` by the lower-cased label, so a mapping added
+  later works at once. Test: tests/test_ai_prediction_label_fallback.py.
+  The AI filter list still reads `prediction_species_id` only; a new mapping
+  needs the backfill script for it.
+- Left as is: "undefined" (1,781 pending series, the model gave no species)
+  and labels with no species in our reference (chamois, ibex, porcupine,
+  reindeer). Possible follow-up: show "undefined" as "не визначено".
+- shared-ct 24510ab, biomon 0b90603, myproject bd6bbf8; soft reload. Prod
+  check: series 28321 -> {'species_id': -10, 'species_label': 'Корова'}.
+
 ## 2026-11-02: Count hotkeys on /identify (deployed 2026-11-02)
 
 - A verifier asked for Ctrl/Cmd+digit = number of individuals. Not possible:
