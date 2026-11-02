@@ -76,6 +76,7 @@ def test_help_block_and_tag_search_rendered(auth_client, tags):
     assert 'id="hotkeys-help"' in html
     assert 'id="tag-search"' in html
     assert 'id="hotkeys-hint"' in html
+    assert 'id="hotkeys-toggle"' in html
     # Every key the handler knows has a row in the help table.
     help_block = html[html.index('id="hotkeys-help"'):]
     for key in ('←', 'Home', '[', 'Shift+→', 'Shift+←', 'Ctrl+Enter',
