@@ -128,6 +128,13 @@
   an AI list. Prod check as admin: options "Будь-який, Не пусто, Пусто
   (50287), Лише тварини, ...". shared-ct fb68b5a, biomon 6bc2e24, myproject
   8dbd718; soft reload.
+- Bug after the default-off change: opening the page with keys off and then
+  turning them on put each digit badge on its own full-width line. Cause:
+  setHotkeysOn(false) -> closeTagSearch() -> renderTagKeys() called jQuery
+  show()/toggle() while `.hotkeys-off .tag-key` hid the badge, and jQuery then
+  wrote an inline `display: block`. Badges are now shown with
+  `.css('display', '')`. A reload with keys already on hid the bug.
+  shared-ct f2f691a, biomon 28a3ca8, myproject 5051f44; soft reload.
 
 ## 2026-11-02: Keyboard shortcuts and help on /identify (deployed 2026-11-02)
 
