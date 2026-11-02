@@ -749,8 +749,8 @@ class TestPamCreateLocationValidation(PamLocationTestBase):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp.get_json()['success'])
 
-    def test_create_without_institutions_is_allowed(self):
-        """A location can be created with no institution (institution_ids=[])."""
+    def test_create_without_institutions_is_rejected(self):
+        """An institution is mandatory: otherwise the creator loses the location."""
         mock_conn = _make_pam_conn_for_create(new_id=55)
         _login(self.client, self.manager.id)
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
@@ -761,8 +761,15 @@ class TestPamCreateLocationValidation(PamLocationTestBase):
                 'institution_ids': [],
                 'biotope_ids':     [],
             })
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue(resp.get_json()['success'])
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(resp.get_json()['success'])
+        mock_conn.execute.assert_not_called()
+
+    def test_admin_create_without_institutions_is_rejected(self):
+        _login(self.client, self.admin.id)
+        resp = self.client.post(self.URL, json={
+            'name': 'X', 'lat': 49.85, 'lon': 23.65, 'institution_ids': [], 'biotope_ids': []})
+        self.assertEqual(resp.status_code, 400)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -788,22 +795,12 @@ class TestPamCreateLocationInsert(PamLocationTestBase):
         return mock_conn
 
     def test_insert_locations_always_called(self):
-        mock_conn = self._create()
+        mock_conn = self._create(institution_ids=[self.inst_a.id])
         self.assertTrue(mock_conn.execute.called)
 
-    def test_only_location_insert_when_no_links(self):
-        """No institutions and no biotopes — a single execute (INSERT locations)."""
-        mock_conn = self._create(institution_ids=[], biotope_ids=[])
-        self.assertEqual(mock_conn.execute.call_count, 1)
-
-    def test_two_inserts_when_only_institution(self):
+    def test_two_inserts_without_biotopes(self):
         """With one institution — two executes: INSERT locations + INSERT location_institutions."""
         mock_conn = self._create(institution_ids=[self.inst_a.id], biotope_ids=[])
-        self.assertEqual(mock_conn.execute.call_count, 2)
-
-    def test_two_inserts_when_only_biotope(self):
-        """With one biotope — two executes: INSERT locations + INSERT location_biotopes."""
-        mock_conn = self._create(institution_ids=[], biotope_ids=[1])
         self.assertEqual(mock_conn.execute.call_count, 2)
 
     def test_three_inserts_when_institution_and_biotope(self):
@@ -822,7 +819,7 @@ class TestPamCreateLocationInsert(PamLocationTestBase):
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
             resp = self.client.post(self.URL, json={
                 'name': 'ID check', 'lat': 49.0, 'lon': 23.0,
-                'institution_ids': [], 'biotope_ids': [],
+                'institution_ids': [self.inst_a.id], 'biotope_ids': [],
             })
         self.assertEqual(resp.get_json()['location_id'], 777)
 
@@ -835,7 +832,7 @@ class TestPamCreateLocationInsert(PamLocationTestBase):
         with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
             resp = self.client.post(self.URL, json={
                 'name': 'Error test', 'lat': 49.0, 'lon': 23.0,
-                'institution_ids': [], 'biotope_ids': [],
+                'institution_ids': [self.inst_a.id], 'biotope_ids': [],
             })
         self.assertEqual(resp.status_code, 500)
         self.assertFalse(resp.get_json()['success'])
@@ -933,6 +930,87 @@ class TestPamUpdateLocation(PamLocationTestBase):
                 json=self._valid_payload(institution_ids=[self.inst_a.id])
             )
         mock_conn.close.assert_called_once()
+
+
+    def test_manager_cannot_save_with_no_institution(self):
+        """An empty institution list would strip the location from the manager's institutions."""
+        mock_conn = self._make_update_conn()
+        _login(self.client, self.manager.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            resp = self.client.post(self._url(), json=self._valid_payload(institution_ids=[]))
+        self.assertEqual(resp.status_code, 400)
+        mock_conn.begin.assert_not_called()
+
+    def test_empty_name_is_rejected(self):
+        mock_conn = self._make_update_conn()
+        _login(self.client, self.manager.id)
+        payload = self._valid_payload(institution_ids=[self.inst_a.id])
+        payload['name'] = '  '
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            resp = self.client.post(self._url(), json=payload)
+        self.assertEqual(resp.status_code, 400)
+        mock_conn.begin.assert_not_called()
+
+
+class TestPamDeleteLocation(PamLocationTestBase):
+    """POST /pam/api/location/<id>/delete — only a location without data."""
+
+    def _url(self, location_id=101):
+        return f'/uk/pam/api/location/{location_id}/delete'
+
+    @staticmethod
+    def _conn(*fetchones):
+        mock_conn = MagicMock()
+        results = []
+        for f in fetchones:
+            r = MagicMock()
+            r.fetchone.return_value = f
+            results.append(r)
+        mock_conn.execute.side_effect = results + [MagicMock() for _ in range(5)]
+        return mock_conn
+
+    def _post(self, user, conn):
+        _login(self.client, user.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+            return self.client.post(self._url())
+
+    def test_anonymous_is_redirected(self):
+        self.assertEqual(self.client.post(self._url()).status_code, 302)
+
+    def test_pam_verifier_gets_403(self):
+        self.assertEqual(self._post(self.pam_verifier, self._conn()).status_code, 403)
+
+    def test_manager_without_access_gets_403(self):
+        conn = self._conn(None)                      # access check: no row
+        self.assertEqual(self._post(self.manager, conn).status_code, 403)
+        conn.begin.assert_not_called()
+
+    def test_location_with_recordings_is_kept(self):
+        conn = self._conn((1,), (1,))                # access ok, recordings exist
+        resp = self._post(self.manager, conn)
+        self.assertEqual(resp.status_code, 409)
+        self.assertEqual(resp.get_json()['code'], 'has_data')
+        conn.begin.assert_not_called()
+
+    def test_location_with_service_log_is_kept(self):
+        conn = self._conn((1,), None, (1,))          # access ok, no recordings, visits exist
+        resp = self._post(self.manager, conn)
+        self.assertEqual(resp.status_code, 409)
+        self.assertEqual(resp.get_json()['code'], 'has_service_log')
+        conn.begin.assert_not_called()
+
+    def test_empty_location_is_deleted_by_manager(self):
+        conn = self._conn((1,), None, None)
+        resp = self._post(self.manager, conn)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.get_json()['success'])
+        sql = ' '.join(str(c.args[0]) for c in conn.execute.call_args_list)
+        self.assertIn('DELETE FROM locations', sql)
+        conn.begin.assert_called_once()
+
+    def test_admin_skips_access_check_but_not_data_guard(self):
+        conn = self._conn((1,))                      # recordings exist
+        self.assertEqual(self._post(self.admin, conn).status_code, 409)
 
 
 # ════════════════════════════════════════════════════════════════════════════

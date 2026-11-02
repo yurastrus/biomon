@@ -5486,3 +5486,17 @@ A batch spanning a DST change needs splitting into two uploads.
    declares the column, so UploadBatch queries fail until it exists.
 2. shared-ct pointer in biomon and `/var/www/myproject`; no new packages
    (exifr comes from jsdelivr).
+
+## 2026-11-02 PAM manage-locations: delete, required institution
+
+- Checked: a manager can rename a location only if they manage an institution linked to it
+  (`_user_can_edit_pam_location`); admin always can.
+- New `POST /<lang>/pam/api/location/<id>/delete` (manager+, same edit check). Refused with 409
+  when the location has recordings or service-log visits; otherwise removes biotope and
+  institution links and the location. Button (trash) in the edit form.
+- Institution is now required on create (all roles, 400 otherwise) and on a manager's save
+  (an empty list stripped the location from all their institutions, same orphan bug as create).
+  Name required on update. Red asterisks on required fields; the form picks only managed
+  institutions already.
+- Tests: `tests/test_pam_locations.py` (create/update/delete). Translations: PAM domain, en filled.
+- Not deployed. Change lives in the `shared-pam` submodule: commit there, then bump biomon.
