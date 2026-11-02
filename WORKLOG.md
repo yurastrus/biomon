@@ -14,6 +14,8 @@
 - Reproduced in the UI harness with real clicks and keys: without the fix the
   list opened; with it the focus is on the page and Ctrl+Enter reaches the
   page handler. Test in `tests/test_ct_identify_view_all.py`.
+- **Deployed 2026-11-02** (pull + HUP): shared-ct `c8f2e3e`, biomon `e6bd375`,
+  myproject `1c2f666` (pytest 233 passed). /identify 200 with the fix in the page.
 
 ## 2026-11-02: /identify answer only after every frame was viewed (deployed 2026-11-02)
 
