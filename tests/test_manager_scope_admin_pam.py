@@ -264,7 +264,7 @@ def _pam_manage_conn(rows):
     first.fetchall.return_value = rows
     empty = MagicMock()
     empty.fetchall.return_value = []
-    conn.execute.side_effect = [first, empty, empty, empty, empty, empty]
+    conn.execute.side_effect = [first, empty, empty, empty, empty, empty, empty]
     return conn
 
 
@@ -434,3 +434,67 @@ def test_institution_access_page(client_as, db_session, split, parks, make_user)
     admin = make_user(username='adm3', roles=('admin',))
     html = client_as(admin).get('/uk/admin/institution-access').get_data(as_text=True)
     assert 'Парк Б' in html and 'ia-gap' in html
+
+
+# ── PAM service plan page (managers, managed institutions only) ─────────────
+
+def _plan_conn(a):
+    """locations, latest recording, visits, equipment."""
+    loc = MagicMock()
+    loc.location_id, loc.location_name, loc.location_name_en = 1, 'ПАМ точка А', 'PAM A'
+    loc.lat, loc.lon, loc.inst_ids = 49.1, 23.9, [a.id]
+    locs = MagicMock(); locs.fetchall.return_value = [loc]
+    empty = MagicMock(); empty.fetchall.return_value = []
+    conn = MagicMock()
+    conn.execute.side_effect = [locs, empty, empty, empty]
+    return conn
+
+
+def test_service_plan_lists_only_managed_institutions(client_as, split, parks):
+    a, b, _ = parks
+    conn = _plan_conn(a)
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = client_as(split).get('/uk/pam/service-plan')
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    import json, re
+    items = json.loads(re.search(r'const ITEMS = (\[.*?\]);$', html, re.M).group(1))
+    assert [it['name'] for it in items] == ['ПАМ точка А']
+    assert items[0]['inst_ids'] == [a.id]
+    # Managed (A), not merely visible (A, B).
+    assert conn.execute.call_args_list[0].args[1]['inst_ids'] == [a.id]
+    picker = html[html.index('class="svp-plan-filters"'):] if 'svp-plan-filters' in html else ''
+    assert 'Парк Б' not in picker
+
+
+def test_service_plan_closed_to_verifiers(client_as, db_session, make_user, parks):
+    a, _, _ = parks
+    ver = make_user(username='pv3', roles=('pam_verifier',))
+    ver.institution_links.append(_link(a.id))
+    db_session.commit()
+    with patch('app.pam.routes.get_pam_db_connection') as get_conn:
+        resp = client_as(ver).get('/uk/pam/service-plan')
+    assert resp.status_code in (302, 403)
+    get_conn.assert_not_called()
+
+
+def test_service_plan_manager_without_managed_institution_sees_nothing(client_as, db_session,
+                                                                      make_user, parks):
+    a, _, _ = parks
+    m = make_user(username='m_view', roles=('manager',))
+    m.institution_links.append(_link(a.id))          # sees A, manages nothing
+    db_session.commit()
+    with patch('app.pam.routes.get_pam_db_connection') as get_conn:
+        resp = client_as(m).get('/uk/pam/service-plan')
+    assert resp.status_code == 200
+    get_conn.assert_not_called()
+    assert 'svp-plan-map' not in resp.get_data(as_text=True)
+
+
+def test_hub_shows_service_plan_card_to_managers_only(client_as, db_session, make_user, split, parks):
+    a, _, _ = parks
+    assert '/uk/pam/service-plan' in client_as(split).get('/uk/pam').get_data(as_text=True)
+    ver = make_user(username='pv4', roles=('pam_verifier',))
+    ver.institution_links.append(_link(a.id))
+    db_session.commit()
+    assert '/uk/pam/service-plan' not in client_as(ver).get('/uk/pam').get_data(as_text=True)

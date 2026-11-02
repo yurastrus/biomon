@@ -1,0 +1,8 @@
+pam_db: postgresql://***@localhost:5433/pam_db
+  1: SM Micro 2 / SM Micro 2
+  2: SM Micro / SM Micro
+  3: SM Mini / SM Mini
+  4: SM Mini 2 / SM Mini 2
+  5: AudioMoth / AudioMoth
+  6: Інший / Other
+Done. device_types and service_visits.device_type_id exist.

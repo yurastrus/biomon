@@ -3,6 +3,59 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-11-02: PAM service plan page for the field + recorder model in the service log (DB migration applied to prod 2026-11-02, code NOT deployed)
+
+### Why
+- Owner wants the "service plan" table from manage-locations as its own page
+  that reads well on a phone in the field: which recorders to service now,
+  a map, KML export of any chosen set of points, coordinates to copy into a
+  navigator, and service details (card, batteries, forecasts, last visit,
+  recorder model). Managers only, within their institutions; reachable from
+  the /uk/pam hub. Map and list must share one selection.
+- The recorder model was not stored anywhere. Owner's list: SM Micro 2,
+  SM Micro, SM Mini, SM Mini 2, AudioMoth, Other.
+
+### What was done
+- `pam_db.device_types` + nullable `service_visits.device_type_id`
+  (migration `app/pam/migrations/0009_device_types.sql`, script
+  `scripts.init_pam_device_types`, idempotent). Old visits keep NULL: shown
+  as "unknown", nothing backfilled (owner did not choose a backfill).
+- Service-log form on manage-locations: "Recorder model" dropdown, enabled
+  and required only when the visit is an installation; server rejects an
+  installation without it and drops it from any other visit. History shows it.
+- `GET /<lang>/pam/service-plan` (`pam_service_plan`): role `manager` and
+  locations of institutions from `manage_institution_ids` (not "can see");
+  admin sees all. Data rendered into the page (one request on a weak signal).
+  Forecast building moved into `_service_forecast_items()`, shared with
+  `/api/pam/locations-with-status` (no behaviour change there).
+- `service_forecast.current_equipment()` (pure): device from the last
+  installation, latest fresh batteries and card with their dates; a new
+  installation or a removal resets them; "kept" leaves the previous entry.
+- Page: status filter, institution filter, Leaflet map with status-coloured
+  points, cards (visit-by, model, batteries, card size, days left, schedule,
+  last visit, last uploaded recording, lost days, coordinates). Tap on a point
+  or a card toggles the same selection; bottom bar with KML export (built in
+  the browser, styled by status) and copy coordinates; per card: copy,
+  show on map, geo: link for Android navigators, Google Maps link; "Where am I"
+  adds distances. Hub card in "Management" for managers; link from the plan
+  block on manage-locations.
+- Styles in `pam_style.css` (`svp-` prefix, `sp-` is the species editor),
+  cache `?v=43`. No Bootstrap/Font Awesome on the site, so own buttons.
+
+### Checks
+- pytest: new tests in test_manager_scope_admin_pam (scope to managed
+  institutions, closed to verifiers, empty for a manager with no managed
+  institution, hub card), test_pam_locations (model required on install,
+  stored, ignored on routine), test_pam_service_forecast (equipment, card size).
+- Browser, `scripts/pam_locations_ui_harness.py` (no DB; now also fakes the
+  plan data, honours $PORT): phone viewport, selection both ways, KML text,
+  form dropdown enabled only for installation.
+
+### Not done / next
+- Deploy: DB part done on prod 2026-11-02 (`scripts.init_pam_device_types`, log in `logs/init_pam_device_types_20261102.log`); left: submodule `shared-pam` -> pointer in biomon, then pull + HUP.
+- The SD data rate (165 MB/h) is still one constant for every recorder; once
+  models are recorded, other devices may need their own rate.
+
 ## 2026-11-02: Keyboard shortcuts and help on /identify (deployed 2026-11-02)
 
 ### Why

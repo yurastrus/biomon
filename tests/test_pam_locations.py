@@ -52,13 +52,14 @@ def _make_biotope_row(id=1, name_ua='Ліс', name_en='Forest'):
 
 def _make_pam_manage_conn(location_rows=(), biotope_rows=()):
     """
-    Mock conn for manage_pam_locations: 6 sequential fetchall() calls:
+    Mock conn for manage_pam_locations: 7 sequential fetchall() calls:
     1 — locations with location_institutions,
     2 — location_biotopes (biotope_links),
     3 — biotopes (list for the form),
     4 — battery_types,
     5 — sd_card_status,
-    6 — visit_purposes.
+    6 — visit_purposes,
+    7 — device_types.
     """
     mock_conn = MagicMock()
     loc_result = MagicMock()
@@ -76,6 +77,7 @@ def _make_pam_manage_conn(location_rows=(), biotope_rows=()):
         empty,            # 4. battery_types
         empty,            # 5. sd_card_status
         empty,            # 6. visit_purposes
+        empty,            # 7. device_types
     ]
     return mock_conn
 
@@ -1133,6 +1135,24 @@ class TestPamServiceVisitValidation(PamLocationTestBase):
         self.assertEqual(params['sd_card_status_id'], 1)       # card stays in the removed device
         self.assertEqual(params['recording_hours_per_day'], 0)
         self.assertIsNone(params['battery_type_id'])
+
+    def test_installation_requires_device_type(self):
+        resp, _ = self._post(visit_purpose_id='2')
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('приладу', resp.get_json()['error'])
+
+    def test_installation_stores_device_type(self):
+        resp, conn = self._post(visit_purpose_id='2', device_type_id='3')
+        self.assertEqual(resp.status_code, 201)
+        params = conn.execute.call_args_list[-1][0][1]
+        self.assertEqual(params['device_type_id'], 3)
+
+    def test_routine_visit_ignores_device_type(self):
+        """The model belongs to the deployment: a routine visit cannot change it."""
+        resp, conn = self._post(device_type_id='3')
+        self.assertEqual(resp.status_code, 201)
+        params = conn.execute.call_args_list[-1][0][1]
+        self.assertIsNone(params['device_type_id'])
 
     def test_routine_visit_still_requires_card_and_schedule(self):
         resp, _ = self._post(sd_card_status_id='')

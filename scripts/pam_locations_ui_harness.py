@@ -2,13 +2,16 @@
 
 SQLite main DB, fake PAM connection and fake CT session: touches no real
 database. Serves on http://127.0.0.1:5078; open /__login first (logs in a
-fake admin), then /uk/pam/manage-locations or /uk/camera-traps/manage-locations.
+fake admin), then /uk/pam/manage-locations, /uk/pam/service-plan or
+/uk/camera-traps/manage-locations.
 
     venv/Scripts/python scripts/pam_locations_ui_harness.py
 """
 import os
 import sys
 from collections import namedtuple
+from datetime import datetime, timedelta
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
@@ -34,8 +37,46 @@ def _result(rows=(), one=None):
     return r
 
 
+DEVICES = ['SM Micro 2', 'SM Micro', 'SM Mini', 'SM Mini 2', 'AudioMoth', None]
+NOW = datetime.now()
+
+
+def _plan_location(i):
+    return SimpleNamespace(location_id=i, location_name=f'Локація {i}', location_name_en=f'Location {i}',
+                           lat=49.8 + (i % 6) / 30, lon=23.6 + (i // 6) / 15, inst_ids=[1])
+
+
+def _plan_install(i):
+    """One installation per location, spread over time so statuses vary."""
+    when = NOW - timedelta(days=3 + i * 4)
+    return SimpleNamespace(location_id=i, visit_datetime=when, visit_purpose_id=2,
+                           recording_hours_per_day=6, battery_type_id=1 + i % 2,
+                           estimated_recording_hours=260 if i % 2 == 0 else 340,
+                           capacity_gb=59.6 if i % 3 else 119.2, is_operational=True,
+                           last_recording=when + timedelta(days=min(i * 3, 40)),
+                           recorded_hours=0.0, sd_card_status_id=3,
+                           battery_name='Акумулятори NiMH 2500 mAh' if i % 2 else 'Літієві батарейки AA',
+                           device_type_id=None if DEVICES[i % 6] is None else i % 6 + 1,
+                           device_name=DEVICES[i % 6])
+
+
 def fake_execute(stmt, params=None, *a, **k):
     sql = str(stmt)
+    # Service plan page.
+    if 'ARRAY(SELECT li2.institution_id' in sql:
+        return _result([_plan_location(i) for i in range(1, 25)])
+    if 'AS last_data_date' in sql:
+        return _result([SimpleNamespace(location_id=i, last_data_date=_plan_install(i).last_recording)
+                        for i in range(1, 25)])
+    if 'LEAD(sv.visit_datetime)' in sql or 'AS device_name' in sql:
+        rows = [_plan_install(i) for i in range(1, 25)]
+        removed = SimpleNamespace(**{**vars(_plan_install(22)), 'visit_purpose_id': 3,
+                                     'visit_datetime': NOW - timedelta(days=2),
+                                     'battery_type_id': None, 'capacity_gb': None,
+                                     'device_type_id': None})
+        return _result(rows + [removed])
+    if 'FROM device_types' in sql:
+        return _result([Ref(i + 1, d or 'Інший', d or 'Other') for i, d in enumerate(DEVICES)])
     if 'LEFT JOIN location_institutions li ON l.location_id' in sql:
         return _result([LocRow(i, f'Локація {i}', f'Location {i}', 49.8 + i / 100, 24.0 + i / 100, 1)
                         for i in range(1, 25)])
@@ -113,4 +154,4 @@ def _login():
 
 if __name__ == '__main__':
     # One process with the patches above: no reloader.
-    app.run(port=5078, debug=False, use_reloader=False)
+    app.run(port=int(os.environ.get('PORT', 5078)), debug=False, use_reloader=False)

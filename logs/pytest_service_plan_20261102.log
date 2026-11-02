@@ -1,0 +1,6 @@
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_ct_photo_rights.py::test_every_osm_basemap_is_attributed - ...
+FAILED tests/test_ct_video_access.py::test_a_manager_is_turned_away[post-/uk/camera-traps/api/video/read-clip]
+==== 2 failed, 2754 passed, 44 skipped, 266 warnings in 501.86s (0:08:21) =====

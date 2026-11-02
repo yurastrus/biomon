@@ -217,3 +217,53 @@ def test_visits_from_rows_groups_and_sorts():
     assert [v.visit_datetime for v in grouped[1]] == [_dt(50), _dt(5)]
     assert grouped[1][0].card_capacity_gb is None
     assert grouped[2][0].recorded_hours == 0.0
+
+
+# ── current_equipment: what is on the site now ──────────────────────────────
+
+def _eq_row(days_ago, purpose=sf.PURPOSE_ROUTINE, battery=None, battery_name=None,
+            capacity=None, device=None, device_name=None, loc=1):
+    from types import SimpleNamespace
+    return SimpleNamespace(location_id=loc, visit_datetime=_dt(days_ago), visit_purpose_id=purpose,
+                           battery_type_id=battery, battery_name=battery_name,
+                           sd_card_status_id=None, capacity_gb=capacity,
+                           device_type_id=device, device_name=device_name)
+
+
+def test_equipment_keeps_device_and_tracks_last_fresh_battery_and_card():
+    rows = [
+        _eq_row(10, purpose=sf.PURPOSE_ROUTINE, battery=sf.BATTERY_KEPT_TYPE_ID, battery_name='kept'),
+        _eq_row(60, purpose=sf.PURPOSE_INSTALL, battery=4, battery_name='Lithium', capacity=59.6,
+                device=1, device_name='SM Micro 2'),
+        _eq_row(30, purpose=sf.PURPOSE_ROUTINE, battery=1, battery_name='NiMH 2500', capacity=119.2),
+    ]
+    eq = sf.current_equipment(rows)[1]
+    assert eq['device'] == 'SM Micro 2'
+    assert eq['battery'] == 'NiMH 2500' and eq['battery_since'] == _dt(30).date()
+    assert eq['card_gb'] == 128 and eq['card_since'] == _dt(30).date()
+
+
+def test_equipment_new_installation_forgets_previous_deployment():
+    rows = [
+        _eq_row(90, purpose=sf.PURPOSE_INSTALL, battery=4, battery_name='Lithium', capacity=59.6,
+                device=1, device_name='SM Micro 2'),
+        _eq_row(50, purpose=sf.PURPOSE_REMOVED),
+        _eq_row(20, purpose=sf.PURPOSE_INSTALL, battery=1, battery_name='NiMH', capacity=None),
+    ]
+    eq = sf.current_equipment(rows)[1]
+    assert eq['device'] is None          # old install had no model recorded
+    assert eq['battery'] == 'NiMH'
+    assert eq['card_gb'] is None
+
+
+def test_equipment_removed_site_is_empty():
+    rows = [_eq_row(40, purpose=sf.PURPOSE_INSTALL, device=2, device_name='AudioMoth', capacity=29.8),
+            _eq_row(5, purpose=sf.PURPOSE_REMOVED)]
+    assert sf.current_equipment(rows)[1] == dict(device=None, battery=None, battery_since=None,
+                                                 card_gb=None, card_since=None)
+
+
+@pytest.mark.parametrize('capacity, nominal', [(29.8, 32), (59.6, 64), (119.2, 128),
+                                               (238.4, 256), (953.6, 1024), (None, None)])
+def test_nominal_card_size(capacity, nominal):
+    assert sf.nominal_card_gb(capacity) == nominal
