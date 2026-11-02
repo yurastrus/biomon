@@ -53,6 +53,13 @@
 
 ### Not done / next
 - Deployed 2026-11-02: DB via `scripts.init_pam_device_types` (log in `logs/init_pam_device_types_20261102.log`), code pam bf135ed / biomon 684bd13, HUP. Prod check as admin: plan 200 with 102 locations, 38 with known batteries and card, model unknown everywhere until new installations; manage-locations has the dropdown; hub card shown.
+- 2026-11-02 backfill: owner says every recorder installed in 2025-2026 was a
+  Song Meter Micro 2 (so "Song Meter Micro" in older notes means the Micro 2).
+  `scripts.backfill_pam_device_type --apply` set it on 41 installation visits
+  (41 locations, no older installs exist); log
+  `logs/backfill_pam_device_type_20261102.log` lists the ids for undo. Active
+  points without an installation record in the log (e.g. contora PZR spruce,
+  Stavchany owl site) stay "unknown": the model is only read from installs.
 - The SD data rate (165 MB/h) is still one constant for every recorder; once
   models are recorded, other devices may need their own rate.
 
