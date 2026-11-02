@@ -1,7 +1,8 @@
-"""Local UI harness for /pam/manage-locations: SQLite main DB, fake PAM DB.
+"""Local UI harness for the PAM and CT manage-locations pages.
 
-Touches no real database. Serves on http://127.0.0.1:5078; open
-/__login first (logs in a fake admin), then /uk/pam/manage-locations.
+SQLite main DB, fake PAM connection and fake CT session: touches no real
+database. Serves on http://127.0.0.1:5078; open /__login first (logs in a
+fake admin), then /uk/pam/manage-locations or /uk/camera-traps/manage-locations.
 
     venv/Scripts/python scripts/pam_locations_ui_harness.py
 """
@@ -53,12 +54,43 @@ conn.execute.side_effect = fake_execute
 for target in ('app.pam.utils.get_pam_db_connection', 'app.pam.routes.get_pam_db_connection'):
     patch(target, return_value=conn).start()
 
+
+# CT: /camera-traps/manage-locations with a fake ORM session.
+def _ct_location(i):
+    loc = MagicMock()
+    loc.id, loc.name, loc.description = i, f'Локація CT {i}', ''
+    loc.latitude, loc.longitude = 49.8 + i / 100, 24.0 + i / 100
+    loc.biotopes, loc.stats, loc.is_valid, loc.invalid_note = [], None, True, None
+    return loc
+
+
+CT_LOCATIONS = {i: _ct_location(i) for i in range(1, 25)}
+
+
+def fake_ct_query(model, *rest):
+    from app.camera_traps.models import Location
+    q = MagicMock()
+    rows = list(CT_LOCATIONS.values()) if model is Location else []
+    q.order_by.return_value.all.return_value = rows
+    q.join.return_value.filter.return_value.order_by.return_value.distinct.return_value.all.return_value = rows
+    q.get.side_effect = lambda i: CT_LOCATIONS.get(i)
+    q.filter.return_value.count.return_value = 1
+    return q
+
+
+ct_session = MagicMock()
+ct_session.query.side_effect = fake_ct_query
+ct_session.execute.return_value = _result()
+patch('app.camera_traps.routes.get_ct_session', return_value=ct_session).start()
+patch('app.camera_traps.routes.close_ct_session').start()
+
 from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402
 
 app = create_app('testing')
 assert app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'), 'refusing: not SQLite'
 app.config['WTF_CSRF_ENABLED'] = False
+app.config['GEOSERVER_URL'] = 'http://harness-geoserver.invalid'
 
 with app.app_context():
     from app.models import Institution, Role, User

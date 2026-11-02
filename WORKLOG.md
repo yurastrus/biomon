@@ -5510,3 +5510,21 @@ A batch spanning a DST change needs splitting into two uploads.
   Fixed with `position: relative` on it. CSS cache `?v=40`.
 - Local UI harness without any real DB: `scripts/pam_locations_ui_harness.py`
   (launch config `pam-locations-ui`, open `/__login`).
+
+## 2026-11-02 CT manage-locations: same fixes as PAM
+
+- Rename: a manager can rename only locations of institutions they manage (`update_location`
+  checks `manage_institution_ids`); admin any. Unchanged.
+- New `POST /<lang>/camera-traps/api/location/<id>/delete` (manager+, `_user_can_manage_location`).
+  Refused (409, with a `code`) if the location has observations or upload batches (`has_data`),
+  deployments (`has_deployments`, delete them first), service visits or a merge record.
+  Derived `location_stats` / `location_monthly_activity` rows go with it. An unknown FK
+  reference rolls back and returns 409 `referenced`.
+- Institution required on create (all roles) and on a manager's save with an explicit empty
+  list; empty name rejected. Red asterisks: name, lat, lon, institutions (lat/lon are editable
+  in CT, so they stay marked in edit mode).
+- Same layout fix as PAM: `#panel-content { position: relative }`, red delete button
+  (`camera_traps.css`, `?v=46`). The CT `.btn` takes its blue background from style.css.
+- Tests in `tests/test_ct_manage_locations.py`; full suite 2736 passed.
+- Harness `scripts/pam_locations_ui_harness.py` now also serves the CT page.
+- Not deployed. shared-ct is also used by myproject: bump the pointer there too.

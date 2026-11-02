@@ -913,23 +913,19 @@ class TestCtCreateLocation(CtManageLocationsBase):
             )
         self.assertEqual(resp.status_code, 403)
 
-    def test_manager_can_create_without_institution(self):
-        """Manager can create a location without an institution."""
+    def test_create_without_institution_is_rejected(self):
+        """An institution is mandatory: otherwise the creator loses the location."""
         session = _make_create_location_session()
-        mock_loc = MagicMock()
-        mock_loc.id = 55
+        resp = self._post(self.URL, self._valid_payload(institution_id=None),
+                          user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 400)
+        session.add.assert_not_called()
 
-        with patch('app.camera_traps.routes.get_ct_session', return_value=session), \
-             patch('app.camera_traps.routes.close_ct_session'), \
-             patch('app.camera_traps.routes.Location', return_value=mock_loc):
-            _login(self.client, self.manager.id)
-            resp = self.client.post(
-                self.URL,
-                json=self._valid_payload(institution_id=None),
-                headers={'X-CSRFToken': 'test'}
-            )
-
-        self.assertEqual(resp.status_code, 201)
+    def test_admin_create_without_institution_is_rejected(self):
+        session = _make_create_location_session()
+        resp = self._post(self.URL, self._valid_payload(institution_id=None),
+                          user_id=self.admin.id, session=session)
+        self.assertEqual(resp.status_code, 400)
 
     def test_admin_can_create_with_any_institution(self):
         """Admin can assign any institution."""
@@ -1048,6 +1044,100 @@ class TestCtUpdateLocation(CtManageLocationsBase):
         self._post(self._url(), self._valid_payload(),
                    user_id=self.manager.id, session=session)
         session.commit.assert_called_once()
+
+
+    def test_manager_cannot_save_with_no_institution(self):
+        """An empty list would strip the location from all the manager's institutions."""
+        session = _make_update_location_session(has_access=True)
+        payload = dict(self._valid_payload(), institution_ids=[])
+        resp = self._post(self._url(), payload, user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 400)
+        session.commit.assert_not_called()
+
+    def test_empty_name_is_rejected(self):
+        session = _make_update_location_session(has_access=True)
+        payload = dict(self._valid_payload(), name='  ')
+        resp = self._post(self._url(), payload, user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 400)
+        session.commit.assert_not_called()
+
+
+def _make_delete_location_session(has_access=True, blocking=None, location=True):
+    """Mock ct_session for api_delete_location.
+
+    ``blocking`` names the model whose data check finds a row (or None).
+    """
+    from app.camera_traps import routes as ct_routes
+    mock_session = MagicMock()
+    access = MagicMock()
+    access.fetchone.return_value = (1,) if has_access else None
+    mock_session.execute.return_value = access
+    loc = _make_location(1, 'Помилкова') if location else None
+
+    def _query(arg, *rest):
+        q = MagicMock()
+        if arg is ct_routes.Location:
+            q.get.return_value = loc
+            return q
+        owner = getattr(arg, 'class_', None)
+        found = (1,) if blocking is not None and owner is blocking else None
+        q.filter.return_value.limit.return_value.first.return_value = found
+        return q
+    mock_session.query.side_effect = _query
+    return mock_session
+
+
+class TestCtDeleteLocation(CtManageLocationsBase):
+    """POST /camera-traps/api/location/<id>/delete — only a location without data."""
+
+    def _url(self, location_id=1):
+        return f'/uk/camera-traps/api/location/{location_id}/delete'
+
+    def test_anonymous_is_redirected(self):
+        self.assertEqual(self.client.post(self._url()).status_code, 302)
+
+    def test_manager_without_access_gets_403(self):
+        session = _make_delete_location_session(has_access=False)
+        resp = self._post(self._url(), {}, user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 403)
+        session.delete.assert_not_called()
+
+    def test_missing_location_returns_404(self):
+        session = _make_delete_location_session(location=False)
+        resp = self._post(self._url(), {}, user_id=self.admin.id, session=session)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_each_kind_of_data_blocks_deletion(self):
+        from app.camera_traps.models import (Observation, UploadBatch, Deployment,
+                                             ServiceVisit, LocationMergeLog)
+        cases = {Observation: 'has_data', UploadBatch: 'has_data',
+                 Deployment: 'has_deployments', ServiceVisit: 'has_service_log',
+                 LocationMergeLog: 'has_merge_log'}
+        for model, code in cases.items():
+            with self.subTest(model=model.__name__):
+                session = _make_delete_location_session(blocking=model)
+                resp = self._post(self._url(), {}, user_id=self.manager.id, session=session)
+                self.assertEqual(resp.status_code, 409)
+                self.assertEqual(resp.get_json()['code'], code)
+                session.delete.assert_not_called()
+                session.commit.assert_not_called()
+
+    def test_empty_location_is_deleted_by_manager(self):
+        session = _make_delete_location_session()
+        resp = self._post(self._url(), {}, user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.get_json()['success'])
+        session.delete.assert_called_once()
+        session.commit.assert_called_once()
+
+    def test_unknown_reference_is_reported_not_crashed(self):
+        from sqlalchemy.exc import IntegrityError
+        session = _make_delete_location_session()
+        session.commit.side_effect = IntegrityError('DELETE', {}, Exception('fk'))
+        resp = self._post(self._url(), {}, user_id=self.admin.id, session=session)
+        self.assertEqual(resp.status_code, 409)
+        self.assertEqual(resp.get_json()['code'], 'referenced')
+        session.rollback.assert_called()
 
 
 # ════════════════════════════════════════════════════════════════════════════
