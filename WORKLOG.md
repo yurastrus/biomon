@@ -67,6 +67,20 @@
 - The SD data rate (165 MB/h) is still one constant for every recorder; once
   models are recorded, other devices may need their own rate.
 
+## 2026-11-02: Count hotkeys on /identify (deployed 2026-11-02)
+
+- A verifier asked for Ctrl/Cmd+digit = number of individuals. Not possible:
+  browsers take Ctrl/Cmd+1..9 for tab switching before the page sees it.
+  Used Shift+1..9 instead (Shift+0 = 10); plain digits still toggle tags.
+- Shift+digit is checked before "?", because Shift+7 types "?" in the
+  Ukrainian layout. Help still opens with physical Shift+/.
+- Q focuses and selects the count field for counts above 10. Enter in that
+  field now leaves it instead of submitting the form (Ctrl+Enter submits).
+- The count field belongs to the species being entered, so with "+ ще вид"
+  the key sets the count of the current species only.
+- Checked in the harness by dispatched key events; shared-ct 491f5b5,
+  biomon 4807738, myproject 552ec5e; both apps HUPed (soft reload), 200/302.
+
 ## 2026-11-02: Keyboard shortcuts and help on /identify (deployed 2026-11-02)
 
 ### Why
