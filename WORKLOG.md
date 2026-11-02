@@ -3,7 +3,7 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
-## 2026-11-02: /identify switch to the next series took ~1 s (prefetch + cheaper query, not deployed)
+## 2026-11-02: /identify switch to the next series took ~1 s (prefetch + cheaper query, deployed 2026-11-02)
 
 ### Why
 - Owner: after submitting an answer, the next series takes about a second.
@@ -48,6 +48,13 @@
   delay and `/__next_calls`): Skip switched in 12 ms; every prefetch carried
   the exclusion; a sort change discarded the prefetched series.
 - Tests: `tests/test_ct_identify_prefetch.py` (6) + existing identify suites.
+- Full suite: 2765 passed, 1 failed (`test_registration`, "no such table:
+  user", test-order flake; passes alone 46/46). Log:
+  `logs/pytest_identify_prefetch_20261102.log`.
+- **Deployed 2026-11-02** (soft: pull + HUP, no init scripts): shared-ct
+  `1318436`, biomon `8e14422`, myproject `67a4d2f` (its pytest 233 passed).
+  On the server the next-series route takes ~0.1 s for a verifier and ~0.3 s
+  for the admin (`scripts.probe_identify_latency`); myproject CT API smoke 200.
 
 ## 2026-11-02: PAM service plan page for the field + recorder model in the service log (deployed 2026-11-02)
 
