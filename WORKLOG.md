@@ -70,6 +70,9 @@
 - myproject bumped (0da98e5, its pytest 233 passed), pulled, smoked
   (/identify and next-observation 200) BEFORE HUP, then HUP: 200.
 - Logs on the server: `/var/www/biomon/logs/deploy_behavior_hotkeys_*.log`.
+- Follow-up (owner): help block moved into the left column (same width as
+  tags + comment), shared-ct f3ba63e; pulled, graceful HUP of both apps
+  while a verifier was working (HUP lets in-flight requests finish).
 
 ## 2026-10-30: Flagged series keep their photos; closing rule for multi-species series (deployed 2026-10-30)
 
