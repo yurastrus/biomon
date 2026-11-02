@@ -1187,6 +1187,14 @@ class TestPamServiceVisitEditRights(PamLocationTestBase):
             resp = self.client.post(url, json=self.PAYLOAD)
         return resp, mock_conn
 
+    def test_editing_a_routine_visit_keeps_stored_model(self):
+        """A routine visit sends no model; the UPDATE must not wipe a stored one."""
+        resp, conn = self._call('update', self.manager, self.manager.id)
+        self.assertEqual(resp.status_code, 200)
+        sql, params = conn.execute.call_args_list[-1][0]
+        self.assertIn('COALESCE(:device_type_id, device_type_id)', str(sql))
+        self.assertIsNone(params['device_type_id'])
+
     def test_author_can_delete(self):
         resp, conn = self._call('delete', self.manager, self.manager.id)
         self.assertEqual(resp.status_code, 200)
