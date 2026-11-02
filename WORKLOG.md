@@ -3,7 +3,7 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
-## 2026-11-02: PAM service plan page for the field + recorder model in the service log (DB migration applied to prod 2026-11-02, code NOT deployed)
+## 2026-11-02: PAM service plan page for the field + recorder model in the service log (deployed 2026-11-02)
 
 ### Why
 - Owner wants the "service plan" table from manage-locations as its own page
@@ -52,7 +52,7 @@
   form dropdown enabled only for installation.
 
 ### Not done / next
-- Deploy: DB part done on prod 2026-11-02 (`scripts.init_pam_device_types`, log in `logs/init_pam_device_types_20261102.log`); left: submodule `shared-pam` -> pointer in biomon, then pull + HUP.
+- Deployed 2026-11-02: DB via `scripts.init_pam_device_types` (log in `logs/init_pam_device_types_20261102.log`), code pam bf135ed / biomon 684bd13, HUP. Prod check as admin: plan 200 with 102 locations, 38 with known batteries and card, model unknown everywhere until new installations; manage-locations has the dropdown; hub card shown.
 - The SD data rate (165 MB/h) is still one constant for every recorder; once
   models are recorded, other devices may need their own rate.
 
