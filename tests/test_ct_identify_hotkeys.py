@@ -79,7 +79,7 @@ def test_help_block_and_tag_search_rendered(auth_client, tags):
     # Every key the handler knows has a row in the help table.
     help_block = html[html.index('id="hotkeys-help"'):]
     for key in ('←', 'Home', '[', 'Shift+→', 'Shift+←', 'Ctrl+Enter',
-                '1…9', 'T', '/', 'F', 'I', 'Ctrl+Shift+T', '?'):
+                '1…9', 'Shift+1…9', 'Shift+0', 'Q', 'T', '/', 'F', 'I', 'Ctrl+Shift+T', '?'):
         assert f'<kbd>{key}</kbd>' in help_block, key
 
 
