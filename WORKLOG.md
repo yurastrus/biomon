@@ -3,6 +3,18 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-11-02: /identify Ctrl+Enter reopened the AI filter list
+
+- Owner: after choosing an AI species (select2), Ctrl+Enter opened that
+  dropdown instead of sending, even with keys on. select2 refocuses its box on
+  close and opens it on Enter/Space/arrows in its own keydown handler, before
+  the page handler on document sees the key.
+- Fix: on `select2:close` of the scope and AI filters, blur the select2 box
+  (next tick), as the species search already does after a pick.
+- Reproduced in the UI harness with real clicks and keys: without the fix the
+  list opened; with it the focus is on the page and Ctrl+Enter reaches the
+  page handler. Test in `tests/test_ct_identify_view_all.py`.
+
 ## 2026-11-02: /identify answer only after every frame was viewed (deployed 2026-11-02)
 
 ### Why

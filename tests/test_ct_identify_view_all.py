@@ -69,3 +69,12 @@ def test_ctrl_enter_warns_for_two_seconds_instead_of_submitting():
     warn = _function_body(html, 'warnUnseenPhotos')
     assert '2000' in warn
     assert 'id="unseen-warning"' in html
+
+
+def test_filter_lists_give_keys_back_after_choosing():
+    """02.11.2026: after picking an AI species, Ctrl+Enter reopened the select2
+    list (it keeps the focus and opens on Enter) instead of reaching the page."""
+    html = _html()
+    hook = html[html.index("on('select2:close'"):][:400]
+    assert "$('#scope-select, #ai-species-select').on('select2:close'" in html
+    assert "closest('.select2-container')" in hook and 'active.blur()' in hook
