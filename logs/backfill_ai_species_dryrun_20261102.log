@@ -1,0 +1,11 @@
+label           species  name                      rows  series pending
+cow                 -10  Корова                    5088      83      45
+equid                -7  Кінь                      3904     170     159
+bird                -18  Інший птах                 773      82      59
+mustelid            -20  Куницеві                   142      31      22
+golden jackal        42  Шакал звичайний             46       7       7
+fallow deer          48  Лань європейська            27       8       6
+sheep               -11  Вівця                       18       5       4
+goat                -19  Коза свійська                3       1       1
+total rows: 10001
+dry run, nothing written (use --apply)
