@@ -89,11 +89,17 @@ with app.app_context():
 
 _series = itertools.count(101)
 SUBMITTED = []
+NEXT_CALLS = []
+# Slow "next series" like production (~0.5 s), so the prefetch shows.
+NEXT_DELAY = float(os.environ.get('HARNESS_NEXT_DELAY', '0.6'))
 
 
 def fake_next(lang_code):
-    from flask import jsonify
+    import time
+    from flask import jsonify, request
+    time.sleep(NEXT_DELAY)
     obs = next(_series)
+    NEXT_CALLS.append({'served': obs, 'exclude': request.args.getlist('exclude_obs_id')})
     return jsonify({
         'observation_id': obs, 'location_name': 'Харнес', 'review_mode': False,
         'photos': [{'thumbnail_url': f'/__img/{obs}/{i}', 'captured_at': f'2026-11-02 12:00:{i:02d}'}
@@ -127,6 +133,12 @@ def _img(obs, i):
 def _submitted():
     from flask import jsonify
     return jsonify(SUBMITTED)
+
+
+@app.route('/__next_calls')
+def _next_calls():
+    from flask import jsonify
+    return jsonify(NEXT_CALLS)
 
 
 @app.route('/__login')

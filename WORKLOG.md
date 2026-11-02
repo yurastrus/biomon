@@ -3,6 +3,52 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-11-02: /identify switch to the next series took ~1 s (prefetch + cheaper query, not deployed)
+
+### Why
+- Owner: after submitting an answer, the next series takes about a second.
+
+### Findings (prod ct_db, read-only, `scripts/probe_identify_latency.py`)
+- The front end is strictly serial: POST submit-identification → only then
+  GET next-observation-for-identification → only then the thumbnails load.
+  Nothing for the next series is fetched while the verifier is still working.
+- GET next series: ~0.4–0.6 s of SQL server-side with the default sort
+  `priority_random` (~0.05 s with `date_desc`). EXPLAIN ANALYZE:
+  - first-tier subquery `_identify_voted_subq` ("has anyone voted") joins all
+    pending photos to all identifications (~0.4 s) although only ~5k series
+    are candidates for the user;
+  - the "not yet voted by me" NOT EXISTS seq-scans photos (820k rows, ~0.15 s).
+  - Rewrites tried: correlated EXISTS (0.86 s, planner hashes it) and
+    `photos.identification_count > 0` (0.36 s): both still seq-scan photos.
+- POST submit: not timed (it writes); it issues one query per photo for the
+  "already answered" check plus the consensus recomputation.
+
+### Fix (owner chose "prefetch + SQL", same day)
+- **Prefetch** (`identification.html`): after a series is shown, the page asks
+  for the next one with `exclude_obs_id=<current>` and preloads its first 3
+  thumbnails. Submit/Skip/Flag use it if the filters (query string) are the
+  same, the same series is still on screen and it is < 2 min old; otherwise a
+  normal request. A 404 from the prefetch falls back to a normal request
+  (excluding the current series can be "nothing left" when it is not).
+  Submit still waits for the POST before switching (no optimistic switch: a
+  failed save must not be hidden behind a new series).
+- **Server** (`routes.py`): new `exclude_obs_id` (repeatable, max 5) in both
+  modes. Normal mode checks ONE photo per series (`_series_photo_probe`) for
+  "voted by me" and for the priority tier. Valid because identifications are
+  copied to every photo of a series; checked on prod: 29,411 pending
+  (series, verifier) pairs, 0 partial. Rewrites with a correlated EXISTS over
+  all photos or with `identification_count` were slower or relied on a counter
+  that tests and imports do not always keep. Review mode unchanged.
+  `has_other_identifications` is one query instead of a lazy load per photo;
+  submit checks "already answered" in one query instead of one per photo.
+- **Measured on prod (EXPLAIN ANALYZE):** verifier 580 → ~95 ms, admin
+  (all 59k pending series) ~430 → ~310 ms. With the prefetch the wait after
+  Skip is gone; after Submit only the save itself remains.
+- UI harness (`scripts/identify_hotkeys_ui_harness.py`, now with a 0.6 s fake
+  delay and `/__next_calls`): Skip switched in 12 ms; every prefetch carried
+  the exclusion; a sort change discarded the prefetched series.
+- Tests: `tests/test_ct_identify_prefetch.py` (6) + existing identify suites.
+
 ## 2026-11-02: PAM service plan page for the field + recorder model in the service log (deployed 2026-11-02)
 
 ### Why
