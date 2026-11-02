@@ -54,7 +54,15 @@ patch('app.camera_traps.routes.get_ct_session', return_value=ct_session).start()
 patch('app.camera_traps.routes.close_ct_session').start()
 patch('app.camera_traps.routes.get_species_ranking', return_value={}).start()
 patch('app.camera_traps.routes.get_behavior_ranking', return_value={}).start()
-patch('app.camera_traps.ai_runner.is_ai_available', return_value=False).start()
+# AI filter list: "Empty" sits mid-alphabet in the real query, the template
+# moves it up next to "not empty".
+AI_SPECIES = [{'id': i, 'text': f'{n} ({c})'} for i, n, c in [
+    (5, 'Борсук (Meles meles)', 12), (6, 'Вовк (Canis lupus)', 3), (1, 'Лисиця (Vulpes vulpes)', 40),
+    (2, 'Козуля (Capreolus capreolus)', 210), (7, 'Куниця (Martes sp.)', 9), (8, 'Олень (Cervus elaphus)', 88),
+    (-1, 'Пусто', 530), (3, 'Кабан (Sus scrofa)', 140), (9, 'Рись (Lynx lynx)', 2), (10, 'Заєць (Lepus europaeus)', 31),
+]]
+patch('app.camera_traps.ai_runner.is_ai_available', return_value=True).start()
+patch('app.camera_traps.ai_runner.get_species_with_ai_predictions', return_value=AI_SPECIES).start()
 
 from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402
@@ -69,6 +77,13 @@ with app.app_context():
     u = User(username='harness_admin', password_hash='x')
     u.roles.append(Role(name='admin'))
     db.session.add(u)
+    from app.models import Institution
+    for i, (uk, eco) in enumerate([('Розточчя', 'Розточчя'), ('Яворівський НПП', 'Розточчя'),
+                                   ('Карпатський БЗ', 'Карпати'), ('Синевир', 'Карпати'),
+                                   ('Ужанський НПП', 'Карпати'), ('Гуцульщина', 'Карпати'),
+                                   ('Шацький НПП', 'Полісся'), ('Древлянський', 'Полісся'),
+                                   ('Черемський', 'Полісся'), ('Деснянсько-Старогутський', 'Полісся')], 1):
+        db.session.add(Institution(name_uk=uk, code=f'I{i}', ecoregion_uk=eco))
     db.session.commit()
     uid = u.id
 
