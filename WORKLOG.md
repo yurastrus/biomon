@@ -3,7 +3,7 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
-## 2026-11-02: /identify answer only after every frame was viewed (not deployed)
+## 2026-11-02: /identify answer only after every frame was viewed (deployed 2026-11-02)
 
 ### Why
 - Owner: a multi-photo series must not be submitted before all frames were
@@ -29,6 +29,9 @@
   ungates, submit works, next series gated again, autoplay counts frames.
   "<" could not be exercised in the harness (its fake API ignores
   `start_obs_id`); covered by the template test.
+- **Deployed 2026-11-02** (soft: pull + HUP): shared-ct `c532fdb`, biomon
+  `b4fa9bb`, myproject `92d9c2c` (pytest 233 passed). Server smoke: /identify
+  200 as admin, gate markup and CSS `?v=50` present; myproject 302 as before.
 
 ## 2026-11-02: /identify switch to the next series took ~1 s (prefetch + cheaper query, deployed 2026-11-02)
 
