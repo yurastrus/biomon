@@ -5500,3 +5500,13 @@ A batch spanning a DST change needs splitting into two uploads.
   institutions already.
 - Tests: `tests/test_pam_locations.py` (create/update/delete). Translations: PAM domain, en filled.
 - Not deployed. Change lives in the `shared-pam` submodule: commit there, then bump biomon.
+
+### 2026-11-02 follow-up: delete button style, gap below footer
+
+- Delete button was blue and empty: no Bootstrap or Font Awesome on this page, the global
+  `.btn` paints every button. Now a compact red-outline "🗑 Видалити" (`pam_style.css`).
+- Gap below the footer after clicking a location: Select2's hidden `<select>`s are
+  `position:absolute` and escaped the unpositioned scroll container `#panel-content`.
+  Fixed with `position: relative` on it. CSS cache `?v=40`.
+- Local UI harness without any real DB: `scripts/pam_locations_ui_harness.py`
+  (launch config `pam-locations-ui`, open `/__login`).
