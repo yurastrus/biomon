@@ -3,7 +3,7 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
-## 2026-11-02: Keyboard shortcuts and help on /identify (NOT deployed)
+## 2026-11-02: Keyboard shortcuts and help on /identify (deployed 2026-11-02)
 
 ### Why
 - Owner asked for hotkeys on /identify (autoplay on/off, switching series,
@@ -58,6 +58,18 @@
    (the model declares the column; without it /identify 500s). ct_db is shared
    with myproject, one run covers both.
 2. shared-ct commit → bump in biomon and `/var/www/myproject`, pull, HUP.
+
+### Deployed 2026-11-02
+- biomon pulled (1468114, shared-ct 7685cea). First `--apply` failed with
+  `LockNotAvailable` on `ALTER TABLE behavior_types` (lock_timeout 5 s): a
+  web worker's transaction held a read lock (the known idle-in-transaction
+  bug). A minute later no lock holders; the retry applied. Keys on prod match
+  the dry run (1 Moving … 0 Resting, 4 tags without a key).
+- HUP biomon; admin smoke via test_client: /identify 200 with help block,
+  CSS v47 and the 14 tags in key order; next-observation API 200.
+- myproject bumped (0da98e5, its pytest 233 passed), pulled, smoked
+  (/identify and next-observation 200) BEFORE HUP, then HUP: 200.
+- Logs on the server: `/var/www/biomon/logs/deploy_behavior_hotkeys_*.log`.
 
 ## 2026-10-30: Flagged series keep their photos; closing rule for multi-species series (deployed 2026-10-30)
 
