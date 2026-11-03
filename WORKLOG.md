@@ -5906,3 +5906,5 @@ A batch spanning a DST change needs splitting into two uploads.
   button now shows just `136/216` (`#submit-label` hidden in `updateSubmitGate`); the word
   comes back once every frame was seen. Test in `tests/test_ct_identify_view_all.py`;
   checked in the hotkeys harness (`1/6` → `Надіслати`).
+- Deployed 2026-11-03: biomon (ce17933) and myproject (c161d85), ct 43e02fb, HUP-reloaded;
+  admin `/identify` 200 with `submit-label`.
