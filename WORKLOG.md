@@ -6070,3 +6070,15 @@ recalculation. obs 88709 and 96448 left on the placeholder (no recoverable date)
   Prod checks as admin (read-only): button on `/uk/pam/pam_detailed`, period banner on
   sample-upload; `/prepare` with 2025-11-03..2026-11-03 for Locustella fluviatilis at
   location 402 returned 50 detections dated 2026-05-17..2026-06-25; inverted period 400.
+
+## 2026-11-03 /upload-video open to managers
+- All six video routes `role_required('manager')` (was admin); hub card under
+  `can_upload or is_admin`. process-frame now calls `_batch_access_error(batch_id,
+  location_id)`, so frames land only on locations the user manages (the location list on
+  the page was already scoped by `manage_institution_ids`). Calibration profiles stay
+  shared between all users.
+- Why now: the time is shown (metadata or typed, beside the first frame) before anything
+  is written, which removes the reason for admin-only.
+- Tests: access tests inverted for managers, a new test for the location scope. Full
+  suite 2835 passed, 1 failed (`test_pam_verification_unknown`, "no such table: user",
+  passes alone: an existing order-dependent flake, not this change).
