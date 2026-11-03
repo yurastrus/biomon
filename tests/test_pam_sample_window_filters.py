@@ -382,3 +382,131 @@ def test_the_english_page_shows_translated_month_and_year_labels(auth_client):
                   'Year from', 'Year to', 'April', 'November'):
         assert label in html, label
     assert 'Wind' not in html and 'Precip.' not in html
+
+
+# ── exact period from the species dashboard (pam_detailed) ───────────────────
+# The dashboard shows a contiguous period (3 Nov 2025 - 3 Nov 2026) that month +
+# year cannot express, so its link sends the days themselves.
+
+def test_date_range_is_written_as_index_friendly_day_bounds():
+    sql = str(pss.build_sampling_query(10, with_date_range=True))
+    assert 'r.datetime_start >= CAST(:date_from AS date)' in sql
+    # inclusive last day, like the dashboard's DATE(...) <= :end_date
+    assert 'r.datetime_start <  CAST(:date_to AS date) + 1' in sql
+    assert 'DATE(r.datetime_start)' not in sql
+
+
+def test_no_date_range_leaves_the_query_without_date_clauses():
+    assert ':date_from' not in str(pss.build_sampling_query(10))
+
+
+def test_a_date_range_binds_both_days():
+    from datetime import date
+    conn = _mock_conn()
+    pss.run_stratified_sample('Bufo bufo', [10], conn=conn,
+                              date_from=date(2025, 11, 3),
+                              date_to=date(2026, 11, 3))
+    sql, params = _executed(conn)
+    assert params['date_from'] == date(2025, 11, 3)
+    assert params['date_to'] == date(2026, 11, 3)
+    assert ':date_from' in sql
+    assert 'EXTRACT(MONTH' not in sql and 'make_date' not in sql
+
+
+def test_half_a_date_range_is_ignored_by_the_sampler():
+    from datetime import date
+    conn = _mock_conn()
+    pss.run_stratified_sample('Bufo bufo', [10], conn=conn,
+                              date_from=date(2025, 11, 3))
+    sql, params = _executed(conn)
+    assert 'date_from' not in params and ':date_from' not in sql
+
+
+def test_prepare_forwards_the_exact_period(auth_client):
+    from datetime import date
+    cl = auth_client(role='admin')
+    with patch('app.pam.routes.get_pam_db_connection', return_value=MagicMock()), \
+         _patched_sampler() as sampler:
+        resp = _prepare(cl, date_from='2025-11-03', date_to='2026-11-03',
+                        confidence_threshold=0.95)
+    assert resp.status_code == 200
+    kwargs = sampler.call_args.kwargs
+    assert kwargs['date_from'] == date(2025, 11, 3)
+    assert kwargs['date_to'] == date(2026, 11, 3)
+    # the dashboard link sends no month/year window, so none is applied
+    assert kwargs['month_start'] is None and kwargs['year_start'] is None
+
+
+def test_prepare_without_dates_passes_none(auth_client):
+    """Co-occurrence links and the plain page send no dates: unchanged."""
+    cl = auth_client(role='admin')
+    with patch('app.pam.routes.get_pam_db_connection', return_value=MagicMock()), \
+         _patched_sampler() as sampler:
+        resp = _prepare(cl, month_start=2, month_end=4,
+                        year_start=2024, year_end=2024)
+    assert resp.status_code == 200
+    kwargs = sampler.call_args.kwargs
+    assert kwargs['date_from'] is None and kwargs['date_to'] is None
+
+
+@pytest.mark.parametrize('body', [
+    {'date_from': '2025-11-03'},
+    {'date_to': '2026-11-03'},
+    {'date_from': '2026-11-03', 'date_to': '2025-11-03'},
+    {'date_from': '03.11.2025', 'date_to': '2026-11-03'},
+    {'date_from': '2025-13-01', 'date_to': '2026-11-03'},
+])
+def test_a_bad_period_answers_400_rather_than_widening(auth_client, body):
+    cl = auth_client(role='admin')
+    with patch('app.pam.routes.get_pam_db_connection', return_value=MagicMock()), \
+         _patched_sampler() as sampler:
+        resp = _prepare(cl, **body)
+    assert resp.status_code == 400
+    sampler.assert_not_called()
+
+
+def test_the_page_has_the_exact_period_banner_hidden_by_default(auth_client):
+    cl = auth_client(role='admin')
+    conn = MagicMock()
+    res = MagicMock()
+    res.mappings.return_value.fetchall.return_value = []
+    res.fetchall.return_value = []
+    conn.execute.return_value = res
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn), \
+         patch('app.pam.routes.get_earliest_recording_year', return_value=2019):
+        resp = cl.get('/uk/pam/verification/sample-upload')
+    html = resp.data.decode('utf-8')
+    assert 'id="su-date-range" class="pam-scope-banner mt-2" style="display:none;"' in html
+    # both deep-link sources are understood by the same prefill
+    assert "q.get('source') === 'detailed'" in html
+    assert "'date_from'" in html or "q.get('date_from')" in html
+
+
+# ── the button on the species dashboard ──────────────────────────────────────
+
+def _detailed_page(client):
+    species = [{'value': 'Bufo bufo', 'text': 'Ропуха сіра (Bufo bufo)'}]
+    with patch('app.pam.utils.get_available_species', return_value=species), \
+         patch('app.pam.routes.get_models_list', return_value=[]):
+        return client.get('/uk/pam/pam_detailed')
+
+
+def test_the_dashboard_offers_segment_cutting_to_an_admin(auth_client):
+    resp = _detailed_page(auth_client(role='admin'))
+    assert resp.status_code == 200
+    html = resp.data.decode('utf-8')
+    assert 'id="verify-subset-btn"' in html
+    assert '/uk/pam/verification/sample-upload' in html
+
+
+@pytest.mark.parametrize('role', ['manager', 'pam_verifier'])
+def test_the_dashboard_hides_segment_cutting_from_non_admins(auth_client, role):
+    resp = _detailed_page(auth_client(role=role))
+    assert resp.status_code == 200
+    assert 'id="verify-subset-btn"' not in resp.data.decode('utf-8')
+
+
+def test_the_dashboard_hides_segment_cutting_from_anonymous(client):
+    resp = _detailed_page(client)
+    assert resp.status_code == 200
+    assert 'id="verify-subset-btn"' not in resp.data.decode('utf-8')

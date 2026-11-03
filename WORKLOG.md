@@ -6035,3 +6035,33 @@ recalculation. obs 88709 and 96448 left on the placeholder (no recoverable date)
   favourites); output in the server's `logs/delete_batch_a63eef06_20261103.log`.
 - Not touched: photo `cat_2026-07-17.jpg` (batch 1e3a8a9a, 1900 date, archived).
 - The page stays admin-only.
+
+## 2026-11-03 PAM species dashboard -> sample-upload deep link
+- Owner: while looking at a species' seasonal dynamics on `/pam/pam_detailed`,
+  verify exactly that subset without re-entering the filters on
+  `/pam/verification/sample-upload`.
+- `pam_detailed`: admin-only button "Нарізати сегменти для верифікації". It
+  takes the APPLIED filters and the locations on the map (after institution,
+  biotope and min-detections filters, from `get-unique-points`), and opens
+  `sample-upload?source=detailed&species=&location_ids=&conf=&model_id=&date_from=&date_to=`
+  in a new tab. Combined mode disables it (no single model to sample for).
+- Sampler: new optional exact period `date_from`/`date_to` (inclusive days,
+  same semantics as the dashboard's `DATE(r.datetime_start)` filter, written as
+  index-friendly bounds). `/prepare` validates it (both or neither, ISO, from<=to,
+  else 400; garbage is NOT silently dropped since that would widen the sample).
+  Month/year cannot express a contiguous period like 3 Nov 2025 - 3 Nov 2026.
+- Sample-upload prefill extended, backwards compatible with the co-occurrence
+  links (`location_ids, species, year/month, conf`): new `conf_max`, `model_id`,
+  `date_from/date_to` (month/year selectors disabled while the period holds,
+  reset button restores them), banner text per `source`. Institution: one that
+  holds ALL requested locations, else "all" (old code took the first location's
+  institution, which hid locations of other institutions; single-location
+  co-occurrence links resolve the same as before).
+- Rejected: approximating the period with month+year (pulls extra months);
+  targeting segment-window (cuts everything, cap 200; a stratified sample is the
+  right default for "can I trust this chart"; could be added as a second button).
+- Tests: `tests/test_pam_sample_window_filters.py` (+15). PAM suite 864 passed
+  (`logs/pytest_pam_all_detailed_sample_*.log`). UI check without DB:
+  `scripts/pam_sample_link_ui_harness.py` (port 5081, `/__login`): dashboard link,
+  prefill, the body sent to /prepare, an old co-occurrence link, reset, combined mode.
+- Deploy: no migration, no new packages. shared-pam -> pointer in biomon. Not deployed.

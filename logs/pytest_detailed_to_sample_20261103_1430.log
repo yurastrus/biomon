@@ -1,0 +1,17 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.3, pluggy-1.6.0
+rootdir: C:\Users\IuriiStrus\repositories\biomon
+configfile: pytest.ini
+plugins: cov-7.1.0
+collected 58 items
+
+tests\test_pam_sample_window_filters.py ................................ [ 55%]
+..........................                                               [100%]
+
+============================== warnings summary ===============================
+tests/test_pam_sample_window_filters.py::test_earliest_year_comes_from_the_oldest_recording
+  C:\Users\IuriiStrus\repositories\biomon\venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 58 passed, 1 warning in 17.13s ========================
