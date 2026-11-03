@@ -5838,3 +5838,14 @@ A batch spanning a DST change needs splitting into two uploads.
 - Tests in `tests/test_ct_manage_locations.py`; full suite 2736 passed.
 - Harness `scripts/pam_locations_ui_harness.py` now also serves the CT page.
 - Not deployed. shared-ct is also used by myproject: bump the pointer there too.
+
+## 2026-11-03 CT contributors: default order by last week
+
+- `/contributors` now opens sorted by the "Week" column (`d_week`) descending instead of
+  all-time total. Ties go to `total DESC`, then `user_id` for a stable order.
+- Order is set server-side in `query_contributor_stats` (`routes.py`), because the `#`
+  column is `loop.index` and would be scrambled by a client-side re-sort. The header arrow
+  (`sorted-desc`) moved from "Total" to "Week" in `contributors.html`. Click-to-sort is unchanged.
+- Tests: `tests/test_ct_contributors.py` (week beats total, week ties broken by total);
+  35 passed (`logs/pytest_contributors_week_order_20261103.log`).
+- Not deployed. shared-ct is also used by myproject: bump the pointer there too.

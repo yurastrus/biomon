@@ -106,15 +106,33 @@ def test_window_counts_for_single_user(ct_session, seeded_contributors):
     assert r1.total == 5
 
 
-def test_grouping_and_ordering_by_total_desc(ct_session, seeded_contributors):
-    today, _ = seeded_contributors
+def test_grouping_and_ordering_by_week_desc(ct_session, seeded_contributors):
+    today, loc = seeded_contributors
+    # user 3: 3 identifications this week, total 3 < user 1's total 5.
+    for days_ago in (0, 1, 2):
+        _add_identification(
+            ct_session, loc, 3,
+            datetime.combine(today, datetime.min.time()) - timedelta(days=days_ago)
+            + timedelta(hours=12))
     rows = _run_stats(ct_session, today)
 
-    # Two user groups, sorted by total desc.
-    assert [r.user_id for r in rows] == [1, 2]
-    assert rows[0].total == 5
-    assert rows[1].total == 1
-    assert rows[1].d_today == 1
+    # Sorted by d_week desc, not by total: user 3 (week 3, total 3) beats
+    # user 1 (week 2, total 5), user 2 (week 1) is last.
+    assert [r.user_id for r in rows] == [3, 1, 2]
+    assert [r.d_week for r in rows] == [3, 2, 1]
+    assert rows[1].total == 5
+
+
+def test_week_ties_broken_by_total_desc(ct_session, seeded_contributors):
+    today, loc = seeded_contributors
+    # user 4: same d_week as user 2 (1), but larger total (3 vs 1).
+    base = datetime.combine(today, datetime.min.time()) + timedelta(hours=12)
+    for days_ago in (1, 40, 200):
+        _add_identification(ct_session, loc, 4, base - timedelta(days=days_ago))
+    rows = _run_stats(ct_session, today)
+
+    order = [r.user_id for r in rows]
+    assert order.index(4) < order.index(2)
 
 
 def test_windows_use_determination_time_not_capture_time(ct_session, make_ct_location):
