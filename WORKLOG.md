@@ -6065,3 +6065,8 @@ recalculation. obs 88709 and 96448 left on the placeholder (no recoverable date)
   `scripts/pam_sample_link_ui_harness.py` (port 5081, `/__login`): dashboard link,
   prefill, the body sent to /prepare, an old co-occurrence link, reset, combined mode.
 - Deploy: no migration, no new packages. shared-pam -> pointer in biomon. Not deployed.
+- **Deployed 2026-11-03:** biomon 87b447c (pam a27ae66), HUP-reloaded; myproject not
+  affected (no shared-pam). Server log `logs/deploy_detailed_sample_link_*.log`.
+  Prod checks as admin (read-only): button on `/uk/pam/pam_detailed`, period banner on
+  sample-upload; `/prepare` with 2025-11-03..2026-11-03 for Locustella fluviatilis at
+  location 402 returned 50 detections dated 2026-05-17..2026-06-25; inverted period 400.
