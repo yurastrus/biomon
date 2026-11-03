@@ -62,7 +62,8 @@ AI_SPECIES = [{'id': i, 'text': f'{n} ({c})'} for i, n, c in [
     (-1, 'Пусто', 530), (3, 'Кабан (Sus scrofa)', 140), (9, 'Рись (Lynx lynx)', 2), (10, 'Заєць (Lepus europaeus)', 31),
 ]]
 patch('app.camera_traps.ai_runner.is_ai_available', return_value=True).start()
-patch('app.camera_traps.ai_runner.get_species_with_ai_predictions', return_value=AI_SPECIES).start()
+patch('app.camera_traps.ai_runner.get_ai_filter_options', return_value={
+    'items': AI_SPECIES, 'group_counts': {'': 1200, 'not_empty': 535, 'animals': 495}}).start()
 
 from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402

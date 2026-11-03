@@ -5876,3 +5876,23 @@ A batch spanning a DST change needs splitting into two uploads.
   Prod check: `WTF_CSRF_TIME_LIMIT` None in both; tokenless POST to
   `/api/submit-identification` gives 400 `application/json` `csrf_expired`; admin `/identify`
   200 with `readJson` and `pageStale` in the page. Pages already open must be reloaded once.
+
+## 2026-11-03 CT /identify: counts for the AI group options
+
+- Report: in the AI filter every species had a count, "Будь-який", "Не пусто" and
+  "Лише тварини" had none.
+- `ai_runner.get_ai_filter_options` (new) returns `{items, group_counts}`;
+  `get_species_with_ai_predictions` is now a wrapper returning `items`. The same query
+  also selects `s.kingdom` and `(SELECT COUNT(*) FROM cand)`. `not_empty` / `animals` are
+  summed over species by the rules of `observations_subq_for_ai_group`; `''` ("any") is
+  every candidate series, with or without a prediction.
+- Page render and `/api/identify/ai-species` pass `group_counts`; template macro
+  `group_count`, the JS rebuild uses `withCount`. The "any" option keeps its count through
+  the mobile/desktop placeholder swap via `data-suffix`.
+- Prod check (read-only, admin, no user filter): any 56239 = pending total; not_empty 7168
+  vs filter 7165, animals 5392 vs 5389. The 3 come from a pre-existing ambiguity: AI
+  predictions are per photo, and in 8 pending series the top model's photos disagree
+  (e.g. two "empty", one animal). DISTINCT ON picks an arbitrary row there, and the list
+  and the filter can pick differently. Not fixed here.
+- Tests: `tests/test_ct_identify_ai_group_counts.py` (4); route test patch updated in
+  `test_ai_species_cascade.py`; harness stub updated. 419 identify/AI tests passed.

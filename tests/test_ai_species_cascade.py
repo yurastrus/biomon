@@ -354,9 +354,10 @@ class TestIdentifyAiSpeciesEndpoint(unittest.TestCase):
             if raise_exc is not None:
                 mock_get.side_effect = raise_exc
             else:
-                mock_get.return_value = items_return or []
+                mock_get.return_value = {'items': items_return or [],
+                                         'group_counts': {}}
             stack.enter_context(
-                patch('app.camera_traps.ai_runner.get_species_with_ai_predictions',
+                patch('app.camera_traps.ai_runner.get_ai_filter_options',
                       mock_get)
             )
             yield mock_get
