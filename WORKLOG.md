@@ -5851,3 +5851,24 @@ A batch spanning a DST change needs splitting into two uploads.
 - Deployed 2026-11-03: biomon (d2debbb) and myproject (14aa92f, its suite 233 passed),
   both HUP-reloaded. Prod check: 29 rows, Week column non-increasing, arrow on Week;
   myproject admin smoke of `/api/next-observation-for-identification` and `/contributors` 200.
+
+## 2026-11-03 CT /identify: stale page says "reload" instead of a JSON error
+
+- Report: after stepping away from /identify, submitting showed "Помилка збереження:
+  Unexpected token '<', "<!doctype "... is not valid JSON". Not the database: Flask-WTF's
+  CSRF token expires after `WTF_CSRF_TIME_LIMIT` (default 3600 s) and Werkzeug answers 400
+  with an HTML page (lowercase `<!doctype` is Werkzeug's, our templates use `<!DOCTYPE`).
+  An ended login gives the same symptom (fetch follows the redirect to the login page).
+- Root cause: `WTF_CSRF_TIME_LIMIT = None` in biomon `config.py` and myproject
+  `app/config.py`. The token stays bound to the session, it just no longer expires on a clock.
+- biomon `app/extensions.py`: `handle_csrf_error` answers JSON `{code: 'csrf_expired'}` for
+  JSON/`/api/` requests; HTML forms keep the default 400 page.
+- shared-ct `identification.html`: `readJson()` / `isStaleResponse()` / `showStalePage()`.
+  Any non-JSON 400/401/403 or redirect to `/login` (and JSON `csrf_expired`) on submit, next
+  series or the flag button shows "the page was open too long, answer not saved, reload?"
+  with a confirm that reloads. Other errors keep their old messages.
+- Side fix: the "choose a species or Пусто" alert showed `&#34;` instead of quotes
+  (autoescaped `_()` inside a JS string); now `|tojson`.
+- Tests: `tests/test_ct_identify_stale_page.py` (5). Checked in the hotkeys harness with a
+  stubbed fetch: HTML 400 and JSON `csrf_expired` give the reload prompt, a JSON validation
+  error still gives "Помилка збереження: …".

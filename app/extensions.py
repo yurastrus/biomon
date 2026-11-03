@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFError, CSRFProtect
 from flask_mail import Mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -28,6 +28,16 @@ def unauthorized():
     flash(login_manager.login_message, login_manager.login_message_category)
     return redirect(url_for('main.login', lang_code=lang_code, next=request.url))
 
+def handle_csrf_error(e):
+    """JSON for fetch() callers, so a stale page can say "reload" instead of
+    failing to parse Werkzeug's HTML. Forms keep the default 400 page."""
+    from flask import request, jsonify
+    if request.is_json or '/api/' in request.path:
+        # The page shows its own translated text for this code.
+        return jsonify(code='csrf_expired',
+                       error='CSRF token missing or expired, reload the page.'), 400
+    return e
+
 def init_extensions(app):
     """Initialize all Flask extensions."""
     db.init_app(app)
@@ -35,6 +45,7 @@ def init_extensions(app):
 
     login_manager.init_app(app)
     csrf.init_app(app)
+    app.register_error_handler(CSRFError, handle_csrf_error)
     mail.init_app(app)
     login_manager.login_message = "Будь ласка, увійдіть, щоб отримати доступ."
     login_manager.login_message_category = "warning"

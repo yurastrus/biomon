@@ -1,0 +1,6 @@
+tests/test_seo.py::test_dashboards_are_noindex[/uk/camera-traps/gallery]
+  C:\Users\IuriiStrus\repositories\biomon\app\camera_traps\routes.py:5327: SAWarning: The engine provided as bind produced a connection that is already in a transaction. This is usually caused by a core event, such as 'engine_connect', that has left a transaction open. The effective join transaction mode used by this session is 'create_savepoint'. To silence this warning, do not leave transactions open
+    ).params(**inst_params).distinct().all()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========= 2779 passed, 44 skipped, 266 warnings in 488.07s (0:08:08) ==========

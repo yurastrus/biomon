@@ -142,6 +142,10 @@ class Config:
     BABEL_TRANSLATION_DIRECTORIES = os.path.join(basedir, 'translations')
 
     PERMANENT_SESSION_LIFETIME = timedelta(days=7)
+    # The CSRF token lives as long as the session instead of Flask-WTF's default
+    # 60 minutes: a verifier who left /identify open for an hour could not save
+    # the answer (03.11.2026). The token is still bound to the session.
+    WTF_CSRF_TIME_LIMIT = None
     SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
