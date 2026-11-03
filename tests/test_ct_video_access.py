@@ -17,6 +17,8 @@ VIDEO_ENDPOINTS = (
     ('post', '/uk/camera-traps/api/video/calibrate'),
     ('post', '/uk/camera-traps/api/video/read-clip'),
     ('post', '/uk/camera-traps/api/video/process-frame'),
+    ('post', '/uk/camera-traps/api/video/metadata'),
+    ('post', '/uk/camera-traps/api/video/sign-clip'),
 )
 
 
