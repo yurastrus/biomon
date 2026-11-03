@@ -5848,4 +5848,6 @@ A batch spanning a DST change needs splitting into two uploads.
   (`sorted-desc`) moved from "Total" to "Week" in `contributors.html`. Click-to-sort is unchanged.
 - Tests: `tests/test_ct_contributors.py` (week beats total, week ties broken by total);
   35 passed (`logs/pytest_contributors_week_order_20261103.log`).
-- Not deployed. shared-ct is also used by myproject: bump the pointer there too.
+- Deployed 2026-11-03: biomon (d2debbb) and myproject (14aa92f, its suite 233 passed),
+  both HUP-reloaded. Prod check: 29 rows, Week column non-increasing, arrow on Week;
+  myproject admin smoke of `/api/next-observation-for-identification` and `/contributors` 200.
