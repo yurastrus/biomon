@@ -5896,3 +5896,6 @@ A batch spanning a DST change needs splitting into two uploads.
   and the filter can pick differently. Not fixed here.
 - Tests: `tests/test_ct_identify_ai_group_counts.py` (4); route test patch updated in
   `test_ai_species_cascade.py`; harness stub updated. 419 identify/AI tests passed.
+- Deployed 2026-11-03: biomon (fd9f803) and myproject (7953e18), ct ebcbf61, both
+  HUP-reloaded. Prod admin check: `/api/identify/ai-species` 200 with group_counts
+  {any 56015, not_empty 7118, animals 5346}; `/identify` renders the counts in the options.
