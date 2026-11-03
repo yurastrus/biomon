@@ -5908,3 +5908,113 @@ A batch spanning a DST change needs splitting into two uploads.
   checked in the hotkeys harness (`1/6` → `Надіслати`).
 - Deployed 2026-11-03: biomon (ce17933) and myproject (c161d85), ct 43e02fb, HUP-reloaded;
   admin `/identify` 200 with `submit-label`.
+
+## 2026-11-03 CT /upload-video: capture time from the file, typed in where there is none
+
+### What the archive actually holds
+Surveyed all 949 clips in `F:/20_Phototraps_photos/1 - Просортовані` (exiftool, header
+only) plus the five new `SYPR*.MOV` on the desktop:
+
+| Camera | Clips | Date in the file | Meaning (checked against the overlay) |
+|---|---|---|---|
+| SYPR MOV, H.264 1280x720 | 5 (desktop) | QuickTime `mvhd` created | **start** of the clip (overlay 06:53:40, meta 06:53:41) |
+| NVTIM MOV, H.264 1920x1080 (Верещицьке) | 521 | QuickTime `mvhd` created | **end** of the clip (overlay 12:07:33..43, meta 12:07:43) |
+| UOVision AVI, MJPG 640x480 (Ставчанське) | 427 | none, no IDIT, no EXIF in frames | -- |
+| Fujifilm-style AVI (к. 1) | 1 | none | -- |
+
+The value is the camera's local clock (QuickTime says UTC; these cameras ignore that).
+File modification time is unreliable as a fallback: several folders carry one identical
+mtime for every clip (copy time), and where it is the camera's, it is end-of-clip and
+shifted by an hour by Windows' FAT/DST conversion.
+
+### What changed
+- New `video_metadata.py` (shared-ct): parses the `moov/mvhd` of MP4/MOV and the head
+  of an AVI (IDIT chunk, avih duration). Flags factory-default years (< 2005) and the
+  future as implausible but still reports them.
+- Browser (`video_slice.js`): `containerHeader(file)` sends only the moov box (3-8 KB on
+  the samples) or the first 256 KB of an AVI; `firstFrame(file)` cuts frame 0 cheaply
+  (AVI: first 4 MB, else one seek).
+- New endpoints (admin, as the rest): `POST /api/video/metadata` (parse header, writes
+  nothing) and `POST /api/video/sign-clip` (signs an operator-confirmed start; sources
+  `metadata` / `manual`; refuses implausible times; logged with source).
+- Page: step 2 is now "Час зйомки". Default mode: date from metadata, else typed in.
+  The table shows the first frame (click = full size) beside an editable start time with
+  a source badge. Setting "Час у метаданих позначає: початок / кінець запису" (default
+  start) shifts metadata times by the clip duration. A clip without a date shows the
+  file mtime as a clue only, never prefilled. Upload waits until every clip has a time.
+  Typed times survive switching modes. The overlay reader (calibrated camera) is kept as
+  the second mode, unchanged.
+- Clips are now cut one at a time during upload and their frames dropped afterwards (the
+  old flow kept every clip's frames in memory).
+- **Default is now "Лише мініатюри"** (was "Зберігати" originals).
+- Frame names use UTC-naive arithmetic, so a DST change in the browser zone cannot shift
+  them.
+
+### Alternatives rejected
+- Parsing the header in JS: simpler, but the server-side parser is covered by pytest and
+  reusable by scripts.
+- Prefilling from file mtime: too often the copy time.
+- Auto-detecting start vs end: no field in the header distinguishes SYPR from NVTIM; a
+  person comparing with the first frame does it reliably.
+
+### Verification
+- Real headers: SYPR0001/0002, NVTIM IMAG0012/0016 read correctly; UOVision and Fujifilm
+  AVI give duration and no date.
+- Harness `scripts/video_upload_ui_harness.py` (launch config `video-upload-ui`, port
+  5080, no DB; real metadata/sign-clip/token check, stubbed storage). Five real clips (3
+  MOV, 2 AVI): metadata filled for MOV, AVI asked for a time, end-mode shifted NVTIM to
+  match its overlay, upload stored 40 frames with the expected times and
+  `save_original=false`.
+- Tests: `tests/test_ct_video_metadata.py` (new), access tests cover the two new endpoints.
+
+### Deploy
+No migration, no packages. shared-ct → pointers in biomon and myproject.
+
+## 2026-11-03 Check: frames cut from video at Єланецький степ (user Prylutskaa)
+
+Read-only (`scripts/probe_recent_uploads.py`). Location 3270 "точка 1", institution 21
+ПЗ "Єланецький степ":
+- batch a63eef06 (2026-10-30): 12 frames `output_0..11.jpg`, all with the **same**
+  capture time 2026-05-31 12:26:12, one series 132144 (pending). Stored fine, but the
+  frame order inside the series is wrong: same-second photos are ordered by file name
+  (`SERIES_PHOTO_ORDER_SQL`, `COLLATE "C"`), so the sequence is 0, 1, 10, 11, 2 ... 9.
+- batch 1e3a8a9a (2026-08-07): one photo `cat_2026-07-17.jpg` without EXIF, stored with
+  the 1900 placeholder, archived (observation 127831). Its real date is only in the name.
+- The Тарутинський степ uploads by the same user (July, `SYPR*.JPG`, 4196 photos) are
+  ordinary photos with sane times.
+Nothing was changed in the database; fixes await the user's decision.
+
+## 2026-11-03 "1900" start year on the species-trends page
+
+**Cause.** Photos without EXIF are stored with the 1900-01-01 placeholder (on purpose, so
+they stay visible on /identify). Nothing kept verified placeholder series out of
+`_calculate_monthly_activity`, so they reached `location_monthly_activity` →
+`species_yearly_trends` (also a 1900 point in Mann-Kendall), and the year list on
+`/analysis/species-dashboard` starts at the minimum year of that table.
+
+**Where** (`scripts/probe_implausible_dates.py`, read-only, log
+`logs/probe_implausible_dates_20261103.log`): 3 series, no other implausible dates.
+- obs 88709, archived, loc 1580 Pushcha Radzivila NNP_2709, 50 photos
+  `photo_N_2026-01-18_HH-MM-SS.jpg`, Vulpes vulpes (2 verifiers). Deployment 2025-08-11 ..
+  2025-10-06, QC "uploaded data is not raw: only 50 items". The names are export
+  (Telegram-style) times, not capture times: the true dates are not recoverable.
+  This is the series that produced 1900 on the trends page.
+- obs 127831, archived, loc 3270 "точка 1", `cat_2026-07-17.jpg`, Felis silvestris. Date
+  only in the file name, no time.
+- obs 96448, pending, loc 1537 Vyzhnytskyi NNP_2201, `cuddeback.jpg` marked empty
+  (likely the date-control shot). Not in analytics while pending.
+Dates in the DB were NOT changed: inventing a capture time is worse than excluding the
+series. Fixing 127831 to 2026-07-17 (noon) is possible if the user confirms.
+
+**Guard** (shared-ct 24c6ef1):
+- `validity.valid_capture_time_clause()` / `plausible_years()` / `MIN_VALID_CAPTURE_YEAR`
+  (bound = `utils.EXIF_MIN_VALID_DATE`, upper today+2d).
+- `_calculate_monthly_activity`: trap days and detections count only plausible photos,
+  so trends, seasonal charts and MK tests are clean after the next recalculation.
+- `species_dashboard`: year list filtered with `plausible_years`; `api_species_dynamics`
+  clamps `start_year` to 2010. Works immediately, even before recalculation.
+- Test: `tests/test_ct_implausible_dates.py`. Full suite: 2785 passed, 1 flaky PAM test
+  (passes alone), log `logs/pytest_implausible_dates_20261103.log`.
+
+**Deploy:** no migration. shared-ct → pointers in biomon and myproject, HUP, then press
+"recalculate analytics" so the stored 1900 rows disappear.

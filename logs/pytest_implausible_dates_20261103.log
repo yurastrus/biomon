@@ -1,0 +1,5 @@
+E   [parameters: ('test_admin', '$2b$12$cHvP9olYY8a12oLLTvrNXuskjmm31lkn/IVN5zJUp9oxW.hSvmSC2', None, None, '2026-11-03 12:04:02.737413', None, None, None, 1, None, 0, None, 1)]
+E   (Background on this error at: https://sqlalche.me/e/20/e3q8)
+=========================== short test summary info ===========================
+FAILED tests/test_pam_sample_window_filters.py::test_half_a_range_answers_400_rather_than_guessing[body0]
+=========== 1 failed, 2785 passed, 44 skipped in 368.33s (0:06:08) ============

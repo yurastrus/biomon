@@ -1,0 +1,6 @@
+C:\Users\IuriiStrus\repositories\biomon\venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+  warnings.warn(
+3 series with photos outside 2010-01-01 .. 2026-11-05
+obs 88709 [archived] loc 1580 '2025_Summer_Pushcha Radzivila NNP_2709' batch 3a30e26b-bd6e-4f0b-bf4e-5ef99a1068b3 1900-01-01 00:00:01+00:00 .. 1900-01-01 00:00:50+00:00 (50 ph, photo_10_2026-01-18_16-01-10.jpg) species: Vulpes vulpes
+obs 127831 [archived] loc 3270 'точка 1' batch 1e3a8a9a-6d62-4a08-8223-3cfec769e2e5 1900-01-01 00:00:01+00:00 .. 1900-01-01 00:00:01+00:00 (1 ph, cat_2026-07-17.jpg) species: Felis silvestris
+obs 96448 [pending] loc 1537 '2025_Summer_Vyzhnytskyi NNP_2201' batch 94f81e7c-7eab-47aa-99f8-f012d1882981 1900-01-01 00:02:40+00:00 .. 1900-01-01 00:02:40+00:00 (1 ph, cuddeback.jpg) species: empty
