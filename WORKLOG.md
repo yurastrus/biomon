@@ -6018,3 +6018,8 @@ series. Fixing 127831 to 2026-07-17 (noon) is possible if the user confirms.
 
 **Deploy:** no migration. shared-ct → pointers in biomon and myproject, HUP, then press
 "recalculate analytics" so the stored 1900 rows disappear.
+
+**Follow-up (user approved):** obs 127831 / photo 866321 set to 2026-07-17 12:00 (date from
+the file name `cat_2026-07-17.jpg`, time unknown → noon), observation series start/end
+likewise. Log `logs/fix_obs127831_date_20261103.log`. Counts in analytics after the next
+recalculation. obs 88709 and 96448 left on the placeholder (no recoverable date).
