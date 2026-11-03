@@ -6023,3 +6023,15 @@ series. Fixing 127831 to 2026-07-17 (noon) is possible if the user confirms.
 the file name `cat_2026-07-17.jpg`, time unknown → noon), observation series start/end
 likewise. Log `logs/fix_obs127831_date_20261103.log`. Counts in analytics after the next
 recalculation. obs 88709 and 96448 left on the placeholder (no recoverable date).
+
+## 2026-11-03 Deployed video metadata mode; Єланецький степ video frames deleted
+- Deployed: biomon d6bc232 (ct 6cb958e) and myproject d404457, both HUP-reloaded.
+  Prod admin check: `/upload-video` 200 with the metadata mode and "Лише мініатюри"
+  selected; metadata/sign-clip routes registered; myproject CT APIs 200.
+- At the user's request deleted batch a63eef06 (Prylutskaa's 12 self-cut video frames,
+  location 3270): 12 ai_predictions, 12 identifications (her own), 12 photos, series
+  132144, the batch row, 12 thumbnails (no originals existed). Script
+  `scripts/delete_upload_batch.py` (dry run by default, refuses mixed series and
+  favourites); output in the server's `logs/delete_batch_a63eef06_20261103.log`.
+- Not touched: photo `cat_2026-07-17.jpg` (batch 1e3a8a9a, 1900 date, archived).
+- The page stays admin-only.
