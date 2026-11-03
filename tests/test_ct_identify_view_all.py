@@ -55,6 +55,15 @@ def test_button_is_gated_by_class_not_disabled_attribute():
     assert '.submit-gated' in CSS.read_text(encoding='utf-8')
 
 
+def test_button_shows_only_the_count_while_counting():
+    """03.11.2026: "Надіслати 136/216" ran out of the button on long series."""
+    html = _html()
+    assert '<span id="submit-label">' in html
+    body = _function_body(html, 'updateSubmitGate')
+    assert "$('#submit-label').prop('hidden', left > 0)" in body
+    assert '`${seenPhotos.size}/${n}`' in body
+
+
 def test_submit_handler_refuses_while_frames_are_unseen():
     html = _html()
     handler = html[html.index("form.on('submit'"):]

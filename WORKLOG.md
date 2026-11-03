@@ -5899,3 +5899,10 @@ A batch spanning a DST change needs splitting into two uploads.
 - Deployed 2026-11-03: biomon (fd9f803) and myproject (7953e18), ct ebcbf61, both
   HUP-reloaded. Prod admin check: `/api/identify/ai-species` 200 with group_counts
   {any 56015, not_empty 7118, animals 5346}; `/identify` renders the counts in the options.
+
+## 2026-11-03 CT /identify: submit button shows only the count while counting
+
+- "Надіслати 136/216" ran out of the button on long series. While frames are unseen the
+  button now shows just `136/216` (`#submit-label` hidden in `updateSubmitGate`); the word
+  comes back once every frame was seen. Test in `tests/test_ct_identify_view_all.py`;
+  checked in the hotkeys harness (`1/6` → `Надіслати`).
