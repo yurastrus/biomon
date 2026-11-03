@@ -5872,3 +5872,7 @@ A batch spanning a DST change needs splitting into two uploads.
 - Tests: `tests/test_ct_identify_stale_page.py` (5). Checked in the hotkeys harness with a
   stubbed fetch: HTML 400 and JSON `csrf_expired` give the reload prompt, a JSON validation
   error still gives "Помилка збереження: …".
+- Deployed 2026-11-03: biomon (a5942b8) and myproject (fa04db9), ct 9547b00, both HUP-reloaded.
+  Prod check: `WTF_CSRF_TIME_LIMIT` None in both; tokenless POST to
+  `/api/submit-identification` gives 400 `application/json` `csrf_expired`; admin `/identify`
+  200 with `readJson` and `pageStale` in the page. Pages already open must be reloaded once.
