@@ -6082,3 +6082,13 @@ recalculation. obs 88709 and 96448 left on the placeholder (no recoverable date)
 - Tests: access tests inverted for managers, a new test for the location scope. Full
   suite 2835 passed, 1 failed (`test_pam_verification_unknown`, "no such table: user",
   passes alone: an existing order-dependent flake, not this change).
+
+**Deployed 2026-11-03.** The code went live with the parallel video deploy (biomon d6bc232,
+shared-ct 6cb958e, both apps HUPed 12:30–12:36). Analytics recalculated from the server
+(`/tmp/recalc_ct.py`, a standalone process, so HUPs do not touch it; log
+`logs/deploy_recalc_no1900_20261103_1232.log` on the server): RESULT True, status completed.
+Before: min year 1900 in both tables, 186 trend rows < 2010. After: min year 2020, 0 rows
+< 2010, 5440 trend rows. The SSL traceback after RESULT is pool cleanup at interpreter
+exit (connection already closed by the server), harmless. The species-dashboard page has no
+1900 option. Note: the first launch from /tmp failed with "No module named app" (needs
+PYTHONPATH=/var/www/biomon).
