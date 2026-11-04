@@ -6092,3 +6092,22 @@ Before: min year 1900 in both tables, 186 trend rows < 2010. After: min year 202
 exit (connection already closed by the server), harmless. The species-dashboard page has no
 1900 option. Note: the first launch from /tmp failed with "No module named app" (needs
 PYTHONPATH=/var/www/biomon).
+
+## 2026-11-04 — Search Console performance check (biomon.app + yurastrus.dev)
+
+Read the two "Performance on Search" exports (web search, 02.08–03.11) against the
+open Notion tasks. No code changed.
+
+- **yurastrus.dev:** the post-17.08 dip was temporary and not caused by Stage 2
+  robots. Impressions/day 21.9 → 8.4 (Sept) → 15.6 / 11.6 (Oct), position steady
+  ~9; impressions come from content pages (webmaps/roztochya-snr, articles), not
+  dashboards. Biggest opportunity: query "карта пз" 530 impressions, 0 clicks.
+  Sitemap fix B1 is live (42 URLs).
+- **biomon.app:** growing (second half of October 88 impressions, 8 clicks;
+  position 30–40 → 6–11). Brand query "biomon" sits at position 12.7.
+- **Stage 2 gate is stale:** it said "enable when indexed ≈ 12 (sitemap size)",
+  but the sitemap now has 50 URLs because docs pages were added. New criterion:
+  the Coverage report shows the CT/PAM dashboards under "Excluded by noindex".
+  `X-Robots-Tag: noindex, follow` confirmed live on dashboard URLs.
+- Still open: Stage 2 decision and yurastrus 5xx = 9 both need the Coverage
+  ("Pages") export, not Performance.
