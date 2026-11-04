@@ -6128,3 +6128,16 @@ sitemap URLs. 5xx = 9 with validation "Not started"; all 42 sitemap URLs return
 `/{en,uk}/remote-sensing/gbif-viewer/` is in the sitemap but serves
 `noindex` (route `gbif_viewer` shadows `tool_detail` and is not in
 `INDEXABLE_ENDPOINTS`).
+
+### Same day: Stage 2 enabled and deployed
+
+- biomon `f48f301`: Stage 2 `Disallow` rules for CT/PAM dashboards are active
+  (`app/seo.py`); `tests/test_seo.py` now asserts them and adds
+  `test_robots_txt_never_blocks_a_sitemap_url`. seo+docs tests: 74 passed
+  (`logs/pytest_seo_stage2_20261104.log`).
+- myproject `e530fd0`: `remote_sensing.gbif_viewer` added to
+  `INDEXABLE_ENDPOINTS`; new test matches every sitemap URL to its endpoint.
+  Full suite 234 passed, 2 skipped; the new test fails without the fix.
+- Deployed both (git pull + HUP). Live: robots.txt has the 5 rules,
+  landings/docs 200, gbif-viewer serves `index, follow`.
+- Left for the owner: "Validate fix" in GSC for yurastrus 5xx/403/4xx.
