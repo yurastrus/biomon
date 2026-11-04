@@ -3,6 +3,8 @@
 Style mirrors tests/test_security_headers.py — uses the shared `client`
 fixture from conftest.py (TESTING=True, Talisman skipped).
 """
+import re
+from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
 
 import pytest
@@ -168,15 +170,45 @@ def test_robots_txt_blocks_crawl_sinks(client, rule):
     assert rule in active
 
 
-def test_robots_txt_keeps_dashboards_crawlable_for_now(client):
-    """Stage 2 stays off: blocking a URL hides its noindex header, so the
-    dashboards must stay reachable until Search Console shows them dropping."""
+@pytest.mark.parametrize('rule', [
+    'Disallow: /*/camera-traps/dashboard',
+    'Disallow: /*/camera-traps/analysis/',
+    'Disallow: /*/camera-traps/gallery',
+    'Disallow: /*/pam/pam_overview',
+    'Disallow: /*/pam/pam_detailed',
+])
+def test_robots_txt_stage2_blocks_dashboards(client, rule):
+    """Stage 2 is on (2026-11-04): the dashboards left the index, so crawling
+    them is pure waste."""
     active = [
         ln for ln in client.get('/robots.txt').get_data(as_text=True).splitlines()
         if ln.startswith('Disallow:')
     ]
-    assert 'Disallow: /*/camera-traps/dashboard' not in active
-    assert 'Disallow: /*/pam/pam_overview' not in active
+    assert rule in active
+
+
+def _robots_blocks(pattern, path):
+    """Googlebot-style match: '*' is any run of characters, a trailing '$'
+    anchors the end, otherwise the rule is a prefix."""
+    anchored = pattern.endswith('$')
+    regex = re.escape(pattern.rstrip('$')).replace(r'\*', '.*')
+    return re.match(regex + ('$' if anchored else ''), path) is not None
+
+
+def test_robots_txt_never_blocks_a_sitemap_url(client):
+    """A URL we ask Google to index must not be disallowed at the same time."""
+    rules = [
+        ln.split(':', 1)[1].strip()
+        for ln in client.get('/robots.txt').get_data(as_text=True).splitlines()
+        if ln.startswith('Disallow:')
+    ]
+    locs = re.findall(r'<loc>([^<]+)</loc>',
+                      client.get('/sitemap.xml').get_data(as_text=True))
+    assert locs
+    for loc in locs:
+        path = urlsplit(loc).path
+        blocked = [r for r in rules if r and _robots_blocks(r, path)]
+        assert not blocked, f'{path} is in the sitemap but blocked by {blocked}'
 
 
 # ── Canonical host ───────────────────────────────────────────────────────────

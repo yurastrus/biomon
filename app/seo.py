@@ -79,14 +79,16 @@ def robots_txt():
         # Docs module: editor / history / admin screens (pages themselves stay open).
         *DOCS_ROBOTS_DISALLOW,
         '',
-        '# Stage 2 — do NOT enable yet. The clean dashboard URLs are still in',
-        '# the index; blocking them here would hide the noindex header and',
-        '# freeze them there. Enable once Search Console shows them dropping.',
-        '# Disallow: /*/camera-traps/dashboard',
-        '# Disallow: /*/camera-traps/analysis/',
-        '# Disallow: /*/camera-traps/gallery',
-        '# Disallow: /*/pam/pam_overview',
-        '# Disallow: /*/pam/pam_detailed',
+        # Stage 2 (enabled 2026-11-04): the clean dashboard URLs carried
+        # noindex since 17.08 and had left the index by 22.09 (Search Console:
+        # indexed 11 against 12 sitemap URLs). Blocking them earlier would have
+        # hidden the noindex header and frozen them in the index; now it only
+        # stops Googlebot from crawling heavy pages that can never rank.
+        'Disallow: /*/camera-traps/dashboard',
+        'Disallow: /*/camera-traps/analysis/',
+        'Disallow: /*/camera-traps/gallery',
+        'Disallow: /*/pam/pam_overview',
+        'Disallow: /*/pam/pam_detailed',
         # NOTE: /<lang>/login is deliberately NOT blocked here — it carries a
         # `noindex` meta instead. Blocking it would stop crawlers from seeing
         # that meta, and the bare URL could still get indexed.
