@@ -6111,3 +6111,20 @@ open Notion tasks. No code changed.
   `X-Robots-Tag: noindex, follow` confirmed live on dashboard URLs.
 - Still open: Stage 2 decision and yurastrus 5xx = 9 both need the Coverage
   ("Pages") export, not Performance.
+
+### Same day, Coverage exports (data up to 23.10): correction
+
+The "Stage 2 gate is stale" note above was wrong. The gate **was met on 22.09**:
+indexed fell 22 → 19 → 17 → 16 → 13 → 11 and stayed at 11 until 19.10 against
+12 sitemap URLs, i.e. the dashboards had left the index; nobody enabled Stage 2.
+On 20.10 the docs module added 38 URLs and indexed jumped 11 → 49 against 50
+in the sitemap. All 50 sitemap URLs return 200 without noindex (probed 04.11).
+**Stage 2 robots can be enabled now** (it changes crawling, not indexing; the
+dashboards are already noindex).
+
+yurastrus.dev (myproject): crawled-not-indexed 56 759 → 4 485; indexed 30 of 42
+sitemap URLs. 5xx = 9 with validation "Not started"; all 42 sitemap URLs return
+200, so the next step is "Validate fix" in GSC, not nginx logs. New mismatch:
+`/{en,uk}/remote-sensing/gbif-viewer/` is in the sitemap but serves
+`noindex` (route `gbif_viewer` shadows `tool_detail` and is not in
+`INDEXABLE_ENDPOINTS`).
