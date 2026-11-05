@@ -194,3 +194,34 @@ def test_sort_select_has_no_mobile_placeholder(app):
     sort_tag = html[html.index('<select id="sort-select"'):]
     sort_tag = sort_tag[:sort_tag.index('>')]
     assert 'data-mobile-placeholder' not in sort_tag
+
+
+# -- Widths of the right column (2026-11-05) ----------------------------------
+# On a 1024px tablet the species column was a bare `1fr` (224px) and the row
+# "Особин | У вибране | + ще вид" (~310px) broke: the button dropped to a line of
+# its own and "Пропустити" overflowed its button. Measured in the browser at
+# 320-1920px; these tests pin the three CSS rules that fixed it.
+
+def _css():
+    css_path = pathlib.Path(__file__).resolve().parent.parent / \
+        'app' / 'camera_traps' / 'static' / 'css' / 'camera_traps.css'
+    return re.sub(r'/\*.*?\*/', '', css_path.read_text(encoding='utf-8'), flags=re.S)
+
+
+def test_species_column_has_a_minimum_width():
+    m = re.search(r'\.identification-layout\s*\{[^}]*grid-template-columns:\s*([^;]+);', _css())
+    assert m, 'desktop grid rule for .identification-layout not found'
+    cols = m.group(1)
+    min_px = re.search(r'minmax\(\s*(\d+)px\s*,\s*1fr\s*\)', cols)
+    assert min_px and int(min_px.group(1)) >= 310, cols
+
+
+def test_stacked_layout_stretches_blocks_to_full_width(media_block):
+    m = re.search(r'\.identification-layout\s*\{([^}]*display:\s*flex[^}]*)\}', media_block)
+    assert m and re.search(r'align-items:\s*stretch', m.group(1)), \
+        'stacked /identify must stretch its blocks, not shrink them to content'
+
+
+def test_add_species_button_gets_its_own_row_on_smallest_phones():
+    m = re.search(r'@media \(max-width: 400px\)\s*\{\s*\.quantity-panel \.add-species-btn\s*\{([^}]*)\}', _css())
+    assert m and '100%' in m.group(1)

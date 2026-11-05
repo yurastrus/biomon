@@ -1,0 +1,63 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.3, pluggy-1.6.0
+rootdir: C:\Users\IuriiStrus\repositories\biomon
+configfile: pytest.ini
+plugins: cov-7.1.0
+collected 2910 items / 2682 deselected / 228 selected
+
+tests\test_admin_i18n.py ....                                            [  1%]
+tests\test_ai_species_cascade.py ............                            [  7%]
+tests\test_auth_redirect.py ..                                           [  7%]
+tests\test_behavior_analysis.py ..                                       [  8%]
+tests\test_camera_traps_models.py ..                                     [  9%]
+tests\test_ct_cleanup_statistics_accuracy.py ..                          [ 10%]
+tests\test_ct_consensus_rule.py ......                                   [ 13%]
+tests\test_ct_expertise_multi_species.py .......................         [ 23%]
+tests\test_ct_export_scoping.py ...                                      [ 24%]
+tests\test_ct_filter_panel_css.py ...                                    [ 25%]
+tests\test_ct_flag_protects_from_cleanup.py .                            [ 26%]
+tests\test_ct_flag_review.py ..                                          [ 27%]
+tests\test_ct_identification_comment.py .....                            [ 29%]
+tests\test_ct_identification_priority.py ....                            [ 31%]
+tests\test_ct_identification_stats.py ....                               [ 32%]
+tests\test_ct_identify_ai_group_counts.py ....                           [ 34%]
+tests\test_ct_identify_ai_group_filters.py ....................          [ 43%]
+tests\test_ct_identify_hotkeys.py ....                                   [ 45%]
+tests\test_ct_identify_mobile_order.py ................                  [ 52%]
+tests\test_ct_identify_multi_species.py ..................               [ 60%]
+tests\test_ct_identify_prefetch.py ......                                [ 62%]
+tests\test_ct_identify_scope_votes.py ......                             [ 65%]
+tests\test_ct_identify_skip.py ....                                      [ 67%]
+tests\test_ct_identify_sort_options.py .......                           [ 70%]
+tests\test_ct_identify_species_grouping.py ........                      [ 73%]
+tests\test_ct_identify_species_search.py .....                           [ 75%]
+tests\test_ct_identify_stale_page.py .....                               [ 78%]
+tests\test_ct_identify_step_back.py .............                        [ 83%]
+tests\test_ct_identify_view_all.py ........                              [ 87%]
+tests\test_ct_pages_access.py .....                                      [ 89%]
+tests\test_ct_photo_rights.py .                                          [ 89%]
+tests\test_ct_photo_viewer_anonymity.py .                                [ 90%]
+tests\test_ct_query_indexes.py .                                         [ 90%]
+tests\test_ct_series_photo_order.py .                                    [ 91%]
+tests\test_ct_verification_import.py .                                   [ 91%]
+tests\test_data_export.py .                                              [ 92%]
+tests\test_docs.py .                                                     [ 92%]
+tests\test_nav_arrow_css.py ..                                           [ 93%]
+tests\test_pam_pages_smoke.py .......                                    [ 96%]
+tests\test_pam_spectrogram_interaction.py .                              [ 96%]
+tests\test_public_scope_access.py ...                                    [ 98%]
+tests\test_uk_catalogs_no_fuzzy_guesses.py ....                          [100%]
+
+============================== warnings summary ===============================
+tests/test_admin_i18n.py::test_admin_home_renders_english
+tests/test_ai_species_cascade.py::TestIdentifyAiSpeciesEndpoint::test_admin_scope_ecoregion_unknown_returns_empty_without_helper
+tests/test_auth_redirect.py::TestAuthRedirect::test_unauthenticated_identify_next_points_to_identify
+tests/test_auth_redirect.py::TestAuthRedirect::test_unauthenticated_identify_redirects_to_login
+tests/test_behavior_analysis.py::TestApiBehaviorDataStructure::test_empty_result_when_no_identifications
+tests/test_ct_pages_access.py::TestIdentifyAccess::test_admin_gets_200
+tests/test_data_export.py::TestGetCtOccurrenceDataStructure::test_identifier_names_resolved_from_user_map
+  C:\Users\IuriiStrus\repositories\biomon\venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============== 228 passed, 2682 deselected, 7 warnings in 43.82s ==============
