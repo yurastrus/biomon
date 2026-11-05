@@ -6141,3 +6141,142 @@ sitemap URLs. 5xx = 9 with validation "Not started"; all 42 sitemap URLs return
 - Deployed both (git pull + HUP). Live: robots.txt has the 5 rules,
   landings/docs 200, gbif-viewer serves `index, follow`.
 - Left for the owner: "Validate fix" in GSC for yurastrus 5xx/403/4xx.
+
+## 2026-11-04: Site-wide error-message and logging audit (Step 1-2, no code changes)
+
+- Source: planning task "biomon: аудит і покращення всіх повідомлень про помилки"
+  (Notion, created 2026-07-09). Still relevant: the upload-fast reference
+  (`describeAjaxError`, `[ct-upload]`) never spread; only CSRFError has a global handler.
+- Read-only audit by 4 parallel agents (CT server, PAM server, client JS, core +
+  admin/auth/sdm/backup); key claims spot-checked in code.
+- Output: `error_audit/ERROR_AUDIT.md` (root causes, P1 shortlist, convention,
+  phased plan, open questions) + appendices A-D with file:line registries
+  (328 rows, ~84 P1).
+- Main root causes: logging never configured (prod level WARNING, stray
+  `basicConfig` in CT/PAM analytics calculators); no global error handlers;
+  expired session on AJAX = 302 to HTML login (~55 fetch sites break in `r.json()`);
+  no request id / user in logs; no shared client error helper.
+- Notable data-integrity P1s: CT photo-processing errors logged at DEBUG
+  (disk-full invisible), CT KDE bare except → zero activity curves, PAM CSV/ZIP
+  import drops data silently, SDM empty import marked current.
+- Next: owner reviews ERROR_AUDIT.md §5 open questions, then Phase 0-1
+  (server checks + biomon core infrastructure). Nothing committed (public repo).
+
+## 2026-11-04: Error infrastructure Phase 0-1 (biomon core), not committed
+
+- Owner approved the audit plan (all 4 open questions: yes).
+- Phase 0 (server, read-only): TRUSTED_PROXY_COUNT=1 + nginx proxy_params OK;
+  nginx client_max_body_size 3096M, so Flask MAX_CONTENT_LENGTH stays unset.
+  Optional nginx `proxy_set_header X-Request-ID $request_id;` left to the owner (sudo).
+- Phase 1: `app/logging_setup.py`, `app/errors.py` (request id, global JSON/HTML
+  handlers, `wants_json`, `log_and_respond`), `templates/errors/error.html`,
+  CSRF handler JSON for XHR, `static/js/http_errors.js` + base.html include,
+  `LOG_LEVEL` config, en translations (+ babel.cfg scans errors.py/extensions.py).
+- Deferred: JSON 401 for AJAX (would degrade identification.html's stale-page
+  prompt); goes with Phase 5 client migration. Details: error_audit/ERROR_AUDIT.md §4a.
+- Tests: baseline 2841 passed / 44 skipped; after 2866 passed / 44 skipped
+  (+25 in tests/test_error_infra.py). Browser harness
+  `scripts/error_infra_ui_harness.py` (port 5082): 13/13 PASS. Production log
+  format checked: one line per record, rid/uid/ip/path, traceback for 5xx,
+  calculators' basicConfig no longer changes level.
+- Logs: logs/pytest_baseline_errorinfra_20261104.log, logs/pytest_errorinfra_phase1_20261104.log.
+- Next: owner reviews diff and commits/deploys biomon; then Phase 1b (same
+  infrastructure in myproject) BEFORE any shared-submodule change uses it.
+
+## 2026-11-05: /identify responsive fix ("+ ще вид" wrapping on tablets)
+
+- Report: on a tablet "+ ще вид" dropped to a line below "Особин / У вибране".
+- Emulated 320-1920px in the browser harness (`scripts/identify_hotkeys_ui_harness.py`),
+  uk + en. Found three problems:
+  1. 993-1400px: species column was a bare `1fr` (224px at 1024) but the quantity
+     row needs ~310px, so the button wrapped; "Пропустити" overflowed its button.
+  2. <=992px (stacked): the flex column inherited `align-items: flex-start`, so the
+     buttons and quantity row shrank to ~310px instead of full width.
+  3. 320px phones: row cannot fit at all.
+- Fix (shared-ct 1071464): `grid-template-columns: minmax(0,3.3fr) minmax(320px,1fr)`;
+  `align-items: stretch` in the stacked layout; <=400px gives the button its own
+  full-width row; EN label "+ another species" -> "+ species" (fits 320px); CSS ?v=52.
+- Verified after fix: no wrap, no overflowing button, no horizontal scroll at
+  320/375/414/768/820/993/1024/1180/1280/1366/1920 (uk and en).
+- Tests: 3 new in tests/test_ct_identify_mobile_order.py; identify-related subset
+  228 passed (logs/pytest_identify_responsive_20261105.log).
+- Deployed 2026-11-05: biomon a87cc18 + myproject 5d7e5d8 (shared-ct 1071464), HUP both;
+  /uk/camera-traps/ 200 on both, live CSS ?v=52 has the new grid rule.
+
+## 2026-11-05 — SMM_2024 Carpathians upload triage (data ops, no code)
+
+- Source: `CT_LocationARD_Dataset_2026-10-23_11-27.xlsx`, sheet SMM_2024, filter ISH=`ready for upload` & biomon=`not uploaded` → 47 deployments.
+- Local photos (`F:/20_Phototraps_photos/4 - FZS/Ukraine - Carpathians`) cover only 11 of them: KBR 1708, 1711, 1714, 1718, 1721, 1722, 17270, 17280, 17290; ZK 1106; Uzh 2008. Karpatskyi NNP, Synevyr, Verkhovynskyi, Vyzhnytskyi not on disk.
+- Today's 107-photo batch `4e4e7e38-…` = folder `2002` (2024 data) uploaded to location 1524 `2025_Summer_Uzhanskyi NNP_2002` (wrong year). Same 107 files already exist in location 1199 `2024_Summer_Uzhanski NNP_2002` (batch c4a4c090). Duplicate: 22 observations pending, 0 identifications. DELETED on user request (2026-11-05): 107 ai_predictions, 107 photos, 22 observations, 1 batch row in one transaction; 107 thumbnails removed from pending_photos/thumbnails; photo_count of 1524 recomputed. Original 2024 copy (batch c4a4c090, 107 photos) untouched. Log: logs/delete_dup_batch_4e4e7e38_20261105.log.
+- Uzh 2008 clock: date set dd/mm and AM/PM flipped (first frame shows "12/6/2024 12:14 AM" in daylight; last "4/17/2025 11:13 PM" in daylight). Correct offset = −177 days −12 h → 2024-06-12 12:14 … 2024-10-22 11:13 (matches sheet).
+- ZK 1106: camera clock ~+2h06m ahead of real time (sheet: set 11:50, control 09:44) → offset −2 h 6 min.
+- DB has two location sets per PA for 2024 Summer (old misspelled names created 2026-05-27 holding most data, e.g. `Uzhanski`, `Zacharovany Kraii`, `Verkhovinski`, `Vyzhnystki`; and correctly spelled ones created 2026-06-30, mostly empty). Both have deployments rows. Needs a decision/merge.
+
+## 2026-11-05: /upload-fast map, stacked pins fan out + two-thumb photo-count slider (DEPLOYED)
+- Problem: locations a few metres apart covered each other on the map, the lower pin could not be clicked. The photo-count filter was two separate sliders whose values were swapped when they crossed, so the user read them as reversed (upper limit on the left).
+- `app/camera_traps/static/js/marker_spread.js` (new, shared-ct): fans a stack into a circle (spiral above 9 pins) with thin legs to the true point. From zoom 15 every stack fans automatically; below that a click on a stacked pin fans it instead of selecting, the next click selects. True coordinates kept in `marker._ctHome`; rebuilt after filters (`spread.refresh()`) and on zoom. Selected (red) pin gets zIndexOffset 1000 so it is on top of its stack.
+- Count filter: one track with two thumbs (`.dual-range`), thumbs clamp instead of swapping; green fill between them. New aria labels translated (CT domain).
+- Rejected: Leaflet.markercluster/OverlappingMarkerSpiderfier, extra CDN dependency and unclear behaviour with markers hidden by filters; a ~150-line own module is enough.
+- Checked in browser with `scripts/upload_fast_map_ui_harness.py` (port 5081, `/__login`, fake stack of 4 + pair). Tests `tests/test_ct_upload_fast_map.py`; pytest log `logs/pytest_upload_fast_map_20261105.log` (48 passed).
+- Commits: shared-ct cad8216, biomon ae8f1fa, myproject pointer bumped. Deployed both (pull + HUP), smoke: upload-fast 200 as admin with the new script, ct-static JS 200, myproject CT API 200.
+- Duplicate locations merged (same day, on user request). 56 pairs: legacy sheet "Data 2023-2024" names (created 2026-05-27) vs per-campaign SMM_2024 names, same point (0–1.3 m). Keeper = location of the deployment listed in a current sheet (SMM_2024 spelling). Moved 1654 observations, 14 upload batches, 56 legacy deployment rows (re-pointed, not deleted) to keepers; institutions/biotopes unioned (were identical); 56 `location_merge_log` rows; duplicates deleted; keeper photo_count recomputed. 0 orphan deployments after. Script: `scripts/merge_duplicate_ard_locations.py` (dry run default, `--apply`; re-run now finds 0 pairs). Logs: `logs/merge_duplicate_ard_locations_{dryrun,apply}_20261105*.log`, moved-id backup `logs/merge_duplicate_ard_locations_backup_20261105_1337.json`.
+- Left: location_stats / monthly activity of keepers are stale until the admin "recalculate analytics" run. Each keeper now has two deployment rows (legacy + SMM_2024) for the same campaign; harmless for QC (worst-flag rule) but shows twice in manage-deployments. Do NOT re-run `import_deployments --create-locations` with the legacy sheet: it would recreate the legacy-named locations (name index). Plain import binds legacy names to keepers by coordinates.
+- Uploads for 2008 / 1106 go to 3216 `2024_Summer_Uzhanskyi NNP_2008` and 3241 `2024_Summer_Zacharovanyi Krai NNP_1106`.
+- Uploaded server-side with new `scripts/server_upload_folder.py` (same path as /upload-fast: create_upload_batch → process_single_photo → SQL grouping; thumbnails only, like the page default; photos tar'd to ~/tmp_upload_*, removed afterwards):
+  - Uzh 2008 → 3216, batch d2de31dd, offset −15249600 s (−176 d −12 h; user decided install = 12 June). 1521 photos (1387 trigger + 134 lapse), 274 series, 2024-06-12 12:08 … 2024-10-23 11:13. Note: with this choice removal falls on 23.10, while the deployment row/Excel says end 22.10 (and PA report says start 11.06); Excel end_date should be 23.10 or the last day becomes an "orphan" (still counted valid).
+  - ZK 1106 → 3241, batch 2c533ef9, offset −7560 s (−2 h 6 min, from control photo: camera 11:50 vs phone 09:44). 57 photos, 10 series, 2024-07-14 09:53 … 2024-11-14 09:44.
+  - Logs: `logs/server_upload_{1106,2008}_20261105.log`.
+- KBR (Karpatskyi BR) SMM_2024, 9 cameras uploaded server-side (offset 0, thumbnails only), log `logs/server_upload_kbr_20261105.log`. All batches completed, 0 skipped/failed:
+  1708→3183 93 ph; 1711→3184 229; 1714→3185 228; 1718→3186 372; 1721→3189 159; 1722→3180 45; 17270→3187 251; 17280→3188 264; 17290→3182 241 (= 1882 photos).
+  - 1718: excluded 287 files from 3–17 June (pond by a house, different site, likely pre-deployment test; no deployment covers it). Kept from install 2024-08-11 13:32 on (incl. lapse).
+  - 17280: both card parts uploaded (part 1 to 05.09 13:54, part 2 05.09 13:56 → removal 13.10, grey frames 14.10). Excel end 05.09 only covers part 1; photos after it are outside the deployment interval (counted valid as orphans). Excel end should be ~13.10.
+  - 1722: includes renamed "2частина (N).JPG" frames (14.08, 06.10); Excel end 14.08.
+  - 1708: no clock control photo; first frame 09:36 vs Excel 08:16, no shift applied.
+  - 1721 / 17280 Cuddeback M4V videos (300CUDDY) not uploaded (browser cannot cut mp4v).
+  - 1703 (folder present) not uploaded: ISH status NA in Excel.
+
+## 2026-11-05 — WLCM_2023-24 prep (Uzh 2010, Gorhany 2306, Skole 16 cams); photos not yet on disk
+
+- Targets (ISH ready / biomon not uploaded): Uzh 2010 → 3157; Gorhany 2306 → no own deployment/location in DB (see below); Skole 0302–0317 (16) → 3160–3174 (DB names unpadded, e.g. `…_310`).
+- Merge script extended: legacy `2023_Winter_` prefix = `2023-2024_Winter_`; camera ids compared without leading zeros; pairs where BOTH locations hold observations are skipped (possible double upload). Second apply: 54 empty legacy duplicates merged (0 observations moved), 0 orphan deployments, merge_log now 110 rows. Backup `logs/merge_duplicate_ard_locations_backup_20261105_1423.json`.
+- Open issues found:
+  - Skole 2024 Summer 0302 and 0304 uploaded TWICE (locations 41/1275 and 39/1276; 13.03.2026 and 11.09.2026), both copies identified (~2000 identifications each for 0304) and archived. 0316: 40 has data, 1274 empty. Not touched; needs a decision which copy to drop.
+  - Uzh 2010 winter: Excel coords identical to 2013 (48.923804, 22.459030); location 3157 shares the point with 188 (2013, 141 obs). True 2010 coords unknown.
+  - Skole 0309 winter: Excel longitude NA; DB location 3168 has lon = lat (49.06088), i.e. wrong.
+  - Gorhany 2306: Excel row `2023-2024_Winter_Gorhany NR_2306` has the coords of location 139 `…_23060` (6 obs / 108 photos uploaded 2026-05-04, 30.11.2023–03.04.2024) while Excel says 2306 not uploaded. Also 2302 comment: "camera id is 2306 but in original upload it is on 2302 folder". Must compare with the folder before uploading.
+  - KNNP winter 2023-24 legacy pairs (11807–12003, 18002) and Verkhovynskyi `_NA` left unmerged: neither name is in the current sheet.
+
+## 2026-11-05 — Double-uploaded CT photo sets removed (user approved groups 1 and 2)
+
+- Detection: photos with identical (original_filename, captured_at) in different locations, ≥5 per pair; thumbnails compared with an average hash where still present (most archived thumbnails are gone); then checked against each location's deployment interval.
+- `scripts/remove_duplicate_ct_data.py` (dry run default, one transaction, prod nightly dump ct_db_backup_20261105_023001 is the restore point). Report with all deleted ids: `logs/remove_duplicate_ct_data_20261105_1446.json`; log `logs/remove_duplicate_ct_data_apply_20261105.log`.
+  - Group 1 (same card twice, same camera-season): deleted copies 1276 `2024_Summer_Skolivski Beskydy NNP_304` (911 photos, 219 series, 1996 identifications) and 1275 `…_302` (224 / 138 / 475); their deployments re-pointed to keepers 39 / 41; locations removed with merge_log rows.
+  - Group 2 (another season's photos re-uploaded with the next card): series entirely outside the location's deployment interval (±1 day) deleted from 1442 (111 photos), 37 (174), 36 (159), 1504 (57), 118 (147), 117 (33), 1492 (33). The same photos remain in their own season's location.
+  - Empty duplicates merged: 1274→40 and 8 KNNP winter legacy pairs (1140–1160 → 3138–3153/166/167).
+  - Server: 413 thumbnails removed (rest already cleaned), 0 raw.
+- After: 0 orphan deployments, 0 orphan photos. Remaining overlaps (NOT touched, need a human look): Cheremoskyi 2023 Summer 1602/1606 (104/105, 434 shared, thumbnails partly exist), KBR winter 24-25 1702/1711 (1370/1376, 87 = all of 1702), Synohora 2613 (1555) lapse overlaps with 2612 and 2604; small lapse-only overlaps 89/1552 and 1423/1432 likely coincidental.
+- Keeper photo_count shows only non-archived photos (39 → 0, 41 → 9): expected, archived series are not counted by that formula. Analytics must be recalculated (admin button).
+- Cheremoskyi 2023 Summer 1606 (loc 105) held camera 1602's card too (shared frames stamped "1602"; 1602 trigger count 432 = Excel). `remove_duplicate_ct_data --only shared --apply`: deleted from 105 the 38 series / 434 photos (496 identifications, 277 behaviour tags, 390 AI predictions) that consist only of photos also in 104; 104 untouched. Report `logs/remove_duplicate_ct_data_20261105_1455.json`. Note: 1606's own frames are stamped "1024" (camera id misconfigured, QC note).
+
+## 2026-11-05 Archive videos (Ставчанське) uploaded as frames, server-side
+
+- Source: `F:/20_Phototraps_photos/1 - Просортовані`, 949 clips. Locations, capture times and the
+  full analysis are in the archive's `_work/WORKLOG.md` (same date); plan `_work/video_upload/plan.csv`.
+- User decision: upload Ставчанське only. Верещицьке (520 NVTIM MOV, loc 25) NOT uploaded: 519 clips
+  have a photo of the same camera within 2 min (hybrid photo+video mode), so the events are already in
+  biomon and frames would double-count detections. к. 1 ЯНПП installation clip skipped likewise.
+- UOVision AVI time is burned into the frame only: template OCR + every value checked by eye
+  (8 OCR errors 3↔8 on night frames fixed, 43 typed in). 2021 clips sat in archive year folder 2025.
+- Frames cut locally with ffmpeg, 1 per second, named `<clip>_<HHMMSS>.jpg` like the page; the
+  overlay agrees with the name to ±1 s (overlay clock not frame-locked, same as the page's even step).
+- New `scripts/server_upload_video_frames.py`: manifest `file,captured_at` → one batch per location,
+  `process_single_photo(..., captured_at_override=...)`, thumbnails only, then SQL grouping. Run on the
+  server as user 1 (yurastrus). Log on the server `logs/server_upload_stav_video_20261105.log`.
+  | loc | batch | frames | series | period |
+  |---|---|---|---|---|
+  | 27 к. 20, в. 3 | d9bf9c9c | 240 | 23 | 2021-04-12 .. 2021-08-03 |
+  | 26 к. 20, в. 1 | c736e88c | 15 | 3 | 2021-04-28 .. 2021-05-11 |
+  | 1 к. 27, в. 3 | a1d5f4e9 | 410 | 28 | 2021-04-11 .. 2021-05-13 |
+  | 21 к. 32, в. 7 (archive "к. 26") | 6a30e5d6 | 1590 | 167 | 2025-08-13 .. 2026-03-08 |
+  All batches completed, 0 skipped/failed; series pending for AI and verification. Server temp removed.
+- Left: no deployment rows exist for these locations; analytics recalculation (admin button) to count them.
