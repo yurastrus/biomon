@@ -185,6 +185,35 @@ def test_sign_clip_refuses_an_unknown_source(auth_client):
     assert response.status_code == 400
 
 
+def test_sign_clip_accepts_file_modification_time(auth_client):
+    response = auth_client(role='admin').post('/uk/camera-traps/api/video/sign-clip', data={
+        'batch_id': 'b1', 'filename': 'x.avi', 'start': '2026-03-12T13:09:00',
+        'source': 'file_modified'})
+    assert response.status_code == 200
+    assert response.get_json()['start'] == '2026-03-12T13:09:00'
+
+
+def test_page_offers_file_modification_time_without_auto_accepting_it():
+    from pathlib import Path
+    html = (Path(__file__).resolve().parent.parent / 'app' / 'camera_traps'
+            / 'templates' / 'upload_video.html').read_text(encoding='utf-8')
+    assert 'use-file-modified' in html
+    assert "clip.source = 'file_modified'" in html
+    assert "localStamp(clip.file.lastModified).replace(' ', 'T')" in html
+
+
+def test_video_page_reuses_photo_upload_location_creation_flow():
+    from pathlib import Path
+    html = (Path(__file__).resolve().parent.parent / 'app' / 'camera_traps'
+            / 'templates' / 'upload_video.html').read_text(encoding='utf-8')
+    assert 'id="new-location-fields"' in html
+    assert 'id="create-location-btn"' in html
+    assert '/camera-traps/api/create-location' in html
+    assert "institution_id: $('#institution-select').val() || null" in html
+    assert 'locationsData.push(newLocation)' in html
+    assert "$('#video-location-select').append(newOption).trigger('change')" in html
+
+
 def test_thumbnails_only_is_the_default_on_the_page():
     """Frames of video are stills of footage nobody keeps; full size fills the disk."""
     from pathlib import Path
