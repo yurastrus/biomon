@@ -242,7 +242,7 @@ def test_video_page_reuses_photo_upload_location_creation_flow():
     assert 'id="new-location-fields"' in html
     assert 'id="create-location-btn"' in html
     assert '/camera-traps/api/create-location' in html
-    assert "institution_id: $('#institution-select').val() || null" in html
+    assert 'institution_id: institutionId' in html
     assert 'locationsData.push(newLocation)' in html
     assert "$('#video-location-select').append(newOption).trigger('change')" in html
 

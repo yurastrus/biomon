@@ -230,10 +230,27 @@ def test_new_location_must_belong_to_a_managed_institution(client_as, split, par
     assert refused.status_code == 403
     no_inst = cl.post('/uk/camera-traps/api/create-location', json={
         'name': 'Нова', 'latitude': 49.9, 'longitude': 24.9})
-    assert no_inst.status_code == 403
+    assert no_inst.status_code == 400
     ok = cl.post('/uk/camera-traps/api/create-location', json={
         'name': 'Нова', 'latitude': 49.9, 'longitude': 24.9, 'institution_id': a.id})
     assert ok.status_code == 201
+
+
+def test_admin_cannot_create_an_institutionless_location(auth_client, parks):
+    response = auth_client(role='admin').post('/uk/camera-traps/api/create-location', json={
+        'name': 'Без установи', 'latitude': 48.7, 'longitude': 25.1})
+    assert response.status_code == 400
+    assert 'установу або проєкт' in response.get_json()['message']
+
+
+def test_upload_pages_require_an_institution_before_creating_a_location():
+    from pathlib import Path
+    templates = Path(__file__).resolve().parent.parent / 'app' / 'camera_traps' / 'templates'
+    for name in ('upload.html', 'upload_fast.html', 'upload_video.html'):
+        html = (templates / name).read_text(encoding='utf-8')
+        assert "const institutionId = $('#institution-select').val();" in html
+        assert "if (!institutionId)" in html
+        assert 'institution_id: institutionId' in html
 
 
 def test_a_verifier_can_no_longer_create_locations(client_as, make_user, parks):
