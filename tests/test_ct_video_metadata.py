@@ -35,13 +35,17 @@ def _moov(created, **kwargs):
     return _box(b'moov', _mvhd(created, **kwargs) + _box(b'trak', b'\x00' * 32))
 
 
-def _avi(frames=100, micros=50000, idit=None):
+def _avi(frames=100, micros=50000, idit=None, metadata_chunks=()):
     avih = struct.pack('<4sI', b'avih', 56) + struct.pack(
         '<IIIII', micros, 0, 0, 0, frames) + b'\x00' * 36
     hdrl = b'hdrl' + avih
     if idit is not None:
         text = idit.encode('ascii') + b'\x00'
         hdrl += struct.pack('<4sI', b'IDIT', len(text)) + text
+    for kind, payload in metadata_chunks:
+        hdrl += struct.pack('<4sI', kind, len(payload)) + payload
+        if len(payload) % 2:
+            hdrl += b'\x00'
     body = b'AVI ' + struct.pack('<4sI', b'LIST', len(hdrl)) + hdrl
     return b'RIFF' + struct.pack('<I', len(body)) + body
 
@@ -121,6 +125,25 @@ def test_an_avi_idit_chunk_is_read(text):
     assert result['plausible'] is True
 
 
+def test_private_avi_header_dates_are_candidates_not_automatic_answers():
+    payload = b'camera-private\x00' + bytes([26, 5, 18, 17, 3, 29]) + b'\xff'
+    result = vm.container_times(_avi(metadata_chunks=((b'strd', payload),)),
+                                now=datetime(2026, 11, 6))
+    assert result['created'] is None
+    assert result['plausible'] is False
+    assert any(candidate['created'] == '2026-05-18T17:03:29' and
+               candidate['source'] == 'avi:strd:binary6'
+               for candidate in result['candidates'])
+
+
+def test_standard_container_date_is_the_only_recommended_candidate():
+    result = vm.container_times(_avi(idit='2025:03:22 15:46:07'))
+    recommended = [candidate for candidate in result['candidates']
+                   if candidate['recommended']]
+    assert len(recommended) == 1
+    assert recommended[0]['source'] == 'avi:container'
+
+
 # ─── Operator-confirmed start ────────────────────────────────────────────────
 
 def test_operator_start_accepts_a_plain_local_time():
@@ -193,13 +216,23 @@ def test_sign_clip_accepts_file_modification_time(auth_client):
     assert response.get_json()['start'] == '2026-03-12T13:09:00'
 
 
-def test_page_offers_file_modification_time_without_auto_accepting_it():
+def test_sign_clip_accepts_an_operator_selected_file_metadata_candidate(auth_client):
+    response = auth_client(role='admin').post('/uk/camera-traps/api/video/sign-clip', data={
+        'batch_id': 'b1', 'filename': 'x.avi', 'start': '2026-05-18T17:03:29',
+        'source': 'file_metadata_candidate'})
+    assert response.status_code == 200
+
+
+def test_page_offers_per_file_and_bulk_date_source_selection():
     from pathlib import Path
     html = (Path(__file__).resolve().parent.parent / 'app' / 'camera_traps'
             / 'templates' / 'upload_video.html').read_text(encoding='utf-8')
-    assert 'use-file-modified' in html
-    assert "clip.source = 'file_modified'" in html
+    assert 'clip-date-source' in html
+    assert 'bulk-date-source' in html
+    assert 'apply-date-source-all' in html
+    assert 'refreshBulkDateSources' in html
     assert "localStamp(clip.file.lastModified).replace(' ', 'T')" in html
+    assert '#clips-table .clip-start { width: 12.5rem' in html
 
 
 def test_video_page_reuses_photo_upload_location_creation_flow():
