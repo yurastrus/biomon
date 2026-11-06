@@ -253,6 +253,16 @@ def test_upload_pages_require_an_institution_before_creating_a_location():
         assert 'institution_id: institutionId' in html
 
 
+def test_all_upload_pages_sync_an_existing_location_back_to_its_institution():
+    from pathlib import Path
+    templates = Path(__file__).resolve().parent.parent / 'app' / 'camera_traps' / 'templates'
+    for name in ('upload.html', 'upload_fast.html', 'upload_video.html'):
+        html = (templates / name).read_text(encoding='utf-8')
+        assert 'loc.institution_ids' in html
+        assert "$('#institution-select').val(" in html
+        assert ".trigger('change')" in html
+
+
 def test_a_verifier_can_no_longer_create_locations(client_as, make_user, parks):
     verifier = make_user(username='ver', roles=('ct_verifier',))
     resp = client_as(verifier).post('/uk/camera-traps/api/create-location', json={
