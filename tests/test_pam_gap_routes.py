@@ -77,6 +77,9 @@ def test_page_renders_with_threshold_slider(viewer, page_db):
     assert 'id="threshold-range" min="0.7" max="1.0"' in html
     assert 'step="0.01" value="0.95"' in html
     assert 'Perch v2' in html and 'value="combined"' in html
+    assert 'id="location-scope" class="gap-location-scope" disabled' in html
+    assert 'name="location-scope" value="all" checked' in html
+    assert 'name="location-scope" value="active"' in html
 
 
 def test_page_open_to_any_signed_in_user(viewer, page_db):

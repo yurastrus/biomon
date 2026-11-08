@@ -192,9 +192,15 @@ def test_kernel_conserves_recording_hours():
 
 
 def test_location_points_use_language_and_skip_empty():
-    pts = {p['id']: p for p in ga.location_points(make_data(), lang='en')}
+    data = make_data()
+    data.locations[1]['is_active'] = True
+    data.locations[2]['is_active'] = False
+    pts = {p['id']: p for p in ga.location_points(data, lang='en')}
     assert set(pts) == {1, 2, 3}
     assert pts[1]['name'] == 'P1' and pts[1]['hours'] == 180.0 and pts[1]['diel_hours'] == 6
+    assert pts[1]['is_active'] is True
+    assert pts[2]['is_active'] is False
+    assert pts[3]['is_active'] is False  # no service history
 
 
 def test_species_options_sorted_by_detection_days():
@@ -218,7 +224,7 @@ def _conn(*row_sets):
 def test_fetch_gap_data_assembles_effort_scores_and_verification():
     lon, lat = 23.5, 50.0
     conn = _conn(
-        [(1, 'Точка', None, lat, lon), (2, 'Без координат', 'No coords', None, None)],
+        [(1, 'Точка', None, lat, lon, True), (2, 'Без координат', 'No coords', None, None, False)],
         [(1, D0, 300), (1, D0 + timedelta(days=1), 60), (9, D0, 5)],     # 9: out of scope
         [(1, 5, 300), (1, 6, 60), (1, None, 5)],
         [(1, D0, 10, 0.97, False), (1, D0 + timedelta(days=1), 10, None, True),
@@ -230,6 +236,7 @@ def test_fetch_gap_data_assembles_effort_scores_and_verification():
                              species_condition='s.required_role IS NULL')
     assert set(data.locations) == {1}
     assert data.locations[1]['name_en'] == 'Точка'
+    assert data.locations[1]['is_active'] is True
     assert data.effort_days == {1: {D0, D0 + timedelta(days=1)}}
     assert data.effort_minutes[1][D0] == 300
     assert data.hour_minutes[1][5] == 300 and data.hour_minutes[1][6] == 60
@@ -255,8 +262,37 @@ def test_fetch_gap_data_stops_when_scope_is_empty():
     assert data.locations == {} and conn.execute.call_count == 1
 
 
+@pytest.mark.parametrize('purposes, active', [
+    ([], False), ([2], True), ([1], True), ([2, 3], False),
+    ([2, 3, 2], True), ([2, 3, 4], False), ([4], False),
+])
+def test_location_activity_uses_latest_service_history(purposes, active):
+    """Execute the actual location SQL against a tiny service history.
+
+    Installation/routine visits confirm presence; removal clears it. Other
+    visits do not establish a deployment. Current state ignores the analysis
+    date range, which only limits recordings.
+    """
+    from sqlalchemy import create_engine, text
+
+    mock = _conn([])
+    ga.fetch_gap_data(mock, '1=1', {}, start_date=D0, end_date=D0)
+    stmt, params = mock.execute.call_args.args
+    with create_engine('sqlite://').connect() as conn:
+        conn.execute(text('CREATE TABLE locations (location_id INTEGER, location_name TEXT, '
+                          'location_name_en TEXT, lat REAL, lon REAL)'))
+        conn.execute(text("INSERT INTO locations VALUES (1, 'Recorder', NULL, 50, 23)"))
+        conn.execute(text('CREATE TABLE service_visits (id INTEGER, location_id INTEGER, '
+                          'visit_datetime TEXT, visit_purpose_id INTEGER)'))
+        # Insert in reverse order to ensure chronology, not row order, wins.
+        for i in reversed(range(len(purposes))):
+            conn.execute(text('INSERT INTO service_visits VALUES (:id, 1, :dt, :purpose)'),
+                         {'id': i, 'dt': f'2026-11-{i + 1:02d}', 'purpose': purposes[i]})
+        assert bool(conn.execute(stmt, params).one().is_active) is active
+
+
 def test_fetch_gap_data_skips_species_query_without_detections():
-    conn = _conn([(1, 'Т', 'P', 50.0, 23.5)], [(1, D0, 60)], [], [], [])
+    conn = _conn([(1, 'Т', 'P', 50.0, 23.5, False)], [(1, D0, 60)], [], [], [])
     data = ga.fetch_gap_data(conn, '1=1', {}, taxon='bats')
     assert conn.execute.call_count == 5
     assert data.species == {}
