@@ -60,13 +60,13 @@ def test_pam_page_has_tools_and_buffer_slider(auth_client, pam_page_db):
     html = auth_client(role='viewer').get('/uk/pam/gap-analysis').get_data(as_text=True)
     assert _tool_ids(html)
     assert 'js/gap_map_tools.js' in html
-    assert 'id="buffer-range" min="50" max="2000" step="10" value="500"' in html
+    assert 'id="buffer-range" min="50" max="2000" step="10" value="250"' in html
     assert "storageKey: 'biomon-pam-gap-planned'" in html
 
 
 def test_buffer_limits():
     assert (pam_gap_routes.GAP_BUFFER_MIN_M, pam_gap_routes.GAP_BUFFER_MAX_M,
-            pam_gap_routes.GAP_BUFFER_DEFAULT_M) == (50, 2000, 500)
+            pam_gap_routes.GAP_BUFFER_DEFAULT_M) == (50, 2000, 250)
 
 
 @pytest.mark.parametrize('url', [
