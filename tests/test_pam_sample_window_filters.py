@@ -491,8 +491,9 @@ def _detailed_page(client):
         return client.get('/uk/pam/pam_detailed')
 
 
-def test_the_dashboard_offers_segment_cutting_to_an_admin(auth_client):
-    resp = _detailed_page(auth_client(role='admin'))
+@pytest.mark.parametrize('role', ['admin', 'manager'])
+def test_the_dashboard_offers_segment_cutting_to_pam_managers(auth_client, role):
+    resp = _detailed_page(auth_client(role=role, manages=role == 'manager'))
     assert resp.status_code == 200
     html = resp.data.decode('utf-8')
     assert 'id="verify-subset-btn"' in html
@@ -500,7 +501,7 @@ def test_the_dashboard_offers_segment_cutting_to_an_admin(auth_client):
 
 
 @pytest.mark.parametrize('role', ['manager', 'pam_verifier'])
-def test_the_dashboard_hides_segment_cutting_from_non_admins(auth_client, role):
+def test_the_dashboard_hides_segment_cutting_without_pam_management(auth_client, role):
     resp = _detailed_page(auth_client(role=role))
     assert resp.status_code == 200
     assert 'id="verify-subset-btn"' not in resp.data.decode('utf-8')

@@ -3,12 +3,13 @@
 
 Covers pure helpers (filename build/parse, SQL builder), the sampling driver and
 segment registration with mocked connections, real WAV→FLAC encoding via
-soundfile, and route smoke tests (admin-gated) with the PAM connection patched
+soundfile, and route tests with the PAM connection patched
 at the routes module (mirrors tests/test_pam_import.py's convention).
 """
 import io
 import json
 from datetime import datetime
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -231,11 +232,27 @@ def _mapping_result(rows):
     return res
 
 
-def test_sample_upload_page_requires_admin(auth_client):
-    # a non-admin (manager) must not reach the admin page
-    cl = auth_client(role='manager')
+@pytest.mark.parametrize('role', ['manager', 'pam_verifier'])
+def test_sample_upload_page_requires_pam_management(auth_client, role):
+    cl = auth_client(role=role)
     resp = cl.get('/uk/pam/verification/sample-upload')
     assert resp.status_code == 403
+
+
+def test_sample_routes_reject_manager_with_view_only_pam_access(auth_client, db_session):
+    from app.models import User
+
+    cl = auth_client(role='manager', manages=True)
+    link = User.query.filter_by(username='test_manager').one().institution_links[0]
+    link.can_manage_pam = False
+    db_session.commit()
+
+    for path in ('/uk/pam/verification/sample-upload',
+                 '/uk/pam/verification/segment-window',
+                 '/uk/api/pam/sample/species'):
+        assert cl.get(path).status_code == 403
+    for endpoint in ('prepare', 'plan-window', 'upload-segment'):
+        assert cl.post(f'/uk/api/pam/sample/{endpoint}').status_code == 403
 
 
 def test_sample_upload_page_renders_for_admin(auth_client):
@@ -246,6 +263,90 @@ def test_sample_upload_page_renders_for_admin(auth_client):
         resp = cl.get('/uk/pam/verification/sample-upload')
     assert resp.status_code == 200
     assert b'sample/prepare' in resp.data or b'su-prepare' in resp.data
+
+
+def test_manager_sample_page_lists_only_managed_institutions(auth_client, db_session):
+    from app.models import Institution
+
+    cl = auth_client(role='manager', manages=True)
+    managed = Institution.query.filter_by(code='T-test_manager').one()
+    db_session.add(Institution(name_uk='Outside PAM scope', code='outside'))
+    db_session.commit()
+    conn = MagicMock()
+    conn.execute.return_value = _mapping_result([])
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn), \
+         patch('app.pam.routes.get_earliest_recording_year', return_value=2020):
+        resp = cl.get('/uk/pam/verification/sample-upload')
+    assert resp.status_code == 200
+    assert managed.name_uk in resp.get_data(as_text=True)
+    assert 'Outside PAM scope' not in resp.get_data(as_text=True)
+    assert conn.execute.call_args_list[0].args[1] == {
+        'is_admin': False, 'managed_ids': [managed.id],
+    }
+
+
+@pytest.mark.parametrize('endpoint', ['prepare', 'plan-window'])
+def test_manager_sample_plan_filters_to_managed_locations(auth_client, endpoint):
+    cl = auth_client(role='manager', manages=True)
+    conn = MagicMock()
+    locations = _mapping_result([SimpleNamespace(location_id=10)])
+    conn.execute.side_effect = [locations, MagicMock()]
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn), \
+         patch('app.pam.routes._resolve_model_choice', return_value=(1, True)), \
+         patch('app.pam.utils.get_model_conf_columns', return_value={1: 'confidence'}), \
+         patch('app.pam.routes.run_stratified_sample', return_value=[]) as sample, \
+         patch('app.pam.pam_segment_sampling.plan_window_segments', return_value=[]) as window:
+        resp = cl.post(f'/uk/api/pam/sample/{endpoint}', json={
+            'location_ids': [10, 11], 'species_name': 'Bufo bufo',
+            'from_ts': '2025-03-03T18:00:00Z', 'to_ts': '2025-03-03T19:00:00Z',
+        })
+    assert resp.status_code == 200
+    if endpoint == 'prepare':
+        assert sample.call_args.args[1] == [10]
+    else:
+        assert window.call_args.kwargs['location_ids'] == [10]
+
+
+@pytest.mark.parametrize(('source_found', 'managed_location', 'filename', 'status'), [
+    (True, True, '0.120_STAVY_20250303_184602_sec216_part1.flac', 200),
+    (True, False, '0.120_STAVY_20250303_184602_sec216_part1.flac', 403),
+    (False, True, '0.120_STAVY_20250303_184602_sec216_part1.flac', 403),
+    (True, True, '0.120_OTHER_20250303_184602_sec216_part1.flac', 400),
+])
+def test_manager_upload_validates_source_and_location(
+    auth_client, source_found, managed_location, filename, status,
+):
+    cl = auth_client(role='manager', manages=True)
+    conn = MagicMock()
+    lookup = MagicMock()
+    lookup.fetchone.return_value = SimpleNamespace(
+        location_id=10, filename='STAVY_20250303_184602.wav',
+        location_name='Стави', scientific_name='Bufo bufo', confidence=0.12,
+        start_s=216, datetime_start=datetime(2025, 3, 3, 18, 46, 2),
+    ) if source_found else None
+    scope = MagicMock()
+    scope.fetchone.return_value = (1,) if managed_location else None
+    conn.execute.side_effect = [lookup, scope]
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn), \
+         patch('app.pam.routes._resolve_model_choice', return_value=(1, True)), \
+         patch('app.pam.utils.get_model_conf_columns', return_value={1: 'confidence'}), \
+         patch('app.pam.routes.save_and_register_segment', return_value=('saved', 777)) as save:
+        resp = cl.post('/uk/api/pam/sample/upload-segment', data={
+            'segment': (io.BytesIO(b'RIFFxxxxWAVE'), 'clip.wav'),
+            'species_name': 'Client-supplied name', 'species_id': '5',
+            'detection_id': '42', 'recording_id': '10',
+            'segment_filename': filename, 'location_name': 'OTHER',
+        }, content_type='multipart/form-data')
+    assert resp.status_code == status
+    params = conn.execute.call_args_list[0].args[1]
+    assert (params['detection_id'], params['recording_id'], params['species_id']) == (42, 10, 5)
+    if status == 200:
+        save.assert_called_once()
+        assert save.call_args.args[1]['location_name'] == 'STAVY'
+        assert save.call_args.args[1]['species_name'] == 'Bufo bufo'
+        assert save.call_args.kwargs['isolate_file'] is True
+    else:
+        save.assert_not_called()
 
 
 def test_api_sample_species_returns_mapped_list(auth_client):
