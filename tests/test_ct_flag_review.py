@@ -10,6 +10,9 @@ Run:
 from unittest.mock import patch
 
 import pytest
+from flask import g
+
+from app.camera_traps.routes import _split_flag_note
 
 
 @pytest.fixture
@@ -31,21 +34,42 @@ def test_flag_sets_flagged_and_note(auth_client, db_session, ct_route_session,
     obs = make_ct_observation()
     cl = auth_client(role='ct_verifier')
     resp = cl.post(f'/uk/camera-traps/observation/{obs.id}/flag',
-                   data={'note': 'розмита серія'})
+                   data={'note': 'розмита серія\nдругий рядок', 'author': 'spoofed'})
     assert resp.status_code in (302, 303)
     ct_route_session.refresh(obs)
     assert obs.flagged is True
-    assert obs.flag_note == 'розмита серія'
+    assert _split_flag_note(obs.flag_note) == ('test_ct_verifier', 'розмита серія\nдругий рядок')
 
 
-def test_flag_without_note_sets_null(auth_client, db_session, ct_route_session,
-                                     make_ct_observation):
+def test_flag_without_note_still_records_author(auth_client, db_session, ct_route_session,
+                                                make_ct_observation):
     obs = make_ct_observation()
     cl = auth_client(role='ct_verifier')
     cl.post(f'/uk/camera-traps/observation/{obs.id}/flag', data={})
     ct_route_session.refresh(obs)
     assert obs.flagged is True
-    assert obs.flag_note is None
+    assert _split_flag_note(obs.flag_note) == ('test_ct_verifier', None)
+
+    admin = auth_client(role='admin')
+    g.pop('_login_user', None)
+    response = admin.get('/uk/camera-traps/admin/flagged')
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert '<strong>test_ct_verifier</strong>' in html
+    assert '(без коментаря)' in html
+    assert 'ct-flag-author-v1:' not in html
+
+
+def test_reflag_uses_latest_author_and_comment(auth_client, ct_route_session, make_ct_observation):
+    obs = make_ct_observation()
+    url = f'/uk/camera-traps/observation/{obs.id}/flag'
+    first = auth_client(role='ct_verifier', username='first_verifier')
+    second = auth_client(role='ct_verifier', username='second_verifier')
+    first.post(url, data={'note': 'старий коментар'})
+    g.pop('_login_user', None)
+    second.post(url, data={'note': 'новий коментар'})
+    ct_route_session.refresh(obs)
+    assert _split_flag_note(obs.flag_note) == ('second_verifier', 'новий коментар')
 
 
 def test_unflag_clears(auth_client, db_session, ct_route_session,
@@ -73,6 +97,7 @@ def test_admin_flagged_list_shows_flagged(auth_client, db_session,
     resp = cl.get('/uk/camera-traps/admin/flagged')
     assert resp.status_code == 200
     assert 'до перегляду' in resp.get_data(as_text=True)
+    assert 'Автор невідомий' in resp.get_data(as_text=True)
 
 
 def test_flag_requires_ct_verifier(auth_client, db_session, ct_route_session,
@@ -166,9 +191,7 @@ def test_flag_then_appears_in_admin_flagged_list(auth_client, db_session,
     # -- step 2: check the state in the CT DB --
     ct_route_session.refresh(obs)
     assert obs.flagged is True, "Observation.flagged має бути True після POST /flag"
-    assert obs.flag_note == note, (
-        f"Очікується flag_note={note!r}, отримано {obs.flag_note!r}"
-    )
+    assert _split_flag_note(obs.flag_note) == ('test_admin', note)
 
     # -- step 3: the same admin client sees the entry in the review queue --
     resp_list = cl.get('/uk/camera-traps/admin/flagged')
@@ -178,6 +201,7 @@ def test_flag_then_appears_in_admin_flagged_list(auth_client, db_session,
     assert note in resp_list.get_data(as_text=True), (
         "flag_note не знайдено на сторінці /admin/flagged"
     )
+    assert '<strong>test_admin</strong>' in resp_list.get_data(as_text=True)
 
 
 def test_flagged_list_has_identify_link(auth_client, db_session,
