@@ -493,11 +493,20 @@ def _detailed_page(client):
 
 @pytest.mark.parametrize('role', ['admin', 'manager'])
 def test_the_dashboard_offers_segment_cutting_to_pam_managers(auth_client, role):
-    resp = _detailed_page(auth_client(role=role, manages=role == 'manager'))
+    from unittest.mock import MagicMock
+    from types import SimpleNamespace
+
+    conn = MagicMock()
+    conn.__enter__.return_value = conn
+    conn.execute.return_value.fetchall.return_value = [SimpleNamespace(location_id=123)]
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = _detailed_page(auth_client(role=role, manages=role == 'manager'))
     assert resp.status_code == 200
     html = resp.data.decode('utf-8')
     assert 'id="verify-subset-btn"' in html
     assert '/uk/pam/verification/sample-upload' in html
+    expected_scope = '[123]' if role == 'manager' else 'null'
+    assert f'const sampleLocationIds = {expected_scope};' in html
 
 
 @pytest.mark.parametrize('role', ['manager', 'pam_verifier'])

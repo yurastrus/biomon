@@ -306,7 +306,7 @@ def test_run_sweep_rejects_too_many_widths():
 # The page itself
 # --------------------------------------------------------------------------
 
-def test_cooccurrence_page_is_admin_only(client):
+def test_cooccurrence_page_requires_login(client):
     """Anonymous visitors are redirected to the login page, not served."""
     resp = client.get('/uk/pam/cooccurrence')
     assert resp.status_code in (302, 401, 403)
@@ -319,15 +319,17 @@ def test_hub_page_hides_the_card_from_anonymous_visitors(client, mock_pam_conn):
     assert '/pam/cooccurrence' not in resp.get_data(as_text=True)
 
 
-def test_hub_page_shows_the_card_to_an_admin(auth_client, mock_pam_conn):
+@pytest.mark.parametrize('role', ['admin', 'manager'])
+def test_hub_page_shows_the_card_to_pam_managers(auth_client, mock_pam_conn, role):
     with mock_pam_conn():
-        resp = auth_client(role='admin').get('/uk/pam')
+        resp = auth_client(role=role, manages=role == 'manager').get('/uk/pam')
     assert resp.status_code == 200
     assert '/pam/cooccurrence' in resp.get_data(as_text=True)
 
 
-def test_cooccurrence_page_renders_for_an_admin_without_computing(
-        auth_client, mock_pam_conn, monkeypatch):
+@pytest.mark.parametrize('role', ['admin', 'manager'])
+def test_cooccurrence_page_renders_without_computing(
+        auth_client, mock_pam_conn, monkeypatch, role):
     """Opening the page must not run the analysis, only the cheap lookups."""
     from unittest.mock import MagicMock
 
@@ -346,13 +348,82 @@ def test_cooccurrence_page_renders_for_an_admin_without_computing(
                         lambda *a, **kw: called.append('run'))
 
     with mock_pam_conn():
-        resp = auth_client(role='admin').get('/uk/pam/cooccurrence')
+        resp = auth_client(role=role, manages=role == 'manager').get('/uk/pam/cooccurrence')
 
     assert resp.status_code == 200
     assert called == []
     body = resp.get_data(as_text=True)
     assert 'cooccurrence/run' in body      # the button knows where to POST
     assert 'id="run-btn"' in body
+    assert '/uk/api/pam/cooccurrence/filters?' in body
+    assert '/uk/pam/verification/segment-window' in body
+    assert '/uk/pam/verification/sample-upload' in body
+
+
+@pytest.mark.parametrize('role', ['manager', 'pam_verifier'])
+def test_cooccurrence_routes_require_pam_management(auth_client, role):
+    client = auth_client(role=role)
+    assert client.get('/uk/pam/cooccurrence').status_code == 403
+    for endpoint in ('filters', 'export'):
+        assert client.get(f'/uk/api/pam/cooccurrence/{endpoint}').status_code == 403
+    for endpoint in ('run', 'sweep'):
+        assert client.post(f'/uk/api/pam/cooccurrence/{endpoint}').status_code == 403
+
+
+def test_cooccurrence_filters_restrict_choices_to_managed_scope(
+        auth_client, db_session, monkeypatch):
+    from unittest.mock import MagicMock
+    from app.models import Institution
+
+    client = auth_client(role='manager', manages=True)
+    managed = Institution.query.filter_by(code='T-test_manager').one()
+    conn = MagicMock()
+    conn.execute.return_value.mappings.return_value.fetchall.return_value = []
+    monkeypatch.setattr('app.pam.routes.get_pam_db_connection', lambda: conn)
+    response = client.get('/uk/api/pam/cooccurrence/filters?institution_id=-1')
+
+    assert response.status_code == 200
+    institutions, biotopes, locations = conn.execute.call_args_list
+    assert 'i.id = ANY(:managed_filter_ids)' in str(institutions.args[0])
+    assert institutions.args[1]['managed_filter_ids'] == [managed.id]
+    assert institutions.args[1]['selected_inst_id'] == [managed.id]
+    assert 'WHERE FALSE' in str(biotopes.args[0])
+    assert 'AND FALSE' in str(locations.args[0])
+
+
+@pytest.mark.parametrize('endpoint', ['run', 'sweep', 'export'])
+def test_cooccurrence_queries_intersect_requested_and_managed_scope(
+        auth_client, db_session, monkeypatch, endpoint):
+    from unittest.mock import MagicMock
+    from app.models import Institution
+
+    client = auth_client(role='manager', manages=True)
+    managed = Institution.query.filter_by(code='T-test_manager').one()
+    outside = Institution(name_uk='Other institution', code='OTHER')
+    db_session.add(outside)
+    db_session.commit()
+    conn = MagicMock()
+    monkeypatch.setattr('app.pam.routes.get_pam_db_connection', lambda: conn)
+    analyze = MagicMock(return_value={'empty': True})
+    monkeypatch.setattr(cooc, 'run_sweep' if endpoint == 'sweep' else 'run', analyze)
+    path = f'/uk/api/pam/cooccurrence/{endpoint}'
+    filters = {'species': 'Bufo bufo', 'start': '2025-01-01', 'end': '2025-01-02'}
+
+    for institutions, expected in (([managed.id, outside.id], [managed.id]), ([outside.id], [])):
+        payload = {**filters, 'institution_ids': institutions}
+        if endpoint == 'export':
+            payload['institution_ids'] = ','.join(map(str, institutions))
+            response = client.get(path, query_string=payload)
+        else:
+            response = client.post(path, json=payload)
+        assert response.status_code == (400 if endpoint == 'export' else 200)
+        kwargs = analyze.call_args.kwargs
+        assert 'visibility_level' not in kwargs['access_condition']
+        if expected:
+            assert kwargs['access_params'] == {'selected_inst_id': expected}
+        else:
+            assert kwargs['access_condition'] == 'FALSE'
+            assert kwargs['access_params'] == {}
 
 def test_page_hands_a_csrf_token_to_its_post_calls(
         auth_client, mock_pam_conn, monkeypatch):
