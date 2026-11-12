@@ -6,6 +6,8 @@ from datetime import date, time
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from app.pam.routes import _parse_id_list
 
 
@@ -20,7 +22,7 @@ def test_parse_id_list_basic():
 
 # ── submit: "don't know" (result=2) + auto-discard ──────────────────────────────
 
-def _submit_conn(unknown_votes, meaningful_votes, existing=None):
+def _submit_conn(unknown_votes, meaningful_votes, existing=None, status='pending'):
     """Mock PAM connection for the submit route."""
     conn = MagicMock()
 
@@ -28,7 +30,7 @@ def _submit_conn(unknown_votes, meaningful_votes, existing=None):
         s = str(sql)
         res = MagicMock()
         if 'SELECT id, status FROM segments' in s:
-            res.fetchone.return_value = (params['segment_id'], 'pending')
+            res.fetchone.return_value = (params['segment_id'], status)
         elif 'SELECT id FROM segment_verifications' in s:
             res.fetchone.return_value = existing
         elif 'FILTER (WHERE verification_result = 2)' in s:
@@ -84,6 +86,40 @@ def test_submit_unknown_no_discard_if_meaningful_votes_exist(auth_client):
     assert body['discarded'] is False, resp.data
     sqls = [str(c.args[0]) for c in conn.execute.call_args_list]
     assert not any('discarded' in s for s in sqls)
+
+
+@pytest.mark.parametrize('status', ['pending', 'completed', 'discarded', 'archived'])
+def test_correct_previous_vote(auth_client, status):
+    cl = auth_client(role='admin')
+    url = '/uk/api/verification/submit'
+    with patch('app.pam.routes.get_pam_db_connection', return_value=_submit_conn(1, 0)):
+        first = cl.post(url, json={'segment_id': 42, 'verification_result': 2})
+    assert first.status_code == 200
+    data = {'segment_id': 42, 'verification_result': 1,
+            'correction_token': first.json['correction_token']}
+
+    conn = _submit_conn(2, 1, existing=(7,), status=status)
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        assert cl.post(url, json={**data, 'segment_id': 43}).status_code == 409
+        assert not conn.execute.called
+        if status != 'pending':
+            assert cl.post(url, json={'segment_id': 42, 'verification_result': 1}).status_code == 400
+            conn.reset_mock()
+        corrected = cl.post(url, json=data)
+
+    if status == 'archived':
+        assert corrected.status_code == 400
+        assert not conn.commit.called
+        return
+    assert corrected.status_code == 200
+    assert corrected.json['action'] == 'updated'
+    assert corrected.json['discarded'] is False
+    sqls = [str(call.args[0]) for call in conn.execute.call_args_list]
+    update = next(sql for sql in sqls if 'UPDATE segment_verifications' in sql)
+    assert 'WHERE segment_id = :segment_id AND user_id = :user_id' in update
+    assert not any('INSERT INTO segment_verifications' in sql for sql in sqls)
+    assert any("SET status = 'pending'" in sql for sql in sqls) == (status == 'discarded')
+    conn.commit.assert_called_once()
 
 
 def test_submit_rejects_invalid_result(auth_client):

@@ -49,6 +49,18 @@ def test_verify_page_renders_with_interaction_js(auth_client):
     assert 'role="slider"' in html
 
 
+def test_previous_answer_can_be_reopened_even_when_queue_is_empty(auth_client):
+    cl = auth_client(role='pam_verifier')
+    with patch('app.pam.routes.get_pam_db_connection', return_value=_mock_pam_conn()):
+        response = cl.get('/en/pam/verification/verify')
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert html.count('class="btn btn-secondary verify-back"') == 2
+    empty_queue = html.split('id="no-segment-message"', 1)[1].split('</div>', 1)[0]
+    assert 'Return to the previous answer' in empty_queue
+    assert 'Editing your previous answer. Choose the correct option.' in html
+
+
 def test_padding_constants_unchanged(auth_client):
     """Matplotlib axis constants unchanged (12.0 / 1.6)."""
     cl = auth_client(role='pam_verifier')
