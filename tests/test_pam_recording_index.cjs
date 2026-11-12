@@ -111,6 +111,7 @@ test('repairs stale folder paths and updates a previously indexed mixed folder',
     source.children.delete('1_a.wav');
     root.children.delete('before');
     const walks = root.walks;
+    const destinationWalks = destination.walks;
     const cached = await index.find(root, plan, lookup, progress);
     assert.equal(cached.missingCount, 1);
     assert.equal(cached.files.size, 1);
@@ -118,9 +119,26 @@ test('repairs stale folder paths and updates a previously indexed mixed folder',
     const result = await index.find(root, plan, lookup, progress, { searchArchive: true });
     assert.equal(result.files.size, 2);
     assert.equal(result.missingCount, 0);
+    assert.equal(destination.walks, destinationWalks);
     assert.deepEqual(JSON.parse(destination.children.get('location.json').contents).locations
         .map(location => location.location_id), [1, 2]);
     assert.equal(JSON.parse(root.children.get('.pam-location-folders-v1.json').contents).folders.length, 1);
+});
+
+test('scans new folders and skips file enumeration in completed leaf folders', async () => {
+    const indexed = new Directory('known', new FileHandle('1_a.wav'));
+    const root = new Directory('archive', indexed);
+    await index.find(root, [segment('1_a.wav', 1)], lookup, progress);
+    const indexedWalks = indexed.walks;
+    const newFolder = new Directory('new', new FileHandle('2_new.wav'), new FileHandle('2_other.wav'));
+    root.children.set('new', newFolder);
+    const counts = [];
+    const result = await index.find(root, [segment('2_new.wav', 2)], lookup,
+        count => counts.push(count), { searchArchive: true });
+    assert.equal(result.files.size, 1);
+    assert.equal(indexed.walks, indexedWalks);
+    assert.equal(newFolder.walks, 1);
+    assert.equal(counts.at(-1), 2);
 });
 
 test('rebuilds an interrupted marker and reports duplicate candidate files', async () => {
