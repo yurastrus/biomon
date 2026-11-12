@@ -223,7 +223,9 @@ def test_priorities_show_both_actions_below_50(auth_client):
     assert resp.status_code == 200
     html = unescape(resp.get_data(as_text=True))
     few_row = html.split('<em>Segmentus few</em>', 1)[1].split('</tr>', 1)[0]
+    assert 'class="btn btn-sm btn-primary verify-link"' in few_row
     assert 'species_id=2' in few_row
+    assert 'class="btn btn-sm btn-success"' in few_row
     assert 'source=priorities&species=Segmentus+few' in few_row
     fifty_row = html.split('<em>Segmentus fifty</em>', 1)[1].split('</tr>', 1)[0]
     assert 'species_id=4' in fifty_row
