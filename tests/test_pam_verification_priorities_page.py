@@ -18,6 +18,9 @@ Run:
 """
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+from html import unescape
+
+import pytest
 
 
 def _row(species_id, sci, total, verified, consensus, detections):
@@ -44,7 +47,7 @@ MAIN_ROWS = [
 PENDING_ROWS = [SimpleNamespace(species_id=2, remaining=5)]
 
 
-def _mock_conn(captured):
+def _mock_conn(captured, cuttable_ids=()):
     """Dispatch execute() by SQL shape: the per-user pending query groups by
     seg.species_id; everything else is the main species table query."""
     conn = MagicMock()
@@ -55,6 +58,8 @@ def _mock_conn(captured):
         res = MagicMock()
         if 'GROUP BY seg.species_id' in sql:
             res.fetchall.return_value = PENDING_ROWS
+        elif 'AND li.institution_id = ANY(:managed_ids)' in sql:
+            res.scalars.return_value.all.return_value = cuttable_ids
         else:
             res.fetchall.return_value = MAIN_ROWS
         return res
@@ -172,3 +177,33 @@ def test_priorities_verifier_gets_deep_link(auth_client):
     assert 'species_id=2' in html
     assert 'species_id=1' not in html
     assert 'species_id=3' not in html
+
+
+@pytest.mark.parametrize('role,manages,cuttable_ids,show_cut', [
+    ('admin', False, (), True),
+    ('manager', True, (1,), True),
+    ('manager', True, (), False),
+    ('manager', False, (1,), False),
+    ('pam_verifier', False, (1,), False),
+])
+def test_priorities_cut_link_respects_scope(auth_client, role, manages, cuttable_ids, show_cut):
+    cl = auth_client(role=role, manages=manages)
+    conn = _mock_conn([], cuttable_ids)
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = cl.get('/en/pam/verification/priorities')
+
+    assert resp.status_code == 200
+    html = unescape(resp.get_data(as_text=True))
+    assert ('/en/pam/verification/sample-upload?source=priorities&species=Detectus+only' in html) == show_cut
+    assert ('Cut segments' in html) == show_cut
+    assert html.count('source=priorities') == int(show_cut)
+    scoped_queries = [
+        call.args for call in conn.execute.call_args_list
+        if 'AND li.institution_id = ANY(:managed_ids)' in str(call.args[0])
+    ]
+    assert bool(scoped_queries) == manages
+    if manages:
+        sql, params = scoped_queries[0]
+        assert 's.required_role = ANY(:roles)' in str(sql)
+        assert len(params['managed_ids']) == 1
+        assert params['species_ids'] == [1]
