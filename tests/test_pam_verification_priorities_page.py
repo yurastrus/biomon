@@ -41,10 +41,14 @@ def _row(species_id, sci, total, verified, consensus, detections):
 # Species C: enough verified                 -> green
 MAIN_ROWS = [
     _row(1, 'Detectus only', 0, 0, 0, 120),
-    _row(2, 'Segmentus few', 10, 2, 0, 50),
+    _row(2, 'Segmentus few', 49, 2, 0, 150),
     _row(3, 'Verifius done', 300, 300, 280, 400),
+    _row(4, 'Segmentus fifty', 50, 2, 0, 150),
 ]
-PENDING_ROWS = [SimpleNamespace(species_id=2, remaining=5)]
+PENDING_ROWS = [
+    SimpleNamespace(species_id=2, remaining=5),
+    SimpleNamespace(species_id=4, remaining=5),
+]
 
 
 def _mock_conn(captured, cuttable_ids=()):
@@ -172,16 +176,17 @@ def test_priorities_verifier_gets_deep_link(auth_client):
     assert 'sv.user_id = :user_id' in pending_sql[0]
 
     html = resp.get_data(as_text=True)
-    # Deep link only for species 2 (the one with remaining > 0).
+    # Deep links only for species with pending segments.
     assert 'verify-link' in html
     assert 'species_id=2' in html
     assert 'species_id=1' not in html
     assert 'species_id=3' not in html
+    assert 'species_id=4' in html
 
 
 @pytest.mark.parametrize('role,manages,cuttable_ids,show_cut', [
     ('admin', False, (), True),
-    ('manager', True, (1,), True),
+    ('manager', True, (1, 2), True),
     ('manager', True, (), False),
     ('manager', False, (1,), False),
     ('pam_verifier', False, (1,), False),
@@ -195,8 +200,9 @@ def test_priorities_cut_link_respects_scope(auth_client, role, manages, cuttable
     assert resp.status_code == 200
     html = unescape(resp.get_data(as_text=True))
     assert ('/en/pam/verification/sample-upload?source=priorities&species=Detectus+only' in html) == show_cut
+    assert ('/en/pam/verification/sample-upload?source=priorities&species=Segmentus+few' in html) == show_cut
     assert ('Cut segments' in html) == show_cut
-    assert html.count('source=priorities') == int(show_cut)
+    assert html.count('source=priorities') == 2 * int(show_cut)
     scoped_queries = [
         call.args for call in conn.execute.call_args_list
         if 'AND li.institution_id = ANY(:managed_ids)' in str(call.args[0])
@@ -206,4 +212,19 @@ def test_priorities_cut_link_respects_scope(auth_client, role, manages, cuttable
         sql, params = scoped_queries[0]
         assert 's.required_role = ANY(:roles)' in str(sql)
         assert len(params['managed_ids']) == 1
-        assert params['species_ids'] == [1]
+        assert params['species_ids'] == [1, 2]
+
+
+def test_priorities_show_both_actions_below_50(auth_client):
+    cl = auth_client(role='manager', manages=True)
+    with patch('app.pam.routes.get_pam_db_connection', return_value=_mock_conn([], (2,))):
+        resp = cl.get('/en/pam/verification/priorities')
+
+    assert resp.status_code == 200
+    html = unescape(resp.get_data(as_text=True))
+    few_row = html.split('<em>Segmentus few</em>', 1)[1].split('</tr>', 1)[0]
+    assert 'species_id=2' in few_row
+    assert 'source=priorities&species=Segmentus+few' in few_row
+    fifty_row = html.split('<em>Segmentus fifty</em>', 1)[1].split('</tr>', 1)[0]
+    assert 'species_id=4' in fifty_row
+    assert 'source=priorities' not in fifty_row
