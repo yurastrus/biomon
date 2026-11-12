@@ -22,7 +22,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 
-def _row(species_id, sci, total, verified, consensus, detections):
+def _row(species_id, sci, total, verified, consensus, detections, redbook=None):
     return SimpleNamespace(
         species_id=species_id,
         scientific_name=sci,
@@ -32,6 +32,7 @@ def _row(species_id, sci, total, verified, consensus, detections):
         family_name='Paridae', genus_name='Parus',
         total_segments=total, verified_segments=verified,
         consensus_segments=consensus, detection_count=detections,
+        redbook2021=redbook,
     )
 
 
@@ -43,6 +44,7 @@ MAIN_ROWS = [
     _row(2, 'Segmentus few', 49, 2, 0, 150),
     _row(3, 'Verifius done', 300, 300, 280, 400),
     _row(4, 'Segmentus fifty', 50, 2, 0, 150),
+    _row(5, 'Segmentus legacy', 60, 20, 10, 0),
 ]
 PENDING_ROWS = [
     SimpleNamespace(species_id=2, remaining=5),
@@ -148,15 +150,15 @@ def test_priorities_non_verifier_has_no_verify_column(auth_client):
 
 
 def test_priorities_default_sort_order(auth_client):
-    """Default order: actionable (orange, has segments, under-verified) first,
-    ascending segment count within status; then detection-only (red); then
-    fully-verified (green) last."""
-    # Intentionally shuffled input so only the server-side sort can fix it.
+    """Sort by verified counts, then by Red Book and detections among zeros."""
     shuffled = [
-        _row(10, 'Green done', 300, 300, 280, 400),   # green   -> last
-        _row(11, 'Orange many', 20, 1, 0, 50),        # orange, 20 segs
-        _row(12, 'Red nosegs', 0, 0, 0, 90),          # red     -> middle
-        _row(13, 'Orange few', 5, 0, 0, 30),          # orange, 5 segs -> first
+        _row(10, 'Many verified', 300, 300, 280, 400, 'rare'),
+        _row(11, 'One verified', 20, 1, 1, 50),
+        _row(12, 'Common abundant', 0, 0, 0, 900),
+        _row(13, 'Listed scarce', 5, 0, 0, 30, 'rare'),
+        _row(14, 'Listed abundant', 0, 0, 0, 90, 'vulnerable'),
+        _row(15, 'Common scarce', 100, 0, 0, 10),
+        _row(16, 'Two verified', 300, 2, 0, 999),
     ]
 
     conn = MagicMock()
@@ -173,10 +175,11 @@ def test_priorities_default_sort_order(auth_client):
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         resp = cl.get('/uk/pam/verification/priorities')
 
-    html = resp.get_data(as_text=True)
-    order = [html.index(name) for name in
-             ('Orange few', 'Orange many', 'Red nosegs', 'Green done')]
-    assert order == sorted(order), f'unexpected row order: {order}'
+    assert resp.status_code == 200
+    assert re.findall(r'<em>([^<]+)</em>', resp.get_data(as_text=True)) == [
+        'Listed abundant', 'Listed scarce', 'Common abundant', 'Common scarce',
+        'One verified', 'Two verified', 'Many verified',
+    ]
 
 
 def test_priorities_verifier_gets_deep_link(auth_client):
@@ -203,14 +206,14 @@ def test_priorities_verifier_gets_deep_link(auth_client):
     assert 'species_id=4' in html
 
 
-@pytest.mark.parametrize('role,manages,cuttable_ids,show_cut', [
-    ('admin', False, (), True),
-    ('manager', True, (1, 2), True),
-    ('manager', True, (), False),
-    ('manager', False, (1,), False),
-    ('pam_verifier', False, (1,), False),
+@pytest.mark.parametrize('role,manages,cuttable_ids,expected_species', [
+    ('admin', False, (), {'Detectus only', 'Segmentus few', 'Verifius done', 'Segmentus fifty'}),
+    ('manager', True, (1, 3), {'Detectus only', 'Verifius done'}),
+    ('manager', True, (), set()),
+    ('manager', False, (1,), set()),
+    ('pam_verifier', False, (1,), set()),
 ])
-def test_priorities_cut_link_respects_scope(auth_client, role, manages, cuttable_ids, show_cut):
+def test_priorities_cut_link_respects_scope(auth_client, role, manages, cuttable_ids, expected_species):
     cl = auth_client(role=role, manages=manages)
     conn = _mock_conn([], cuttable_ids)
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
@@ -218,10 +221,9 @@ def test_priorities_cut_link_respects_scope(auth_client, role, manages, cuttable
 
     assert resp.status_code == 200
     html = unescape(resp.get_data(as_text=True))
-    assert ('/en/pam/verification/sample-upload?source=priorities&species=Detectus+only' in html) == show_cut
-    assert ('/en/pam/verification/sample-upload?source=priorities&species=Segmentus+few' in html) == show_cut
-    assert ('Cut segments' in html) == show_cut
-    assert html.count('source=priorities') == 2 * int(show_cut)
+    links = re.findall(r'/en/pam/verification/sample-upload\?source=priorities&species=([^"]+)', html)
+    assert {name.replace('+', ' ') for name in links} == expected_species
+    assert ('Cut segments' in html) == bool(expected_species)
     scoped_queries = [
         call.args for call in conn.execute.call_args_list
         if 'AND li.institution_id = ANY(:managed_ids)' in str(call.args[0])
@@ -231,12 +233,12 @@ def test_priorities_cut_link_respects_scope(auth_client, role, manages, cuttable
         sql, params = scoped_queries[0]
         assert 's.required_role = ANY(:roles)' in str(sql)
         assert len(params['managed_ids']) == 1
-        assert params['species_ids'] == [1, 2]
+        assert params['species_ids'] == [1, 2, 3, 4]
 
 
-def test_priorities_show_both_actions_below_50(auth_client):
+def test_priorities_show_both_actions_when_both_are_available(auth_client):
     cl = auth_client(role='manager', manages=True)
-    with patch('app.pam.routes.get_pam_db_connection', return_value=_mock_conn([], (2,))):
+    with patch('app.pam.routes.get_pam_db_connection', return_value=_mock_conn([], (2, 4))):
         resp = cl.get('/en/pam/verification/priorities')
 
     assert resp.status_code == 200
@@ -248,4 +250,4 @@ def test_priorities_show_both_actions_below_50(auth_client):
     assert 'source=priorities&species=Segmentus+few' in few_row
     fifty_row = html.split('<em>Segmentus fifty</em>', 1)[1].split('</tr>', 1)[0]
     assert 'species_id=4' in fifty_row
-    assert 'source=priorities' not in fifty_row
+    assert 'source=priorities&species=Segmentus+fifty' in fifty_row
