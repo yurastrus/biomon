@@ -176,9 +176,19 @@ def test_priorities_default_sort_order(auth_client):
         resp = cl.get('/uk/pam/verification/priorities')
 
     assert resp.status_code == 200
-    assert re.findall(r'<em>([^<]+)</em>', resp.get_data(as_text=True)) == [
+    html = resp.get_data(as_text=True)
+    assert re.findall(r'<em>([^<]+)</em>', html) == [
         'Listed abundant', 'Listed scarce', 'Common abundant', 'Common scarce',
         'One verified', 'Two verified', 'Many verified',
+    ]
+    assert re.findall(
+        r'<span class="sp-redbook">\s*<span class="species-common">([^<]+)</span> '
+        r'<span class="species-sci"><em>([^<]+)</em></span>',
+        html,
+    ) == [
+        ('Listed abundant-uk', 'Listed abundant'),
+        ('Listed scarce-uk', 'Listed scarce'),
+        ('Many verified-uk', 'Many verified'),
     ]
 
 
