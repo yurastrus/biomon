@@ -263,6 +263,8 @@ def test_sample_upload_page_renders_for_admin(auth_client):
         resp = cl.get('/uk/pam/verification/sample-upload')
     assert resp.status_code == 200
     assert b'sample/prepare' in resp.data or b'su-prepare' in resp.data
+    assert b'id="su-use-index" checked' in resp.data
+    assert '<summary>Як працює локальний індекс?</summary>' in resp.get_data(as_text=True)
 
 
 def test_manager_sample_page_lists_only_managed_institutions(auth_client, db_session):
@@ -378,6 +380,34 @@ def test_api_sample_prepare_returns_segments(auth_client):
     assert resp.status_code == 200
     assert body['success'] and body['count'] == 1
     m.assert_called_once()
+
+
+def test_recording_locations_respects_manager_scope(auth_client):
+    client = auth_client(role='manager', manages=True)
+    conn = MagicMock()
+    conn.execute.return_value.mappings.return_value = [
+        {'filename': 'one.wav', 'location_id': 11, 'lat': 49.9, 'lon': 23.7},
+    ]
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn), \
+         patch('app.pam.routes._sample_managed_location_ids', return_value=[11]):
+        response = client.post('/uk/api/pam/sample/recording-locations',
+                               json={'filenames': ['one.wav', 'one.wav', 'two.wav']})
+    assert response.status_code == 200
+    assert response.json == {
+        'locations': {'one.wav': {'location_id': 11, 'lat': 49.9, 'lon': 23.7}},
+    }
+    statement, params = conn.execute.call_args.args
+    assert set(params['names']) == {'one.wav', 'two.wav'}
+    assert params['managed'] == [11] and params['admin'] is False
+    assert 'count(DISTINCT location_id) = 1' in str(statement)
+    conn.close.assert_called_once()
+
+
+def test_recording_locations_rejects_paths(auth_client):
+    client = auth_client(role='admin')
+    response = client.post('/uk/api/pam/sample/recording-locations',
+                           json={'filenames': ['folder/one.wav']})
+    assert response.status_code == 400
 
 
 def test_api_sample_prepare_missing_fields_400(auth_client):
