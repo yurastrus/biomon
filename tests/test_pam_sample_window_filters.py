@@ -477,8 +477,10 @@ def test_the_page_has_the_exact_period_banner_hidden_by_default(auth_client):
         resp = cl.get('/uk/pam/verification/sample-upload')
     html = resp.data.decode('utf-8')
     assert 'id="su-date-range" class="pam-scope-banner mt-2" style="display:none;"' in html
-    # both deep-link sources are understood by the same prefill
-    assert "q.get('source') === 'detailed'" in html
+    # Both pages use the same prefill while keeping their own period selection.
+    assert "const source = q.get('source')" in html
+    assert "source === 'detailed'" in html
+    assert "source === 'priorities'" in html
     assert "'date_from'" in html or "q.get('date_from')" in html
 
 
