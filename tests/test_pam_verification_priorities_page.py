@@ -4,10 +4,8 @@ Verification priorities page (GET /<lang>/pam/verification/priorities).
 Covers the two behaviours added on 2026-07-17:
 
 1. The species table lists every species that has segments OR detections
-   (detection-only species must appear too), and each row is colour-flagged:
-     * priority-none  -> detections but no segments   (red)
-     * priority-low   -> segments but under-verified  (orange)
-     * priority-ok    -> enough verified              (green)
+   (detection-only species must appear too), and each row is coloured on a
+   continuous scale from zero verified segments to the verification threshold.
 
 2. For a ``pam_verifier`` the table gains an action column with a deep link
    into the verify interface (``?species_id=<id>``) for every species that
@@ -16,9 +14,10 @@ Covers the two behaviours added on 2026-07-17:
 Run:
     venv/Scripts/python -m pytest tests/test_pam_verification_priorities_page.py -v
 """
+import re
+from html import unescape
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
-from html import unescape
 
 import pytest
 
@@ -101,17 +100,37 @@ def test_priorities_has_order_index_column(auth_client):
     assert 'data-sort="1"' in html and 'data-sort="3"' in html
 
 
-def test_priorities_colour_flags(auth_client):
-    """Each row carries the right colour class for its state."""
+def test_priorities_colour_gradient(auth_client):
+    """Hue follows verified counts, including zero and the upper cap."""
     cl = auth_client(role='manager')
-    with patch('app.pam.routes.get_pam_db_connection',
-               return_value=_mock_conn([])):
+    conn = _mock_conn([])
+    rows = [
+        _row(1, 'No segments', 0, 0, 0, 100),
+        _row(2, 'No votes', 10, 0, 0, 100),
+        _row(3, 'One vote', 20, 1, 0, 100),
+        _row(4, 'Halfway', 140, 125, 5, 100),
+        _row(5, 'At target', 260, 250, 200, 300),
+        _row(6, 'Above target', 300, 280, 200, 300),
+    ]
+    conn.execute.side_effect = None
+    conn.execute.return_value.fetchall.side_effect = [rows, []]
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         resp = cl.get('/uk/pam/verification/priorities')
 
+    assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert 'priority-none' in html   # detection-only species
-    assert 'priority-low' in html    # under-verified
-    assert 'priority-ok' in html     # enough verified
+    hues = {
+        name: float(hue) for hue, name in re.findall(
+            r'<tr style="--priority-hue: ([\d.]+)">(?:(?!</tr>).)*?<em>([^<]+)</em>',
+            html, re.S,
+        )
+    }
+    assert hues == {
+        'No segments': 0, 'No votes': 0, 'One vote': 0.53,
+        'Halfway': 66, 'At target': 132, 'Above target': 132,
+    }
+    assert 'legend-gradient' in html
+    assert '<span>250+</span>' in html
 
 
 def test_priorities_non_verifier_has_no_verify_column(auth_client):
