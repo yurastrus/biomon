@@ -105,13 +105,18 @@ test('repairs stale folder paths and updates a previously indexed mixed folder',
     const source = new Directory('before', new FileHandle('1_a.wav'));
     const destination = new Directory('destination', new FileHandle('2_b.wav'));
     const root = new Directory('archive', source, destination);
-    const plan = [segment('1_a.wav', 1)];
+    const plan = [segment('1_a.wav', 1), segment('2_b.wav', 2)];
     await index.find(root, plan, lookup, progress);
     destination.children.set('1_a.wav', source.children.get('1_a.wav'));
     source.children.delete('1_a.wav');
     root.children.delete('before');
-    const result = await index.find(root, plan, lookup, progress);
-    assert.equal(result.files.size, 1);
+    const walks = root.walks;
+    const cached = await index.find(root, plan, lookup, progress);
+    assert.equal(cached.missingCount, 1);
+    assert.equal(cached.files.size, 1);
+    assert.equal(root.walks, walks);
+    const result = await index.find(root, plan, lookup, progress, { searchArchive: true });
+    assert.equal(result.files.size, 2);
     assert.equal(result.missingCount, 0);
     assert.deepEqual(JSON.parse(destination.children.get('location.json').contents).locations
         .map(location => location.location_id), [1, 2]);

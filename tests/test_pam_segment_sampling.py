@@ -265,6 +265,7 @@ def test_sample_upload_page_renders_for_admin(auth_client):
     assert resp.status_code == 200
     assert b'sample/prepare' in resp.data or b'su-prepare' in resp.data
     assert b'id="su-use-index" checked' in resp.data
+    assert b'id="su-search-archive" hidden' in resp.data
     assert '<summary>Як працює локальний індекс?</summary>' in resp.get_data(as_text=True)
 
 
