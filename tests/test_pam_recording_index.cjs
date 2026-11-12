@@ -50,6 +50,7 @@ class Directory {
     }
 
     async getFileHandle(name, options) {
+        if (/[\\/?:]/.test(name)) throw new TypeError('Name is not allowed.');
         if (options?.create && !this.children.has(name)) this.children.set(name, new FileHandle(name));
         return this.get(name, 'file');
     }
@@ -126,4 +127,16 @@ test('rebuilds an interrupted marker and reports duplicate candidate files', asy
     assert.equal(result.ambiguous, 1);
     assert.equal(result.files.size, 0);
     assert.equal(JSON.parse(first.children.get('location.json').contents).locations[0].location_id, 1);
+});
+
+test('uses a basename for Windows paths and keeps matching after a rejected name', async () => {
+    const root = new Directory('archive', new FileHandle('1_a.wav'));
+    const legacy = segment('F:\\Archive\\1_a.wav', 1);
+    const plan = [legacy, segment('bad?.wav', 1)];
+    const result = await index.find(root, plan, lookup, progress);
+    assert.equal(result.files.get(index.key(legacy)).name, '1_a.wav');
+    assert.equal(result.missingCount, 1);
+    const walks = root.walks;
+    await index.find(root, plan, lookup, progress);
+    assert.equal(root.walks, walks);
 });

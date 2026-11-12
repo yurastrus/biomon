@@ -139,16 +139,17 @@ def test_run_stratified_sample_shapes_rows_and_counts_parts():
     dt = datetime(2025, 3, 3, 18, 46, 2)
     rows = [
         {'detection_id': 1, 'recording_id': 10, 'species_id': 5,
-         'rec_filename': 'STAVY_20250303_184602.wav', 'datetime_start': dt,
+         'rec_filename': r'F:\Archive\STAVY_20250303_184602.wav', 'datetime_start': dt,
          'location_name': 'Ставки', 'start_s': 216, 'end_s': 219, 'confidence': 0.12},
         {'detection_id': 2, 'recording_id': 10, 'species_id': 5,
-         'rec_filename': 'STAVY_20250303_184602.wav', 'datetime_start': dt,
+         'rec_filename': r'F:\Archive\STAVY_20250303_184602.wav', 'datetime_start': dt,
          'location_name': 'Ставки', 'start_s': 300, 'end_s': 303, 'confidence': 0.90},
     ]
     conn = _mock_conn_returning(rows)
     out = pss.run_stratified_sample('Bufo bufo', [10], conn=conn)
 
     assert len(out) == 2
+    assert out[0]['recording_filename'] == 'STAVY_20250303_184602.wav'
     # same recording → part1, part2
     assert out[0]['segment_filename'] == '0.120_STAVY_20250303_184602_sec216_part1.flac'
     assert out[1]['segment_filename'] == '0.900_STAVY_20250303_184602_sec300_part2.flac'
@@ -400,6 +401,7 @@ def test_recording_locations_respects_manager_scope(auth_client):
     assert set(params['names']) == {'one.wav', 'two.wav'}
     assert params['managed'] == [11] and params['admin'] is False
     assert 'count(DISTINCT location_id) = 1' in str(statement)
+    assert 'replace(r.filename, chr(92)' in str(statement)
     conn.close.assert_called_once()
 
 
