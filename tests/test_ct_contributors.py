@@ -94,6 +94,34 @@ def _run_stats(ct_session, today):
     return query_contributor_stats(ct_session, today, text("1=1"), {})
 
 
+def test_verification_forecast_counts_series_and_respects_scope(ct_session, make_ct_location):
+    from app.camera_traps.models import Identification, Observation
+    from app.camera_traps.routes import query_verification_forecast
+
+    loc = make_ct_location()
+    other = make_ct_location()
+    recent = datetime(2025, 6, 10, 12)
+    done = _add_identification(ct_session, loc, 1, recent)
+    done.status = 'archived'
+    ct_session.add(Identification(photo_id=done.photos[0].id, user_id=2, created_at=recent))
+    _add_identification(ct_session, loc, 1, recent)
+    ct_session.add(Observation(
+        location_id=loc.id, uploaded_by_id=1, series_start_time=recent, series_end_time=recent,
+    ))
+    today_only = _add_identification(ct_session, loc, 1, datetime(2025, 6, 14, 21))
+    today_only.status = 'completed'
+    _add_identification(ct_session, other, 1, recent).status = 'completed'
+    ct_session.flush()
+
+    forecast = query_verification_forecast(
+        ct_session, text('locations.id = :location'), {'location': loc.id}, date(2025, 6, 15),
+    )
+    assert forecast == {'remaining': 2, 'completed': 1, 'days': 14}
+    assert query_verification_forecast(
+        ct_session, text('locations.id = :location'), {'location': loc.id}, date(2025, 7, 1),
+    ) == {'remaining': 2, 'completed': 0, 'days': None}
+
+
 def test_window_counts_for_single_user(ct_session, seeded_contributors):
     today, _ = seeded_contributors
     rows = _run_stats(ct_session, today)
@@ -197,6 +225,8 @@ def _patch_ct(monkeypatch, rows, species_list=None):
     monkeypatch.setattr('app.camera_traps.routes.close_ct_session', lambda: None)
     monkeypatch.setattr('app.camera_traps.routes.query_contributor_stats',
                         lambda *a, **k: rows)
+    monkeypatch.setattr('app.camera_traps.routes.query_verification_forecast',
+                        lambda *a, **k: {'remaining': 56, 'completed': 14, 'days': 28})
 
 
 def test_anonymous_sees_username_not_full_name(client, make_user, monkeypatch):
@@ -250,9 +280,10 @@ def test_period_totals_sum_filtered_contributors(client, monkeypatch):
     assert response.status_code == 200
     body = response.get_data(as_text=True)
     header = body.split('<thead>', 1)[1].split('</thead>', 1)[0]
-    assert re.findall(r'<span class="period-total">([^<]+)</span>', header) == [
+    assert re.findall(r'<span class="period-total"[^>]*>([^<]+)</span>', header) == [
         '+0', '+10', '+20', '+26',
     ]
+    assert re.search(r'<span class="period-total" title="[^"]*28 дн\.[^"]*"[^>]*>\+10</span>', header)
 
 
 def test_empty_results_show_info_message(client, monkeypatch):
