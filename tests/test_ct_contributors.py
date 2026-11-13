@@ -13,6 +13,7 @@ Run:
 """
 from collections import namedtuple
 from datetime import date, datetime, timedelta
+import re
 from unittest.mock import MagicMock
 
 import pytest
@@ -239,6 +240,19 @@ def test_regular_user_sees_username(auth_client, make_user, monkeypatch):
     body = resp.data.decode('utf-8')
     assert 'ident_u' in body
     assert 'Іван Петренко' not in body
+
+
+def test_period_totals_sum_filtered_contributors(client, monkeypatch):
+    _patch_ct(monkeypatch, [Row(101, 0, 7, 16, 20, 30), Row(102, 0, 3, 4, 6, 8)])
+
+    response = client.get(URL + '?species_id=42')
+
+    assert response.status_code == 200
+    body = response.get_data(as_text=True)
+    header = body.split('<thead>', 1)[1].split('</thead>', 1)[0]
+    assert re.findall(r'<span class="period-total">([^<]+)</span>', header) == [
+        '+0', '+10', '+20', '+26',
+    ]
 
 
 def test_empty_results_show_info_message(client, monkeypatch):
