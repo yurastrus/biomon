@@ -268,10 +268,9 @@ def _pam_manage_conn(rows):
     return conn
 
 
-def test_pam_manage_page_lists_seen_locations_but_edits_only_managed(client_as, split, parks):
-    """Verifiers use the page read-only, so it lists what the user can see;
-    only locations of a managed institution are marked editable, and only
-    managed institutions are offered in the edit form."""
+def test_pam_manage_page_shows_a_manager_only_managed_locations(client_as, split, parks):
+    """A manager sees only locations of institutions they manage (2026-11-13):
+    park B, which they only see, is neither on the map nor in the filter."""
     import json, re
     a, b, _ = parks
     with patch('app.pam.routes.get_pam_db_connection',
@@ -279,13 +278,33 @@ def test_pam_manage_page_lists_seen_locations_but_edits_only_managed(client_as, 
         resp = client_as(split).get('/uk/pam/manage-locations')
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert 'ПАМ локація А' in html and 'ПАМ локація Б' in html
     data = json.loads(re.search(r'const locationsData = (\[.*?\]);', html).group(1))
-    editable = {loc['name']: loc['editable'] for loc in data}
-    assert editable == {'ПАМ локація А': True, 'ПАМ локація Б': False}
+    assert {loc['name']: loc['editable'] for loc in data} == {'ПАМ локація А': True}
+    assert 'Парк Б' not in html
     # The institution picker of the edit form offers park A only.
     picker = html[html.index('id="edit-form"'):]
-    assert 'Парк А' in picker and 'Парк Б' not in picker
+    assert 'Парк А' in picker
+
+
+def test_pam_status_api_asks_a_manager_with_managed_ids(client_as, split, parks):
+    """The service-mode markers come from this API; a manager gets only managed parks."""
+    a, _, _ = parks
+    conn = MagicMock()
+    conn.execute.return_value.fetchall.return_value = []
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = client_as(split).get('/uk/api/pam/locations-with-status')
+    assert resp.status_code == 200 and resp.get_json() == []
+    assert conn.execute.call_args_list[0].args[1]['user_inst_ids'] == [a.id]
+
+
+def test_pam_service_history_refused_to_a_manager_where_only_seen(client_as, split, parks):
+    a, _, _ = parks
+    conn = MagicMock()
+    conn.execute.return_value.fetchone.return_value = None
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = client_as(split).get('/uk/api/pam/location/2/service-history')
+    assert resp.status_code == 403
+    assert conn.execute.call_args_list[0].args[1]['inst_ids'] == [a.id]
 
 
 def test_pam_page_for_a_plain_verifier_is_read_only(client_as, db_session, make_user, parks):
