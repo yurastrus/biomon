@@ -9,6 +9,9 @@ now be refused, and every one on an A location must keep working.
 Real SQLite sessions on both sides (main DB through ``db_session``, ct_db through
 ``ct_session``), so the location ↔ institution joins are the real queries.
 """
+from datetime import date, datetime, timedelta
+import json
+import re
 from unittest.mock import patch
 
 import pytest
@@ -82,6 +85,83 @@ def _batch(ct_session, batch_id, location, user):
     ct_session.add(UploadBatch(id=batch_id, location_id=location.id,
                                uploaded_by_id=user.id, status='uploading'))
     ct_session.commit()
+
+
+def test_service_plan_uses_ct_scope_and_forecast(
+        client_as, split, locs, parks, ct_session, make_ct_deployment):
+    from app.camera_traps.models import (
+        BatteryType, LocationStats, ServiceVisit, VisitPurpose, location_institutions,
+    )
+
+    loc_a, _ = locs
+    a, b = parks
+    today = date.today()
+    for model in (LocationStats, BatteryType, VisitPurpose, ServiceVisit):
+        model.__table__.create(ct_session.get_bind())
+    ct_session.execute(location_institutions.insert().values(location_id=loc_a.id, institution_id=b.id))
+    make_ct_deployment(location=loc_a, start_date=today - timedelta(days=70),
+                       end_date=None, camera_model='Browning', camera_id='0405')
+    ct_session.add_all([
+        VisitPurpose(id=1, name_ua='Плановий', name_en='Routine'),
+        BatteryType(id=1, name_ua='Літієві', name_en='Lithium'),
+        LocationStats(location_id=loc_a.id, avg_photos_per_day=200),
+        ServiceVisit(location_id=loc_a.id, user_id=split.id, visit_purpose_id=1,
+                     visit_datetime=datetime.combine(today - timedelta(days=60), datetime.min.time()),
+                     battery_type_id=1, sd_card_changed=True),
+        ServiceVisit(location_id=loc_a.id, user_id=split.id, visit_purpose_id=1,
+                     visit_datetime=datetime.combine(today - timedelta(days=30), datetime.min.time()),
+                     photos_on_card=0, is_camera_operational=True),
+    ])
+    ct_session.commit()
+    response = client_as(split).get('/en/camera-traps/service-plan')
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    items = json.loads(re.search(r'const ITEMS = (\[.*?\]);$', html, re.M).group(1))
+    assert len(items) == 1
+    row = items[0]
+    assert row['key'] == f'ct:{loc_a.id}' and row['module'] == 'ct'
+    assert row['inst_ids'] == [a.id]
+    assert row['device'] == 'Browning · 0405'
+    assert row['status'] == 'warning'
+    assert row['visit_by_iso'] == (today + timedelta(days=20)).isoformat()
+    assert row['limiting'] == 'photos'
+    assert row['predicted_photos'] == 6000
+    assert row['battery'] == 'Lithium'
+    assert row['battery_since'] == row['card_since']
+    assert row['photos_on_card'] == 0
+    assert row['battery_days_left'] is None and row['sd_card_days_left'] is None
+    assert 'Service plan' in html
+
+
+def test_service_plan_is_closed_to_verifiers(client_as, make_user):
+    verifier = make_user(username='ct_plan_verifier', roles=('ct_verifier',))
+    assert client_as(verifier).get('/uk/camera-traps/service-plan').status_code == 302
+
+
+@pytest.mark.parametrize('end_offset,operational,expected', [
+    (-1, True, 'removed'),
+    (2, True, 'critical'),
+    (10, True, 'warning'),
+    (None, False, 'stopped'),
+    (None, True, 'overdue'),
+])
+def test_service_plan_deployment_and_operational_states(end_offset, operational, expected):
+    from types import SimpleNamespace
+    from app.camera_traps.service_plan import _plan_row
+
+    today = date(2026, 11, 14)
+    start = today - timedelta(days=40 if end_offset is not None else 301)
+    end = today + timedelta(days=end_offset) if end_offset is not None else None
+    deployment = SimpleNamespace(start_date=start, end_date=end, camera_model=None, camera_id=None)
+    loc = SimpleNamespace(id=1, name='Camera', latitude=49, longitude=24)
+    visit = SimpleNamespace(visit_datetime=datetime.combine(start, datetime.min.time()),
+                            visit_purpose_id=1, is_camera_operational=operational,
+                            battery_type=None, sd_card_changed=False, photos_on_card=None)
+    row = _plan_row(loc, None, [], [visit], deployment, None, 'uk', today)
+    assert row['status'] == expected
+    if end_offset is not None and end_offset > 0:
+        assert row['visit_by_iso'] == end.isoformat()
+        assert row['limiting'] == 'deployment_end'
 
 
 # ── model and helpers ───────────────────────────────────────────────────────

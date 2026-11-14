@@ -479,6 +479,8 @@ def test_service_plan_lists_only_managed_institutions(client_as, split, parks):
     import json, re
     items = json.loads(re.search(r'const ITEMS = (\[.*?\]);$', html, re.M).group(1))
     assert [it['name'] for it in items] == ['ПАМ точка А']
+    assert items[0]['module'] == 'pam'
+    assert items[0]['key'] == f"pam:{items[0]['id']}"
     assert items[0]['inst_ids'] == [a.id]
     # Managed (A), not merely visible (A, B).
     assert conn.execute.call_args_list[0].args[1]['inst_ids'] == [a.id]
