@@ -619,6 +619,7 @@ class TestCtServiceHistoryAccess(CtManageLocationsBase):
             resp = self.client.get(self._url())
 
         self.assertTrue(resp.get_json()[0]['is_own'])
+        self.assertTrue(resp.get_json()[0]['can_edit'])
 
     def test_is_own_false_for_other_user(self):
         visit = _make_visit(id=1, user_id=self.admin.id)
@@ -630,6 +631,7 @@ class TestCtServiceHistoryAccess(CtManageLocationsBase):
             resp = self.client.get(self._url())
 
         self.assertFalse(resp.get_json()[0]['is_own'])
+        self.assertFalse(resp.get_json()[0]['can_edit'])
 
     def test_visit_datetime_raw_format(self):
         visit = _make_visit(id=1, user_id=self.manager.id,
@@ -853,7 +855,45 @@ class TestCtUpdateServiceVisit(CtManageLocationsBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 8. API CREATE LOCATION — MANAGER+ WITH INSTITUTION CHECK
+# 8. API DELETE SERVICE VISIT
+# ════════════════════════════════════════════════════════════════════════════
+
+class TestCtDeleteServiceVisit(CtManageLocationsBase):
+    URL = '/uk/camera-traps/api/service-visit/1/delete'
+
+    def test_owner_can_delete_visit_at_managed_location(self):
+        visit = _make_visit(id=1, user_id=self.manager.id)
+        session = _make_update_visit_session(visit, has_access=True)
+        resp = self._post(self.URL, {}, user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 200)
+        session.delete.assert_called_once_with(visit)
+        session.commit.assert_called_once()
+
+    def test_manager_cannot_delete_another_users_visit(self):
+        visit = _make_visit(id=1, user_id=self.admin.id)
+        session = _make_update_visit_session(visit, has_access=True)
+        resp = self._post(self.URL, {}, user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 403)
+        session.delete.assert_not_called()
+
+    def test_owner_cannot_delete_visit_outside_managed_locations(self):
+        visit = _make_visit(id=1, user_id=self.manager.id)
+        session = _make_update_visit_session(visit, has_access=False)
+        resp = self._post(self.URL, {}, user_id=self.manager.id, session=session)
+        self.assertEqual(resp.status_code, 403)
+        session.delete.assert_not_called()
+
+    def test_admin_can_delete_another_users_visit(self):
+        visit = _make_visit(id=1, user_id=self.manager.id)
+        session = _make_update_visit_session(visit)
+        resp = self._post(self.URL, {}, user_id=self.admin.id, session=session)
+        self.assertEqual(resp.status_code, 200)
+        session.delete.assert_called_once_with(visit)
+        session.commit.assert_called_once()
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# API CREATE LOCATION — MANAGER+ WITH INSTITUTION CHECK
 # ════════════════════════════════════════════════════════════════════════════
 
 class TestCtCreateLocation(CtManageLocationsBase):
