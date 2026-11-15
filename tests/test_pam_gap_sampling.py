@@ -50,6 +50,8 @@ def test_gap_route_accepts_optional_filters_and_ignores_period(auth_client):
         response = client.post('/uk/api/pam/sample/prepare-gaps', json={
             'sample_size': 5, 'species_name': 'Parus major', 'institution_id': 12,
             'location_ids': [7], 'model_id': 4, 'date_from': '2026-01-01', 'month_start': 5,
+            'class_name': 'Aves', 'order_name': 'Passeriformes',
+            'family_name': 'Paridae', 'genus_name': 'Parus',
         })
     assert response.status_code == 200
     params = prepare.call_args.kwargs['params']
@@ -58,6 +60,27 @@ def test_gap_route_accepts_optional_filters_and_ignores_period(auth_client):
     assert params['location_ids'] == [7] and not params['all_locations']
     assert 'date_from' not in params and 'month_start' not in params
     assert prepare.call_args.kwargs['conf_column'] == 'conf_perch_v2'
+    assert [params[field] for field in ('class_name', 'order_name', 'family_name', 'genus_name')] == [
+        'Aves', 'Passeriformes', 'Paridae', 'Parus',
+    ]
+
+
+def test_sample_species_catalog_exposes_taxonomy(auth_client):
+    client = auth_client(role='admin')
+    conn = MagicMock()
+    conn.execute.return_value.mappings.return_value.fetchall.return_value = [{
+        'species_id': 1, 'scientific_name': 'Parus major', 'common_name_uk': 'Синиця велика',
+        'common_name_en': 'Great tit', 'class_name': 'Aves', 'order_name': 'Passeriformes',
+        'family_name': 'Paridae', 'genus_name': 'Parus',
+    }]
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        response = client.get('/en/api/pam/sample/species?catalog=1')
+    assert response.status_code == 200
+    species = response.json['species'][0]
+    assert species['text'] == 'Great tit (Parus major)'
+    assert [species[field] for field in ('class_name', 'order_name', 'family_name', 'genus_name')] == [
+        'Aves', 'Passeriformes', 'Paridae', 'Parus',
+    ]
 
 
 def test_gap_route_preserves_manager_scope_even_without_filters(auth_client):
