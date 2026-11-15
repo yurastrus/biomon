@@ -22,7 +22,7 @@ def test_parse_id_list_basic():
 
 # ── submit: "don't know" (result=2) + auto-discard ──────────────────────────────
 
-def _submit_conn(unknown_votes, meaningful_votes, existing=None, status='pending'):
+def _submit_conn(unknown_votes, meaningful_votes, existing=None, status='pending', completed=False):
     """Mock PAM connection for the submit route."""
     conn = MagicMock()
 
@@ -33,6 +33,8 @@ def _submit_conn(unknown_votes, meaningful_votes, existing=None, status='pending
             res.fetchone.return_value = (params['segment_id'], status)
         elif 'SELECT id FROM segment_verifications' in s:
             res.fetchone.return_value = existing
+        elif "SELECT status = 'completed'" in s:
+            res.scalar.return_value = completed
         elif 'FILTER (WHERE verification_result = 2)' in s:
             res.fetchone.return_value = SimpleNamespace(
                 unknown_votes=unknown_votes, meaningful_votes=meaningful_votes)
@@ -60,6 +62,20 @@ def test_submit_unknown_accepted(auth_client):
     body = json.loads(resp.data)
     assert resp.status_code == 200
     assert body['success'] and body['discarded'] is False
+
+
+@pytest.mark.parametrize('completed', [True, False])
+def test_submit_reports_whether_consensus_can_change_priorities(auth_client, completed):
+    cl = auth_client(role='admin')
+    conn = _submit_conn(0, 1, completed=completed)
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        response = cl.post('/uk/api/verification/submit', json={
+            'segment_id': 42, 'verification_result': 1, 'check_priority': True,
+        })
+
+    assert response.status_code == 200
+    assert response.json['priority_changed'] is completed
+    conn.commit.assert_called_once()
 
 
 def test_submit_unknown_triggers_discard_at_threshold(auth_client):

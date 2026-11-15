@@ -155,6 +155,41 @@ def test_benefit_queue_rejects_out_of_range_skip_id(auth_client):
     connect.assert_not_called()
 
 
+def test_prefetch_excludes_playing_segment_without_changing_history(auth_client):
+    cl = auth_client(role='pam_verifier')
+    conn = _mock_conn([])
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        response = cl.get('/en/api/verification/next-segment?sort_by=benefit&prefetch_exclude_id=6')
+
+    assert response.status_code == 200
+    query, params = conn.execute.call_args.args
+    eligible, history = str(query).split('), eligible_species AS')
+    assert 'seg.id <> :prefetch_exclude_id' in eligible
+    assert 'prefetch_exclude_id' not in history
+    assert params['prefetch_exclude_id'] == 6
+
+
+def test_prepared_segment_rechecks_eligibility_without_ranking(auth_client):
+    cl = auth_client(role='pam_verifier')
+    conn = _mock_conn([])
+    url = '/en/api/verification/next-segment?sort_by=benefit&prepared_segment_id=7&species_id=5'
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        response = cl.post(url, json={'segment_ids': [7, 8]})
+
+    assert response.status_code == 200
+    query, params = conn.execute.call_args.args
+    sql = str(query)
+    assert 'WITH eligible_segments' not in sql
+    assert 'seg.id = :prepared_id' in sql
+    assert "seg.status = 'pending'" in sql
+    assert 'sv.user_id = :user_id' in sql
+    assert 'l_pub.visibility_level = 0' in sql
+    assert 's.required_role = ANY(:roles)' in sql
+    assert 'seg.id = ANY(CAST(:sample_ids AS bigint[]))' in sql
+    assert 'seg.species_id = :species_id' in sql
+    assert params['prepared_id'] == 7
+
+
 def test_fake_row_arity_matches_route_positional_reads():
     """Guard for the failure this file used to have: the route reads the row
     positionally, so when the SELECT list grew (bilingual location from the
