@@ -1031,6 +1031,80 @@ def test_next_segment_rejects_an_unparsable_window(auth_client, mock_pam_conn):
     assert resp.status_code == 400
 
 
+@pytest.mark.parametrize('endpoint, status, query_count', [
+    ('next-segment', 404, 1),
+    ('stats', 200, 3),
+    ('filter-options', 200, 3),
+])
+@pytest.mark.parametrize('segment_ids', [[], [17, 41], list(range(1, 5001))],
+                         ids=['empty', 'partial-upload', 'large-sample'])
+def test_sample_verification_filters_every_query(
+        auth_client, mock_pam_conn, endpoint, status, query_count, segment_ids):
+    with mock_pam_conn() as conn:
+        conn.execute.return_value.mappings().fetchall.return_value = []
+        response = auth_client(role='admin').post(
+            f'/uk/api/verification/{endpoint}?species_id=7',
+            json={'segment_ids': segment_ids})
+
+    assert response.status_code == status
+    assert conn.execute.call_count == query_count
+    for call in conn.execute.call_args_list:
+        query, params = call.args
+        assert 'seg.id = ANY(CAST(:sample_ids AS bigint[]))' in str(query)
+        assert params['sample_ids'] == segment_ids
+    if endpoint == 'stats':
+        assert response.json['user_stats']['remaining_verifications'] == 0
+
+
+@pytest.mark.parametrize('endpoint', ['next-segment', 'stats', 'filter-options'])
+@pytest.mark.parametrize('payload', [{}, {'segment_ids': [True]},
+                                     {'segment_ids': ['41']},
+                                     {'segment_ids': [0]},
+                                     {'segment_ids': [1] * 5050}])
+def test_invalid_sample_scope_never_runs_an_unfiltered_query(
+        auth_client, mock_pam_conn, endpoint, payload):
+    with mock_pam_conn() as conn:
+        response = auth_client(role='admin').post(
+            f'/uk/api/verification/{endpoint}', json=payload)
+    assert response.status_code == 400
+    conn.execute.assert_not_called()
+
+
+@pytest.mark.parametrize('endpoint', ['next-segment', 'stats', 'filter-options'])
+def test_sample_scope_requires_verification_role(auth_client, mock_pam_conn, endpoint):
+    with mock_pam_conn() as conn:
+        response = auth_client(role='viewer').post(
+            f'/uk/api/verification/{endpoint}', json={'segment_ids': [17]})
+    assert response.status_code == 403
+    conn.execute.assert_not_called()
+
+
+def test_sample_scope_preserves_verifier_institution_access(
+        auth_client, mock_pam_conn, monkeypatch):
+    monkeypatch.setattr('app.pam.access.allowed_institution_ids', lambda _user: [9])
+    with mock_pam_conn() as conn:
+        auth_client(role='pam_verifier').post(
+            '/uk/api/verification/next-segment', json={'segment_ids': [17]})
+    query, params = conn.execute.call_args.args
+    assert 'location_institutions' in str(query)
+    assert 'seg.status = \'pending\'' in str(query)
+    assert 'sv.user_id = :user_id' in str(query)
+    assert [9] in params.values()
+    assert params['sample_ids'] == [17]
+
+
+@pytest.mark.parametrize('role', ['admin', 'manager'])
+def test_sample_upload_renders_a_hidden_verification_link(
+        auth_client, mock_pam_conn, role):
+    with mock_pam_conn():
+        response = auth_client(role=role, manages=role == 'manager').get(
+            '/en/pam/verification/sample-upload')
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert 'id="su-verify" class="btn btn-sm" style="display:none;"' in html
+    assert 'Go to verification' in html
+
+
 def test_verification_page_carries_the_narrowing_into_every_request(
         auth_client, mock_pam_conn):
     """location_ids / from_ts / to_ts have no UI control, so they have to ride
