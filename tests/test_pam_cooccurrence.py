@@ -1101,7 +1101,7 @@ def test_sample_upload_renders_a_hidden_verification_link(
             '/en/pam/verification/sample-upload')
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert 'id="su-verify" class="btn btn-sm" style="display:none;"' in html
+    assert 'id="su-verify" class="btn btn-sm btn-primary" style="display:none;"' in html
     assert 'Go to verification' in html
 
 
