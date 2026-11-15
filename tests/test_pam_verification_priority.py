@@ -92,6 +92,24 @@ def test_next_segment_keeps_pending_and_own_votes_filters(auth_client):
         assert 'sv.user_id = :user_id' in sql
 
 
+def test_preferred_segment_only_changes_order_within_authorized_queue(auth_client):
+    cl = auth_client(role='pam_verifier')
+    conn = _mock_conn([])
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        response = cl.get('/uk/api/verification/next-segment?species_id=5&preferred_segment_id=7')
+
+    assert response.status_code == 200
+    query, params = conn.execute.call_args.args
+    sql = str(query)
+    assert 'ORDER BY CASE WHEN seg.id = :preferred_segment THEN 0 ELSE 1 END' in sql
+    assert "seg.status = 'pending'" in sql
+    assert 'sv.user_id = :user_id' in sql
+    assert 's.required_role = ANY(:roles)' in sql
+    assert 'l_pub.visibility_level = 0' in sql
+    assert 'seg.species_id = :species_id' in sql
+    assert params['preferred_segment'] == 7
+
+
 def test_fake_row_arity_matches_route_positional_reads():
     """Guard for the failure this file used to have: the route reads the row
     positionally, so when the SELECT list grew (bilingual location from the

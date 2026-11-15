@@ -8,7 +8,7 @@ Covers the two behaviours added on 2026-07-17:
    continuous scale from zero verified segments to the verification threshold.
 
 2. For a ``pam_verifier`` the table gains an action column with a deep link
-   into the verify interface (``?species_id=<id>``) for every species that
+   into the verify interface for the recommended segment of every species that
    still has segments this user can personally verify.
 
 Run:
@@ -46,23 +46,28 @@ MAIN_ROWS = [
     _row(4, 'Segmentus fifty', 50, 2, 0, 150),
     _row(5, 'Segmentus legacy', 60, 20, 10, 0),
 ]
-PENDING_ROWS = [
-    SimpleNamespace(species_id=2, remaining=5),
-    SimpleNamespace(species_id=4, remaining=5),
+RECOMMENDATIONS = [
+    SimpleNamespace(species_id=4, remaining=5, segment_id=104, novelty=2,
+                    confidence_level=.91, plausible=True, recorded_month=6,
+                    votes_needed=1, name_uk='Розточчя', name_en='Roztochya',
+                    similar_rejected=False),
+    SimpleNamespace(species_id=2, remaining=5, segment_id=102, novelty=1,
+                    confidence_level=.89, plausible=True, recorded_month=7,
+                    votes_needed=2, name_uk='Розточчя', name_en='Roztochya',
+                    similar_rejected=False),
 ]
 
 
 def _mock_conn(captured, cuttable_ids=()):
-    """Dispatch execute() by SQL shape: the per-user pending query groups by
-    seg.species_id; everything else is the main species table query."""
+    """Dispatch execute() by SQL shape."""
     conn = MagicMock()
 
     def _execute(query, params=None):
         sql = str(query)
         captured.append(sql)
         res = MagicMock()
-        if 'GROUP BY seg.species_id' in sql:
-            res.fetchall.return_value = PENDING_ROWS
+        if 'WITH visible_segments AS' in sql:
+            res.fetchall.return_value = RECOMMENDATIONS
         elif 'AND li.institution_id = ANY(:managed_ids)' in sql:
             res.scalars.return_value.all.return_value = cuttable_ids
         else:
@@ -146,7 +151,7 @@ def test_priorities_non_verifier_has_no_verify_column(auth_client):
 
     html = resp.get_data(as_text=True)
     assert 'verify-link' not in html
-    assert not any('GROUP BY seg.species_id' in s for s in captured)
+    assert not any('WITH visible_segments AS' in s for s in captured)
 
 
 def test_priorities_default_sort_order(auth_client):
@@ -167,7 +172,7 @@ def test_priorities_default_sort_order(auth_client):
         res = MagicMock()
         # manager also triggers the per-user pending query -> return no rows.
         res.fetchall.return_value = (
-            [] if 'GROUP BY seg.species_id' in str(query) else shuffled)
+            [] if 'WITH visible_segments AS' in str(query) else shuffled)
         return res
     conn.execute.side_effect = _execute
 
@@ -193,7 +198,7 @@ def test_priorities_default_sort_order(auth_client):
 
 
 def test_priorities_verifier_gets_deep_link(auth_client):
-    """A pam_verifier gets a species-filtered verify link for verifiable rows."""
+    """A verifier sees ranked candidates before other species and can open the exact clip."""
     cl = auth_client(role='pam_verifier')
     captured = []
     with patch('app.pam.routes.get_pam_db_connection',
@@ -202,7 +207,7 @@ def test_priorities_verifier_gets_deep_link(auth_client):
 
     assert resp.status_code == 200
     # Per-user pending query ran with the queue predicate.
-    pending_sql = [s for s in captured if 'GROUP BY seg.species_id' in s]
+    pending_sql = [s for s in captured if 'WITH visible_segments AS' in s]
     assert pending_sql, 'expected a per-user pending-by-species query'
     assert "seg.status = 'pending'" in pending_sql[0]
     assert 'sv.user_id = :user_id' in pending_sql[0]
@@ -214,6 +219,11 @@ def test_priorities_verifier_gets_deep_link(auth_client):
     assert 'species_id=1' not in html
     assert 'species_id=3' not in html
     assert 'species_id=4' in html
+    assert 'preferred_segment_id=104' in html
+    assert 'preferred_segment_id=102' in html
+    assert re.findall(r'<em>([^<]+)</em>', html)[:2] == ['Segmentus fifty', 'Segmentus few']
+    assert 'Перший запис на території' in html
+    assert 'Перший запис у цьому місяці на території' in html
 
 
 @pytest.mark.parametrize('role,manages,cuttable_ids,expected_species', [
