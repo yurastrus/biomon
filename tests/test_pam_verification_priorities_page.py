@@ -66,7 +66,7 @@ def _mock_conn(captured, cuttable_ids=()):
         sql = str(query)
         captured.append(sql)
         res = MagicMock()
-        if 'WITH visible_segments AS' in sql:
+        if 'WITH eligible_segments AS' in sql:
             res.fetchall.return_value = RECOMMENDATIONS
         elif 'AND li.institution_id = ANY(:managed_ids)' in sql:
             res.scalars.return_value.all.return_value = cuttable_ids
@@ -165,7 +165,7 @@ def test_priorities_non_verifier_has_no_verify_column(auth_client):
 
     html = resp.get_data(as_text=True)
     assert 'verify-link' not in html
-    assert not any('WITH visible_segments AS' in s for s in captured)
+    assert not any('WITH eligible_segments AS' in s for s in captured)
 
 
 def test_priorities_default_sort_order(auth_client):
@@ -186,7 +186,7 @@ def test_priorities_default_sort_order(auth_client):
         res = MagicMock()
         # manager also triggers the per-user pending query -> return no rows.
         res.fetchall.return_value = (
-            [] if 'WITH visible_segments AS' in str(query) else shuffled)
+            [] if 'WITH eligible_segments AS' in str(query) else shuffled)
         return res
     conn.execute.side_effect = _execute
 
@@ -221,7 +221,7 @@ def test_priorities_verifier_gets_deep_link(auth_client):
 
     assert resp.status_code == 200
     # Per-user pending query ran with the queue predicate.
-    pending_sql = [s for s in captured if 'WITH visible_segments AS' in s]
+    pending_sql = [s for s in captured if 'WITH eligible_segments AS' in s]
     assert pending_sql, 'expected a per-user pending-by-species query'
     assert "seg.status = 'pending'" in pending_sql[0]
     assert 'sv.user_id = :user_id' in pending_sql[0]
@@ -235,6 +235,7 @@ def test_priorities_verifier_gets_deep_link(auth_client):
     assert 'species_id=4' in html
     assert 'preferred_segment_id=104' in html
     assert 'preferred_segment_id=102' in html
+    assert 'sort_by=benefit' in html
     assert re.findall(r'<em>([^<]+)</em>', html)[:2] == ['Segmentus fifty', 'Segmentus few']
     assert 'Перший запис на території' in html
     assert 'Перший запис у цьому місяці на території' in html

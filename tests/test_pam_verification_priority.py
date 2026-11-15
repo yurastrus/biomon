@@ -12,6 +12,8 @@ Run:
 from datetime import date, time
 from unittest.mock import MagicMock, patch
 
+from app.pam.verification_priorities import PRIORITY_CONFIDENCE, PRIORITY_ORDER
+
 EXPECTED_ORDER_BY = 'ORDER BY COALESCE(seg.verification_count, 0) DESC, RANDOM() LIMIT 1'
 
 # Mirrors the SELECT list of api_next_verification_segment, in order. The route
@@ -108,6 +110,49 @@ def test_preferred_segment_only_changes_order_within_authorized_queue(auth_clien
     assert 'l_pub.visibility_level = 0' in sql
     assert 'seg.species_id = :species_id' in sql
     assert params['preferred_segment'] == 7
+
+
+def test_benefit_queue_ranks_scoped_candidates_against_visible_history(auth_client):
+    cl = auth_client(role='pam_verifier')
+    conn = _mock_conn([])
+    url = (
+        '/en/api/verification/next-segment?sort_by=benefit&species_id=5'
+        '&class_name=Aves&institution_ids=3&location_ids=11&from_ts=2026-01-01'
+        '&preferred_segment_id=7&skip_segment_id=8'
+    )
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        response = cl.post(url, json={'segment_ids': [7, 8]})
+
+    assert response.status_code == 200
+    query, params = conn.execute.call_args.args
+    sql = str(query)
+    candidates, history = sql.split('), eligible_species AS')
+    assert "seg.status = 'pending'" in candidates
+    assert 'sv.user_id = :user_id' in candidates
+    assert 'seg.species_id = :species_id' in candidates
+    assert 's.class = :class_name' in candidates
+    assert 'r_det.location_id = ANY(:det_location_ids)' in candidates
+    assert '>= CAST(:from_ts AS timestamptz)' in candidates
+    assert 'seg.id = ANY(CAST(:sample_ids AS bigint[]))' in candidates
+    assert 'NOT (seg.id = ANY(CAST(:skipped_ids AS bigint[])))' in candidates
+    assert 'li.institution_id = ANY(:institution_ids)' in candidates
+    assert 'li.institution_id = ANY(:institution_ids)' in history
+    assert sql.count('l_pub.visibility_level = 0') == 2
+    assert sql.count('s.required_role = ANY(:roles)') == 2
+    assert ':sample_ids' not in history and ':from_ts' not in history
+    assert f'ORDER BY segment_id <> :preferred_segment, {PRIORITY_ORDER}' in history
+    assert params['sample_ids'] == [7, 8]
+    assert params['skipped_ids'] == [8]
+    assert params['confidence'] == PRIORITY_CONFIDENCE
+
+
+def test_benefit_queue_rejects_out_of_range_skip_id(auth_client):
+    cl = auth_client(role='pam_verifier')
+    with patch('app.pam.routes.get_pam_db_connection') as connect:
+        response = cl.get('/en/api/verification/next-segment?sort_by=benefit&skip_segment_id=0')
+
+    assert response.status_code == 400
+    connect.assert_not_called()
 
 
 def test_fake_row_arity_matches_route_positional_reads():
