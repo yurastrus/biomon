@@ -107,6 +107,20 @@ def test_priorities_has_order_index_column(auth_client):
     assert 'data-sort="1"' in html and 'data-sort="3"' in html
 
 
+def test_priorities_exposes_taxonomy_filters_and_search_names(auth_client):
+    cl = auth_client(role='manager')
+    with patch('app.pam.routes.get_pam_db_connection', return_value=_mock_conn([])):
+        response = cl.get('/en/pam/verification/priorities')
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    for field in ('class', 'order', 'family', 'genus'):
+        assert f'for="priority-{field}"' in html
+        assert f'<select id="priority-{field}"' in html
+    assert 'id="priority-search" class="form-control" type="search"' in html
+    assert """data-search='["Detectus only", "Detectus only-uk", "Detectus only-en"]'""" in html
+
+
 def test_priorities_colour_gradient(auth_client):
     """Hue follows verified counts, including zero and the upper cap."""
     cl = auth_client(role='manager')
@@ -265,8 +279,12 @@ def test_priorities_show_both_actions_when_both_are_available(auth_client):
     html = unescape(resp.get_data(as_text=True))
     few_row = html.split('<em>Segmentus few</em>', 1)[1].split('</tr>', 1)[0]
     assert 'class="btn btn-sm btn-primary verify-link"' in few_row
+    assert 'title="Verify (5)" aria-label="Verify (5)"' in few_row
+    assert '<span aria-hidden="true">☑</span>' in few_row
     assert 'species_id=2' in few_row
     assert 'class="btn btn-sm btn-success"' in few_row
+    assert 'title="Cut segments" aria-label="Cut segments"' in few_row
+    assert '<span aria-hidden="true">✂︎</span>' in few_row
     assert 'source=priorities&species=Segmentus+few' in few_row
     fifty_row = html.split('<em>Segmentus fifty</em>', 1)[1].split('</tr>', 1)[0]
     assert 'species_id=4' in fifty_row
