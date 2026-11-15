@@ -47,6 +47,10 @@ def test_verify_page_renders_with_interaction_js(auth_client):
     assert "addEventListener('touchmove'" in html
     # a11y
     assert 'role="slider"' in html
+    filters = html.split('class="filters-panel"', 1)[1].split('class="stats-panel"', 1)[0]
+    assert filters.index('id="verification-sort"') < filters.index('id="class-filter"')
+    assert 'verificationSort.select2({' in html
+    assert 'id="verification-interface" style="display: none;"' not in html
 
 
 def test_previous_answer_can_be_reopened_even_when_queue_is_empty(auth_client):
