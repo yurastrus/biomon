@@ -388,8 +388,10 @@ def test_the_english_page_shows_translated_month_and_year_labels(auth_client):
 
 def test_sample_page_lists_only_institutions_with_detections(auth_client, db_session):
     client = auth_client(role='admin')
-    active = Institution(name_uk='Установа з детекціями', name_en='Institution with detections', code='DET')
-    empty = Institution(name_uk='Установа без детекцій', name_en='Institution without detections', code='EMPTY')
+    active = Institution(name_uk='Установа з детекціями', name_en='Institution with detections',
+                         code='DET', ecoregion_uk='Карпати', ecoregion_en='Carpathians')
+    empty = Institution(name_uk='Установа без детекцій', name_en='Institution without detections',
+                        code='EMPTY', ecoregion_uk='Полісся', ecoregion_en='Polissia')
     db_session.add_all([active, empty])
     db_session.flush()
     conn = MagicMock()
@@ -401,9 +403,13 @@ def test_sample_page_lists_only_institutions_with_detections(auth_client, db_ses
         response = client.get('/en/pam/verification/sample-upload')
 
     assert response.status_code == 200
-    options = response.get_data(as_text=True).split('id="su-institution"', 1)[1].split('</select>', 1)[0]
+    html = response.get_data(as_text=True)
+    options = html.split('id="su-institution"', 1)[1].split('</select>', 1)[0]
+    assert 'multiple' in options
     assert 'Institution with detections' in options
     assert 'Institution without detections' not in options
+    assert f'data-members="{active.id}"' in html and 'Carpathians' in html
+    assert f'data-members="{empty.id}"' not in html and 'Polissia' not in html
 
 
 # ── exact period from the species dashboard (pam_detailed) ───────────────────

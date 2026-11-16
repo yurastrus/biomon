@@ -56,7 +56,7 @@ def test_gap_route_accepts_optional_filters_and_ignores_period(auth_client):
     assert response.status_code == 200
     params = prepare.call_args.kwargs['params']
     assert params['species_name'] == 'Parus major'
-    assert params['institution_id'] == 12 and not params['all_institutions']
+    assert params['institution_ids'] == [12] and not params['all_institutions']
     assert params['location_ids'] == [7] and not params['all_locations']
     assert 'date_from' not in params and 'month_start' not in params
     assert prepare.call_args.kwargs['conf_column'] == 'conf_perch_v2'
@@ -100,7 +100,7 @@ def test_gap_route_preserves_manager_scope_even_without_filters(auth_client):
         assert params['all_institutions'] and params['all_locations']
         prepare.reset_mock()
         response = client.post('/en/api/pam/sample/prepare-gaps', json={
-            'institution_id': params['managed_ids'][0] + 1,
+            'institution_ids': [params['managed_ids'][0], params['managed_ids'][0] + 1],
         })
         assert response.status_code == 403
         prepare.assert_not_called()
