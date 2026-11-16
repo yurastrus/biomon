@@ -194,6 +194,35 @@ class PendingObservation(NamedTuple):
     photos: list[tuple[int, str]]  # [(photo_id, system_filename), ...] in chronological order
 
 
+_PENDING_OBSERVATION_FILTER = """
+WHERE o.status = 'pending'
+  AND NOT EXISTS (
+      SELECT 1 FROM ai_predictions ap
+      WHERE ap.observation_id = o.id AND ap.model_id = :model_id
+  )
+  -- Selectivity: skip series that already have a BETTER/EQUAL
+  -- classification (a model with accuracy_rank >= the active one, e.g.
+  -- an imported local MDR). No point wasting the server.
+  AND NOT EXISTS (
+      SELECT 1 FROM ai_predictions ap2
+      JOIN ai_models m2 ON m2.id = ap2.model_id
+      LEFT JOIN ai_model_levels l2 ON l2.id = m2.level_id
+      WHERE ap2.observation_id = o.id
+        AND COALESCE(l2.accuracy_rank, 0) >= COALESCE((
+            SELECT COALESCE(l.accuracy_rank, 0)
+            FROM ai_models m
+            LEFT JOIN ai_model_levels l ON l.id = m.level_id
+            WHERE m.id = :model_id
+        ), 0)
+  )
+  AND EXISTS (
+      SELECT 1 FROM photos p
+      WHERE p.observation_id = o.id
+        AND p.status IN ('grouped', 'pending', 'completed')
+  )
+"""
+
+
 def pick_pending_observations(
     session,
     model_id: int,
@@ -218,35 +247,11 @@ def pick_pending_observations(
     # observations where ALL photos are archived (the cleanup task removed the files).
     # Without it the worker picks an observation, then the JOIN returns no photos —
     # the worker wastes an SQL query and makes no progress.
-    sql = text("""
+    sql = text(f"""
         WITH pending_obs AS (
             SELECT o.id, o.series_start_time
             FROM observations o
-            WHERE o.status = 'pending'
-              AND NOT EXISTS (
-                  SELECT 1 FROM ai_predictions ap
-                  WHERE ap.observation_id = o.id AND ap.model_id = :model_id
-              )
-              -- Selectivity: skip series that already have a BETTER/EQUAL
-              -- classification (a model with accuracy_rank >= the active one, e.g.
-              -- an imported local MDR). No point wasting the server.
-              AND NOT EXISTS (
-                  SELECT 1 FROM ai_predictions ap2
-                  JOIN ai_models m2 ON m2.id = ap2.model_id
-                  LEFT JOIN ai_model_levels l2 ON l2.id = m2.level_id
-                  WHERE ap2.observation_id = o.id
-                    AND COALESCE(l2.accuracy_rank, 0) >= (
-                        SELECT COALESCE(l.accuracy_rank, 0)
-                        FROM ai_models m
-                        LEFT JOIN ai_model_levels l ON l.id = m.level_id
-                        WHERE m.id = :model_id
-                    )
-              )
-              AND EXISTS (
-                  SELECT 1 FROM photos p
-                  WHERE p.observation_id = o.id
-                    AND p.status IN ('grouped', 'pending', 'completed')
-              )
+            {_PENDING_OBSERVATION_FILTER}
             ORDER BY o.series_start_time ASC
             LIMIT :limit_obs
         )
@@ -387,45 +392,29 @@ def finish_queue_request(
 # Fast lookup functions for early-exit in the CLI (without loading the model)
 # ─────────────────────────────────────────────────────────────────────
 
-def count_pending_observations(database_url: Optional[str] = None) -> int:
+def count_pending_observations(
+    database_url: Optional[str] = None, *, model_name: str, model_version: str
+) -> int:
     """Count observations that need classification by the active model.
     Lightweight: 1-2 SQL queries, without loading the AI adapter. Used
     in cli.py as an early-exit to avoid loading the model when there is no work.
 
-    The active model is identified via env AI_RUNNER_MODEL_NAME/VERSION.
+    Use the same model identity and eligibility rules as the worker.
     """
     engine = make_engine(database_url)
     session = make_session(engine)
     try:
-        name    = os.environ.get('AI_RUNNER_MODEL_NAME', 'DeepFaune')
-        version = os.environ.get('AI_RUNNER_MODEL_VERSION', '1.4.1')
-        active  = session.query(AIModel).filter_by(name=name, version=version).first()
+        active = (session.query(AIModel)
+                  .filter_by(name=model_name, version=model_version, is_active=True)
+                  .one_or_none())
 
-        if active is None:
-            # The model is not in the DB yet — count ALL pending observations
-            # (since there cannot be any prediction yet)
-            mid_clause = ""
-            params = {}
-        else:
-            mid_clause = """
-                AND NOT EXISTS (
-                    SELECT 1 FROM ai_predictions ap
-                    WHERE ap.observation_id = o.id AND ap.model_id = :mid
-                )
-            """
-            params = {'mid': active.id}
-
+        # A model registered by the worker starts without a level (rank 0).
         sql = text(f"""
             SELECT COUNT(*) FROM observations o
-            WHERE o.status = 'pending'
-              {mid_clause}
-              AND EXISTS (
-                  SELECT 1 FROM photos p
-                  WHERE p.observation_id = o.id
-                    AND p.status IN ('grouped', 'pending', 'completed')
-              )
+            {_PENDING_OBSERVATION_FILTER}
         """)
-        return int(session.execute(sql, params).scalar() or 0)
+        model_id = active.id if active is not None else None
+        return int(session.execute(sql, {'model_id': model_id}).scalar_one())
     finally:
         session.close()
 

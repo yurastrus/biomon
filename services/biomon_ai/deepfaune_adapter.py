@@ -36,6 +36,8 @@ logger = logging.getLogger(__name__)
 # Default path to DeepFaune on the server. Override via env DEEPFAUNE_PATH
 # or the constructor parameter (for tests).
 _DEFAULT_DEEPFAUNE_PATH = '/opt/biomon-ai/deepfaune'
+MODEL_NAME = 'DeepFaune'
+DEFAULT_MODEL_VERSION = '1.4.1'
 
 
 class DeepFauneAdapter(IClassifier):
@@ -55,7 +57,7 @@ class DeepFauneAdapter(IClassifier):
         self,
         deepfaune_path: Optional[str] = None,
         threshold: float = 0.8,
-        version: str = '1.4.1',
+        version: str = DEFAULT_MODEL_VERSION,
         device: Optional[str] = None,
     ):
         self._deepfaune_path = (
@@ -105,7 +107,7 @@ class DeepFauneAdapter(IClassifier):
 
     @property
     def name(self) -> str:
-        return 'DeepFaune'
+        return MODEL_NAME
 
     @property
     def version(self) -> str:

@@ -19,6 +19,9 @@ import unittest
 from contextlib import redirect_stderr
 from unittest.mock import MagicMock, patch
 
+import pytest
+from sqlalchemy import create_engine
+
 from services.biomon_ai.adapter import (
     IClassifier,
     PhotoPrediction,
@@ -661,6 +664,118 @@ class TestCLIParsing(unittest.TestCase):
         with self.assertRaises(SystemExit):
             with redirect_stderr(io.StringIO()):
                 parse_args(['--batch=10', '--adapter=invalid'])
+
+
+@pytest.fixture
+def ai_candidate_db(monkeypatch):
+    from services.biomon_ai import db
+
+    engine = create_engine('sqlite://')
+    monkeypatch.setattr(db, 'make_engine', lambda _url: engine)
+    with engine.begin() as conn:
+        for sql in (
+            'CREATE TABLE ai_models (id INTEGER, name TEXT, version TEXT, level_id INTEGER, '
+            'is_active BOOLEAN, config_json TEXT, created_at TEXT)',
+            'CREATE TABLE ai_model_levels (id INTEGER, accuracy_rank INTEGER)',
+            'CREATE TABLE ai_predictions (observation_id INTEGER, model_id INTEGER)',
+            'CREATE TABLE observations (id INTEGER, status TEXT, series_start_time INTEGER)',
+            'CREATE TABLE photos (id INTEGER, observation_id INTEGER, status TEXT, '
+            'system_filename TEXT, captured_at INTEGER)',
+            'INSERT INTO ai_model_levels VALUES (1, 10), (2, 30), (3, 40)',
+            "INSERT INTO ai_models VALUES (9, 'DeepFaune', '1.4.1', 3, 0, NULL, NULL), "
+            "(5, 'DeepFaune', '1.4.1', 2, 1, NULL, NULL), "
+            "(6, 'Other', 'lower', 1, 0, NULL, NULL), "
+            "(7, 'Other', 'equal', 2, 0, NULL, NULL), "
+            "(8, 'Other', 'higher', 3, 0, NULL, NULL)",
+            "INSERT INTO observations VALUES (1,'pending',2), (2,'pending',1), "
+            "(3,'pending',3), (4,'pending',4), (5,'pending',5), (6,'pending',6), "
+            "(7,'completed',7), (8,'pending',8)",
+            "INSERT INTO photos SELECT id, id, 'pending', 'photo.jpg', 1 "
+            "FROM observations WHERE id NOT IN (6, 8)",
+            "INSERT INTO photos VALUES (10,1,'grouped','earlier.jpg',0), "
+            "(11,1,'archived','archived.jpg',-1), (12,6,'archived','archived.jpg',1)",
+            'INSERT INTO ai_predictions VALUES (2,6), (3,5), (4,7), (5,8)',
+        ):
+            conn.exec_driver_sql(sql)
+    yield engine
+    engine.dispose()
+
+
+def test_preflight_matches_worker_candidate_selection(ai_candidate_db):
+    from services.biomon_ai import db
+
+    assert db.count_pending_observations(model_name='DeepFaune', model_version='1.4.1') == 2
+    with db.make_session(ai_candidate_db) as session:
+        assert db.pick_pending_observations(session, model_id=5, limit=10) == [
+            (2, [(2, 'photo.jpg')]),
+            (1, [(10, 'earlier.jpg'), (1, 'photo.jpg')]),
+        ]
+        assert len(db.pick_pending_observations(session, model_id=5, limit=1)) == 1
+
+
+def test_preflight_for_new_model_matches_rank_zero(ai_candidate_db):
+    from services.biomon_ai import db
+
+    assert db.count_pending_observations(model_name='DeepFaune', model_version='new') == 1
+    with ai_candidate_db.begin() as conn:
+        conn.exec_driver_sql("INSERT INTO ai_models VALUES "
+                             "(10, 'DeepFaune', 'new', NULL, 1, NULL, NULL)")
+    with db.make_session(ai_candidate_db) as session:
+        assert [item.observation_id for item in
+                db.pick_pending_observations(session, model_id=10, limit=10)] == [1]
+
+
+@pytest.mark.parametrize('from_queue', [False, True])
+@pytest.mark.parametrize('has_candidates', [False, True])
+def test_cli_checks_eligibility_before_loading_model(
+    ai_candidate_db, monkeypatch, from_queue, has_candidates,
+):
+    from services.biomon_ai import cli, db
+
+    if not has_candidates:
+        with ai_candidate_db.begin() as conn:
+            conn.exec_driver_sql('INSERT INTO ai_predictions VALUES (1,7), (2,8)')
+    monkeypatch.setenv('CT_DATABASE_URL', 'sqlite://')
+    monkeypatch.setenv('CAMERA_TRAP_UPLOAD_PATH', '/tmp/fake')
+    monkeypatch.setenv('AI_RUNNER_MODEL_VERSION', '1.4.1')
+    monkeypatch.setattr(db, 'is_ai_paused', lambda: False)
+    monkeypatch.setattr(db, 'has_pending_queue_request', lambda: True)
+    with patch.object(cli, 'build_adapter') as load, \
+         patch.object(cli, 'process_batch_tracked') as batch, \
+         patch.object(cli, 'run_from_queue') as queue, \
+         patch.object(db, 'drain_one_empty_queue_request') as drain:
+        args = ['--from-queue'] if from_queue else ['--batch=5']
+        assert cli.main([*args, '--adapter=deepfaune']) == 0
+        assert load.call_count == int(has_candidates)
+        assert batch.call_count == int(has_candidates and not from_queue)
+        assert queue.call_count == int(has_candidates and from_queue)
+        assert drain.call_count == int(not has_candidates and from_queue)
+
+
+@pytest.mark.parametrize('adapter, model_name, version', [
+    ('stub', 'Stub', '0.0.1'),
+    ('deepfaune', 'DeepFaune', 'test-version'),
+])
+def test_cli_uses_same_model_identity_before_and_after_loading(
+    monkeypatch, adapter, model_name, version,
+):
+    from services.biomon_ai import cli, db
+
+    monkeypatch.setenv('CT_DATABASE_URL', 'sqlite://')
+    monkeypatch.setenv('CAMERA_TRAP_UPLOAD_PATH', '/tmp/fake')
+    monkeypatch.setenv('AI_RUNNER_MODEL_VERSION', 'test-version')
+    monkeypatch.setattr(db, 'is_ai_paused', lambda: False)
+    with patch.object(db, 'count_pending_observations', return_value=1) as count, \
+         patch.object(cli, 'DeepFauneAdapter') as deepfaune, \
+         patch.object(cli, 'process_batch_tracked', return_value=1) as batch:
+        assert cli.main(['--batch=5', f'--adapter={adapter}']) == 0
+        count.assert_called_once_with(model_name=model_name, model_version=version)
+        if adapter == 'deepfaune':
+            deepfaune.assert_called_once_with(threshold=0.8, version=version)
+        else:
+            deepfaune.assert_not_called()
+            stub = batch.call_args.kwargs['adapter']
+            assert (stub.name, stub.version) == (model_name, version)
 
 
 class TestCLIMain(unittest.TestCase):

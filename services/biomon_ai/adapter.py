@@ -135,13 +135,16 @@ class StubAdapter(IClassifier):
         self._human_count = human_count
         self._bbox = bbox or {'x1': 100, 'y1': 100, 'x2': 500, 'y2': 400}
 
+    model_name = 'Stub'
+    model_version = '0.0.1'
+
     @property
     def name(self) -> str:
-        return 'Stub'
+        return self.model_name
 
     @property
     def version(self) -> str:
-        return '0.0.1'
+        return self.model_version
 
     @property
     def config(self) -> dict:

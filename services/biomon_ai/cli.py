@@ -20,8 +20,7 @@ CONFIGURATION (from env or .env next to cli.py):
     CAMERA_TRAP_UPLOAD_PATH      — required, where the photos are stored
     AI_RUNNER_THRESHOLD          — confidence threshold (default 0.8)
     AI_RUNNER_MAX_PER_RUN        — fallback for --batch if not specified
-    AI_RUNNER_MODEL_NAME         — model name (default 'DeepFaune')
-    AI_RUNNER_MODEL_VERSION      — model version (default '1.4.1')
+    AI_RUNNER_MODEL_VERSION      — DeepFaune version (default '1.4.1')
 
 EXIT CODES:
     0  — success (including "no work")
@@ -44,10 +43,19 @@ except ImportError:
     pass  # dotenv not installed — this is fine in production with systemd
 
 from .adapter import IClassifier, StubAdapter
+from .deepfaune_adapter import (
+    DEFAULT_MODEL_VERSION,
+    MODEL_NAME as DEEPFAUNE_MODEL_NAME,
+    DeepFauneAdapter,
+)
 from .worker import process_batch_tracked, run_from_queue
 
 
 logger = logging.getLogger('biomon_ai')
+
+
+def _deepfaune_model_version() -> str:
+    return os.environ.get('AI_RUNNER_MODEL_VERSION', DEFAULT_MODEL_VERSION)
 
 
 def build_adapter(name: str, threshold: float) -> IClassifier:
@@ -55,16 +63,7 @@ def build_adapter(name: str, threshold: float) -> IClassifier:
     if name == 'stub':
         return StubAdapter()
     elif name == 'deepfaune':
-        # Import inside — so stub mode works on a dev machine without torch
-        try:
-            from .deepfaune_adapter import DeepFauneAdapter  # noqa: implemented in Step 8
-        except ImportError as e:
-            raise RuntimeError(
-                f"DeepFauneAdapter unavailable: {e}. "
-                "Check that torch+ultralytics are installed and DeepFaune is cloned "
-                "(see services/biomon_ai/DEPLOY.md)."
-            ) from e
-        return DeepFauneAdapter(threshold=threshold)
+        return DeepFauneAdapter(threshold=threshold, version=_deepfaune_model_version())
     else:
         raise ValueError(f"Unknown adapter: {name}")
 
@@ -168,7 +167,14 @@ def main(argv=None) -> int:
         if not has_pending_queue_request():
             logger.info('Queue is empty — nothing to do, skipping model load.')
             return 0
-        pending = count_pending_observations()
+
+    if args.adapter == 'stub':
+        model_name, model_version = StubAdapter.model_name, StubAdapter.model_version
+    else:
+        model_name, model_version = DEEPFAUNE_MODEL_NAME, _deepfaune_model_version()
+    pending = count_pending_observations(model_name=model_name, model_version=model_version)
+
+    if args.from_queue:
         if pending == 0:
             drained = drain_one_empty_queue_request()
             logger.info(
@@ -179,7 +185,6 @@ def main(argv=None) -> int:
         logger.info(f'Queue has entry, {pending} pending observations. Loading model...')
     else:
         # --batch=N mode
-        pending = count_pending_observations()
         if pending == 0:
             logger.info('No pending observations to classify. Skipping model load.')
             return 0
