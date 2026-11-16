@@ -83,7 +83,7 @@ class TestDeepFauneAdapter(unittest.TestCase):
         self.assertEqual(self.adapter.version, '1.4.1')
         cfg = self.adapter.config
         self.assertEqual(cfg['threshold'], 0.8)
-        self.assertFalse(cfg['birdclassification'])
+        self.assertTrue(cfg['birdclassification'])
         self.assertIn('classifier', cfg)
 
     # ── Canonical predictions ─────────────────────────────────────────
