@@ -16,11 +16,13 @@ Run:
 """
 import json
 from datetime import datetime
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from app.pam import pam_segment_sampling as pss
+from app.models import Institution
 
 
 # ── build_sampling_query: the filters are shape switches ─────────────────────
@@ -382,6 +384,26 @@ def test_the_english_page_shows_translated_month_and_year_labels(auth_client):
                   'Year from', 'Year to', 'April', 'November'):
         assert label in html, label
     assert 'Wind' not in html and 'Precip.' not in html
+
+
+def test_sample_page_lists_only_institutions_with_detections(auth_client, db_session):
+    client = auth_client(role='admin')
+    active = Institution(name_uk='Установа з детекціями', name_en='Institution with detections', code='DET')
+    empty = Institution(name_uk='Установа без детекцій', name_en='Institution without detections', code='EMPTY')
+    db_session.add_all([active, empty])
+    db_session.flush()
+    conn = MagicMock()
+    conn.execute.return_value.fetchall.return_value = [
+        SimpleNamespace(location_id=7, location_name='Точка', location_name_en='Site', institution_id=active.id),
+    ]
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn), \
+         patch('app.pam.routes.get_earliest_recording_year', return_value=2019):
+        response = client.get('/en/pam/verification/sample-upload')
+
+    assert response.status_code == 200
+    options = response.get_data(as_text=True).split('id="su-institution"', 1)[1].split('</select>', 1)[0]
+    assert 'Institution with detections' in options
+    assert 'Institution without detections' not in options
 
 
 # ── exact period from the species dashboard (pam_detailed) ───────────────────
