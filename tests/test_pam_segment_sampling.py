@@ -277,9 +277,16 @@ def test_manager_sample_page_lists_only_managed_institutions(auth_client, db_ses
     db_session.add(Institution(name_uk='Outside PAM scope', code='outside'))
     db_session.commit()
     conn = MagicMock()
-    conn.execute.return_value = _mapping_result([])
+    conn.execute.side_effect = [
+        _mapping_result([SimpleNamespace(
+            location_id=10, location_name='Managed location',
+            location_name_en=None, institution_id=managed.id,
+        )]),
+        MagicMock(**{'scalar.return_value': datetime(2020, 1, 1)}),
+    ]
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn), \
-         patch('app.pam.routes.get_earliest_recording_year', return_value=2020):
+         patch('app.pam.routes.get_models_list', return_value=[]), \
+         patch('app.pam.routes.get_reference_model_id', return_value=None):
         resp = cl.get('/uk/pam/verification/sample-upload')
     assert resp.status_code == 200
     assert managed.name_uk in resp.get_data(as_text=True)
