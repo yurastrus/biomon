@@ -14,8 +14,10 @@ Covers:
 Run:
     venv/Scripts/python -m pytest tests/test_ct_upload_stats.py -v
 """
+import json
 import uuid
 from collections import namedtuple
+from copy import deepcopy
 from datetime import date, datetime, timedelta
 from unittest.mock import MagicMock
 
@@ -236,6 +238,51 @@ def test_daily_window_excludes_older_than_range(ct_session, make_ct_location):
     assert sum(d['count'] for d in daily) == 0
 
 
+def test_daily_breakdown_by_uploader(ct_session, seeded_uploads):
+    from app.camera_traps.routes import query_upload_daily
+
+    today, _ = seeded_uploads
+    daily = query_upload_daily(ct_session, today, 30, text("1=1"), {})
+    assert daily[-1] == {
+        'day': today.isoformat(), 'count': 6,
+        'breakdown': [{'group_id': 2, 'count': 4}, {'group_id': 1, 'count': 2}],
+    }
+    assert daily[-2]['breakdown'] == []
+
+
+def test_institution_stats_include_shared_locations(ct_session, seeded_uploads, make_ct_location):
+    from app.camera_traps.models import location_institutions
+    from app.camera_traps.routes import query_upload_daily, query_upload_stats
+
+    today, shared = seeded_uploads
+    ct_session.execute(location_institutions.insert(), [
+        {'location_id': shared.id, 'institution_id': 10},
+        {'location_id': shared.id, 'institution_id': 20},
+    ])
+    unassigned = make_ct_location(name='Unassigned')
+    _add_upload(ct_session, unassigned, 1, datetime.combine(today, datetime.min.time()),
+                use_batch=False)
+
+    rows = query_upload_stats(ct_session, today, text("1=1"), {}, by_institution=True)
+    assert {r.institution_id: (r.d_today, r.d_week, r.d_month, r.d_year, r.total)
+            for r in rows} == {10: (6, 9, 10, 11, 12), 20: (6, 9, 10, 11, 12),
+                               None: (1, 1, 1, 1, 1)}
+    daily = query_upload_daily(ct_session, today, 30, text("1=1"), {}, by_institution=True)
+    assert daily[-1]['count'] == 7
+    assert {r['group_id']: r['count'] for r in daily[-1]['breakdown']} == {
+        10: 6, 20: 6, None: 1,
+    }
+
+    scope = text("locations.id = :location_id")
+    params = {'location_id': shared.id}
+    grouping = {'by_institution': True, 'restrict_inst_ids': [10]}
+    rows = query_upload_stats(ct_session, today, scope, params, **grouping)
+    assert [(r.institution_id, r.total) for r in rows] == [(10, 12)]
+    daily = query_upload_daily(ct_session, today, 30, scope, params, **grouping)
+    assert daily[-1]['count'] == 6
+    assert daily[-1]['breakdown'] == [{'group_id': 10, 'count': 6}]
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # 3. /upload-stats route — access, range switcher, rendering
 # ──────────────────────────────────────────────────────────────────────────
@@ -252,7 +299,7 @@ def _patch_ct(monkeypatch, rows, daily=None):
     monkeypatch.setattr('app.camera_traps.routes.query_upload_stats',
                         lambda *a, **k: rows)
     monkeypatch.setattr('app.camera_traps.routes.query_upload_daily',
-                        lambda *a, **k: (daily if daily is not None else []))
+                        lambda *a, **k: deepcopy(daily) if daily is not None else [])
 
 
 def test_anonymous_redirected_to_login(client, monkeypatch):
@@ -274,13 +321,16 @@ def test_admin_sees_page_and_full_name(auth_client, make_user, monkeypatch):
     from app.extensions import db
     db.session.commit()
 
-    _patch_ct(monkeypatch, [Row(u.id, 2, 5, 6, 7, 8)])
+    _patch_ct(monkeypatch, [Row(u.id, 2, 5, 6, 7, 8)], [
+        {'day': '2025-06-15', 'count': 2, 'breakdown': [{'group_id': u.id, 'count': 2}]},
+    ])
     cl = auth_client(role='admin')
     resp = cl.get(URL)
     assert resp.status_code == 200
     body = resp.data.decode('utf-8')
     assert 'Іван Петренко' in body
     assert 'id="uploads-table"' in body
+    assert json.dumps([{'count': 2, 'name': 'Іван Петренко'}]) in body
 
 
 def test_range_switcher_default_and_validation(auth_client, monkeypatch):
@@ -336,3 +386,27 @@ def test_scope_select_rendered(auth_client, monkeypatch):
     assert 'value="global:"' in body
     # No species filter on this page.
     assert 'name="species_id"' not in body
+
+
+def test_institution_mode_renders_table_and_chart_names(auth_client, monkeypatch):
+    from types import SimpleNamespace
+
+    institution = SimpleNamespace(id=10, name_uk='Test CT project', name_en='Project',
+                                  ecoregion_uk=None)
+    monkeypatch.setattr('app.camera_traps.routes.get_accessible_institutions',
+                        lambda is_admin: [institution])
+    row = SimpleNamespace(institution_id=10, d_today=3, d_week=3, d_month=3, d_year=3, total=3)
+    _patch_ct(monkeypatch, [row], [
+        {'day': '2025-06-15', 'count': 3, 'breakdown': [{'group_id': 10, 'count': 3}]},
+    ])
+    cl = auth_client(role='admin')
+    body = cl.get(URL + '?group=institution&scope=institution:10&days=90').get_data(as_text=True)
+    assert '<td>Test CT project</td>' in body
+    assert '"breakdown": [{"count": 3, "name": "Test CT project"}]' in body
+    assert 'name="group" value="institution"' in body
+    assert 'scope=institution:10&amp;days=365&amp;group=institution' in body
+    en_url = URL.replace('/uk/', '/en/', 1)
+    body = cl.get(en_url + '?group=institution').get_data(as_text=True)
+    assert 'By institution / project' in body
+    assert '<td>Project</td>' in body
+    assert '"breakdown": [{"count": 3, "name": "Project"}]' in body
