@@ -238,29 +238,67 @@ def test_list_headers_sort_and_restricted_rows_are_flagged(auth_client, pam_engi
     assert 'data-sort="03"' in page
 
 
-def test_pam_ranking_carries_red_book_status(app):
-    """pam_overview's ranking API returns the code, a label and a severity rank."""
+def test_pam_ranking_carries_red_book_and_filtered_verification(app, pam_engine):
+    """The ranking counts each matching detection once, including legacy verdicts."""
     from unittest.mock import MagicMock
     from app.pam import utils as pam_utils
 
-    conn = MagicMock()
-    conn.execute.return_value.mappings.return_value.fetchall.return_value = [
-        {'scientific_name': 'Crex crex', 'common_name_en': 'Corncrake',
-         'common_name_uk': 'Деркач', 'redbook2021': None, 'detection_count': 9},
-        {'scientific_name': 'Bubo bubo', 'common_name_en': 'Eagle-owl',
-         'common_name_uk': 'Пугач', 'redbook2021': 'rare', 'detection_count': 3},
-    ]
+    with pam_engine.begin() as conn:
+        for sql in (
+            "UPDATE species SET redbook2021 = 'rare' WHERE species_id = 1",
+            "INSERT INTO species (species_id, scientific_name) VALUES (2, 'Crex crex')",
+            "CREATE TABLE locations (location_id INTEGER PRIMARY KEY)",
+            "CREATE TABLE recordings (recording_id INTEGER PRIMARY KEY, location_id INTEGER, datetime_start TEXT)",
+            "CREATE TABLE detections (detection_id INTEGER PRIMARY KEY, species_id INTEGER, recording_id INTEGER, confidence REAL)",
+            "CREATE TABLE segments (id INTEGER PRIMARY KEY, verification_count INTEGER, positive_verifications INTEGER)",
+            "CREATE TABLE detection_verification_map (detection_id INTEGER PRIMARY KEY, segment_id INTEGER, verification_result INTEGER)",
+            "INSERT INTO locations VALUES (1)",
+            "INSERT INTO recordings VALUES (1, 1, '2026-10-15'), (2, 1, '2026-09-30')",
+            "INSERT INTO detections VALUES (1, 1, 1, 0.9), (2, 1, 1, 0.9), (3, 1, 1, 0.9), "
+            "(4, 1, 1, 0.9), (5, 1, 1, 0.9), (6, 1, 1, 0.9), (7, 1, 1, 0.5), "
+            "(8, 1, 2, 0.9), (9, 2, 1, 0.9)",
+            "INSERT INTO segments VALUES (1, 1, 1), (2, 1, 1), (3, 3, 1), (4, 1, 0), "
+            "(5, 2, 1), (7, 2, 2), (8, 2, 2), (9, 0, 0)",
+            "INSERT INTO detection_verification_map VALUES (1, 1, 1), (2, 2, NULL), "
+            "(3, 3, NULL), (4, 4, NULL), (5, 5, NULL), (7, 7, 1), (8, 8, 1), (9, 9, NULL)",
+        ):
+            conn.execute(text(sql))
+
     admin = MagicMock(is_authenticated=True)
     admin.has_role.return_value = True
     admin.roles = [MagicMock()]
     admin.roles[0].name = 'admin'
     with app.test_request_context('/uk/api/pam/get-species-ranking'), \
-         patch.object(pam_utils, 'get_pam_db_connection', return_value=conn), \
+         patch.object(pam_utils, 'get_pam_db_connection', side_effect=pam_engine.connect), \
          patch.object(pam_utils, 'current_user', admin), \
          patch.object(pam_utils.pam_access, 'allowed_institution_ids', return_value=None):
-        ranking = pam_utils.get_species_ranking('uk')
-    assert ranking[0]['redbook2021'] is None and ranking[0]['redbook_rank'] is None
-    assert ranking[1]['redbook2021'] == 'rare'
-    assert ranking[1]['redbook_label'] == 'рідкісний'
-    assert ranking[1]['redbook_rank'] == 4
-    assert 's.redbook2021' in str(conn.execute.call_args[0][0])
+        owl, corncrake = pam_utils.get_species_ranking(
+            'uk', start_date='2026-10-01', end_date='2026-10-31', confidence=0.8
+        )
+    assert owl['redbook2021'] == 'rare'
+    assert owl['redbook_label'] == 'рідкісний'
+    assert owl['redbook_rank'] == 4
+    assert owl['detection_count'] == 6
+    assert owl['verification_status'] == 'consensus_confirmed'
+    assert owl['verification_counts'] == {
+        'consensus_confirmed': 1, 'single_confirmed': 1, 'consensus_rejected': 1,
+        'single_rejected': 1, 'mixed': 1,
+    }
+    assert corncrake['redbook2021'] is None and corncrake['redbook_rank'] is None
+    assert corncrake['verification_status'] is None
+
+
+@pytest.mark.parametrize(('counts', 'expected'), [
+    ({'consensus_confirmed': 1, 'consensus_rejected': 100}, 'consensus_confirmed'),
+    ({'single_confirmed': 1, 'consensus_rejected': 100}, 'mixed'),
+    ({'single_confirmed': 1, 'single_rejected': 1}, 'mixed'),
+    ({'single_confirmed': 2}, 'single_confirmed'),
+    ({'single_rejected': 2}, 'single_rejected'),
+    ({'single_rejected': 2, 'consensus_rejected': 1}, 'consensus_rejected'),
+    ({'mixed': 1}, 'mixed'),
+    ({}, None),
+])
+def test_pam_ranking_verification_priority(counts, expected):
+    from app.pam.utils import _RANKING_VERIFICATION_COUNTS, _ranking_verification_status
+
+    assert _ranking_verification_status(dict.fromkeys(_RANKING_VERIFICATION_COUNTS, 0) | counts) == expected
