@@ -75,6 +75,9 @@ def test_segment_window_cuts_local_files_in_browser(auth_client, mock_pam_conn, 
             throw Error('Page content is not centered');
         }
         if (page.width > document.documentElement.clientWidth) throw Error('Page exceeds viewport');
+        const controls = document.querySelector('.sw-run-row').getBoundingClientRect();
+        const progress = document.querySelector('.sw-run-row + .su-prog-wrap').getBoundingClientRect();
+        if (progress.top - controls.bottom < 12) throw Error('Progress bar touches cutting controls');
         const fileName = 'TEST_20250508_035000.wav';
         const audio = PamSegmentCutter.encodeWav([new Float32Array(24000)], 24000);
         if (INDEXED) {
