@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-29 13:18+0200\n"
+"POT-Creation-Date: 2026-11-18 12:54+0200\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -199,7 +199,7 @@ msgstr ""
 msgid "Цей акаунт деактивовано. Зверніться до адміністратора."
 msgstr "This account is deactivated. Please contact an administrator."
 
-#: app/routes/main.py:133 app/routes/main.py:151 app/templates/base.html:103
+#: app/routes/main.py:133 app/routes/main.py:151 app/templates/base.html:100
 #: app/templates/login.html:2 app/templates/register.html:161
 msgid "Увійти"
 msgstr "Log in"
@@ -332,37 +332,37 @@ msgstr "CAMERA TRAPS"
 msgid "ПРО ПРОЕКТ"
 msgstr "ABOUT"
 
-#: app/templates/base.html:86
-msgid "SDM"
-msgstr "SDM"
+#: app/templates/base.html:85
+msgid "Карти"
+msgstr "Maps"
 
-#: app/templates/base.html:89
+#: app/templates/base.html:86
 msgid "ДОКУМЕНТАЦІЯ"
 msgstr "DOCS"
 
-#: app/templates/base.html:90
+#: app/templates/base.html:87
 msgid "КОНТАКТИ"
 msgstr "CONTACTS"
 
-#: app/templates/base.html:92
+#: app/templates/base.html:89
 msgid "АДМІН"
 msgstr "ADMIN"
 
-#: app/templates/base.html:99 app/templates/profile.html:2
+#: app/templates/base.html:96 app/templates/profile.html:2
 #: app/templates/profile.html:78
 msgid "Мій профіль"
 msgstr "My profile"
 
-#: app/templates/base.html:100
+#: app/templates/base.html:97
 msgid "Вийти"
 msgstr "Log out"
 
-#: app/templates/base.html:102 app/templates/register.html:2
+#: app/templates/base.html:99 app/templates/register.html:2
 #: app/templates/register.html:42
 msgid "Реєстрація"
 msgstr "Sign up"
 
-#: app/templates/base.html:142
+#: app/templates/base.html:139
 msgid "Проект БіоМон, ©"
 msgstr "BioMon Project, ©"
 
@@ -2469,3 +2469,5 @@ msgstr ""
 #~ msgid "Перегляд прав ПАМ"
 #~ msgstr "PAM rights review"
 
+#~ msgid "SDM"
+#~ msgstr "SDM"
