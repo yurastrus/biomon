@@ -30,6 +30,8 @@ def test_public_header_links_to_atlas_only_hub(client):
     atlas_body = atlas.get_data(as_text=True)
     assert 'href="/uk/sdm/" class="ct-back-link"' in atlas_body
     assert 'id="atlas-year-from" type="number" value="2020"' in atlas_body
+    assert '<option value="radius" selected>' in atlas_body
+    assert 'id="atlas-gbif-country" type="text" value="Україна"' in atlas_body
     assert 'value="1000"' not in atlas_body
     assert 'value="2500"' not in atlas_body
     for scale in (5000, 10000, 25000):
@@ -58,7 +60,7 @@ def test_signed_in_viewer_can_use_fine_atlas_grids(auth_client):
           patch.object(atlas, "_camera_trap_data", return_value=SimpleNamespace(detections={})),
           patch.object(atlas_gbif, "gbif_cells", return_value={"status": "ok", "cells": {}})):
         assert client.get("/uk/sdm/api/atlas/grid/9?scale=1000").status_code == 200
-        assert client.get("/uk/sdm/api/atlas/gbif/9?scale=2500").status_code == 200
+        assert client.get("/uk/sdm/api/atlas/gbif/9?scale=2500&mode=country").status_code == 200
 
 
 @pytest.mark.parametrize("path", [
@@ -153,7 +155,7 @@ def test_guest_atlas_apis_use_public_monitoring_scope(client):
             assert "l.visibility_level = 0" in sql
             assert "s.required_role IS NULL" in sql
 
-            response = client.get("/uk/sdm/api/atlas/gbif/9")
+            response = client.get("/uk/sdm/api/atlas/gbif/9?mode=country")
             assert response.status_code == 200 and response.json["status"] == "ok"
             assert response.cache_control.no_store
             assert gbif.call_args.args[1].first_year == 2020
@@ -320,7 +322,7 @@ def test_atlas_species_from_one_catalogue_only_loads_that_source(
         grid = client.get(f"/en/sdm/api/atlas/grid/{atlas_id}?from=2025&to=2025&month=10")
         assert read_ct.call_count == (source == "ct")
         assert read_pam.call_count == (source == "pam")
-        assert client.get(f"/en/sdm/api/atlas/gbif/{atlas_id}").json["status"] == "ok"
+        assert client.get(f"/en/sdm/api/atlas/gbif/{atlas_id}?mode=country").json["status"] == "ok"
         assert gbif.call_args.args[0] == species
         assert client.get("/en/sdm/api/atlas/grid/pam-999").status_code == 404
     assert grid.status_code == 200
@@ -352,7 +354,7 @@ def test_gbif_layer_filters_by_month_precision_and_dataset(monkeypatch):
 
     monkeypatch.setattr(atlas_gbif, "_get", get)
     filters = AtlasFilters(2500, 2025, 2025, (10,))
-    result = atlas_gbif._load("Turdus merula", "Aves", filters, frozenset({"own"}), -1)
+    result = atlas_gbif._load("Turdus merula", "Aves", filters, frozenset({"own"}), -1, country="UA")
     assert result["status"] == "ok" and sum(result["cells"].values()) == 1
     assert calls[0][1]["class"] == "Aves"
     assert calls[1][1]["country"] == "UA"
@@ -371,6 +373,77 @@ def test_gbif_large_query_is_not_rendered_as_partial_data(monkeypatch):
 
     monkeypatch.setattr(atlas_gbif, "_get", get)
     result = atlas_gbif._load("Turdus merula", "Aves", AtlasFilters(1000, 2025, 2025, ()),
-                             frozenset(), -1)
+                             frozenset(), -1, country="UA")
     assert result["status"] == "too_many"
     assert not result["cells"]
+
+
+def test_gbif_country_mode_resolves_localized_name_without_loading_sites(client):
+    from app.sdm import atlas, atlas_gbif, atlas_gbif_scope
+
+    with (patch.object(atlas, "_get_species", return_value={"id": 9}),
+          patch.object(atlas_gbif_scope, "monitoring_points") as sites,
+          patch.object(atlas_gbif, "gbif_cells", return_value={"status": "ok", "cells": {}}) as gbif):
+        response = client.get("/uk/sdm/api/atlas/gbif/9", query_string={"mode": "country", "country": " польща "})
+        assert response.json["status"] == "ok"
+        assert response.json["country"] == "PL"
+        assert gbif.call_args.kwargs == {"points": (), "country": "PL"}
+        assert client.get("/uk/sdm/api/atlas/gbif/9?mode=country&country=bad").json["status"] == "invalid_country"
+        sites.assert_not_called()
+        gbif.assert_called_once()
+
+
+def test_gbif_radius_defaults_to_public_ct_and_pam_locations(client):
+    from app.camera_traps import database
+    from app.pam import utils as pam
+    from app.sdm import atlas, atlas_gbif
+
+    ct_engine = MagicMock()
+    ct_query = ct_engine.connect.return_value.__enter__.return_value.execute
+    ct_query.return_value.all.return_value = [(23.5, 49.9), (None, None)]
+    pam_conn = MagicMock()
+    pam_conn.execute.return_value.all.return_value = [(22.9, 49.5)]
+    with (patch.object(atlas, "_get_species", return_value={"id": 9}),
+          patch.object(database, "get_ct_engine", return_value=ct_engine),
+          patch.object(pam, "get_pam_db_connection", return_value=pam_conn),
+          patch.object(atlas_gbif, "gbif_cells", return_value={"status": "ok", "cells": {}}) as gbif):
+        result = client.get("/uk/sdm/api/atlas/gbif/9")
+    assert result.status_code == 200 and result.cache_control.no_store
+    assert result.json["country"] is None
+    assert "l.visibility_level = 0" in str(ct_query.call_args.args[0])
+    assert "l.visibility_level = 0" in str(pam_conn.execute.call_args.args[0])
+    assert gbif.call_args.kwargs == {"country": None, "points": ((22.9, 49.5), (23.5, 49.9))}
+
+
+def test_gbif_radius_filters_exact_geodesic_distance_and_sends_only_coarse_region(monkeypatch):
+    from pyproj import Geod
+    from shapely import from_wkt
+    from shapely.geometry import Point
+    from app.sdm import atlas_gbif
+    from app.sdm.atlas import AtlasFilters
+
+    geod = Geod(ellps="WGS84")
+    center = (23.54321, 49.91234)
+    near = geod.fwd(*center, 70, 49999)[:2]
+    far = geod.fwd(*center, 70, 50001)[:2]
+    calls = []
+
+    def get(_session, path, params, _deadline):
+        if path == "species/match":
+            return {"matchType": "EXACT", "speciesKey": 42}
+        calls.append(params)
+        records = [{"key": key, "speciesKey": 42, "year": 2025, "month": 10,
+                    "occurrenceStatus": "DETECTED", "decimalLongitude": point[0],
+                    "decimalLatitude": point[1]} for key, point in enumerate([near, far])]
+        return {"count": len(records), "results": records, "endOfRecords": True}
+
+    monkeypatch.setattr(atlas_gbif, "_get", get)
+    args = ("Turdus merula", "Aves", AtlasFilters(5000, 2025, 2025, (10,)), frozenset(), -1)
+    result = atlas_gbif._load(*args, country=None, points=(center,))
+    assert result["status"] == "ok" and sum(result["cells"].values()) == 1
+    params, = calls
+    assert "country" not in params
+    assert str(center[0]) not in params["geometry"]
+    assert from_wkt(params["geometry"]).covers(Point(*near))
+    assert atlas_gbif._load(*args, country=None) == {"status": "no_sites", "cells": {}}
+    assert len(calls) == 1
