@@ -1032,6 +1032,64 @@ def test_next_segment_rejects_an_unparsable_window(auth_client, mock_pam_conn):
 
 
 @pytest.mark.parametrize('endpoint, status, query_count', [
+    ('next-segment', 404, 1), ('stats', 200, 3), ('filter-options', 200, 2),
+])
+def test_atlas_scope_reaches_all_verification_queries(auth_client, mock_pam_conn, endpoint, status, query_count):
+    with mock_pam_conn() as conn:
+        response = auth_client(role='pam_verifier').get(
+            f'/uk/api/verification/{endpoint}?species_id=103&scope_species_id=103'
+            '&location_ids=10,20&recording_from=2021-01-01&recording_to=2025-12-31'
+            '&recording_months=4,6&scope_conf=0.85')
+    assert response.status_code == status
+    assert conn.execute.call_count == query_count
+    for call in conn.execute.call_args_list:
+        query, params = call.args
+        sql = str(query)
+        assert 'r_det.location_id = ANY(:det_location_ids)' in sql
+        assert "r_det.datetime_start AT TIME ZONE 'Europe/Kyiv'" in sql
+        assert 'd_det.species_id = :scope_species_id' in sql
+        assert 's.required_role IS NULL' in sql
+        assert 'l_pub.visibility_level = 0' in sql
+        assert params['recording_months'] == [4, 6]
+        assert params['scope_conf'] == 0.85
+
+
+def test_atlas_scope_missing_locations_cannot_broaden_queue(auth_client, mock_pam_conn):
+    with mock_pam_conn() as conn:
+        response = auth_client(role='pam_verifier').get(
+            '/uk/api/verification/next-segment?scope_species_id=103'
+            '&recording_from=2021-01-01&recording_to=2025-12-31')
+    assert response.status_code == 400
+    conn.execute.assert_not_called()
+
+
+def test_targeted_cutter_uses_local_recording_dates_and_disjoint_months():
+    from unittest.mock import MagicMock
+
+    from app.pam.pam_segment_sampling import plan_window_segments
+    from app.pam.recording_scope import RecordingScope
+
+    scope = RecordingScope.from_params({
+        'recording_from': '2021-01-01', 'recording_to': '2025-12-31', 'recording_months': '6,4,6',
+    })
+    conn = MagicMock()
+    conn.execute.return_value.mappings.return_value.fetchall.return_value = []
+    assert plan_window_segments('Glaucidium passerinum', [10, 20], None, None,
+                                confidence_threshold=0.85, conn=conn, model_id=1,
+                                recording_scope=scope) == []
+    query, params = conn.execute.call_args.args
+    sql = str(query)
+    assert "r.datetime_start AT TIME ZONE 'Europe/Kyiv'" in sql
+    assert 'BETWEEN :recording_from AND :recording_to' in sql
+    assert 'ANY(:recording_months)' in sql
+    assert 'ROUND((d.confidence)::numeric, 4) >= :conf_thr' in sql
+    assert ':from_ts' not in sql
+    assert params['recording_months'] == [4, 6]
+    assert params['location_ids'] == [10, 20]
+    assert params['conf_thr'] == 0.85
+
+
+@pytest.mark.parametrize('endpoint, status, query_count', [
     ('next-segment', 404, 1),
     ('stats', 200, 3),
     ('filter-options', 200, 3),

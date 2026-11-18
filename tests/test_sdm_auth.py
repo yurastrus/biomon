@@ -2,6 +2,7 @@
 from datetime import date
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -124,6 +125,68 @@ def test_guest_atlas_apis_use_public_monitoring_scope(client):
             assert response.cache_control.no_store
     finally:
         ct._gap_cache.clear()
+
+
+@pytest.mark.parametrize(("role", "manages", "expected"), [
+    ("viewer", False, set()),
+    ("pam_verifier", False, {"verify"}),
+    ("manager", False, {"verify"}),
+    ("manager", True, {"verify", "cut"}),
+    ("admin", False, {"verify", "cut"}),
+])
+def test_atlas_cell_actions_keep_role_and_workflow_location_scope(auth_client, role, manages, expected):
+    from app.sdm import atlas, atlas_pam
+
+    client = auth_client(role=role, manages=manages)
+    species = {"id": "pam-103", "pam_id": 103, "scientific": "Glaucidium passerinum"}
+    with (patch.object(atlas, "_catalogue", return_value=[species]),
+          patch.object(atlas_pam, "action_locations", return_value=([10, 20], [20])) as locations):
+        response = client.get(
+            "/uk/sdm/api/atlas/pam-actions/pam-103?scale=2500&cell=2500mE4312500N3210000"
+            "&from=2021&to=2025&month=4&month=6&pam_verified_only=0&pam_confidence=0.85"
+        )
+    if not expected:
+        assert response.status_code == 403
+        locations.assert_not_called()
+        return
+    assert response.status_code == 200
+    assert response.cache_control.no_store
+    assert locations.call_args.args[1:] == ("2500mE4312500N3210000", 2500)
+    assert set(response.json) == expected
+    for action, url in response.json.items():
+        parts = urlsplit(url)
+        outcome = parse_qs(parts.query)
+        assert outcome["recording_from"] == ["2021-01-01"]
+        assert outcome["recording_to"] == ["2025-12-31"]
+        assert outcome["recording_months"] == ["4,6"]
+        assert outcome["species_id"] == ["103"]
+        if action == "verify":
+            assert parts.path.endswith("/verification/verify")
+            assert outcome["location_ids"] == ["10,20"]
+            assert outcome["scope_conf"] == ["0.85"]
+        else:
+            assert parts.path.endswith("/verification/segment-window")
+            assert outcome["location_ids"] == ["20"]
+            assert outcome["conf"] == ["0.85"]
+
+
+def test_atlas_action_locations_use_exact_cell_and_managed_institutions(monkeypatch):
+    from app.pam import utils
+    from app.sdm import atlas_pam
+
+    user = SimpleNamespace(is_authenticated=True, has_role=lambda role: role == "manager",
+                           allowed_institution_ids=lambda module: [1, 2],
+                           manage_institution_ids=lambda module: [2])
+    conn = MagicMock()
+    conn.execute.return_value.all.return_value = [(10, 1, 1, False), (20, 1, 2, True), (30, 1, 3, True)]
+    monkeypatch.setattr(utils, "get_pam_db_connection", lambda: conn)
+    projected = {1: (4312499, 3210000), 2: (4312500, 3210000), 3: (4314999, 3212499)}
+    monkeypatch.setattr(atlas_pam, "to_laea", lambda lon, lat: projected[lon])
+    assert atlas_pam.action_locations(user, "2500mE4312500N3210000", 2500) == ([20, 30], [20, 30])
+    sql, params = conn.execute.call_args.args
+    assert "visibility_level = 0" in str(sql)
+    assert params["user_inst_ids"] == [1, 2]
+    assert params["managed"] == [2]
 
 
 def test_atlas_merges_monitoring_on_selected_grid_and_filters_dates(auth_client):
