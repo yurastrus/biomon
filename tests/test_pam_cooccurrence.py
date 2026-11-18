@@ -1312,7 +1312,7 @@ def test_plan_window_numbers_parts_per_recording():
     from app.pam import pam_segment_sampling as pss
 
     base = {
-        'recording_id': 7, 'species_id': 42,
+        'recording_id': 7, 'species_id': 42, 'location_id': 121,
         'rec_filename': 'CHORNIOZERA_20250508_035000.wav',
         'datetime_start': dt.datetime(2025, 5, 8, 3, 50, tzinfo=dt.timezone.utc),
         'location_name': 'Чорні озера', 'end_s': None,
@@ -1325,6 +1325,7 @@ def test_plan_window_numbers_parts_per_recording():
         dt.datetime(2025, 5, 8, 3, 51, tzinfo=dt.timezone.utc),
         conn=_PlanConn(rows), model_id=1)
     names = [p['segment_filename'] for p in plan]
+    assert all(p['location_id'] == 121 for p in plan)
     assert len(set(names)) == 2
     assert any('part1' in n for n in names) and any('part2' in n for n in names)
 
@@ -1375,6 +1376,11 @@ def test_segment_window_page_uses_the_shared_cutter(auth_client, mock_pam_conn):
     assert 'js/segment_cutter.js' in body
     assert 'PamSegmentCutter.run' in body
     assert 'PamSegmentCutter.indexFolder' in body
+    assert 'js/recording_index.js' in body
+    assert 'PamRecordingIndex.find' in body
+    assert 'fileForSegment:' in body
+    assert 'id="sw-use-index" checked' in body
+    assert 'id="sw-search-archive" hidden' in body
 
 
 def test_sample_upload_page_also_uses_the_shared_cutter(auth_client, mock_pam_conn):
