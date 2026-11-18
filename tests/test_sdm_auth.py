@@ -82,7 +82,9 @@ def test_only_admin_can_view_models_or_jobs(auth_client, role):
     client = auth_client(role=role)
     hub = client.get("/en/sdm/")
     assert hub.status_code == 200
-    assert hub.get_data(as_text=True).count('<a class="hub-card') == 1
+    hub_body = hub.get_data(as_text=True)
+    assert ('href="/en/sdm/service-plan"' in hub_body) == (role == "manager")
+    assert hub_body.count('<a class="hub-card') == (2 if role == "manager" else 1)
     assert client.get("/en/sdm/atlas").status_code == 200
     for path in ("map", "models", "coefficients", "api/predictions", "admin", "job/job-123"):
         assert client.get(f"/en/sdm/{path}").status_code == 403
