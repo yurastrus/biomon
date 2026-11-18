@@ -84,6 +84,9 @@ def test_service_plan_combines_rows_with_independent_scopes(
     assert response.status_code == 200 and response.cache_control.no_store
     html = response.get_data(as_text=True)
     assert html.count('id="svp-map"') == 1
+    assert 'value="other">' in html and 'value="other" checked' not in html
+    assert 'Marker colors' in html
+    assert '<li data-status="overdue">Overdue</li>' in html
     assert "Combined service plan" in html
     camera, pam = _items(response)
     assert (camera["key"], camera["name"], camera["inst_ids"]) == (f"ct:{allowed_ct.id}", "Camera", [ct_park.id])
