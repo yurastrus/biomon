@@ -27,7 +27,38 @@ def test_public_header_links_to_atlas_only_hub(client):
     assert body.count('<a class="hub-card') == 1
     atlas = client.get("/uk/sdm/atlas")
     assert atlas.status_code == 200
-    assert 'href="/uk/sdm/" class="ct-back-link"' in atlas.get_data(as_text=True)
+    atlas_body = atlas.get_data(as_text=True)
+    assert 'href="/uk/sdm/" class="ct-back-link"' in atlas_body
+    assert 'id="atlas-year-from" type="number" value="2020"' in atlas_body
+    assert 'value="1000"' not in atlas_body
+    assert 'value="2500"' not in atlas_body
+    for scale in (5000, 10000, 25000):
+        assert f'value="{scale}"' in atlas_body
+
+
+@pytest.mark.parametrize("scale", [1000, 2500])
+@pytest.mark.parametrize("layer", ["grid", "gbif"])
+def test_guest_atlas_rejects_fine_grid_before_loading_data(client, scale, layer):
+    from app.sdm import atlas
+
+    with patch.object(atlas, "_get_species") as load_species:
+        response = client.get(f"/uk/sdm/api/atlas/{layer}/9?scale={scale}")
+    assert response.status_code == 403
+    load_species.assert_not_called()
+
+
+def test_signed_in_viewer_can_use_fine_atlas_grids(auth_client):
+    from app.sdm import atlas, atlas_gbif
+
+    client = auth_client(role="viewer")
+    body = client.get("/uk/sdm/atlas").get_data(as_text=True)
+    assert 'value="1000"' in body and 'value="2500"' in body
+    species = {"id": 9, "ct_id": 9, "pam_id": None}
+    with (patch.object(atlas, "_get_species", return_value=species),
+          patch.object(atlas, "_camera_trap_data", return_value=SimpleNamespace(detections={})),
+          patch.object(atlas_gbif, "gbif_cells", return_value={"status": "ok", "cells": {}})):
+        assert client.get("/uk/sdm/api/atlas/grid/9?scale=1000").status_code == 200
+        assert client.get("/uk/sdm/api/atlas/gbif/9?scale=2500").status_code == 200
 
 
 @pytest.mark.parametrize("path", [
@@ -102,7 +133,7 @@ def test_guest_atlas_apis_use_public_monitoring_scope(client):
               patch.object(ct.ga, "fetch_gap_data", return_value=ct_data) as read_ct,
               patch.object(pam, "get_pam_db_connection", return_value=pam_conn),
               patch("app.pam.gap_routes.get_pam_db_connection", return_value=pam_conn),
-              patch.object(atlas_gbif, "gbif_cells", return_value={"status": "ok", "cells": {}})):
+              patch.object(atlas_gbif, "gbif_cells", return_value={"status": "ok", "cells": {}}) as gbif):
             catalogue = client.get("/uk/sdm/api/atlas/species")
             assert catalogue.status_code == 200
             assert catalogue.cache_control.no_store
@@ -123,6 +154,7 @@ def test_guest_atlas_apis_use_public_monitoring_scope(client):
             response = client.get("/uk/sdm/api/atlas/gbif/9")
             assert response.status_code == 200 and response.json["status"] == "ok"
             assert response.cache_control.no_store
+            assert gbif.call_args.args[1].first_year == 2020
     finally:
         ct._gap_cache.clear()
 
