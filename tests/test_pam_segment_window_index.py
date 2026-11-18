@@ -7,19 +7,21 @@ import subprocess
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from unittest.mock import patch
+from urllib.parse import urlsplit
 
 import pytest
 
 
 @pytest.mark.parametrize('indexed', [True, False])
-def test_segment_window_cuts_local_files_in_browser(auth_client, mock_pam_conn, tmp_path, indexed):
+@pytest.mark.parametrize('viewport', [(1440, 1000), (480, 900)])
+def test_segment_window_cuts_local_files_in_browser(auth_client, mock_pam_conn, tmp_path, indexed, viewport):
     chrome = Path('C:/Program Files/Google/Chrome/Application/chrome.exe')
     if not chrome.is_file():
         pytest.skip('Local Chrome is unavailable')
     models = [{'model_id': 1, 'label': 'BirdNET'}, {'model_id': 2, 'label': 'Perch'}]
     with mock_pam_conn(), patch('app.pam.routes.get_models_list', return_value=models):
         rendered = auth_client(role='admin').get('/uk/pam/verification/segment-window').get_data(as_text=True)
-    # Use the actual page controls and page script, with no external CSS/CDNs.
+    # Use the actual page controls, styles and script with isolated local files.
     body = re.sub(r'<script\b[^>]*>.*?</script>', '', rendered, flags=re.S)
     inline = [script for script in re.findall(r'<script\b[^>]*>(.*?)</script>', rendered, re.S)
               if 'const URL_PLAN' in script][0]
@@ -67,6 +69,12 @@ def test_segment_window_cuts_local_files_in_browser(auth_client, mock_pam_conn, 
     const get = id => document.getElementById(id);
     async function testPage() {
         await waitFor(() => get('sw-plan-body').children.length === 1);
+        await waitFor(() => getComputedStyle(document.querySelector('.sw-page')).maxWidth === '960px');
+        const page = document.querySelector('.sw-page').getBoundingClientRect();
+        if (Math.abs(page.left + page.width / 2 - document.documentElement.clientWidth / 2) > 2) {
+            throw Error('Page content is not centered');
+        }
+        if (page.width > document.documentElement.clientWidth) throw Error('Page exceeds viewport');
         const fileName = 'TEST_20250508_035000.wav';
         const audio = PamSegmentCutter.encodeWav([new Float32Array(24000)], 24000);
         if (INDEXED) {
@@ -89,7 +97,25 @@ def test_segment_window_cuts_local_files_in_browser(auth_client, mock_pam_conn, 
             get('sw-folder').dispatchEvent(new Event('change'));
         }
         await waitFor(() => !get('sw-run').disabled);
+        if ((getComputedStyle(get('sw-folder')).display === 'none') !== INDEXED) {
+            throw Error('File input visibility does not follow index mode');
+        }
+        if ((getComputedStyle(get('sw-index-folder')).display === 'none') === INDEXED) {
+            throw Error('Index picker visibility does not follow index mode');
+        }
         if (!get('sw-search-archive').hidden) throw Error('Unexpected archive scan');
+        if (getComputedStyle(get('sw-search-archive')).display !== 'none') {
+            throw Error('Hidden archive button is visible');
+        }
+        if (INDEXED) {
+            get('sw-search-archive').hidden = false;
+            const picker = get('sw-index-folder').getBoundingClientRect();
+            const search = get('sw-search-archive').getBoundingClientRect();
+            if (search.left - picker.right < 10 && search.top - picker.bottom < 10) {
+                throw Error('Folder buttons lack spacing');
+            }
+            get('sw-search-archive').hidden = true;
+        }
         // Changing the model must resolve files again for the new plan.
         if (get('sw-model').tagName === 'SELECT') {
             get('sw-model').value = '2';
@@ -113,11 +139,18 @@ def test_segment_window_cuts_local_files_in_browser(auth_client, mock_pam_conn, 
             pass
 
         def do_GET(self):
+            request_path = urlsplit(self.path).path
+            assets = {
+                '/segment_cutter.js': (Path('app/pam/static/js/segment_cutter.js'), 'text/javascript'),
+                '/recording_index.js': (Path('app/pam/static/js/recording_index.js'), 'text/javascript'),
+                '/uk/pam-static/css/pam_style.css': (Path('app/pam/static/css/pam_style.css'), 'text/css'),
+                '/static/css/style.css': (Path('app/static/css/style.css'), 'text/css'),
+            }
+            asset = assets.get(request_path)
             self.send_response(200)
-            javascript = self.path in ('/segment_cutter.js', '/recording_index.js')
-            self.send_header('Content-Type', 'text/javascript' if javascript else 'text/html; charset=utf-8')
+            self.send_header('Content-Type', asset[1] if asset else 'text/html; charset=utf-8')
             self.end_headers()
-            content = Path('app/pam/static/js' + self.path).read_bytes() if javascript else html.encode('utf-8')
+            content = asset[0].read_bytes() if asset else html.encode('utf-8')
             self.wfile.write(content)
 
         def do_POST(self):
@@ -130,6 +163,7 @@ def test_segment_window_cuts_local_files_in_browser(auth_client, mock_pam_conn, 
     threading.Thread(target=server.serve_forever, daemon=True).start()
     process = subprocess.Popen([
         str(chrome), '--headless', '--disable-gpu', '--no-first-run',
+        f'--window-size={viewport[0]},{viewport[1]}',
         '--user-data-dir=' + str(tmp_path / 'chrome'),
         f'http://127.0.0.1:{server.server_port}/?species=Test&location_ids=121'
         '&from_ts=2025-05-08T03:50:00&to_ts=2025-05-08T03:51:00',
