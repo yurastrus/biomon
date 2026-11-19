@@ -147,6 +147,23 @@ class TestInstitutionStatsAccess(InstitutionStatsBase):
     def test_admin_gets_200(self):
         self.assertEqual(self._get(user_id=self.admin.id).status_code, 200)
 
+    def test_status_cards_show_shares_of_all_series(self):
+        session = _generic_session()
+        session.query.return_value.scalar.side_effect = [300000, 143199, 90463, 30022]
+        response = self._get(user_id=self.verifier.id, extra_patches=[
+            patch('app.camera_traps.routes.get_ct_session', return_value=session),
+        ])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(re.findall(
+            r'<div class="num">(\d+) <span class="share">\(([^)]+)\)</span></div>',
+            response.get_data(as_text=True),
+        ), [('90463', '63,2%'), ('22714', '15,9%'), ('30022', '21,0%')])
+
+    def test_status_cards_show_zero_percent_when_there_are_no_series(self):
+        response = self._get(user_id=self.verifier.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_data(as_text=True).count('<span class="share">(0,0%)</span>'), 3)
+
     def test_period_totals_appear_above_the_four_period_columns(self):
         rows = [
             SimpleNamespace(institution_id=self.inst_a.id, d_today=0, d_week=3,
