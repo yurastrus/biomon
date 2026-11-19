@@ -73,6 +73,22 @@ def test_survives_db_error(auth_client):
     assert resp.status_code == 200
 
 
+def test_counts_series_not_frames(auth_client):
+    """Since 2026-11-19 one sample is one series: its AI answer comes from the
+    shared rule (most frames wins, 'empty' only if every frame is), so the
+    empty frames around an animal no longer count as AI errors."""
+    from app.camera_traps.ai_runner import SERIES_PICK_ORDER_SQL
+    engine = _engine_with_rows([_row()])
+    cl = auth_client(role='admin')
+    with patch('app.camera_traps.database.get_ct_engine', return_value=engine):
+        assert cl.get(URL).status_code == 200
+    conn = engine.connect.return_value.__enter__.return_value
+    sql = ' '.join(str(conn.execute.call_args.args[0]).split())
+    assert 'DISTINCT ON (agg.observation_id)' in sql
+    assert ' '.join(SERIES_PICK_ORDER_SQL.split()) in sql
+    assert 'GROUP BY p.observation_id, p.model_id, p.prediction_species_id' in sql
+
+
 def test_requires_admin(auth_client):
     cl = auth_client(role='ct_verifier')
     resp = cl.get(URL)
