@@ -156,12 +156,48 @@ class TestInstitutionStatsAccess(InstitutionStatsBase):
         ]
         response = self._get(user_id=self.admin.id, extra_patches=[
             patch('app.camera_traps.routes.query_institution_stats', return_value=rows),
+            patch('app.camera_traps.routes.query_verification_forecast', return_value=None),
         ])
         self.assertEqual(response.status_code, 200)
         self.assertEqual(re.findall(
-            r'<span class="period-total">(\+\d+)</span>\s*([^<]+?)\s*</th>',
+            r'<span class="period-total"[^>]*>(\+\d+)</span>\s*([^<]+?)\s*</th>',
             response.get_data(as_text=True),
         ), [('+0', 'Сьогодні'), ('+7', 'Тиждень'), ('+22', 'Місяць'), ('+52', 'Рік')])
+
+    def test_weekly_total_shows_forecast_for_the_users_institution(self):
+        rows = [SimpleNamespace(institution_id=self.inst_a.id, d_today=0, d_week=7,
+                                d_month=10, d_year=20, total=30)]
+        stats = MagicMock(return_value=rows)
+        forecast = MagicMock(return_value={'remaining': 56, 'completed': 14, 'days': 28})
+        response = self._get(user_id=self.verifier.id, extra_patches=[
+            patch('app.camera_traps.routes.query_institution_stats', stats),
+            patch('app.camera_traps.routes.query_verification_forecast', forecast),
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        forecast.assert_called_once()
+        session, _, condition, params = stats.call_args.args
+        self.assertEqual(forecast.call_args.args[:3], (session, condition, params))
+        self.assertEqual(forecast.call_args.args[2]['selected_inst_id'], [self.inst_a.id])
+        self.assertRegex(response.get_data(as_text=True),
+                         r'<span class="period-total" title="[^"]*28 дн\.[^"]*"'
+                         r'[^>]*>\+7</span>\s*Тиждень')
+
+        cases = [
+            ({'remaining': 0, 'completed': 14, 'days': 0}, 'No series are awaiting verification'),
+            ({'remaining': 56, 'completed': 0, 'days': None}, 'No series were completed'),
+        ]
+        for result, tooltip in cases:
+            with self.subTest(remaining=result['remaining']):
+                forecast.return_value = result
+                response = self._get(url=self.URL.replace('/uk/', '/en/'), extra_patches=[
+                    patch('app.camera_traps.routes.query_institution_stats', stats),
+                    patch('app.camera_traps.routes.query_verification_forecast', forecast),
+                ])
+                self.assertEqual(response.status_code, 200)
+                self.assertRegex(response.get_data(as_text=True),
+                                 rf'<span class="period-total" title="[^"]*{tooltip}[^"]*"'
+                                 r'[^>]*>\+7</span>\s*Week')
 
 
 class TestInstitutionStatsScoping(InstitutionStatsBase):
