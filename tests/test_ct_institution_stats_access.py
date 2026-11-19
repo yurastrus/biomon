@@ -14,7 +14,9 @@ Covers:
 
 import contextlib
 import os
+import re
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch, MagicMock
 
 
@@ -144,6 +146,22 @@ class TestInstitutionStatsAccess(InstitutionStatsBase):
 
     def test_admin_gets_200(self):
         self.assertEqual(self._get(user_id=self.admin.id).status_code, 200)
+
+    def test_period_totals_appear_above_the_four_period_columns(self):
+        rows = [
+            SimpleNamespace(institution_id=self.inst_a.id, d_today=0, d_week=3,
+                            d_month=10, d_year=20, total=30),
+            SimpleNamespace(institution_id=self.inst_b.id, d_today=0, d_week=4,
+                            d_month=12, d_year=32, total=45),
+        ]
+        response = self._get(user_id=self.admin.id, extra_patches=[
+            patch('app.camera_traps.routes.query_institution_stats', return_value=rows),
+        ])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(re.findall(
+            r'<span class="period-total">(\+\d+)</span>\s*([^<]+?)\s*</th>',
+            response.get_data(as_text=True),
+        ), [('+0', 'Сьогодні'), ('+7', 'Тиждень'), ('+22', 'Місяць'), ('+52', 'Рік')])
 
 
 class TestInstitutionStatsScoping(InstitutionStatsBase):
