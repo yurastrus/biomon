@@ -105,11 +105,16 @@ def _uid(cl):
 def test_two_species_give_one_row_per_species_per_photo(ct, series, species, voters):
     fox, badger, _, _ = species
     cl = voters[0]
-    assert _post(cl, series, [_e(fox, 2), _e(badger, 1)]).status_code == 201
+    response = _post(cl, series, [_e(fox, 2), _e(badger, 1)], time_zone='America/New_York')
+    assert response.status_code == 201
+    assert response.get_json()['identified_today'] == 1
     rows = _rows(ct, series, _uid(cl))
     assert len(rows) == 4
     assert sorted((r.photo_id, r.species_id, r.quantity) for r in rows) == sorted(
         (p.id, sp, q) for p in series.photos for sp, q in ((fox.id, 2), (badger.id, 1)))
+
+    assert _post(cl, series, [_e(fox)]).get_json()['identified_today'] == 1
+    assert _post(cl, series, [_e(badger)], replace=True).get_json()['identified_today'] == 1
 
 
 def test_counter_counts_people_not_species(ct, series, species, voters):

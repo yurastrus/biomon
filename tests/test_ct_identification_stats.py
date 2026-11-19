@@ -7,7 +7,7 @@ identification — the "(N)" shown next to the main counter).
 Run:
     venv/Scripts/python -m pytest tests/test_ct_identification_stats.py -v
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 import pytest
@@ -92,3 +92,44 @@ def test_next_observation_flags_other_identifications(
     data = resp.get_json()
     assert data['observation_id'] == mixed_series['one'].id
     assert data['has_other_identifications'] is True
+
+
+def test_activity_counts_distinct_own_series_since_local_midnight(
+        auth_client, db_session, ct_route_session, make_ct_observation, make_ct_photo,
+        make_ct_species, monkeypatch):
+    from app.camera_traps.models import Identification
+
+    class FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime(2026, 7, 14, 1, tzinfo=timezone.utc).astimezone(tz)
+
+    monkeypatch.setattr('app.camera_traps.routes.datetime', FixedDateTime)
+    cl = auth_client(role='admin')
+    user_id = _admin_id(db_session)
+    recent = datetime(2026, 7, 14, 0, 15)
+    species = make_ct_species()
+    series = make_ct_observation(status='completed')
+    photo_1 = make_ct_photo(observation=series)
+    photo_2 = make_ct_photo(observation=series)
+    ct_route_session.add_all([
+        Identification(photo_id=photo_1.id, user_id=user_id, created_at=recent),
+        Identification(photo_id=photo_1.id, user_id=user_id, created_at=recent,
+                       species_id=species.id),
+        Identification(photo_id=photo_2.id, user_id=user_id, created_at=recent),
+        Identification(photo_id=make_ct_photo().id, user_id=user_id,
+                       created_at=datetime(2026, 7, 13, 21)),  # Kyiv midnight in July
+        Identification(photo_id=make_ct_photo().id, user_id=user_id,
+                       created_at=datetime(2026, 7, 13, 4)),  # New York midnight in July
+        Identification(photo_id=make_ct_photo().id, user_id=user_id,
+                       created_at=datetime(2026, 7, 13, 3, 59)),
+        Identification(photo_id=make_ct_photo().id, user_id=97, created_at=recent),
+    ])
+    ct_route_session.commit()
+
+    assert cl.get(URL).get_json()['identified_today'] == 1
+    assert cl.get(URL + '?time_zone=Europe/Kyiv').get_json()['identified_today'] == 2
+    assert cl.get(URL + '?activity_only=1&time_zone=America/New_York').get_json() == {
+        'identified_today': 3,
+    }
+    assert cl.get(URL + '?time_zone=Invalid/Zone').get_json()['identified_today'] == 1
