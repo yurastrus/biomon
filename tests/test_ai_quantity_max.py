@@ -20,7 +20,7 @@ def _mock_session(win_row, max_count):
     q_win = MagicMock()
     for m in ('join', 'outerjoin', 'filter', 'order_by'):
         getattr(q_win, m).return_value = q_win
-    q_win.first.return_value = win_row
+    q_win.all.return_value = [(win_row, 0)] if win_row is not None else []
 
     q_max = MagicMock()
     q_max.filter.return_value = q_max

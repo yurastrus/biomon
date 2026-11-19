@@ -14,7 +14,7 @@ def _session(row, execute_results):
     q_win = MagicMock()
     for m in ('join', 'outerjoin', 'filter', 'order_by'):
         getattr(q_win, m).return_value = q_win
-    q_win.first.return_value = row
+    q_win.all.return_value = [(row, 0)]
     q_max = MagicMock()
     q_max.filter.return_value = q_max
     q_max.scalar.return_value = None

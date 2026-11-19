@@ -119,12 +119,15 @@ def test_winning_identifiers_joins_the_scope(build_sql, mode):
 
 
 def test_ai_pick_joins_the_scope(build_sql):
-    """AIPick only exists in human_ai; it windows over the whole prediction table."""
+    """AIPick only exists in human_ai. Its input, AIAgg (frames counted per
+    series and species since 2026-11-19), must read only scoped predictions."""
     for sql in build_sql(export_mode='human_ai'):
         body = _normalise(sql)
-        start = body.index('AIPick AS (')
+        start = body.index('AIAgg AS (')
         assert 'JOIN ScopedObs' in body[start:start + 600], \
-            'AIPick windows over every AI prediction in the database'
+            'AIAgg aggregates every AI prediction in the database'
+        pick = body[body.index('AIPick AS ('):][:900]
+        assert 'FROM AIAgg' in pick and 'ai_predictions' not in pick
 
 
 def test_institution_filter_lands_in_the_scope_not_the_producers(build_sql):
@@ -179,8 +182,11 @@ def test_ai_pick_breaks_ties_deterministically(build_sql):
     used to leave the winner — and its animal_count — up to the query plan."""
     sql = _normalise(build_sql(export_mode='human_ai')[0])
     start = sql.index('AIPick AS (')
-    window = sql[start:start + 700]
-    assert 'ap.id' in window, 'AIPick picks an arbitrary row among tied predictions'
+    window = sql[start:start + 900]
+    # Rows are one per (series, model, species) since 2026-11-19, so model id
+    # plus species id in the window order make it total.
+    assert 'm.id DESC' in window and 'agg.prediction_species_id DESC' in window, \
+        'AIPick picks an arbitrary row among tied predictions'
 
 
 def test_ranked_consensus_breaks_ties_deterministically(build_sql):
