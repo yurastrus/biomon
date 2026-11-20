@@ -84,6 +84,14 @@ def test_help_block_and_tag_search_rendered(auth_client, tags):
         assert f'<kbd>{key}</kbd>' in help_block, key
 
 
+def test_viewer_photo_disables_native_drag_and_selection(auth_client, tags):
+    html = _page(auth_client, {})
+    photo = re.search(r'<img\b[^>]*\bid="photo-display"[^>]*>', html)
+    assert photo
+    assert 'draggable="false"' in photo.group()
+    assert re.search(r'(?<![-\w])user-select\s*:\s*none\b', photo.group())
+
+
 def test_hotkey_range_is_enforced(ct):
     """1..10 only (10 is the 0 key), one tag per key."""
     from sqlalchemy.exc import IntegrityError
