@@ -189,6 +189,14 @@
   + DeepFaune closes, filters by person and species, "Rebuild now" starts a
   background refresh. Deployed to both sites (full pull, server repos
   clean); anonymous access redirects to login; rendered as admin on both.
+- Experience constant k (owner): weight = confirmed / (n + k), config
+  VERIFIER_EXPERIENCE_K = 10 on both sites (shared-ct b326aba, biomon
+  bce5bc3, myproject b812938). Sweep `scripts/sweep_experience_k.py`
+  (`logs/sweep_experience_k_20261123.log`) at 1.49: people per series
+  1.66 -> 1.69, closed by the first person 41 % -> 39 %, needing more votes
+  2.8 % -> 3.9 %, contradicted 0.23 % -> 0.22 %. 10/10 now weighs 0.5, so
+  two newcomers never close; "alone + AI" needs ~990 agreed votes on that
+  species. Pending series closed by it now: 0. Weights page shows k.
 - Side findings: verifier 29 has Empty precision 0.71 over 4,976 votes;
   DeepFaune "horse" and "corvids" agree with people in 18 % / 8 % of series
   (label mapping worth checking).
