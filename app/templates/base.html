@@ -153,6 +153,16 @@
     })();
     </script>
 
+    {# Shared error helper (window.HttpErr), global like the nav toggle. #}
+    <script>window.HTTP_I18N = {{ {
+        'unknown': _('Невідома помилка'),
+        'noConn': _("Немає зв'язку з сервером (перевірте мережу)"),
+        'stale': _('Сторінка застаріла або сесія завершилась. Оновіть сторінку й спробуйте ще раз.'),
+        'reload': _('Оновити'),
+        'code': _('Код запиту')
+    } | tojson }};</script>
+    <script src="{{ url_for('static', filename='js/http_errors.js', v=1) }}"></script>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

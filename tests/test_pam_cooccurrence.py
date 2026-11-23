@@ -1032,7 +1032,7 @@ def test_next_segment_rejects_an_unparsable_window(auth_client, mock_pam_conn):
 
 
 @pytest.mark.parametrize('endpoint, status, query_count', [
-    ('next-segment', 404, 1), ('stats', 200, 3), ('filter-options', 200, 2),
+    ('next-segment', 404, 1), ('stats', 200, 3), ('filter-options', 200, 4),
 ])
 def test_atlas_scope_reaches_all_verification_queries(auth_client, mock_pam_conn, endpoint, status, query_count):
     with mock_pam_conn() as conn:
@@ -1092,7 +1092,7 @@ def test_targeted_cutter_uses_local_recording_dates_and_disjoint_months():
 @pytest.mark.parametrize('endpoint, status, query_count', [
     ('next-segment', 404, 1),
     ('stats', 200, 3),
-    ('filter-options', 200, 3),
+    ('filter-options', 200, 5),
 ])
 @pytest.mark.parametrize('segment_ids', [[], [17, 41], list(range(1, 5001))],
                          ids=['empty', 'partial-upload', 'large-sample'])

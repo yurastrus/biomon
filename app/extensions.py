@@ -29,14 +29,25 @@ def unauthorized():
     return redirect(url_for('main.login', lang_code=lang_code, next=request.url))
 
 def handle_csrf_error(e):
-    """JSON for fetch() callers, so a stale page can say "reload" instead of
-    failing to parse Werkzeug's HTML. Forms keep the default 400 page."""
-    from flask import request, jsonify
-    if request.is_json or '/api/' in request.path:
+    """JSON for script callers, so a stale page can say "reload" instead of
+    failing to parse HTML. Plain form posts get the site error page.
+
+    Script callers = JSON body, an /api/ path, or an XHR (jQuery sets
+    X-Requested-With; multipart FormData uploads outside /api/ used to get HTML
+    here, error audit 2026-11-04)."""
+    from flask import current_app, jsonify, session
+    from app.errors import wants_json, current_request_id, error_response
+    current_app.logger.warning('[csrf] %s (session has token: %s)', e.description,
+                               'csrf_token' in session)
+    if wants_json():
         # The page shows its own translated text for this code.
         return jsonify(code='csrf_expired',
-                       error='CSRF token missing or expired, reload the page.'), 400
-    return e
+                       error='CSRF token missing or expired, reload the page.',
+                       request_id=current_request_id()), 400
+    from flask_babel import gettext as _
+    return error_response(400, _('Сторінка застаріла (минув термін дії форми). '
+                                 'Оновіть сторінку й спробуйте ще раз.'),
+                          code='csrf_expired')
 
 def init_extensions(app):
     """Initialize all Flask extensions."""

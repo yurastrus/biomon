@@ -147,6 +147,10 @@ class Config:
     UNCONFIRMED_ACCOUNT_MAX_AGE_DAYS = int(
         os.environ.get('UNCONFIRMED_ACCOUNT_MAX_AGE_DAYS') or 7)
 
+    # Root log level (app/logging_setup.py). INFO keeps audit lines (logins,
+    # admin changes, verifications) that the old implicit WARNING dropped.
+    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+
     LANGUAGES = {'en': 'English', 'uk': 'Українська'}
     BABEL_DEFAULT_LOCALE = 'uk'
     BABEL_DEFAULT_TIMEZONE = 'Europe/Kiev'

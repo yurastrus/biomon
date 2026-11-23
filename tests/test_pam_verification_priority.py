@@ -118,6 +118,7 @@ def test_benefit_queue_ranks_scoped_candidates_against_visible_history(auth_clie
     url = (
         '/en/api/verification/next-segment?sort_by=benefit&species_id=5'
         '&class_name=Aves&institution_ids=3&location_ids=11&from_ts=2026-01-01'
+        '&order_name=Passeriformes&family_name=Paridae'
         '&preferred_segment_id=7&skip_segment_id=8'
     )
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
@@ -131,6 +132,8 @@ def test_benefit_queue_ranks_scoped_candidates_against_visible_history(auth_clie
     assert 'sv.user_id = :user_id' in candidates
     assert 'seg.species_id = :species_id' in candidates
     assert 's.class = :class_name' in candidates
+    assert 's.order_rank = :order_name' in candidates
+    assert 's.family = :family_name' in candidates
     assert 'r_det.location_id = ANY(:det_location_ids)' in candidates
     assert '>= CAST(:from_ts AS timestamptz)' in candidates
     assert 'seg.id = ANY(CAST(:sample_ids AS bigint[]))' in candidates

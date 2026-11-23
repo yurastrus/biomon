@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-18 12:54+0200\n"
+"POT-Creation-Date: 2026-11-18 12:50+0200\n"
 "PO-Revision-Date: 2025-08-05 22:27+0300\n"
 "Last-Translator: FULL NAME EMAIL@ADDRESS\n"
 "Language: en\n"
@@ -17,6 +17,60 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
+
+#: app/errors.py:76
+msgid "Некоректний запит."
+msgstr "Bad request."
+
+#: app/errors.py:77
+msgid "Потрібно увійти в систему."
+msgstr "Please sign in."
+
+#: app/errors.py:78
+msgid "Недостатньо прав для цієї дії."
+msgstr "You don't have permission for this action."
+
+#: app/errors.py:79
+msgid "Сторінку не знайдено."
+msgstr "Page not found."
+
+#: app/errors.py:80
+msgid "Цей метод запиту не підтримується."
+msgstr "This request method is not supported."
+
+#: app/errors.py:81
+msgid "Завеликий файл або запит."
+msgstr "The file or request is too large."
+
+#: app/errors.py:82
+msgid "Забагато запитів. Спробуйте трохи пізніше."
+msgstr "Too many requests. Please try again a little later."
+
+#: app/errors.py:85
+msgid "Помилка на сервері. Ми вже маємо запис про неї в журналі."
+msgstr "Server error. It has been recorded in the log."
+
+#: app/errors.py:86
+msgid "Помилка запиту."
+msgstr "Request error."
+
+#: app/errors.py:180
+#, python-format
+msgid "Помилка на сервері. Повідомте адміністратору код: %(rid)s"
+msgstr "Server error. Please give the administrator this code: %(rid)s"
+
+#: app/errors.py:212
+#, python-format
+msgid "Не вдалося виконати дію. Код запиту: %(rid)s"
+msgstr "The action failed. Request id: %(rid)s"
+
+#: app/extensions.py:48
+msgid ""
+"Сторінка застаріла (минув термін дії форми). Оновіть сторінку й спробуйте"
+" ще раз."
+msgstr ""
+"The page is out of date (the form has expired). Reload the page and try "
+"again."
 
 #: app/admin/forms.py:25 app/utils/forms.py:19
 msgid "Пароль має містити і літери, і цифри."
@@ -306,6 +360,7 @@ msgstr ""
 "passive acoustic monitoring (PAM) and species distribution modelling."
 
 #: app/templates/base.html:33 app/templates/base.html:57
+#: app/templates/errors/error.html:5
 msgid "БіоМон"
 msgstr "BioMon"
 
@@ -365,6 +420,30 @@ msgstr "Sign up"
 #: app/templates/base.html:139
 msgid "Проект БіоМон, ©"
 msgstr "BioMon Project, ©"
+
+#: app/templates/base.html:158
+msgid "Невідома помилка"
+msgstr "Unknown error"
+
+#: app/templates/base.html:159
+msgid "Немає зв'язку з сервером (перевірте мережу)"
+msgstr "No connection to the server (check the network)"
+
+#: app/templates/base.html:160
+msgid ""
+"Сторінка застаріла або сесія завершилась. Оновіть сторінку й спробуйте ще"
+" раз."
+msgstr ""
+"The page is out of date or the session has ended. Reload the page and try"
+" again."
+
+#: app/templates/base.html:161
+msgid "Оновити"
+msgstr "Reload"
+
+#: app/templates/base.html:162
+msgid "Код запиту"
+msgstr "Request id"
 
 #: app/templates/contacts.html:3 app/templates/contacts.html:26
 msgid "Зворотний зв’язок"
@@ -1688,6 +1767,14 @@ msgstr "Decline"
 msgid "Запитів немає."
 msgstr "No requests."
 
+#: app/templates/errors/error.html:15
+msgid "Якщо звертаєтесь до адміністратора, вкажіть код запиту:"
+msgstr "If you contact the administrator, quote the request id:"
+
+#: app/templates/errors/error.html:20
+msgid "На головну"
+msgstr "Home page"
+
 #: app/utils/forms.py:23 app/utils/forms.py:73
 msgid "Ім'я користувача"
 msgstr "Username"
@@ -2471,3 +2558,4 @@ msgstr ""
 
 #~ msgid "SDM"
 #~ msgstr "SDM"
+

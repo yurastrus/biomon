@@ -94,6 +94,17 @@ def create_app(config_name=None):
 
     app.config.from_object(config[config_name])
 
+    # Logging first, so everything below (and the stray basicConfig() calls in
+    # the analytics calculators) runs against one configured root handler.
+    from app.logging_setup import configure_logging
+    configure_logging(app)
+
+    # Request id before every other before_request hook, so all log lines of
+    # the request (including early redirects) carry it.
+    from app.errors import init_request_id, register_error_handlers
+    init_request_id(app)
+    register_error_handlers(app)
+
     # SEC: trust X-Forwarded-* only when explicitly told how many proxies sit in
     # front (TRUSTED_PROXY_COUNT). Default 0 = disabled → remote_addr stays the
     # direct peer, no behaviour change, no spoofing risk. Set to 1 (nginx) ONLY

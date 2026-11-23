@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _ARCHIVE = 'F:/20_Phototraps_photos/1 - Просортовані/'
 SAMPLES = os.environ.get('VIDEO_HARNESS_SAMPLES', os.pathsep.join([
     os.path.expanduser('~/Desktop/відео з фотопасток'),
+    os.path.expanduser('~/Downloads'),
     _ARCHIVE + '@ Верещицьке, центр @ 49.96264 @ 23.64623 @/2025',
     _ARCHIVE + '@ Ставчанське к. 26, біля галявини в хвойному лісі @ 49.92390 @ 23.76928 @/2025',
 ])).split(os.pathsep)

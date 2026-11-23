@@ -9,6 +9,7 @@ constructs of the new logic. Behavioral testing is done manually in a browser
 Run:
     venv/Scripts/python -m pytest tests/test_pam_spectrogram_interaction.py -v
 """
+from collections import namedtuple
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -64,6 +65,35 @@ def test_previous_answer_can_be_reopened_even_when_queue_is_empty(auth_client):
     empty_queue = html.split('id="no-segment-message"', 1)[1].split('</div>', 1)[0]
     assert 'Return to the previous answer' in empty_queue
     assert 'Editing your previous answer. Choose the correct option.' in html
+
+
+def test_verification_page_shows_taxa_and_species_above_verdicts(auth_client):
+    species_row = namedtuple('SpeciesRow', (
+        'species_id', 'scientific_name', 'common_name_uk', 'common_name_en',
+        'class_name', 'order_name', 'family_name',
+    ))
+    conn = _mock_pam_conn()
+    conn.execute.return_value.fetchall.return_value = [
+        species_row(5, 'Parus major', None, 'Great tit', 'Aves', 'Passeriformes', 'Paridae'),
+        species_row(6, 'Corvus corax', None, 'Raven', 'Aves', 'Passeriformes', 'Corvidae'),
+        species_row(7, 'Unclassified', None, None, None, '', None),
+    ]
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        response = auth_client(role='admin').get('/en/pam/verification/verify')
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    orders = html.split('id="order-filter"', 1)[1].split('</select>', 1)[0]
+    families = html.split('id="family-filter"', 1)[1].split('</select>', 1)[0]
+    assert orders.count('value="Passeriformes"') == 1
+    assert orders.count('value=""') == 1
+    assert 'All orders' in orders and 'All families' in families
+    assert families.index('Corvidae') < families.index('Paridae')
+    assert html.index('id="verdict-species"') < html.index('id="verify-yes"')
+    assert "$('#segment-species, #verdict-species').text(segment.species_display_name)" in html
+    css = CSS.read_text(encoding='utf-8')
+    species_style = css.split('.verification-current-species {', 1)[1].split('}', 1)[0]
+    assert 'text-align: center' in species_style
 
 
 def test_padding_constants_unchanged(auth_client):

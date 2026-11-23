@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{# Generic error page for every 4xx/5xx (app/errors.py). The request id lets
+   the user quote one code that maps to one log line. #}
+
+{% block title %}{{ status }} · {{ _('БіоМон') }}{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block hreflang %}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 720px; padding: 2rem 0;">
+    <h1>{{ status }}</h1>
+    <p style="font-size: 1.1rem;">{{ message }}</p>
+    {% if request_id and request_id != '-' %}
+    <p style="color: #666;">
+        {{ _('Якщо звертаєтесь до адміністратора, вкажіть код запиту:') }}
+        <code>{{ request_id }}</code>
+    </p>
+    {% endif %}
+    <p>
+        <a href="{{ url_for('main.index', lang_code=g.lang_code or 'uk') }}">{{ _('На головну') }}</a>
+    </p>
+</div>
+{% endblock %}

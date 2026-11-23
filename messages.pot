@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-18 12:54+0200\n"
+"POT-Creation-Date: 2026-11-18 12:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,58 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
+
+#: app/errors.py:76
+msgid "Некоректний запит."
+msgstr ""
+
+#: app/errors.py:77
+msgid "Потрібно увійти в систему."
+msgstr ""
+
+#: app/errors.py:78
+msgid "Недостатньо прав для цієї дії."
+msgstr ""
+
+#: app/errors.py:79
+msgid "Сторінку не знайдено."
+msgstr ""
+
+#: app/errors.py:80
+msgid "Цей метод запиту не підтримується."
+msgstr ""
+
+#: app/errors.py:81
+msgid "Завеликий файл або запит."
+msgstr ""
+
+#: app/errors.py:82
+msgid "Забагато запитів. Спробуйте трохи пізніше."
+msgstr ""
+
+#: app/errors.py:85
+msgid "Помилка на сервері. Ми вже маємо запис про неї в журналі."
+msgstr ""
+
+#: app/errors.py:86
+msgid "Помилка запиту."
+msgstr ""
+
+#: app/errors.py:180
+#, python-format
+msgid "Помилка на сервері. Повідомте адміністратору код: %(rid)s"
+msgstr ""
+
+#: app/errors.py:212
+#, python-format
+msgid "Не вдалося виконати дію. Код запиту: %(rid)s"
+msgstr ""
+
+#: app/extensions.py:48
+msgid ""
+"Сторінка застаріла (минув термін дії форми). Оновіть сторінку й спробуйте"
+" ще раз."
+msgstr ""
 
 #: app/admin/forms.py:25 app/utils/forms.py:19
 msgid "Пароль має містити і літери, і цифри."
@@ -292,6 +344,7 @@ msgid ""
 msgstr ""
 
 #: app/templates/base.html:33 app/templates/base.html:57
+#: app/templates/errors/error.html:5
 msgid "БіоМон"
 msgstr ""
 
@@ -350,6 +403,28 @@ msgstr ""
 
 #: app/templates/base.html:139
 msgid "Проект БіоМон, ©"
+msgstr ""
+
+#: app/templates/base.html:158
+msgid "Невідома помилка"
+msgstr ""
+
+#: app/templates/base.html:159
+msgid "Немає зв'язку з сервером (перевірте мережу)"
+msgstr ""
+
+#: app/templates/base.html:160
+msgid ""
+"Сторінка застаріла або сесія завершилась. Оновіть сторінку й спробуйте ще"
+" раз."
+msgstr ""
+
+#: app/templates/base.html:161
+msgid "Оновити"
+msgstr ""
+
+#: app/templates/base.html:162
+msgid "Код запиту"
 msgstr ""
 
 #: app/templates/contacts.html:3 app/templates/contacts.html:26
@@ -1592,6 +1667,14 @@ msgstr ""
 msgid "Запитів немає."
 msgstr ""
 
+#: app/templates/errors/error.html:15
+msgid "Якщо звертаєтесь до адміністратора, вкажіть код запиту:"
+msgstr ""
+
+#: app/templates/errors/error.html:20
+msgid "На головну"
+msgstr ""
+
 #: app/utils/forms.py:23 app/utils/forms.py:73
 msgid "Ім'я користувача"
 msgstr ""
@@ -1697,3 +1780,4 @@ msgid ""
 "Лист раз на тиждень, і лише якщо на вас чекає щонайменше 10 серій. Знята "
 "галочка вимикає його повністю."
 msgstr ""
+

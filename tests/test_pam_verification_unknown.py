@@ -342,21 +342,13 @@ def test_filter_options_species_query_filtered_by_institution(auth_client):
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         cl.get('/uk/api/verification/filter-options?institution_ids=3,4')
 
-    # The species option query (not the classes query, which also joins species).
-    species_sql = next(s for s, p in seen if 'JOIN species s' in s and 'AS cls' not in s)
+    species_sql = next(s for s, p in seen if 'SELECT DISTINCT s.species_id' in s)
     assert 'location_institutions' in species_sql
 
 
 # ── taxonomic class filter (next-segment, stats, cascade) ───────────────────────
 
-def _class_result(rows):
-    """Mock a .fetchall() result of Row-like objects exposing a .cls attribute."""
-    res = MagicMock()
-    res.fetchall.return_value = [SimpleNamespace(cls=c) for c in rows]
-    return res
-
-
-def test_next_segment_class_filter_adds_condition(auth_client):
+def test_next_segment_taxonomy_filters_add_conditions(auth_client):
     cl = auth_client(role='admin')  # admin bypasses access baseline → clean SQL
     conn = MagicMock()
     captured = {}
@@ -370,10 +362,15 @@ def test_next_segment_class_filter_adds_condition(auth_client):
     conn.execute.side_effect = _ex
 
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
-        cl.get('/uk/api/verification/next-segment?class_name=Aves')
+        cl.get('/uk/api/verification/next-segment?class_name=Aves'
+               '&order_name=Passeriformes&family_name=Paridae')
 
     assert 's.class = :class_name' in captured['sql']
+    assert 's.order_rank = :order_name' in captured['sql']
+    assert 's.family = :family_name' in captured['sql']
     assert captured['params']['class_name'] == 'Aves'
+    assert captured['params']['order_name'] == 'Passeriformes'
+    assert captured['params']['family_name'] == 'Paridae'
 
 
 def test_next_segment_no_class_condition_when_absent(auth_client):
@@ -394,55 +391,64 @@ def test_next_segment_no_class_condition_when_absent(auth_client):
     assert 's.class = :class_name' not in captured['sql']
 
 
-def test_filter_options_returns_classes(auth_client):
+def test_filter_options_returns_taxonomy(auth_client):
     cl = auth_client(role='admin')
     conn = MagicMock()
 
     def _ex(sql, params=None):
         s = str(sql)
-        if 'AS cls' in s:                       # the classes option query
-            return _class_result(['Aves', 'Mammalia'])
-        if 'JOIN species s' in s:               # the species option query
-            return _mapping_result([{'species_id': 5, 'scientific_name': 'Bufo bufo',
-                                     'common_name_uk': 'Ропуха', 'common_name_en': 'Toad'}])
-        return _mapping_result([{'id': 3, 'name_uk': 'Установа А', 'name_en': 'Inst A'}])
+        result = _mapping_result([])
+        for column, name in [('class', 'Aves'), ('order_rank', 'Passeriformes'), ('family', 'Paridae')]:
+            if f'SELECT DISTINCT s.{column}' in s:
+                result.scalars.return_value = [name]
+        return result
     conn.execute.side_effect = _ex
 
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
         resp = cl.get('/uk/api/verification/filter-options')
     body = json.loads(resp.data)
     assert resp.status_code == 200
-    assert [c['id'] for c in body['classes']] == ['Aves', 'Mammalia']
-    assert body['classes'][0]['text'] == 'Aves'
+    assert body['classes'] == [{'id': 'Aves', 'text': 'Aves'}]
+    assert body['orders'] == [{'id': 'Passeriformes', 'text': 'Passeriformes'}]
+    assert body['families'] == [{'id': 'Paridae', 'text': 'Paridae'}]
 
 
-def test_filter_options_class_filters_species_and_institutions(auth_client):
+def test_filter_options_cascade_excludes_only_its_own_selection(auth_client):
     cl = auth_client(role='admin')
     conn = MagicMock()
     seen = []
 
     def _ex(sql, params=None):
         seen.append((str(sql), params))
-        if 'AS cls' in str(sql):
-            return _class_result([])
         return _mapping_result([])
     conn.execute.side_effect = _ex
 
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
-        cl.get('/uk/api/verification/filter-options?class_name=Aves')
+        resp = cl.get('/uk/api/verification/filter-options?class_name=Aves'
+                      '&order_name=Passeriformes&family_name=Paridae&species_id=5&institution_ids=3')
 
-    # Species options constrained by the chosen class.
-    species_sql, sp_params = next((s, p) for s, p in seen
-                                  if 'JOIN species s' in s and 'AS cls' not in s)
-    assert 's.class = :class_name' in species_sql
-    assert sp_params['class_name'] == 'Aves'
-    # Institution options constrained by the chosen class (species subquery).
-    inst_sql, inst_params = next((s, p) for s, p in seen if 'JOIN institutions i' in s)
-    assert 'SELECT species_id FROM species WHERE class = :class_name' in inst_sql
-    assert inst_params['class_name'] == 'Aves'
+    assert resp.status_code == 200
+    filters = {
+        'class_name': 'class = :class_name',
+        'order_name': 'order_rank = :order_name',
+        'family_name': 'family = :family_name',
+        'species_id': 'seg.species_id = :species_id',
+        'inst_ids': 'li.institution_id = ANY(:inst_ids)',
+    }
+    for selector, own_filter in [
+        ('SELECT DISTINCT s.class', 'class_name'),
+        ('SELECT DISTINCT s.order_rank', 'order_name'),
+        ('SELECT DISTINCT s.family', 'family_name'),
+        ('SELECT DISTINCT s.species_id', 'species_id'),
+        ('SELECT DISTINCT i.id', 'inst_ids'),
+    ]:
+        sql, params = next((sql, params) for sql, params in seen if selector in sql)
+        for key, predicate in filters.items():
+            assert (key in params) == (key != own_filter)
+            assert (predicate in sql) == (key != own_filter)
 
 
-def test_stats_class_filter_applies_subquery(auth_client):
+def test_stats_taxonomy_filters_apply_to_every_query(auth_client):
     cl = auth_client(role='admin')
     conn = MagicMock()
     seen = []
@@ -459,12 +465,17 @@ def test_stats_class_filter_applies_subquery(auth_client):
     conn.execute.side_effect = _ex
 
     with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
-        resp = cl.get('/uk/api/verification/stats?class_name=Aves')
+        resp = cl.get('/uk/api/verification/stats?class_name=Aves'
+                      '&order_name=Passeriformes&family_name=Paridae')
 
     assert resp.status_code == 200
-    assert any('SELECT species_id FROM species WHERE class = :class_name' in s
-               for s, p in seen)
-    assert any(p and p.get('class_name') == 'Aves' for s, p in seen)
+    assert len(seen) == 3
+    for sql, params in seen:
+        assert ('SELECT species_id FROM species WHERE class = :class_name'
+                ' AND order_rank = :order_name AND family = :family_name') in sql
+        assert params['class_name'] == 'Aves'
+        assert params['order_name'] == 'Passeriformes'
+        assert params['family_name'] == 'Paridae'
 
 
 # ── next-segment: bilingual location from the locations registry ─────────────────

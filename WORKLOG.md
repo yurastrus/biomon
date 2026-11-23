@@ -146,6 +146,133 @@
   DeepFaune "horse" and "corvids" agree with people in 18 % / 8 % of series
   (label mapping worth checking).
 
+## 2026-11-20: PAM verification taxonomy filters (deployed)
+
+- Added mutually cascading class, order, family, species, and institution
+  filters. The current species also appears centered above the verdict buttons.
+- Applied the four-file patch to the production PAM worktree at `3840dbb`
+  without a commit. Gunicorn master 1416419 handled HUP and all three workers
+  were replaced. An authenticated smoke test against production data returned
+  HTTP 200 for the verification page, family cascade, stats, and filtered queue.
+- Rollback files and the applied patch are on the server at
+  `/home/yura/.local/state/biomon/pam-verification.Xhoy3GOg`. The production
+  PAM worktree contains local changes to reconcile before the next Git update.
+- Shortened the labels to Class and Species. Reloaded with HUP and verified
+  both labels in Ukrainian and English. The previous template is backed up at
+  `/home/yura/.local/state/biomon/pam-labels.I8ZhDnc4`.
+
+## 2026-11-19: AI calibration per series, not per frame (deployed 2026-11-19)
+
+- Owner decision: calibration (`/admin/ai/accuracy`) counts one sample per
+  series. The series' AI answer comes from SERIES_PICK_ORDER_SQL and its
+  was_correct (same on all frames of one series+model+species, read with
+  BOOL_OR); score = that species' best frame.
+- Effect on prod (`logs/ai_calibration_per_series_20261119.log`): human
+  66.8% per frame -> 89.3% per series, empty 97.7 -> 98.4, roe deer 99.1 ->
+  98.9; sample sizes are now series (empty 50.7k, roe deer 3.95k).
+- Speed: first version with `IN (verified series)` read ai_predictions twice,
+  ~470 ms. One pass (`was_correct IS NOT NULL OR prediction_species_id IS
+  NULL`, unmapped labels kept so the pick is the same as the hint's) ~285 ms,
+  identical numbers. Old per-frame query was ~105 ms; admin-only page.
+- Commits: shared-ct `6142f89`, biomon `c03f6a1`, myproject `2bb83d5`. Test
+  `test_counts_series_not_frames`; full pytest 3098 passed (same `test_docs`).
+- **Deployed 2026-11-19** (pull + HUP): biomon calibration page 200 in ~400 ms
+  with data; myproject identify API 200, calibration 200, socket 302.
+
+## 2026-11-19: One series-level AI answer for hint, filter and export (deployed 2026-11-19)
+
+- Owner: series 132583 was listed under "Ведмідь бурий" in the /identify AI
+  filter while the hint said "AI пропонує: Пусто, 100%". Seen several times.
+- Cause: predictions are per photo (here 14 bear frames at 0.99, 13 empty at
+  1.0) and three places reduced them to a series answer differently:
+  hint `get_observation_ai_prediction` took the highest-scoring frame (empty
+  wins on 1.0); filter `_winning_prediction_subq` and the options SQL took an
+  arbitrary frame of the best model (DISTINCT ON without a per-frame order);
+  export `AIPick` (data_export, also the nightly CSV backup) took the
+  highest-scoring frame, so such series were exported as empty.
+- Scale on prod: 1601 series mix empty and animal frames; 1393 had an 'Empty'
+  hint despite an animal (955 pending, 30 completed, 563 archived).
+- Rule now (`SERIES_PICK_ORDER_SQL` + Python `pick_series_prediction` in
+  ai_runner): most accurate model, then 'empty' only when every frame is
+  empty, otherwise the species on the most frames, ties by best frame score,
+  then species id. Applied in all four places.
+- Speed (prod, `scripts/probe_ai_series_pick.py`, read-only, loads the new
+  modules from a folder so it runs before deploy;
+  `logs/probe_ai_series_pick_20261119.log`): hint 2-3 ms both; queue with an
+  AI filter ~390 -> ~300 ms; UNNP export ~350 ms both; filter options first
+  ~290 -> ~420 ms because the planner expected ~300 prediction rows (got
+  ~400k) and nested-looped species over all series; counting per species
+  before joining species brought it back to ~270-300 ms.
+- Effect on prod data: bear in the filter 4 -> 6 series, 'not empty' group
+  7910 -> 8202, 'animals' 6129 -> 6383.
+- Not changed: AI calibration (`ai_calibration`) scores `was_correct` per
+  frame, so empty frames inside an animal series count as AI errors. A
+  question of definition, left for the owner.
+- Commits: shared-ct `6986a5c`, biomon `f494fac`, myproject `4bc43a5`. Tests:
+  `tests/test_ai_series_pick_rule.py` (10), mocks updated in
+  test_ai_quantity_max / test_ai_prediction_label_fallback, export-shape
+  checks in test_ct_export_scoping. Full pytest 3097 passed, same unrelated
+  `test_docs` failure.
+- **Deployed 2026-11-19** (pull + HUP, graceful): biomon /uk/camera-traps/
+  200, hint for 132583 now bear 0.99; myproject identify API 200,
+  ai-species 200, socket 302. Parallel session releases (`797bc83`,
+  shared-ct `682faf7`) were already on prod.
+
+## 2026-11-19: Three-tier default /identify queue (deployed 2026-11-19)
+
+- **Deployed 2026-11-19** (pull + HUP): biomon `fe21330`, myproject `f091a0f`
+  (pytest 234 passed; identify API as admin 200, socket 302). Live latency of
+  the default queue: ~265-310 ms warm, 443 ms first call
+  (`logs/probe_identify_latency_after_three_tiers_20261119.log`); date sort ~12 ms.
+
+
+- Owner approved: default 'priority_random' now ranks series with an animal
+  vote (anything but 'Empty', NULL counts as animal) first, then only-'Empty',
+  then untouched; random inside each tier (`_identify_tier_expr`, one
+  correlated scalar on the probe photo). Review mode keeps two tiers.
+- Speed, measured on prod with `scripts/probe_identify_tiers.py` (read-only,
+  patches the sort in, so it works before deploy;
+  `logs/probe_identify_tiers_20261119.log`): two tiers ~255-285 ms; three
+  tiers ~340-350 ms. EXPLAIN showed execution unchanged (~270 ms) and ~100 ms
+  of JIT compilation: the higher cost estimate crossed
+  jit_optimize_above_cost. With `SET LOCAL jit = off` (only for this query,
+  postgres only) three tiers run ~270 ms, i.e. no regression.
+- Tried and rejected: LATERAL rewrite computing the probe photo once (~10%
+  gain, awkward in the ORM). The real cost is the per-row probe over all ~52k
+  pending series. A big win (~10x) would need a denormalised
+  `observations.vote_tier` kept by `check_consensus_for_observation` plus a
+  partial index; not done (schema change, sync risk).
+- Commits: shared-ct `43ac251`, biomon `fe21330`. Tests
+  `tests/test_ct_identify_three_tiers.py` (5); full pytest 3087 passed, same
+  unrelated `test_docs` failure as below.
+- Note: another session committed in parallel (shared-ct `e6b4d36`, biomon
+  `8d0de46`, already on prod); my commit sits on top and only touches routes.py.
+
+## 2026-11-19: Moderator review vote reopened agreed CT series (deployed 2026-11-19)
+
+- Owner worried /identify showed a series that already had two votes
+  (41928). Checked on prod: it had one 'Empty' vote (user 76, 20.09); the
+  owner's vote was the second and closed it. Default sort is correct.
+- Scan of all pending series found 126127 with three matching 'Empty' votes
+  still pending. Cause: a moderator vote on a completed series (review mode
+  lists completed series) went through `moderator_override` in
+  `check_consensus_for_observation`, which reopened the series and returned
+  without a recount, even when the moderator agreed.
+- Fix (shared-ct `9d8d4a4`, biomon `398b9d4`): the series reopens only when
+  the moderator's species are not all among the accepted ones
+  (`_moderator_agrees`). Callers without `moderator_user_id` keep the old
+  behaviour. Tests: `tests/test_ct_moderator_review_vote.py` (4).
+- Full pytest 3077 passed; one unrelated failure (`test_docs::test_menu_link_for_everyone`)
+  comes from the uncommitted `base.html` change of the error-pages work.
+- 126127 itself: the owner pressed the admin consensus recount at 10:26 UTC
+  (closed it) and manual archiving at 10:26:58 (archived). My recount call
+  afterwards was a no-op (`logs/close_series_126127_20261119.log`).
+- Also seen: 77% of the default "voted first" tier (17,369 of ~22.4k pending
+  series) carry a single 'Empty' vote. A three-tier sort was proposed, not done.
+- **Deployed 2026-11-19** (pull + HUP): biomon `398b9d4` (/uk/camera-traps/ 200),
+  myproject `de12aa4` (pytest 234 passed; identify API as admin 200, socket 302).
+  Logs: `logs/deploy_moderator_review_vote_*_20261119.log`.
+
 ## 2026-11-02: /identify Ctrl+Enter reopened the AI filter list
 
 - Owner: after choosing an AI species (select2), Ctrl+Enter opened that
@@ -6423,3 +6550,35 @@ sitemap URLs. 5xx = 9 with validation "Not started"; all 42 sitemap URLs return
   | 21 к. 32, в. 7 (archive "к. 26") | 6a30e5d6 | 1590 | 167 | 2025-08-13 .. 2026-03-08 |
   All batches completed, 0 skipped/failed; series pending for AI and verification. Server temp removed.
 - Left: no deployment rows exist for these locations; analytics recalculation (admin button) to count them.
+
+## 2026-11-05 — WLCM_2023-24 uploaded + shared ARD Excel marked
+
+- Uploaded server-side (offset 0, thumbnails only), log `logs/server_upload_wlcm2324_20261105.log`, all batches completed: Skole 0302→3162 857, 0303→3163 207, 0304→3164 1002, 0306→3165 2065 (33 lapse in 200CUDDY2 were exact copies of 200CUDDY, rejected as duplicates by process_single_photo), 0307→3166 411, 308→3167 297, 0309→3168 446, 310→3160 614, 0311→3169 329, 0312→3170 265, 0313→3171 442 (155 summer-2023 frames 05.07–04.10.2023 before install 23.11 12:04 excluded), 0314→3172 277, 0315→3173 190, 0316→3161 294, 0317→3174 231; Uzh 2010→3157 79 (M4V videos skipped). Clocks match Excel within minutes; Excel 0317 start 23.11 vs photos 21.11 (same minute, Excel typo?), 0303 end 19.01 vs photos 20.01.
+- Gorhany 2306: folder on disk is `23060`, 108 photos 30.11.2023–03.04.2024 = exactly what location 139 `…_23060` already holds (uploaded 2026-05-04). Not uploaded again; Excel status for 2306 is stale.
+- Skole 0309 location 3168 still has longitude = latitude (49.06088); correct longitude unknown (park report has no coordinates).
+- Shared workbook `…/04_Data/BioMonApp_DataUpload/CT_LocationARD_Dataset_2026-10-23_11-27.xlsx`: new `scripts/xlsx_set_cell_by_key.py` edits only the sheet XML (no openpyxl save, which would drop data-validation extensions etc.) and overwrites bytes in place (rename over the file is refused in the OneDrive folder). WLCM_2023-24 col I, 16 rows → `uploaded`. Verified: 71 of 72 zip entries byte-identical, exactly 16 cells changed. Backup `logs/CT_LocationARD_Dataset_2026-10-23_11-27.xlsx.bak_20261105_163035`.
+- AI pause lease clear, no active batches; tmp files on server removed (42 GB free).
+
+## 2026-11-06 — Vyzhnytskyi NNP SMM_2024 pilot
+
+- Uploaded 1,114 JPEG thumbnails in 458 series to the four existing deployment locations. All batches completed with zero skips/failures: 2204→3235 (282 / 113, `9ce8a958`), 2205→3236 (264 / 136, `61d9ab61`), 2207→3233 (301 / 126, `88f56c8b`), 2208→3234 (267 / 83, `60a7cca9`). Production preflight found zero matching filename/time keys; no locations created.
+- 2204: +4680 s confirmed by control frame `I_00010b.JPG` (camera 17:24, phone 18:42); corrected range 24 Jul 18:36 to 27 Oct 15:48. Other offsets zero. Excluded dates outside deployment days: 49 from 2205 (28 old and 21 on 26 Sep), six lapses 6–11 Oct from 2207, 2,585 earlier-season JPEG from 2208. Videos skipped.
+- Shared workbook `SMM_2024!I142:I145` marked `uploaded` after DB verification; verified only these cells changed. Backup `logs/CT_LocationARD_Dataset_2026-10-23_11-27.xlsx.bak_20261106_152039`. AI pause clear, temporary server photos and archives deleted, 42 GB free.
+
+## 2026-11-06 — SMM_2024 remaining parks, verified subset
+
+- Loaded 3,796 JPEG thumbnails / 1,955 series across 18 existing locations. Karpatskyi NNP: 1801, 1806, 1808, 1809, 1810, 1812, 1815, 1817, 1819, 1820, 11808, 11812, 12007 (3,158 JPEG). Synevyr: 1901, 1904 (380 JPEG). Verkhovynskyi: DOB 1, BUR 2, BUR 3 (258 JPEG). Zero offsets; selection by inclusive Excel deployment dates. Excluded 22 JPEG outside those dates across the uploaded sets, including 16 May frames for 1904. Videos skipped. Active deployment locations and coordinates checked against Excel, filename/time preflight and postflight clear, all batches completed with exact staged counts and linked series. DB audit: `logs/smm_remaining/verified.jsonl`.
+- Held 14: Karpatskyi 1804, 1813, 11806, 11809, 11810, 12001; Synevyr 1903, 1905, 1911, 1912; Verkhovynskyi 2302 (В8), PER1, PER2, DOB 3. Reasons include ambiguous clock differences, material discrepancies in file counts and dates, and files without usable EXIF. 1903 has ~12-hour discrepancies at both ends. DB retains older deployment dates than Excel for loaded 1809, 1810, 1815, 1820, 11812. In particular 1815 starts 05 Jun in corrected Excel/photos and 06 Jun in DB.
+- Shared workbook updated only for the 18 verified deployment IDs, after dry run and backup `logs/CT_LocationARD_Dataset_2026-10-23_11-27.xlsx.bak_20261106_153424`. Reopened the workbook and compared XLSX entries and sheet XML to verify exactly 18 status cells changed. Server staged photos/archives removed, logs retained, AI pause clear, 41 GB free.
+
+- Held set follow-up: sampled camera stamps and scenes. 1903 phone shows 12:09–12:10 while the camera shows 00:08–00:09. A constant +12 h would put the last frame on 06 Oct, one day after the Excel date. 1911 removal appears in daylight at camera 00:11 versus Excel 12:11, but earlier frames extend back to 05 Jun. 1912 has nine 15 Sep frames with the same camera stamp and scene as 14 Sep. 1813 `I_00041a.JPG` is unreadable. 11809 contains five bursts (15 JPEG) plus two lapse files. For 1804, 11810 and 12001 the last numbered trigger is respectively 71, 96 and 119, matching Excel n_photos, whereas the surviving burst ranges start at 12, 37 and 36. In Verkhovynskyi the folder `DOB1` shows the stamp `DOB3` and matches the DOB 1 installation time, while `DOB3` shows `DOB1`, has a different scene, and differs from the DOB 3 installation time. No additional import or status changes during this review.
+
+- User authorized all 12 high-confidence matches. Uploaded 2,275 JPEG thumbnails / 1,145 series, all verified with exact staged counts, correct location/series links and zero filename/time duplicates. Audit `logs/smm_remaining/held_verified.jsonl`. Karpatskyi: 1804 233, 1813 197, 11806 182, 11809 17, 11810 299, 12001 360. Synevyr: 1903 34 (+12 h, last 06 Oct 10:37), 1911 14 (+12 h, only the documented period), 1912 162 (including nine confirmed 15 Sep frames). Verkhovynskyi: B8 456, PER1 208, PER2 113. Kept original timestamps for 11806 and PER2 because discrepancies do not support a whole-batch shift. Excluded 123 JPEG (tests, outside dates, corrupt or missing EXIF). Verified exactly 12 workbook statuses changed, backup `logs/CT_LocationARD_Dataset_2026-10-23_11-27.xlsx.bak_20261106_160107`. Temporary server JPEG/archives removed, AI pause clear. Remaining 1905 and DOB 3 require field confirmation.
+
+## 2026-11-13 — PAM manage-locations: managers see only managed locations
+
+- Report: a manager saw locations on `/uk/pam/manage-locations` where they hold no manager rights. Cause: since 2026-10-27 the page listed every location the user can *see* (read-only for non-managed ones), so a manager who is only a verifier in other parks saw those parks' recorders too. The service-mode status API (`/api/pam/locations-with-status`) and service history used the same visibility scope.
+- Fix (shared-pam `cbd35ff`): `_location_page_institution_ids()` returns managed institutions for holders of the `manager` role, visible ones for plain `pam_verifier`. Used by the page, the status API and service history. The edit form already offered managed institutions only. Decision: plain verifiers keep their read-only view (the page is `pam_verifier`-gated by design); only managers are narrowed, as requested.
+- CT `/camera-traps/manage-locations` checked: page, status API and service history already use `ct_access.manage_institution_ids`; no change needed.
+- Tests: `tests/test_manager_scope_admin_pam.py` (old test encoded the read-only listing; replaced + 2 new). `-k pam`: 920 passed.
+- Deployed 2026-11-13 (pull + HUP, no init scripts; log `logs/deploy_pam_manager_scope_*.log` on server). Prod check (read-only, view function as each manager with view-only parks): users 3, 15, 76 now see 2 / 61 / 74 locations, all editable, zero read-only.
