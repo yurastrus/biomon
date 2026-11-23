@@ -37,7 +37,8 @@ def main():
         try:
             s.execute(text('SET TRANSACTION READ ONLY'))
             graded = compute(s.connection())
-            weights = {k: verifier_weight(c, n) for k, (n, c) in graded.items()}
+            kexp = cfg.get('VERIFIER_EXPERIENCE_K', 1)
+            weights = {key: verifier_weight(c, n, kexp) for key, (n, c) in graded.items()}
             rows = s.execute(text("""
                 SELECT DISTINCT p.observation_id, i.user_id, i.species_id, i.quantity
                 FROM identifications i JOIN photos p ON p.id = i.photo_id

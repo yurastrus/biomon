@@ -38,14 +38,14 @@ CREATE TABLE IF NOT EXISTS {TABLE} (
 """
 
 
-def summary(graded):
+def summary(graded, k=1):
     users = {u for u, _s in graded}
-    weights = [verifier_weight(c, n) for (n, c) in graded.values()]
+    weights = [verifier_weight(c, n, k) for (n, c) in graded.values()]
     bands = Counter(min(int(w * 10), 9) for w in weights)
     print(f'{len(graded)} (person, species) records, {len(users)} people')
     print('weight distribution: ' + ', '.join(
         f'{b / 10:.1f}-{(b + 1) / 10:.1f}: {bands[b]}' for b in range(10)))
-    empty = [(u, verifier_weight(c, n), n) for (u, s), (n, c) in graded.items() if s == -1]
+    empty = [(u, verifier_weight(c, n, k), n) for (u, s), (n, c) in graded.items() if s == -1]
     empty.sort(key=lambda r: r[1])
     print('weakest records on Empty (user, weight, n): ' +
           ', '.join(f'{u}:{w:.2f}/{n}' for u, w, n in empty[:5]))
@@ -59,7 +59,7 @@ def main():
         if not apply:
             with engine.connect() as conn:
                 conn.execute(text('SET TRANSACTION READ ONLY'))
-                summary(compute(conn))
+                summary(compute(conn), app.config['CAMERA_TRAP_CONFIG'].get('VERIFIER_EXPERIENCE_K', 1))
             print('\nDRY RUN: nothing written. Re-run with --apply.')
             return
         with engine.begin() as conn:
@@ -73,7 +73,7 @@ def main():
         with engine.connect() as conn:
             graded = {(u, s): (n, c) for u, s, n, c in conn.execute(
                 text(f'SELECT user_id, species_id, n, confirmed FROM {TABLE}'))}
-        summary(graded)
+        summary(graded, app.config['CAMERA_TRAP_CONFIG'].get('VERIFIER_EXPERIENCE_K', 1))
 
 
 if __name__ == '__main__':

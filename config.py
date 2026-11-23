@@ -54,6 +54,8 @@ class Config:
         'WEIGHTED_CONSENSUS_THRESHOLD': 1.49,  # 1.49 lets one person with weight >= 0.99 + DeepFaune (score ~1) close; 1.5 always needs two people (owner, 2026-11-23)
         'AI_VOTE_FACTOR': 0.5,
         'VERIFIER_WEIGHTS_MAX_AGE_HOURS': 24,
+        # weight = confirmed / (n + k); 10 keeps newcomers newcomers longer (owner, 2026-11-23)
+        'VERIFIER_EXPERIENCE_K': 10,
         'CLEANUP_DAYS': 1,  # days since the series' last identification before its photos are archived (0 = at the next nightly run, NOT disabled); 1 leaves a day to correct a vote
         'STALE_BATCH_HOURS': 0,  # age threshold for cleaning up failed batches (0 = immediately; active batches protected by probe)
         'ACTIVE_PROBE_SECONDS': 10,  # observation window for processed_files to detect active batches

@@ -327,3 +327,27 @@ def test_admin_panel_links_to_weights_page():
     import pathlib
     html = pathlib.Path('app/camera_traps/templates/admin.html').read_text(encoding='utf-8')
     assert "camera_traps.verifier_weights_page" in html
+
+
+def test_experience_k_keeps_newcomers_newcomers():
+    assert verifier_weight(10, 10, k=10) == pytest.approx(0.5)
+    assert verifier_weight(990, 990, k=10) == pytest.approx(0.99)
+    assert verifier_weight(10, 10) == pytest.approx(10 / 11)          # default k = 1
+
+
+def test_configured_k_stops_two_newcomers_closing(app, ct_session, weights_table,
+                                                  make_ct_photo, make_ct_species):
+    sp = make_ct_species()
+    _records(ct_session, [(1, sp.id, 10, 10), (2, sp.id, 10, 10)])
+    photo = make_ct_photo()
+    _vote(ct_session, photo, 1, sp.id)
+    _vote(ct_session, photo, 2, sp.id)
+    with app.app_context():
+        app.config['CAMERA_TRAP_CONFIG'] = {'MIN_IDENTIFICATIONS': 1,
+                                            'WEIGHTED_CONSENSUS_THRESHOLD': 1.49,
+                                            'VERIFIER_EXPERIENCE_K': 10}
+        check_consensus_for_observation(photo.observation.id, db_session=ct_session)
+        ct_session.commit()
+    ct_session.refresh(photo.observation)
+    assert photo.observation.status == 'pending'                   # 0.5 + 0.5 < 1.49
+    assert _check(app, ct_session, photo.observation) == 'completed'   # k = 1: 0.91 + 0.91
