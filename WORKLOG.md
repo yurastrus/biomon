@@ -182,6 +182,13 @@
   (4 within 2 min, 15 within 5), so the cleanup keeps them
   (`scripts/flag_empty_near_animals.py`, author weighted-consensus-audit,
   ids in `logs/flag_empty_near_animals_*.log`; admin list /admin/flagged).
+- Admin page `/<lang>/camera-traps/admin/verifier-weights` (shared-ct
+  0ae2e8e, `weights_routes.py`, `templates/verifier_weights.html`, button
+  "⚖️ Ваги верифікаторів" in the admin panel header): people summary,
+  person × species with n, confirmed, precision, weight, ✓ where one person
+  + DeepFaune closes, filters by person and species, "Rebuild now" starts a
+  background refresh. Deployed to both sites (full pull, server repos
+  clean); anonymous access redirects to login; rendered as admin on both.
 - Side findings: verifier 29 has Empty precision 0.71 over 4,976 votes;
   DeepFaune "horse" and "corvids" agree with people in 18 % / 8 % of series
   (label mapping worth checking).
