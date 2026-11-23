@@ -42,7 +42,7 @@ class Config:
         'THUMBNAIL_SIZE': (960, 960),
         'SERIES_TIME_WINDOW': 60,  # seconds; grouping window for series detection
         'ALLOWED_EXTENSIONS': {'jpg', 'jpeg'},
-        'MIN_IDENTIFICATIONS': 2,  # minimum identifications required for consensus
+        'MIN_IDENTIFICATIONS': 1,  # floor of people per closed series; 1 lets the weighted rule close on one very reliable person + DeepFaune (the majority fallback still needs 2)
         # Weighted closing rule (2026-11-23, app/camera_traps/consensus.py):
         # person's vote = confirmed / (n + 1) on that species, DeepFaune adds
         # AI_VOTE_FACTOR x score to a species a person named; close when the

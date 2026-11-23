@@ -22,11 +22,16 @@ from app.camera_traps.verifier_weights import compute, series_ai_answers
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--threshold', type=float, help='override the configured threshold')
+    ap.add_argument('--min-ids', type=int, help='override MIN_IDENTIFICATIONS')
+    args = ap.parse_args()
     app = create_app()
     with app.app_context():
         cfg = app.config.get('CAMERA_TRAP_CONFIG', {})
-        min_ids = cfg.get('MIN_IDENTIFICATIONS', 3)
-        threshold = cfg.get('WEIGHTED_CONSENSUS_THRESHOLD', WEIGHTED_THRESHOLD_DEFAULT)
+        min_ids = args.min_ids or cfg.get('MIN_IDENTIFICATIONS', 3)
+        threshold = args.threshold or cfg.get('WEIGHTED_CONSENSUS_THRESHOLD', WEIGHTED_THRESHOLD_DEFAULT)
         factor = cfg.get('AI_VOTE_FACTOR', AI_VOTE_FACTOR_DEFAULT)
         s = get_ct_session()
         try:
@@ -51,6 +56,7 @@ def main():
 
     out, old_rule = Counter(), Counter()
     by_species = Counter()
+    by_people = Counter()
     for obs, votes in cand.items():
         pairs = {(u, sp) for u, sp, _q in votes}
         winner = weighted_close(pairs, lambda u, sp: weights.get((u, sp), 0.0),
@@ -61,11 +67,15 @@ def main():
         out[winner is not None] += 1
         if winner is not None:
             by_species[names.get(winner, winner)] += 1
+            by_people[len({u for u, _s, _q in votes})] += 1
     print(f'{len(by_obs)} pending series; {len(cand)} with >= {min_ids} people; '
           f'threshold {threshold}, AI factor {factor}; {len(graded)} records')
     print(f'  weighted rule would close now: {out[True]}')
     print(f'  majority rule would close now: {old_rule[True]} '
           f'(should be ~0: those were closed at their vote)')
+    if by_people:
+        print('  closing, by people in the series: ' + ', '.join(
+            f'{k}: {v}' for k, v in sorted(by_people.items())))
     if by_species:
         print('  closing species: ' + ', '.join(f'{k}: {v}' for k, v in by_species.most_common(15)))
 

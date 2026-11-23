@@ -146,9 +146,10 @@ def _vote(ct_session, photo, user_id, species_id):
     ct_session.commit()
 
 
-def _check(app, ct_session, obs, **kw):
+def _check(app, ct_session, obs, min_ids=2, **kw):
     with app.app_context():
-        app.config['CAMERA_TRAP_CONFIG'] = {'MIN_IDENTIFICATIONS': 2}
+        app.config['CAMERA_TRAP_CONFIG'] = {'MIN_IDENTIFICATIONS': min_ids,
+                                            'WEIGHTED_CONSENSUS_THRESHOLD': 1.49}
         check_consensus_for_observation(obs.id, db_session=ct_session, **kw)
         ct_session.commit()
     ct_session.refresh(obs)
@@ -240,3 +241,33 @@ def test_refresh_rebuilds_records_from_votes(app, ct_session, weights_table,
     got = {(r.user_id, r.species_id): (r.n, r.confirmed)
            for r in ct_session.query(VerifierSpeciesWeight).all()}
     assert got == {(1, sp.id): (3, 3), (2, sp.id): (3, 3)}
+
+
+def test_min_one_lets_a_reliable_person_close_only_with_weights(app, ct_session, weights_table,
+                                                                make_ct_photo, make_ct_species,
+                                                                monkeypatch):
+    """MIN_IDENTIFICATIONS 1 + threshold 1.49: one person with weight >= 0.99
+    plus DeepFaune (score 1.0) closes; a weaker person does not."""
+    sp = make_ct_species()
+    _records(ct_session, [(1, sp.id, 200, 199), (2, sp.id, 20, 19)])
+    monkeypatch.setattr(verifier_weights, 'series_ai_answers',
+                        lambda session, ids: {i: (sp.id, 1.0) for i in ids})
+    strong = make_ct_photo()
+    _vote(ct_session, strong, 1, sp.id)                 # 199/201 = 0.990 + 0.5
+    assert _check(app, ct_session, strong.observation, min_ids=1) == 'completed'
+    weak = make_ct_photo()
+    _vote(ct_session, weak, 2, sp.id)                   # 19/21 = 0.905 + 0.5
+    assert _check(app, ct_session, weak.observation, min_ids=1) == 'pending'
+
+
+def test_min_one_never_lets_the_majority_fallback_close_on_one_vote(app, ct_session,
+                                                                    make_ct_photo,
+                                                                    make_ct_species):
+    # no weights table at all -> majority rule; one vote must not close
+    verifier_weights.forget_availability()
+    sp = make_ct_species()
+    photo = make_ct_photo()
+    _vote(ct_session, photo, 1, sp.id)
+    assert _check(app, ct_session, photo.observation, min_ids=1) == 'pending'
+    _vote(ct_session, photo, 2, sp.id)
+    assert _check(app, ct_session, photo.observation, min_ids=1) == 'completed'
