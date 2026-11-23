@@ -51,7 +51,7 @@ class Config:
         # is missing or empty). Records rebuild in the background when older
         # than VERIFIER_WEIGHTS_MAX_AGE_HOURS.
         'CONSENSUS_MODE': 'weighted',
-        'WEIGHTED_CONSENSUS_THRESHOLD': 1.5,
+        'WEIGHTED_CONSENSUS_THRESHOLD': 1.49,  # 1.49 lets one person with weight >= 0.99 + DeepFaune (score ~1) close; 1.5 always needs two people (owner, 2026-11-23)
         'AI_VOTE_FACTOR': 0.5,
         'VERIFIER_WEIGHTS_MAX_AGE_HOURS': 24,
         'CLEANUP_DAYS': 1,  # days since the series' last identification before its photos are archived (0 = at the next nightly run, NOT disabled); 1 leaves a day to correct a vote
