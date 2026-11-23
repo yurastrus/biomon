@@ -172,6 +172,10 @@
   in logs, `http_errors.js`, LOG_LEVEL INFO. Smoke with the new code before
   HUP (/, CT, PAM, 404 page, CT next-observation as admin), HUP, again after:
   all as expected, 0 errors; log lines now carry `rid=`. Server repo clean.
+- Owner pressed "recalculate consensus" afterwards: 11,961 pending series
+  closed, all Empty, one person + DeepFaune each (checked read-only); all
+  had their last vote more than a day ago, so the nightly cleanup archives
+  them at the next run. Expected misses by the backtest: ~0.2 %.
 - Side findings: verifier 29 has Empty precision 0.71 over 4,976 votes;
   DeepFaune "horse" and "corvids" agree with people in 18 % / 8 % of series
   (label mapping worth checking).
