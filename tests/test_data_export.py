@@ -532,6 +532,21 @@ class TestExportModes(unittest.TestCase):
         self.assertIn(':taxon:22', b['occurrenceID'])
         self.assertIn('unresolved', a['identificationVerificationStatus'])
 
+    def test_agreed_pending_row_is_not_called_a_conflict(self):
+        row = _make_mock_row(observation_id=8, species_id=11, scientific_name='Canis lupus',
+                             row_kind='human_agreed_pending', identifier_user_ids='1|2')
+        occ = self._result([row], 'human_any')['data'][0]
+        self.assertEqual(occ['observationID'], 8)
+        self.assertIn(':taxon:11', occ['occurrenceID'])            # same ID as before
+        self.assertNotIn('unresolved', occ['identificationVerificationStatus'])
+        self.assertIn('agree', occ['identificationVerificationStatus'])
+        self.assertIn('awaiting more votes', occ['identificationVerificationStatus'])
+
+    def test_conflict_producer_tells_agreed_from_competing(self):
+        _, data_sql = self._sql('human_any')
+        self.assertIn("'human_agreed_pending'", data_sql)
+        self.assertIn("'human_conflict'", data_sql)
+
     def test_ai_row_uses_model_name_and_confidence(self):
         row = _make_mock_row(observation_id=99, row_kind='ai', identifier_user_ids=None,
                              ai_confidence=0.8123, ai_model_name='DeepFaune 1.4.1 (DF+MDS)')
