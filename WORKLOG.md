@@ -3,6 +3,149 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-11-23: Weighted-vote consensus study (research only, nothing changed on the site)
+
+- Owner's idea: weight each verifier's vote by their record on that species,
+  with a penalty for small records (10 of 10 may be luck), and close a series
+  on a score threshold (first proposal: sum of accuracies >= 1.96).
+- Code: `scripts/weighted_consensus_model.py` (one-coin Dawid-Skene with a
+  shared confusion pattern; LOO labels; penalties raw / Wilson / Beta shrink
+  to class average / shrink with user skill / novice prior; closing rules
+  current, sum-of-accuracies, posterior >= tau), `scripts/probe_weighted_consensus.py`
+  (read-only; votes cached in `instance/weighted_consensus_votes.pkl`),
+  tests `tests/test_weighted_consensus_model.py` (12 pass).
+- Data (2026-11-23): 115,232 series (91.3k archived, 2.2k completed, 21.8k
+  pending), 48 verifiers, 91 classes; 90.6k series have exactly two votes.
+- Penalty choice by held-out next-vote log-loss (`logs/probe_weighted_consensus_part1_20261123.log`,
+  `..._coldstart_...`): light Beta shrinkage toward the class average wins
+  (m 3-10); Wilson lower bound is the worst, also for novices and in a
+  leave-one-verifier-out cold start; a pessimistic "novice pool" prior also
+  predicts worse. Cap 0.995-0.999 beats 0.98-0.99. Differences overall are
+  small: 97 % of votes come from verifiers with 500+ graded votes.
+- Chosen for the rule study: `beta_class m=10 cap=0.995`.
+- Rules (`logs/probe_weighted_consensus_rules_20261123.log`, examples in
+  `..._examples_...`):
+  - posterior >= 0.99 needed two guards: at least 2 people behind the leader
+    (else one lynx vote vs one "other species" closed as lynx) and today's
+    rule for "not identifiable". With them, on 3,246 real disagreements it
+    agrees with the final majority in 99.8 % of the series it closes; it
+    holds open 0.45 % of closed two-vote series (martens, birds, horse,
+    legacy "not identifiable").
+  - Simulation (model as ground truth, so favourable to the posterior rule):
+    wrong closures 0.40 % today vs 0.14 % at tau 0.99, votes per series
+    2.10 vs 2.13.
+  - Sum of accuracies is worse than today: 0.69-0.93 % wrong (opposing votes
+    are not subtracted), and at 1.96 it holds open 32 % of agreeing pairs.
+- Open points for the owner: novice guard as a policy ("at least one voter
+  with 50+ graded votes" would have held 0 historic pairs); species-experience
+  guard for rare / Red Book species (303 historic pairs had no voter with
+  20+ graded on that species: wildcat, bear, polecat, lynx, wolf); the model
+  trusts agreement on rarely-confused species (two newcomers on lynx -> 1.0),
+  which experienced-user data cannot check.
+- Next if approved: nightly table of r(user, species), `can_close` reads it,
+  tau and guards in config, backtest again on fresh data before deploy.
+
+### Same day, later: the owner's agreed (explainable) rule, backtested
+
+- Owner wants something adaptive but explainable, without modelling. Agreed:
+  person's vote = precision on that species x n/(n+1); DeepFaune vote =
+  its accuracy on that species at that confidence x (1 - copy rate); votes
+  for other species are subtracted; close when the lead >= threshold and at
+  least one person voted; "not identifiable" keeps today's rule.
+- Copy rate = excess over the base rate of people repeating a wrong AI
+  answer they saw before voting, smoothed (m=10) to the all-species value.
+  First version graded against ONE other voter, which marks whoever sided
+  with a correct AI as a copier; now needs two others and a strict majority.
+  Data for it is thin (Empty 420 usable votes, other species tens or fewer);
+  overall copy ~0.5-0.57, so DeepFaune's Empty weight comes out ~0.49.
+  A proper measurement needs the AI hint hidden on a random share of series.
+- Code: `AgreedWeights`, `rule_margin` in `scripts/weighted_consensus_model.py`;
+  backtest `scripts/probe_agreed_consensus.py` (fetch now also stores vote
+  times and the series-level DeepFaune answer, same rule as
+  SERIES_PICK_ORDER_SQL). Tests: 17 pass.
+- Results (`logs/probe_agreed_consensus_*_20261123.log`, finished series,
+  weights cross-fitted; "contradicted" = later voters' majority named another
+  species, the only independent check):
+  - today: 2.05 people per series;
+  - one person alone: contradicted 3.36 %;
+  - threshold 1.45 + DeepFaune: 1.59 people per series, 48.7 % closed by
+    the first person (Empty 64.6 %, fox 10 %, almost nothing else),
+    contradicted 0.36 % of 45k checked early closures; rare species need
+    more votes (wolf/lynx/bear 15-23 %, mustelids 56 %);
+  - threshold >= 1.6: DeepFaune never lets one person close; 1.9 + DeepFaune
+    = 2.10 people per series, 6 % of series need more than they got.
+  - Caveat: the checking second person also saw the AI hint, so 0.36 % is a
+    lower side; with copying ~0.5 the real rate may be up to ~2x.
+- Owner then simplified the AI vote to `score x 0.5` (no copy rate). At
+  1.45: 1.46 people per series, 61 % closed by the first person, 0.53 %
+  contradicted; animals now also close on 1 person + AI (roe deer 40 %,
+  contradicted ~1.2 % vs Empty 0.43 %). Calibrated accuracy x 0.5 gives
+  almost the same (0.50 %).
+- Threshold sweep 0-3 step 0.1 (`scripts/sweep_agreed_threshold.py`,
+  `logs/sweep_agreed_threshold_20261123.{csv,png}`): the effect is in steps,
+  because a person weighs <= 1 and the AI <= 0.5: < 1.0 one person closes,
+  1.0-1.5 one person + agreeing AI, 1.5-2.0 two people, >= 2.0 three.
+  Inside a step the threshold sets how good the voters must be. In the
+  1-person+AI band contradiction falls 1.23 % (1.0) -> 0.70 % (1.3) ->
+  0.61 % (1.4) while closed-by-first falls 69 % -> 65 % -> 63 %.
+- Owner picked 1.5 as safer. Applied to all 93,496 finished series with all
+  their votes, weights from all data (`scripts/probe_threshold_on_finished.py`,
+  `logs/probe_threshold_on_finished_t15*_20261123.log`):
+  - as specified: 95.3 % close on today's species, 1 changes (not
+    identifiable -> empty), 4.7 % would need more votes. Cause found: an AI
+    vote for ANOTHER species is subtracted, so two strong people saying roe
+    deer against DeepFaune 'empty' get 1.40, and every kulan series is
+    blocked by DeepFaune's 'horse' (it has no kulan class).
+  - with `ai_named_only` (AI points only for a species a person named):
+    96.4 % same, 1 changed, 3.6 % open = 3,379 series: 844 had one person
+    (legacy closures), 396 two people, 1,755 three people (2:1 splits; the
+    weighted lead of 2 vs 1 is ~0.95, so a split needs ~2 more agreeing
+    votes). Most affected: pine marten 78 %, jay 71 %, quad bike 100 %,
+    'other species' 100 %, squirrel 37 %, mustelids 28 %.
+- **Agreed rule (owner, 2026-11-23), defaults of `rule_margin`:**
+  points(species) = sum over people who named it of precision x n/(n+1)
+  + 0.5 x DeepFaune score, the latter only if a person named that species;
+  close when points(leader) - points(second) >= 1.5 and a person voted;
+  "not identifiable" keeps today's rule (5 voters, majority). Effect: a
+  series always needs two people; one person + AI never closes.
+  Sweep with the fix (`logs/sweep_agreed_threshold_named_20261123.*`): at
+  1.5, 2.07 people per series (today 2.05), 2.9 % of finished series need
+  more votes. Not implemented on the site.
+### Same day: weighted rule implemented in the site (not deployed, not committed)
+
+- Owner: implement on the site, leave finished series as they are.
+- shared-ct: `consensus.py` (+ `verifier_weight` = confirmed/(n+1), `grade_votes`,
+  `pick_series_ai`, `weighted_close`), `verifier_weights.py` (new; table
+  access, series AI answers, refresh with pg advisory lock, throttled
+  background refresh when older than 24 h), `models.py`
+  (+ `VerifierSpeciesWeight`), `utils.py` (`closing_decision` used by every
+  vote, the moderator check and the admin recount; weighted recount reads
+  pending series only).
+- biomon: `config.py` (CONSENSUS_MODE weighted, threshold 1.5, AI factor 0.5,
+  max age 24 h), `scripts/init_verifier_weights.py` (dry run / --apply,
+  also the manual refresh), `scripts/probe_weighted_pending.py`,
+  tests `tests/test_ct_weighted_consensus.py` (17).
+- Decisions: the leader must also have a head-count majority so every
+  reader (consensus_ctes ranks by heads) sees the same winner; moderator
+  agreement on a closed series is judged by the majority rule, so a
+  confirming vote never reopens a finished series; missing or empty table =
+  majority rule (safe on a host without the init script). The checks use
+  the request session's connection (a second connection on SQLite's shared
+  pool rolled back the request's changes in tests).
+- Full suite: 3135 passed, 44 skipped; 1 unrelated failure deselected
+  (`test_docs.py::test_menu_link_for_everyone`, caused by the uncommitted
+  `app/templates/base.html` changes already in the tree).
+- Read-only checks on prod: dry run 963 records for 48 people;
+  `probe_weighted_pending`: of 21,770 pending series 1,380 have 2+ people,
+  the weighted rule would close 0 of them now (as the majority rule), so
+  deploying changes no current series.
+- Deploy (when asked): `init_verifier_weights --apply`, then shared-ct ->
+  pointers in biomon and myproject (shared ct_db, both hosts need the code).
+
+- Side findings: verifier 29 has Empty precision 0.71 over 4,976 votes;
+  DeepFaune "horse" and "corvids" agree with people in 18 % / 8 % of series
+  (label mapping worth checking).
+
 ## 2026-11-02: /identify Ctrl+Enter reopened the AI filter list
 
 - Owner: after choosing an AI species (select2), Ctrl+Enter opened that
