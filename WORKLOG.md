@@ -176,6 +176,12 @@
   closed, all Empty, one person + DeepFaune each (checked read-only); all
   had their last vote more than a day ago, so the nightly cleanup archives
   them at the next run. Expected misses by the backtest: ~0.2 %.
+- No AI signal marks doubtful ones among the 11,961 (every frame of every
+  model 'empty', no detector boxes, top-1 empty everywhere). Flagged instead
+  the 50 that sit within 15 min of an animal series at the same location
+  (4 within 2 min, 15 within 5), so the cleanup keeps them
+  (`scripts/flag_empty_near_animals.py`, author weighted-consensus-audit,
+  ids in `logs/flag_empty_near_animals_*.log`; admin list /admin/flagged).
 - Side findings: verifier 29 has Empty precision 0.71 over 4,976 votes;
   DeepFaune "horse" and "corvids" agree with people in 18 % / 8 % of series
   (label mapping worth checking).
