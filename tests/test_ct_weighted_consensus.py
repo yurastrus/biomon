@@ -271,3 +271,57 @@ def test_min_one_never_lets_the_majority_fallback_close_on_one_vote(app, ct_sess
     assert _check(app, ct_session, photo.observation, min_ids=1) == 'pending'
     _vote(ct_session, photo, 2, sp.id)
     assert _check(app, ct_session, photo.observation, min_ids=1) == 'completed'
+
+
+# --- admin page -----------------------------------------------------------------
+
+@pytest.fixture
+def weights_route_session(ct_session):
+    from unittest.mock import patch
+    with patch('app.camera_traps.weights_routes.get_ct_session', return_value=ct_session), \
+         patch('app.camera_traps.weights_routes.close_ct_session'):
+        yield ct_session
+
+
+def test_weights_page_admin_only(auth_client, db_session, weights_route_session):
+    resp = auth_client(role='manager').get('/uk/camera-traps/admin/verifier-weights')
+    assert resp.status_code in (302, 403)
+
+
+def test_weights_page_without_table_says_so(auth_client, db_session, weights_route_session):
+    resp = auth_client(role='admin').get('/uk/camera-traps/admin/verifier-weights')
+    assert resp.status_code == 200
+    assert 'правилом більшості' in resp.get_data(as_text=True)
+
+
+def test_weights_page_lists_people_and_weights(auth_client, db_session, weights_route_session,
+                                               weights_table, make_ct_species):
+    sp = make_ct_species(common_name_ua='Козуля')
+    _records(weights_route_session, [(1, sp.id, 200, 199), (2, sp.id, 10, 7)])
+    cl = auth_client(role='admin')
+    resp = cl.get('/uk/camera-traps/admin/verifier-weights')
+    html = resp.get_data(as_text=True)
+    assert resp.status_code == 200
+    assert 'Козуля' in html
+    assert '0.990' in html          # 199 / 201
+    assert '0.636' in html          # 7 / 11
+    one = cl.get(
+        f'/uk/camera-traps/admin/verifier-weights?user=2&species={sp.id}')
+    assert '0.636' in one.get_data(as_text=True)
+    assert '0.990' not in one.get_data(as_text=True).split('id="detail"')[1]
+
+
+def test_weights_refresh_button_starts_background_job(auth_client, db_session,
+                                                      weights_route_session, weights_table,
+                                                      monkeypatch):
+    started = []
+    monkeypatch.setattr(verifier_weights, 'start_refresh', lambda s: started.append(1) or True)
+    resp = auth_client(role='admin').post('/uk/camera-traps/admin/verifier-weights/refresh')
+    assert resp.status_code in (302, 303)
+    assert started == [1]
+
+
+def test_admin_panel_links_to_weights_page():
+    import pathlib
+    html = pathlib.Path('app/camera_traps/templates/admin.html').read_text(encoding='utf-8')
+    assert "camera_traps.verifier_weights_page" in html
