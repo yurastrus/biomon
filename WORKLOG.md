@@ -142,6 +142,36 @@
 - Deploy (when asked): `init_verifier_weights --apply`, then shared-ct ->
   pointers in biomon and myproject (shared ct_db, both hosts need the code).
 
+- Deployed 2026-11-23 (init --apply: 963 rows; HUP biomon and myproject;
+  smoke 200; pending series changed: 0). Later the same day: export label
+  for pending series where everyone agreed ('human identifications agree,
+  awaiting more votes (unconfirmed)'), shared-ct dce67ba. On the biomon
+  server only the camera_traps submodule was checked out at dce67ba: biomon
+  master also carries 1907271 (uncommitted work of parallel sessions:
+  error pages, logging, menu) which was pushed but NOT deployed; the server
+  repo therefore shows the submodule as modified until a full pull.
+- Later the same day, owner: threshold 1.49 and MIN_IDENTIFICATIONS 1, so
+  one person with weight >= 0.99 plus DeepFaune (score ~1) may close a
+  series. Fine sweep 1.40-1.50 (`scripts/sweep_threshold_fine.py`,
+  `logs/sweep_threshold_fine_20261123.{csv,png}`): only 1.48 (0.34 %) and
+  1.49 (0.23 %) are below the ~0.4 % of two people; at 1.49 one person
+  closes almost only Empty (and marmot), animals still get a second person;
+  1.66 people per series instead of 2.07. Guard added (shared-ct a6db56d):
+  the majority fallback never closes with fewer than two people.
+- Deployed 1.49 + MIN 1 on both sites (myproject 6efc167 pulled; on the
+  biomon server the submodule was first set to a6db56d and config.py edited
+  in place). Effective config checked on both hosts: MIN 1, weighted, 1.49,
+  AI 0.5. No recount: about
+  12k pending Empty series with one person + DeepFaune would close at once
+  and be archived the next night; they close as they get votes, or via the
+  admin button if the owner decides.
+- Then the full pull on the biomon server (owner's request): `git checkout
+  config.py`, reset the PAM worktree (its local changes were byte-identical
+  to shared-pam 99d50ed), `git pull` to 4fd4771, submodules camera_traps
+  a6db56d, pam 99d50ed. This also put 1907271 live: error pages, request ids
+  in logs, `http_errors.js`, LOG_LEVEL INFO. Smoke with the new code before
+  HUP (/, CT, PAM, 404 page, CT next-observation as admin), HUP, again after:
+  all as expected, 0 errors; log lines now carry `rid=`. Server repo clean.
 - Side findings: verifier 29 has Empty precision 0.71 over 4,976 votes;
   DeepFaune "horse" and "corvids" agree with people in 18 % / 8 % of series
   (label mapping worth checking).
