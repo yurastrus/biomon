@@ -305,6 +305,8 @@ def test_weights_page_lists_people_and_weights(auth_client, db_session, weights_
     assert 'Козуля' in html
     assert '0.990' in html          # 199 / 201
     assert '0.636' in html          # 7 / 11
+    assert html.count('<table class="vw-table" data-sortable') == 2   # both tables sort
+    assert 'data-v="0.9900"' in html                 # numeric sort key on the weight
     one = cl.get(
         f'/uk/camera-traps/admin/verifier-weights?user=2&species={sp.id}')
     assert '0.636' in one.get_data(as_text=True)
