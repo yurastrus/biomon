@@ -51,7 +51,9 @@ class Config:
         # is missing or empty). Records rebuild in the background when older
         # than VERIFIER_WEIGHTS_MAX_AGE_HOURS.
         'CONSENSUS_MODE': 'weighted',
-        'WEIGHTED_CONSENSUS_THRESHOLD': 1.49,  # 1.49 lets one person with weight >= 0.99 + DeepFaune (score ~1) close; 1.5 always needs two people (owner, 2026-11-23)
+        # Fallback only: the value in force is set on /admin/verifier-weights and kept in
+        # ct_db.ct_settings. 1.5 (always two people) applies while that is missing.
+        'WEIGHTED_CONSENSUS_THRESHOLD': 1.5,
         'AI_VOTE_FACTOR': 0.5,
         'VERIFIER_WEIGHTS_MAX_AGE_HOURS': 24,
         # weight = confirmed / (n + k); 10 keeps newcomers newcomers longer (owner, 2026-11-23)

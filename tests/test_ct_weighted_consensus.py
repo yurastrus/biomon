@@ -351,3 +351,168 @@ def test_configured_k_stops_two_newcomers_closing(app, ct_session, weights_table
     ct_session.refresh(photo.observation)
     assert photo.observation.status == 'pending'                   # 0.5 + 0.5 < 1.49
     assert _check(app, ct_session, photo.observation) == 'completed'   # k = 1: 0.91 + 0.91
+
+
+# --- threshold kept in ct_db (ct_settings), config as fallback -------------------
+
+from app.camera_traps import ct_settings  # noqa: E402
+from app.camera_traps.models import CTSetting  # noqa: E402
+
+
+@pytest.fixture
+def settings_table(ct_session):
+    CTSetting.__table__.create(bind=ct_session.get_bind(), checkfirst=True)
+    ct_settings.forget()
+    yield
+    ct_settings.forget()
+
+
+def test_threshold_falls_back_to_config_and_reads_the_stored_value(app, ct_session,
+                                                                   settings_table):
+    with app.app_context():
+        cfg = {'WEIGHTED_CONSENSUS_THRESHOLD': 1.5}
+        assert ct_settings.weighted_threshold(ct_session, cfg) == 1.5
+        ct_settings.put(ct_session, ct_settings.THRESHOLD_KEY, 1.49, 'admin')
+        ct_session.commit()
+        assert ct_settings.weighted_threshold(ct_session, cfg) == 1.49
+        ct_settings.put(ct_session, ct_settings.THRESHOLD_KEY, 9.0, 'admin')   # out of range
+        ct_session.commit()
+        assert ct_settings.weighted_threshold(ct_session, cfg) == 1.5
+
+
+def test_threshold_without_table_uses_config(app, ct_session):
+    ct_settings.forget()
+    with app.app_context():
+        assert ct_settings.weighted_threshold(ct_session, {'WEIGHTED_CONSENSUS_THRESHOLD': 1.5}) == 1.5
+
+
+@pytest.mark.parametrize('raw, expected', [('1.49', 1.49), ('1,4', 1.4), ('0.9', None),
+                                           ('3.5', None), ('abc', None), (None, None)])
+def test_parse_threshold(raw, expected):
+    assert ct_settings.parse_threshold(raw) == expected
+
+
+def test_stored_threshold_drives_closing(app, ct_session, weights_table, settings_table,
+                                         make_ct_photo, make_ct_species):
+    sp = make_ct_species()
+    _records(ct_session, [(1, sp.id, 100, 95), (2, sp.id, 100, 95)])   # 0.94 each
+    photo = make_ct_photo()
+    _vote(ct_session, photo, 1, sp.id)
+    _vote(ct_session, photo, 2, sp.id)
+    with app.app_context():
+        ct_settings.put(ct_session, ct_settings.THRESHOLD_KEY, 2.0, 'admin')
+        ct_session.commit()
+        app.config['CAMERA_TRAP_CONFIG'] = {'MIN_IDENTIFICATIONS': 1,
+                                            'WEIGHTED_CONSENSUS_THRESHOLD': 1.5}
+        check_consensus_for_observation(photo.observation.id, db_session=ct_session)
+        ct_session.commit()
+    ct_session.refresh(photo.observation)
+    assert photo.observation.status == 'pending'          # 1.88 < 2.0 stored, config 1.5 ignored
+
+
+@pytest.fixture
+def settings_route_session(weights_route_session, settings_table):
+    yield weights_route_session
+
+
+def test_admin_saves_threshold(auth_client, db_session, settings_route_session):
+    cl = auth_client(role='admin')
+    resp = cl.post('/uk/camera-traps/admin/verifier-weights/settings', data={'threshold': '1.47'})
+    assert resp.status_code in (302, 303)
+    stored = ct_settings.info(settings_route_session, ct_settings.THRESHOLD_KEY)
+    assert stored[0] == '1.47' and stored[2] == 'test_admin'
+    bad = cl.post('/uk/camera-traps/admin/verifier-weights/settings', data={'threshold': '0.5'})
+    assert bad.status_code in (302, 303)
+    assert ct_settings.info(settings_route_session, ct_settings.THRESHOLD_KEY)[0] == '1.47'
+
+
+def test_manager_cannot_save_threshold(auth_client, db_session, settings_route_session):
+    resp = auth_client(role='manager').post('/uk/camera-traps/admin/verifier-weights/settings',
+                                            data={'threshold': '1.2'})
+    assert resp.status_code in (302, 403)
+    assert ct_settings.info(settings_route_session, ct_settings.THRESHOLD_KEY) is None
+
+
+def test_estimate_lists_who_gains_alone_plus_ai(auth_client, db_session, settings_route_session,
+                                                weights_table, make_ct_species, make_ct_photo):
+    sp = make_ct_species(common_name_ua='Козуля')
+    _records(settings_route_session, [(1, sp.id, 200, 190)])            # 190/210 = 0.905
+    photo = make_ct_photo()
+    _vote(settings_route_session, photo, 1, sp.id)
+    cl = auth_client(role='admin')
+    with app_config(cl, {'MIN_IDENTIFICATIONS': 1, 'WEIGHTED_CONSENSUS_THRESHOLD': 1.49,
+                         'VERIFIER_EXPERIENCE_K': 10, 'AI_VOTE_FACTOR': 0.5}):
+        d = cl.get('/uk/camera-traps/admin/verifier-weights/estimate?threshold=1.40').get_json()
+    assert d['old'] == 1.49 and d['new'] == 1.4
+    assert d['solo_new'] == pytest.approx(0.9)
+    assert [g['species'] for g in d['gained']] == ['Козуля']
+    assert d['lost'] == []
+    assert d['pending_total'] == 1
+    bad = cl.get('/uk/camera-traps/admin/verifier-weights/estimate?threshold=7')
+    assert bad.status_code == 400
+
+
+class app_config:
+    """Temporarily set CAMERA_TRAP_CONFIG on the client's app."""
+    def __init__(self, client, cfg):
+        self.app, self.cfg = client.application, cfg
+
+    def __enter__(self):
+        self.old = self.app.config.get('CAMERA_TRAP_CONFIG')
+        self.app.config['CAMERA_TRAP_CONFIG'] = self.cfg
+
+    def __exit__(self, *exc):
+        self.app.config['CAMERA_TRAP_CONFIG'] = self.old
+
+
+def test_stored_ai_factor_drives_closing(app, ct_session, weights_table, settings_table,
+                                         make_ct_photo, make_ct_species, monkeypatch):
+    """One person 0.99 + DeepFaune score 1.0: closes with factor 0.5 (1.49),
+    stays open once the stored factor is 0.3 (1.29)."""
+    sp = make_ct_species()
+    _records(ct_session, [(1, sp.id, 2000, 1999)])                       # 1999/2010 = 0.9945
+    monkeypatch.setattr(verifier_weights, 'series_ai_answers',
+                        lambda session, ids: {i: (sp.id, 1.0) for i in ids})
+    cfg = {'MIN_IDENTIFICATIONS': 1, 'WEIGHTED_CONSENSUS_THRESHOLD': 1.49,
+           'VERIFIER_EXPERIENCE_K': 10, 'AI_VOTE_FACTOR': 0.5}
+    weak_ai = make_ct_photo()
+    _vote(ct_session, weak_ai, 1, sp.id)
+    with app.app_context():
+        ct_settings.put(ct_session, ct_settings.AI_FACTOR_KEY, 0.3, 'admin')
+        ct_session.commit()
+        app.config['CAMERA_TRAP_CONFIG'] = cfg
+        check_consensus_for_observation(weak_ai.observation.id, db_session=ct_session)
+        ct_session.commit()
+        ct_session.refresh(weak_ai.observation)
+        assert weak_ai.observation.status == 'pending'
+        ct_settings.put(ct_session, ct_settings.AI_FACTOR_KEY, 0.5, 'admin')
+        ct_session.commit()
+        check_consensus_for_observation(weak_ai.observation.id, db_session=ct_session)
+        ct_session.commit()
+    ct_session.refresh(weak_ai.observation)
+    assert weak_ai.observation.status == 'completed'
+
+
+def test_admin_saves_ai_factor_and_rejects_out_of_range(auth_client, db_session,
+                                                        settings_route_session):
+    cl = auth_client(role='admin')
+    cl.post('/uk/camera-traps/admin/verifier-weights/settings',
+            data={'threshold': '1.5', 'ai_factor': '0.4'})
+    assert ct_settings.info(settings_route_session, ct_settings.AI_FACTOR_KEY)[0] == '0.4'
+    cl.post('/uk/camera-traps/admin/verifier-weights/settings',
+            data={'threshold': '1.5', 'ai_factor': '1.5'})
+    assert ct_settings.info(settings_route_session, ct_settings.AI_FACTOR_KEY)[0] == '0.4'
+
+
+def test_estimate_takes_the_ai_factor(auth_client, db_session, settings_route_session,
+                                      weights_table, make_ct_species):
+    sp = make_ct_species(common_name_ua='Козуля')
+    _records(settings_route_session, [(1, sp.id, 200, 190)])            # 0.905
+    cl = auth_client(role='admin')
+    with app_config(cl, {'MIN_IDENTIFICATIONS': 1, 'WEIGHTED_CONSENSUS_THRESHOLD': 1.49,
+                         'VERIFIER_EXPERIENCE_K': 10, 'AI_VOTE_FACTOR': 0.5}):
+        d = cl.get('/uk/camera-traps/admin/verifier-weights/estimate'
+                   '?threshold=1.49&ai_factor=0.6').get_json()
+    assert d['new_ai'] == 0.6 and d['old_ai'] == 0.5
+    assert d['solo_new'] == pytest.approx(0.89)
+    assert [g['species'] for g in d['gained']] == ['Козуля']

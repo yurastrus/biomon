@@ -36,8 +36,9 @@ app.config['WTF_CSRF_ENABLED'] = False
 
 from app.camera_traps import models as m  # noqa: E402
 
-m.Species.__table__.create(bind=ct_engine)
-m.VerifierSpeciesWeight.__table__.create(bind=ct_engine)
+for t in (m.Species, m.VerifierSpeciesWeight, m.CTSetting, m.Location, m.Observation,
+          m.Photo, m.Identification):
+    t.__table__.create(bind=ct_engine)
 
 SPECIES = [(-1, 'Пусто'), (-5, 'Людина'), (-6, 'Неможливо визначити'), (1, 'Козуля'),
            (2, 'Олень благородний'), (3, 'Кабан'), (4, 'Лисиця звичайна'), (5, 'Рись'),
@@ -81,6 +82,25 @@ with ct_engine.begin() as conn:
             conn.exec_driver_sql(
                 'INSERT INTO verifier_species_weights (user_id, species_id, n, confirmed, updated_at) '
                 'VALUES (?, ?, ?, ?, ?)', (uid, sid, n, confirmed, datetime(2026, 11, 23, 12, 16)))
+
+# pending series for the estimate: one strong person on Empty, pairs on roe deer
+with ct_engine.begin() as conn:
+    pid = 0
+    for obs in range(1, 41):
+        conn.exec_driver_sql(
+            "INSERT INTO observations (id, location_id, series_start_time, series_end_time, "
+            "uploaded_by_id, status, flagged) VALUES (?, 1, '2026-11-01 10:00', '2026-11-01 10:01', 1, 'pending', 0)",
+            (obs,))
+        pid += 1
+        conn.exec_driver_sql(
+            "INSERT INTO photos (id, observation_id, original_filename, system_filename, captured_at, "
+            "status, identification_count, is_favorite) VALUES (?, ?, ?, ?, '2026-11-01 10:00', 'pending', 1, 0)",
+            (pid, obs, f'IMG_{pid}.jpg', f'sys_{pid}.jpg'))
+        voters = [(uids[0], -1)] if obs <= 25 else [(uids[2], 1), (uids[3], 1)]
+        for u, sp in voters:
+            conn.exec_driver_sql(
+                "INSERT INTO identifications (photo_id, user_id, species_id, quantity, created_at) "
+                "VALUES (?, ?, ?, 1, '2026-11-01 11:00')", (pid, u, sp))
 
 patch('app.camera_traps.weights_routes.get_ct_session', side_effect=lambda: CTSession()).start()
 patch('app.camera_traps.weights_routes.close_ct_session').start()
