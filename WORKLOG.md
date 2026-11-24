@@ -197,6 +197,20 @@
   2.8 % -> 3.9 %, contradicted 0.23 % -> 0.22 %. 10/10 now weighs 0.5, so
   two newcomers never close; "alone + AI" needs ~990 agreed votes on that
   species. Pending series closed by it now: 0. Weights page shows k.
+- 2026-11-24, rule settings editable on the weights page (owner): new
+  table ct_db.ct_settings (shared-ct 7b315f9, `ct_settings.py`, model
+  CTSetting; biomon f7f010f, myproject 6d285fc). The weighted rule reads the
+  closing threshold and the DeepFaune factor from it (30 s per-process
+  cache, out-of-range ignored); config values are only the fallback, and
+  the threshold fallback is now the conservative 1.5 on both sites.
+  /admin/verifier-weights: ✏️ next to the threshold and DeepFaune cards
+  opens one editor (− / + steps of 0.01, ranges 1.0-3.0 and 0.0-1.0),
+  "Estimate" (read-only JSON: alone + AI from-weight, who gains or loses it
+  on which species, pending series it would close now), "Save" with a
+  confirm listing the changes; only changed values are written with login
+  and time. Prod: `scripts.init_ct_settings --threshold 1.49 --ai-factor 0.5
+  --apply` BEFORE the reload, so the rule never fell back to 1.5. Checked
+  on both hosts: 1.49 / 0.5 in force, fallback 1.5; estimate on prod 2.0 s.
 - Side findings: verifier 29 has Empty precision 0.71 over 4,976 votes;
   DeepFaune "horse" and "corvids" agree with people in 18 % / 8 % of series
   (label mapping worth checking).
