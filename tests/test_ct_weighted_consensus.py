@@ -518,3 +518,48 @@ def test_estimate_takes_the_ai_factor(auth_client, db_session, settings_route_se
     assert d['new_ai'] == 0.6 and d['old_ai'] == 0.5
     assert d['solo_new'] == pytest.approx(0.89)
     assert [g['species'] for g in d['gained']] == ['Козуля']
+
+
+def test_stored_k_drives_weights_and_closing(app, ct_session, weights_table, settings_table,
+                                             make_ct_photo, make_ct_species):
+    """Two 20/20 people: k = 10 gives 0.67 each (1.33, open), stored k = 1 gives
+    0.95 each (1.90, closed)."""
+    sp = make_ct_species()
+    _records(ct_session, [(1, sp.id, 20, 20), (2, sp.id, 20, 20)])
+    photo = make_ct_photo()
+    _vote(ct_session, photo, 1, sp.id)
+    _vote(ct_session, photo, 2, sp.id)
+    cfg = {'MIN_IDENTIFICATIONS': 1, 'WEIGHTED_CONSENSUS_THRESHOLD': 1.5,
+           'VERIFIER_EXPERIENCE_K': 10, 'AI_VOTE_FACTOR': 0.5}
+    with app.app_context():
+        app.config['CAMERA_TRAP_CONFIG'] = cfg
+        check_consensus_for_observation(photo.observation.id, db_session=ct_session)
+        ct_session.commit()
+        ct_session.refresh(photo.observation)
+        assert photo.observation.status == 'pending'
+        ct_settings.put(ct_session, ct_settings.EXPERIENCE_K_KEY, 1, 'admin')
+        ct_session.commit()
+        check_consensus_for_observation(photo.observation.id, db_session=ct_session)
+        ct_session.commit()
+    ct_session.refresh(photo.observation)
+    assert photo.observation.status == 'completed'
+
+
+def test_admin_saves_k_and_estimate_uses_it(auth_client, db_session, settings_route_session,
+                                            weights_table, make_ct_species):
+    sp = make_ct_species(common_name_ua='Козуля')
+    _records(settings_route_session, [(1, sp.id, 200, 200)])            # k 10: 0.952, k 1: 0.995
+    cl = auth_client(role='admin')
+    with app_config(cl, {'MIN_IDENTIFICATIONS': 1, 'WEIGHTED_CONSENSUS_THRESHOLD': 1.49,
+                         'VERIFIER_EXPERIENCE_K': 10, 'AI_VOTE_FACTOR': 0.5}):
+        d = cl.get('/uk/camera-traps/admin/verifier-weights/estimate?k=1').get_json()
+        assert d['old_k'] == 10 and d['new_k'] == 1
+        assert [g['species'] for g in d['gained']] == ['Козуля']
+        cl.post('/uk/camera-traps/admin/verifier-weights/settings',
+                data={'threshold': '1.49', 'ai_factor': '0.5', 'k': '3'})
+        assert ct_settings.info(settings_route_session, ct_settings.EXPERIENCE_K_KEY)[0] == '3.0'
+        cl.post('/uk/camera-traps/admin/verifier-weights/settings',
+                data={'threshold': '1.49', 'ai_factor': '0.5', 'k': '500'})
+        assert ct_settings.info(settings_route_session, ct_settings.EXPERIENCE_K_KEY)[0] == '3.0'
+        html = cl.get('/uk/camera-traps/admin/verifier-weights').get_data(as_text=True)
+        assert '(n + 3)' in html

@@ -4,10 +4,10 @@ Create ct_settings (admin-editable CT settings shared by all hosts,
 app/camera_traps/ct_settings.py) and optionally seed the closing threshold.
 
 Run from the project root (DRY RUN by default, nothing is changed):
-    venv/Scripts/python -m scripts.init_ct_settings --threshold 1.49 --ai-factor 0.5          # dry run
-    venv/bin/python -m scripts.init_ct_settings --threshold 1.49 --ai-factor 0.5 --apply      # apply
+    venv/Scripts/python -m scripts.init_ct_settings --threshold 1.49 --ai-factor 0.5 --k 10          # dry run
+    venv/bin/python -m scripts.init_ct_settings --threshold 1.49 --ai-factor 0.5 --k 10 --apply      # apply
 
---threshold / --ai-factor seed a key only when it is absent; an existing
+--threshold / --ai-factor / --k seed a key only when it is absent; an existing
 value (set on /admin/verifier-weights) is never overwritten.
 Order: either way round; the code reads the config fallback while the
 table or the key is missing.
@@ -17,7 +17,8 @@ import sys
 from sqlalchemy import text
 
 from app import create_app
-from app.camera_traps.ct_settings import AI_FACTOR_KEY, THRESHOLD_KEY, TABLE, parse
+from app.camera_traps.ct_settings import (AI_FACTOR_KEY, EXPERIENCE_K_KEY, THRESHOLD_KEY,
+                                          TABLE, parse)
 from app.camera_traps.database import get_ct_engine
 
 DDL = f"""
@@ -33,7 +34,8 @@ CREATE TABLE IF NOT EXISTS {TABLE} (
 def main():
     apply = '--apply' in sys.argv
     seeds = {}
-    for flag, key in (('--threshold', THRESHOLD_KEY), ('--ai-factor', AI_FACTOR_KEY)):
+    for flag, key in (('--threshold', THRESHOLD_KEY), ('--ai-factor', AI_FACTOR_KEY),
+                      ('--k', EXPERIENCE_K_KEY)):
         if flag in sys.argv:
             val = parse(key, sys.argv[sys.argv.index(flag) + 1])
             if val is None:
