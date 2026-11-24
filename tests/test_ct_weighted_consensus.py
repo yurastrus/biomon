@@ -448,6 +448,8 @@ def test_estimate_lists_who_gains_alone_plus_ai(auth_client, db_session, setting
     assert [g['species'] for g in d['gained']] == ['Козуля']
     assert d['lost'] == []
     assert d['pending_total'] == 1
+    assert isinstance(d['close_now_new'], int)
+    assert isinstance(d['close_now_species'], list)
     bad = cl.get('/uk/camera-traps/admin/verifier-weights/estimate?threshold=7')
     assert bad.status_code == 400
 
