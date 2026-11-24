@@ -211,6 +211,12 @@
   and time. Prod: `scripts.init_ct_settings --threshold 1.49 --ai-factor 0.5
   --apply` BEFORE the reload, so the rule never fell back to 1.5. Checked
   on both hosts: 1.49 / 0.5 in force, fallback 1.5; estimate on prod 2.0 s.
+- Same day: the owner set threshold 1.5 and DeepFaune 0.51 on the page
+  (alone + AI still from weight 0.99). Then k became the third setting
+  (`verifier_experience_k`, 0-100, config fallback; shared-ct 0de53a2,
+  myproject b8e4bea): weights, rule, page and estimate read it; the estimate
+  compares old and new weights. Seeded k = 10 on prod before the reload.
+  In force on both hosts: 1.5 / 0.51 / 10.
 - Side findings: verifier 29 has Empty precision 0.71 over 4,976 votes;
   DeepFaune "horse" and "corvids" agree with people in 18 % / 8 % of series
   (label mapping worth checking).
