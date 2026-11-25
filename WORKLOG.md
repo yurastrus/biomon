@@ -60,6 +60,8 @@
   "don't know" (116 for this user), so Total != Positive + Negative. Stats
   refresh when "Apply" loads a segment, not on each select change (same as
   the queue).
+- Verification page: the audio player block lost its own frame and
+  background (owner's screenshot); CSS v57, shared-pam 8dba9b6, pull + HUP.
 
 - Owner's idea: weight each verifier's vote by their record on that species,
   with a penalty for small records (10 of 10 may be luck), and close a series
