@@ -478,6 +478,36 @@ def test_stats_taxonomy_filters_apply_to_every_query(auth_client):
         assert params['family_name'] == 'Paridae'
 
 
+def test_stats_institution_filter_applies_to_every_query(auth_client):
+    """With an institution selected, Total/Positive/Negative and the per-species
+    rows narrow too, not only Remaining (bug until 2026-11-25: on prod the
+    history cards showed 2489 answers while that institution had 2112)."""
+    cl = auth_client(role='admin')
+    conn = MagicMock()
+    seen = []
+
+    def _ex(sql, params=None):
+        seen.append((str(sql), params))
+        res = MagicMock()
+        res.fetchone.return_value = SimpleNamespace(
+            total_verifications=0, positive_verifications=0,
+            negative_verifications=0, skipped_verifications=0)
+        res.scalar.return_value = 0
+        res.fetchall.return_value = []
+        return res
+    conn.execute.side_effect = _ex
+
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = cl.get('/uk/api/verification/stats?institution_ids=1&species_id=103')
+
+    assert resp.status_code == 200
+    assert len(seen) == 3
+    for sql, params in seen:
+        assert 'li.institution_id = ANY(:institution_ids)' in sql
+        assert 'seg.species_id = :species_id' in sql
+        assert params['institution_ids'] == [1]
+
+
 # ── next-segment: bilingual location from the locations registry ─────────────────
 
 def _next_segment_row(loc_uk, loc_en, seg_loc='FILE_LOC', rights='Установа'):
