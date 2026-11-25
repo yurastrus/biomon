@@ -3,6 +3,60 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-11-25: Sample upload, export to a local folder (not deployed)
+
+- Owner's request: the reverse of /pam/verification/sample-upload. Find
+  detections of chosen species with the same filters (institutions,
+  locations, months, years, dates, confidence), optionally only partly or
+  fully verified ones, find the recordings in the local archive through the
+  location.json index, and either cut segments or copy whole files into an
+  output folder, one subfolder per Latin name. Two steps (count, then
+  confirm) so terabytes are never copied by accident. Same limit field.
+- Decision: a destination switch on the same page instead of a new page
+  (owner's suggestion). Server stays the default and every deep link lands
+  there; whole files are locked in server mode (no disk space on the server).
+  The gap-planning button is server-only.
+- Server (shared-pam): `build_sampling_query` got shape switches
+  `skip_sampled`, `verification`, `verdict`, `per_recording`; defaults return
+  the historical SQL verbatim (pinned by a test). `/prepare` with
+  `destination: "local"` plans up to 20 species (`MAX_EXPORT_SPECIES`, keeps
+  the request well under the gunicorn timeout) and answers `per_species`
+  counts; without `destination` the request and the answer are unchanged.
+- Verification definitions: full = consensus in detection_verification_map;
+  partial = real votes on the detection's segments (any model) but no
+  consensus; verdict = consensus, else majority of votes; ties only under
+  "any". Rejected detections are exportable on purpose (negatives for
+  classifier training/evaluation are as useful as positives).
+- Browser: new `static/js/local_export.js` (summary, streaming copy, cut via
+  the existing cutter, skip-existing resume, merged `manifest.csv` per
+  species folder, refuses an output folder inside the archive). The existing
+  `segment_cutter.js` and `recording_index.js` are untouched.
+- Rejected alternatives: server-side copying (files never leave the
+  operator's disk); a separate page (would duplicate the whole filter
+  cascade and the folder index).
+- Real-DB probe (read-only, `scripts.probe_pam_export_plan`): Bufo bufo 124
+  segments / 108 files, 26 confirmed, 76 rejected, 6 tied partial;
+  Fringilla coelebs 5000-row plans in 0.1-4.5 s per query.
+- Fixed in passing: the en translation of "можна кілька; не вибрано = усі"
+  from the previous entry was empty in pam.po.
+- Tests: new `tests/test_pam_local_export.py` (36); sampling, window filters,
+  co-occurrence, priorities 290 passed; all PAM tests 1048 passed before the
+  last template tweak. Full suite: 3206 passed, 2 failed, both unrelated:
+  `test_docs::test_menu_link_for_everyone` (no SDM item in the main menu,
+  outside PAM) and an order-dependent co-occurrence test that passes alone
+  (`logs/pytest_local_export_20261125.log`).
+- Commits: shared-pam faa2d04, pointer bump in biomon.
+- Browser check in `scripts/pam_local_export_ui_harness.py` (port 5083) with
+  OPFS standing in for the native folder picker: server-mode body unchanged;
+  local mode two species x segments wrote 6 WAVs (48044 B each, 3 s at
+  8 kHz), 2 missing reported; second run skipped all 6; whole files copied
+  byte-identical, shared recording copied into both species folders;
+  output inside archive refused; deep links from species dashboard,
+  priorities and co-occurrence prefill as before; no console errors; no
+  horizontal scroll at 375 px.
+- Deploy: no tables, no packages. shared-pam -> pointer in biomon; pull and
+  HUP. Not deployed yet.
+
 ## 2026-11-25: Sample upload, empty location box means "all locations"
 
 - Owner's report: on /pam/verification/sample-upload, choosing an institution

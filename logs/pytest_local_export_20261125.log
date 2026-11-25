@@ -1,0 +1,3 @@
+FAILED tests/test_docs.py::test_menu_link_for_everyone - ValueError: substrin...
+FAILED tests/test_pam_cooccurrence.py::test_sample_scope_requires_verification_role[stats]
+==== 2 failed, 3206 passed, 44 skipped, 273 warnings in 461.92s (0:07:41) =====
