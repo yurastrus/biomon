@@ -41,6 +41,12 @@
   card: spectrogram padded and `contain` instead of cropped, author line no
   longer split by pre-line. CSS v55. shared-pam 8dd8e0f, 7a4ce92; deployed
   with pull + HUP.
+- Verification page: "My statistics" moved from the left panel to a new
+  right column (`.verification-main`: segment panel / empty state / spinner,
+  then stats), so it sits under the verdict buttons; on screens <= 1024 px
+  the layout is one column and the stats follow the buttons. Checked in a
+  rendered harness at 1400 px and 375 px (no horizontal scroll). CSS v56,
+  shared-pam aae778a, deployed with pull + HUP.
 
 - Owner's idea: weight each verifier's vote by their record on that species,
   with a penalty for small records (10 of 10 may be luck), and close a series
