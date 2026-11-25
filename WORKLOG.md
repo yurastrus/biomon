@@ -6813,3 +6813,13 @@ sitemap URLs. 5xx = 9 with validation "Not started"; all 42 sitemap URLs return
 - CT `/camera-traps/manage-locations` checked: page, status API and service history already use `ct_access.manage_institution_ids`; no change needed.
 - Tests: `tests/test_manager_scope_admin_pam.py` (old test encoded the read-only listing; replaced + 2 new). `-k pam`: 920 passed.
 - Deployed 2026-11-13 (pull + HUP, no init scripts; log `logs/deploy_pam_manager_scope_*.log` on server). Prod check (read-only, view function as each manager with view-only parks): users 3, 15, 76 now see 2 / 61 / 74 locations, all editable, zero read-only.
+
+## 2026-11-25 — Unverified timelapse (L__) series closed as Empty via DeepFaune
+
+- Count (prod, read-only): 2,070 pending series contain `L__` timelapse photos and have no human vote (3,094 photos, 114 locations); 1,974 are timelapse-only, 96 mix one timelapse frame with motion frames (left alone).
+- DeepFaune (site series-pick rule) calls 1,598 of the 1,974 Empty with every frame >= 0.98; 376 have another answer.
+- Evidence: of 42,782 already verified timelapse-only series with DeepFaune Empty >= 0.98, people closed 42,781 as Empty (one "cannot identify").
+- Closing path: one Empty vote from yurastrus (ID 1, Empty weight ~0.997) + DeepFaune 0.51 x score passes threshold 1.5 when score >= ~0.987; all 1,598 pass. Note: prod ct_settings threshold is 1.5, not 1.49.
+- Tool: `ct-expertise-verifier` (sibling repo, commit `feab7ea`) got a DeepFaune-only mode: pending, no votes, timelapse-only, Empty on every frame >= min score; expected status from biomon `closing_decision`. 12 tests pass. Submissions go through the normal web endpoint with the user's password (typed by the user).
+- Trial: user submitted 10 series (138333, 138680, 138158, 137627, 137505, 137538, 138590, 138575, 139187, 138514); all `completed`, Empty, 1 photo each. 1,588 remain. Nightly cleanup will archive them.
+- Next: run the remaining 1,588 from the GUI in batches if the trial looks fine on the site.
