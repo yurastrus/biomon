@@ -47,6 +47,19 @@
   the layout is one column and the stats follow the buttons. Checked in a
   rendered harness at 1400 px and 375 px (no horizontal scroll). CSS v56,
   shared-pam aae778a, deployed with pull + HUP.
+- "My statistics" vs filters (owner: "not all numbers change"). Audit
+  `scripts.audit_pam_verification_stats` (read-only, API vs direct SQL on
+  prod, user yurastrus): no filter, class and species matched; any case with
+  an institution was wrong: Total/Positive/Negative ignored the institution
+  (2489/1464/909 shown, 2112/1244/786 true for institution 1); only
+  Remaining was narrowed, by an old deliberate choice. Fixed in
+  api_verification_stats (institution narrows all three queries), test
+  added; shared-pam 3b51573, biomon 286f5a1, pull + HUP; audit after: all 6
+  cases OK.
+- Left as is, worth knowing: "Total" counts every answer including
+  "don't know" (116 for this user), so Total != Positive + Negative. Stats
+  refresh when "Apply" loads a segment, not on each select change (same as
+  the queue).
 
 - Owner's idea: weight each verifier's vote by their record on that species,
   with a penalty for small records (10 of 10 may be luck), and close a series
