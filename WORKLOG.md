@@ -35,6 +35,12 @@
   touched (its shared-pam pointer is not used for PAM changes).
 - Not done: no real flag set on prod yet (owner to try one from the
   verification page).
+- Follow-up the same day (owner's screenshots): the verification button row
+  overflowed its box (now flex-wrap + side padding, flag button compact and
+  outlined amber; on phones back and flag share one grid row); flagged-list
+  card: spectrogram padded and `contain` instead of cropped, author line no
+  longer split by pre-line. CSS v55. shared-pam 8dd8e0f, 7a4ce92; deployed
+  with pull + HUP.
 
 - Owner's idea: weight each verifier's vote by their record on that species,
   with a penalty for small records (10 of 10 may be luck), and close a series
