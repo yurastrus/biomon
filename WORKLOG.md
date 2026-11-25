@@ -3,7 +3,29 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
-## 2026-11-23: Weighted-vote consensus study (research only, nothing changed on the site)
+## 2026-11-25: PAM "flag for re-review" (port of the camera-trap flag)
+
+- Owner's request: the same flag as on /camera-traps/identify (🚩 + optional
+  comment, author recorded, list at /camera-traps/admin/flagged), on the PAM
+  verification page, listed under /pam/admin, protecting the segment from
+  deletion after consensus.
+- In PAM the unit is a segment; deletion after consensus is
+  `cleanup_completed_verifications` (status 'completed' -> files removed,
+  status 'archived'). It now selects `AND NOT flagged`.
+- Schema (pam_db, migration 0011, `scripts.init_pam_review_flag`):
+  segments.flagged / flag_note / flagged_by (main-DB user id, no FK) /
+  flagged_at, partial index. Unlike CT (author packed into flag_note), the
+  author got its own column because a migration was needed anyway.
+- Routes: POST `/api/verification/segment/<id>/flag` (pam_verifier, same
+  institution access as voting, JSON), POST `/pam/admin/flagged/<id>/unflag`
+  (admin only), GET `/pam/admin/flagged` (species, location, recording time,
+  spectrogram, audio player, votes, author, flag time, comment; "Verify"
+  deep link while pending). Badge with count on /pam/admin.
+- The flag does not vote, does not change status, queue or analytics (as CT).
+  After flagging, the page moves to the next segment.
+- Tests: `tests/test_pam_segment_flag.py` (7); PAM + translation suite 1016
+  passed (one flaky benefit-queue test failed once, passes alone).
+- Code: shared-pam 03f6af4.
 
 - Owner's idea: weight each verifier's vote by their record on that species,
   with a penalty for small records (10 of 10 may be luck), and close a series
