@@ -3,7 +3,7 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
-## 2026-11-25: Sample upload, export to a local folder (not deployed)
+## 2026-11-25: Sample upload, export to a local folder (deployed 2026-11-25)
 
 - Owner's request: the reverse of /pam/verification/sample-upload. Find
   detections of chosen species with the same filters (institutions,
@@ -54,8 +54,13 @@
   output inside archive refused; deep links from species dashboard,
   priorities and co-occurrence prefill as before; no console errors; no
   horizontal scroll at 375 px.
-- Deploy: no tables, no packages. shared-pam -> pointer in biomon; pull and
-  HUP. Not deployed yet.
+- Deploy: no tables, no packages. **Deployed 2026-11-25 11:35 UTC**: server
+  pull to d0d2743, pam faa2d04; template and module imported in the prod app
+  before reload; `kill -HUP` of the biomon master (gunicorn --timeout 600).
+  Smoke: /uk/camera-traps/ 200; sample-upload as admin (test client, GET
+  only) 200 with the destination switch; /uk/pam-static/js/local_export.js
+  200; no errors in the journal besides the normal HUP SIGTERM lines.
+  myproject does not use shared-pam, nothing to do there.
 
 ## 2026-11-25: Sample upload, empty location box means "all locations"
 
