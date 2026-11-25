@@ -26,6 +26,15 @@
 - Tests: `tests/test_pam_segment_flag.py` (7); PAM + translation suite 1016
   passed (one flaky benefit-queue test failed once, passes alone).
 - Code: shared-pam 03f6af4.
+- **Deployed 2026-11-25** (graceful): server pull to 4053cac, pam 03f6af4;
+  `scripts.init_pam_review_flag` (4 columns, 0 flagged; log
+  `logs/init_pam_review_flag_20261125.log` on the server); admin smoke via
+  test_client before reload (/pam/admin, /pam/admin/flagged uk+en,
+  verification page with the button, CT: all 200); `kill -HUP` of master
+  1416419, three new workers, master unchanged, 200 after. myproject not
+  touched (its shared-pam pointer is not used for PAM changes).
+- Not done: no real flag set on prod yet (owner to try one from the
+  verification page).
 
 - Owner's idea: weight each verifier's vote by their record on that species,
   with a penalty for small records (10 of 10 may be luck), and close a series
