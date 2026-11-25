@@ -3,6 +3,30 @@
 > Note: entries from 2026-08-14 on are written in English per the global
 > documentation-language rule; earlier entries stay in Ukrainian as written.
 
+## 2026-11-25: Sample upload, empty location box means "all locations"
+
+- Owner's report: on /pam/verification/sample-upload, choosing an institution
+  without picking locations left "Prepare sample" disabled, and the species
+  list stayed the global catalogue until a location was picked. The owner
+  wants "no location picked" to mean every location of the institution.
+- Fix (template only, shared-pam 4ce8cf6): `effectiveLocationIds()` returns
+  the picked locations, or all locations listed for the chosen institutions
+  (all accessible ones when no institution is chosen either). Used by the
+  species request, the prepare button state and the stratified /prepare body.
+  The species list now loads per institution as soon as one is chosen; the
+  full catalogue is kept only when nothing at all is chosen (cheap query).
+- Gap planning (/prepare-gaps) unchanged: it still sends only picked
+  locations, because the server already treats an empty list as the whole
+  institution (`all_locations`) and also covers locations without detections.
+- No server change: /species and /prepare already filter the ids through
+  `_sample_managed_location_ids`, so access is enforced as before.
+- Label hint "(можна кілька; не вибрано = усі)" with en translation; uk/en
+  catalogs compiled.
+- Tests: PAM sampling/co-occurrence/priorities suites 254 passed; browser
+  check in `scripts/pam_sample_link_ui_harness.py`: institution chosen, no
+  locations -> species request `location_ids=1,2,3`, prepare enabled, body
+  `location_ids [1,2,3]`.
+
 ## 2026-11-25: PAM "flag for re-review" (port of the camera-trap flag)
 
 - Owner's request: the same flag as on /camera-traps/identify (🚩 + optional
