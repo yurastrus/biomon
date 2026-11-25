@@ -26,6 +26,9 @@
   check in `scripts/pam_sample_link_ui_harness.py`: institution chosen, no
   locations -> species request `location_ids=1,2,3`, prepare enabled, body
   `location_ids [1,2,3]`.
+- **Deployed 2026-11-25** (graceful): server pull to 837ff98, pam 4ce8cf6;
+  template compiled in the prod app before reload; `kill -HUP` of master
+  1416419, three workers back; / 200, sample-upload 302 (login) as expected.
 
 ## 2026-11-25: PAM "flag for re-review" (port of the camera-trap flag)
 
