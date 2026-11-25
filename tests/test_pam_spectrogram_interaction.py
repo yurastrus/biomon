@@ -90,7 +90,10 @@ def test_verification_page_shows_taxa_and_species_above_verdicts(auth_client):
     assert 'All orders' in orders and 'All families' in families
     assert families.index('Corvidae') < families.index('Paridae')
     assert html.index('id="verdict-species"') < html.index('id="verify-yes"')
-    assert "$('#segment-species, #verdict-species').text(segment.species_display_name)" in html
+    assert "$('#verdict-species').text(segment.species_display_name)" in html
+    # The left panel no longer repeats the name; xeno-canto sits by the verdict title.
+    assert 'id="segment-species"' not in html
+    assert html.index('id="verdict-species"') < html.index('id="segment-xc-link"') < html.index('id="verify-yes"')
     css = CSS.read_text(encoding='utf-8')
     species_style = css.split('.verification-current-species {', 1)[1].split('}', 1)[0]
     assert 'text-align: center' in species_style
