@@ -67,6 +67,13 @@
   right of that name (title/aria "Listen on xeno-canto"); space between the
   player and the name cut to ~10 px. Harness check 1400 px and 375 px. CSS
   v58, shared-pam 65d01f5, biomon 78b9ab7, pull + HUP.
+- "My statistics" made compact (owner picked variant C of three mockups):
+  one line "My answers N (yes / no / don't know) · remaining M" and a bar of
+  yes / no / don't know among answered + remaining for the current filter
+  (empty track = what is left). "Don't know" is derived on the client as
+  total - yes - no - skipped. Height ~165 px -> ~60 px desktop, ~105 px at
+  375 px (items do not break mid-phrase). CSS v59, shared-pam 44ca46e,
+  biomon 3671596, pull + HUP; PAM tests 1013 passed.
 
 - Owner's idea: weight each verifier's vote by their record on that species,
   with a penalty for small records (10 of 10 may be luck), and close a series
