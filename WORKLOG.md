@@ -62,6 +62,11 @@
   the queue).
 - Verification page: the audio player block lost its own frame and
   background (owner's screenshot); CSS v57, shared-pam 8dba9b6, pull + HUP.
+- Then: species name removed from the left info card (shown once, above the
+  verdict buttons); the xeno-canto link became a small "XC" button to the
+  right of that name (title/aria "Listen on xeno-canto"); space between the
+  player and the name cut to ~10 px. Harness check 1400 px and 375 px. CSS
+  v58, shared-pam 65d01f5, biomon 78b9ab7, pull + HUP.
 
 - Owner's idea: weight each verifier's vote by their record on that species,
   with a penalty for small records (10 of 10 may be luck), and close a series
