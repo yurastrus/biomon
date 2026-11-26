@@ -6851,3 +6851,14 @@ sitemap URLs. 5xx = 9 with validation "Not started"; all 42 sitemap URLs return
   in the 5 min, not necessarily inside a given 3-s segment.
 - Open: 23 A. funereus segments are split 1:1 (owner, user 1, voted "no";
   Tetiana "yes") and stay pending until a third voter.
+
+## 2026-11-26: a list of windows in one link (segment-window cutter + verification queue)
+Request: the author had to open dozens of segment-window links for the #30 pygmy-owl truth set. Added an optional
+`windows` parameter (`LOC@FROM/TO;...`, `_parse_windows_arg`, max 300) to `/pam/verification/segment-window`
+(plan = union over windows, each at its own location, de-duplicated, `MAX_LIST_SEGMENTS` = 600) and to the
+verification queue (`_verification_queue_scope`: OR of the windows, ANDed with the other filters). Without the
+parameter both pages take the old path verbatim; the co-occurrence map, priorities page and dashboards are unchanged.
+Tests: 7 new in `tests/test_pam_segment_sampling.py`; full suite 3214 passed, 1 failed
+(`test_docs.py::test_menu_link_for_everyone`, fails without this change too, pre-existing), log
+`logs/pytest_window_list_20261126.log`. shared-pam commit 4ee5cd0. myproject pins an older shared-pam and is not affected
+until its submodule is bumped.

@@ -452,3 +452,104 @@ def test_api_sample_upload_segment_missing_metadata_400(auth_client):
         'species_name': 'Bufo bufo',  # missing species_id/detection_id/filename
     }, content_type='multipart/form-data')
     assert resp.status_code == 400
+
+
+# --------------------------------------------------------------------------
+# A list of windows in one link (26.11.2026): cutter and verification queue
+# --------------------------------------------------------------------------
+
+def test_parse_windows_arg_reads_a_list_and_rejects_bad_items(app):
+    from app.pam.routes import _parse_windows_arg, MAX_WINDOWS
+
+    assert _parse_windows_arg(None) == [] and _parse_windows_arg('') == []
+    got = _parse_windows_arg('6@2025-03-01T00:00Z/2025-03-08T00:00Z; 9@2025-03-08T00:00:00+00:00/2025-03-15T00:00Z;')
+    assert [(w[0], w[1].isoformat(), w[2].isoformat()) for w in got] == [
+        (6, '2025-03-01T00:00:00+00:00', '2025-03-08T00:00:00+00:00'),
+        (9, '2025-03-08T00:00:00+00:00', '2025-03-15T00:00:00+00:00'),
+    ]
+    for bad in ('6@2025-03-08T00:00Z/2025-03-01T00:00Z',   # reversed
+                'x@2025-03-01T00:00Z/2025-03-08T00:00Z',   # not a location id
+                '6@2025-03-01T00:00Z',                     # no end
+                '6@not-a-date/2025-03-08T00:00Z'):
+        with pytest.raises(ValueError):
+            _parse_windows_arg(bad)
+    with pytest.raises(ValueError):
+        _parse_windows_arg(';'.join(['6@2025-03-01T00:00Z/2025-03-08T00:00Z'] * (MAX_WINDOWS + 1)))
+
+
+def test_plan_window_with_a_list_cuts_each_window_at_its_own_location(auth_client):
+    cl = auth_client(role='manager', manages=True)
+    conn = MagicMock()
+    conn.execute.side_effect = [_mapping_result([SimpleNamespace(location_id=10),
+                                                 SimpleNamespace(location_id=20)]), MagicMock()]
+    seg = lambda det: {'detection_id': det}
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn), \
+         patch('app.pam.routes._resolve_model_choice', return_value=(1, True)), \
+         patch('app.pam.utils.get_model_conf_columns', return_value={1: 'confidence'}), \
+         patch('app.pam.pam_segment_sampling.plan_window_segments',
+               side_effect=[[seg(1), seg(2)], [seg(2), seg(3)]]) as window:
+        resp = cl.post('/uk/api/pam/sample/plan-window', json={
+            'species_name': 'Glaucidium passerinum',
+            'windows': '10@2025-03-01T00:00Z/2025-03-08T00:00Z;'
+                       '20@2025-03-08T00:00Z/2025-03-15T00:00Z;'
+                       '30@2025-03-08T00:00Z/2025-03-15T00:00Z',   # not managed: skipped
+        })
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert [s['detection_id'] for s in body['segments']] == [1, 2, 3]   # union, no duplicates
+    assert body['windows'] == 3
+    assert [c.kwargs['location_ids'] for c in window.call_args_list] == [[10], [20]]
+    assert window.call_args_list[0].kwargs['from_ts'].isoformat() == '2025-03-01T00:00:00+00:00'
+
+
+def test_plan_window_rejects_a_malformed_list(auth_client):
+    cl = auth_client(role='manager', manages=True)
+    resp = cl.post('/uk/api/pam/sample/plan-window', json={
+        'species_name': 'Glaucidium passerinum', 'windows': '10@bad/2025-03-08T00:00Z'})
+    assert resp.status_code == 400
+
+
+def test_plan_window_single_window_is_unchanged(auth_client):
+    """No ``windows``: one call over all locations with the URL's from/to, as before."""
+    cl = auth_client(role='manager', manages=True)
+    conn = MagicMock()
+    conn.execute.side_effect = [_mapping_result([SimpleNamespace(location_id=10)]), MagicMock()]
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn), \
+         patch('app.pam.routes._resolve_model_choice', return_value=(1, True)), \
+         patch('app.pam.utils.get_model_conf_columns', return_value={1: 'confidence'}), \
+         patch('app.pam.pam_segment_sampling.plan_window_segments', return_value=[]) as window:
+        resp = cl.post('/uk/api/pam/sample/plan-window', json={
+            'location_ids': [10], 'species_name': 'Bufo bufo',
+            'from_ts': '2025-03-03T18:00:00Z', 'to_ts': '2025-03-03T19:00:00Z'})
+    assert resp.status_code == 200
+    assert window.call_count == 1
+    kw = window.call_args.kwargs
+    assert kw['location_ids'] == [10] and 'max_rows' not in kw
+    assert resp.get_json()['limit'] == pss.MAX_WINDOW_SEGMENTS
+
+
+def test_verification_queue_narrows_to_a_list_of_windows(auth_client, mock_pam_conn):
+    with mock_pam_conn() as conn:
+        resp = auth_client(role='admin').get(
+            '/uk/api/verification/next-segment?windows='
+            '6@2025-03-01T00:00Z/2025-03-08T00:00Z;9@2025-03-08T00:00Z/2025-03-15T00:00Z')
+    assert resp.status_code in (200, 404)
+    query, params = conn.execute.call_args_list[0].args
+    sql = str(query)
+    assert 'r_det.location_id = :w_loc_0' in sql and ':w_to_1' in sql and ' OR ' in sql
+    assert params['w_loc_0'] == 6 and params['w_loc_1'] == 9
+
+
+def test_verification_queue_rejects_a_malformed_window_list(auth_client, mock_pam_conn):
+    with mock_pam_conn() as conn:
+        resp = auth_client(role='admin').get('/uk/api/verification/next-segment?windows=6@x/y')
+    assert resp.status_code == 400
+    conn.execute.assert_not_called()
+
+
+def test_segment_window_and_verification_pages_carry_the_window_list(auth_client):
+    cl = auth_client(role='admin')
+    with patch('app.pam.routes.get_models_list', return_value=[]), \
+         patch('app.pam.routes.get_reference_model_id', return_value=None):
+        page = cl.get('/uk/pam/verification/segment-window').get_data(as_text=True)
+    assert "Q.get('windows')" in page and 'windows: WINDOWS' in page
