@@ -294,9 +294,13 @@ def test_robots_blocks_editor_screens_only(client):
 def test_menu_link_for_everyone(app, client, docs, make_user):
     assert 'ДОКУМЕНТАЦІЯ' in client.get('/uk/').get_data(as_text=True)
     assert 'DOCS' in client.get('/en/').get_data(as_text=True)
+    # Right after the maps item. That item was "SDM" for admins only; since 5d8ecca (18.11.2026) it is
+    # "Карти" for everyone, so the order holds for guests and admins alike.
+    guest = client.get('/uk/docs/').get_data(as_text=True)
+    assert guest.index('>Карти<') < guest.index('ДОКУМЕНТАЦІЯ')
     admin = make_user('boss', roles=('admin',))
     html = _login(app, admin).get('/uk/docs/').get_data(as_text=True)
-    assert html.index('SDM') < html.index('ДОКУМЕНТАЦІЯ')  # right after SDM for admins
+    assert html.index('>Карти<') < html.index('ДОКУМЕНТАЦІЯ')
 
 
 # ── bundles (agent / script path) ────────────────────────────────────────────
