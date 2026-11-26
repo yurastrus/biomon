@@ -6868,4 +6868,4 @@ until its submodule is bumped.
 - **Problem:** on `/pam/verification/verify` the 🚩 button saved the flag + comment and immediately loaded the next segment, so the verifier could not also give their own answer.
 - **Change (shared-pam, template only):** after a successful flag the segment stays on screen, a confirmation message appears, and the flag button is locked for that segment (`flaggedSegments` set, `updateFlagButton()`, called from `setBusy` and `displaySegment`). The verifier then answers or presses Skip. The flag is still not a vote; the API (`api_flag_segment`) is unchanged.
 - **Test:** `tests/test_pam_verify_flag_stays.py` (source guard: no `loadNextSegment` in the handler, per-segment lock, declared before first load).
-- **State:** committed + pushed (shared-pam, biomon pointer). Not deployed; not clicked through in a browser (needs live PAM DB).
+- **State:** committed + pushed; deployed to biomon.app 2026-11-26 (git pull + graceful HUP, smoke: CT 200, verify page 302 to login, template has the new code; log `logs/deploy_pam_flag_stays_biomon_*.log`). Not clicked through in a browser yet.
