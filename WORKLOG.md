@@ -6823,3 +6823,31 @@ sitemap URLs. 5xx = 9 with validation "Not started"; all 42 sitemap URLs return
 - Tool: `ct-expertise-verifier` (sibling repo, commit `feab7ea`) got a DeepFaune-only mode: pending, no votes, timelapse-only, Empty on every frame >= min score; expected status from biomon `closing_decision`. 12 tests pass. Submissions go through the normal web endpoint with the user's password (typed by the user).
 - Trial: user submitted 10 series (138333, 138680, 138158, 137627, 137505, 137538, 138590, 138575, 139187, 138514); all `completed`, Empty, 1 photo each. 1,588 remain. Nightly cleanup will archive them.
 - Next: run the remaining 1,588 from the GUI in batches if the trial looks fine on the site.
+
+## 2026-11-26 — Tetiana Kornienko's offline owl verdicts entered as PAM votes
+
+- Owner's request: Tetiana Kornienko (user 14, `sovionysh`) got 14 full
+  5-min recordings instead of segments, identified them in third-party
+  software and appended the species found to each file name
+  (e.g. `VERBUKY_20260419_202002_B bubo.wav`; 12 "B bubo" (4 also with
+  S aluco, one "M+F"), 2 "A funereus"). Fill her verdicts into the database
+  for Bubo bubo / Aegolius funereus segments of those recordings.
+- Matching: recording stem → `recordings.filename` → segments via
+  `recording_id` (or the stem in `segments.filename`). All 14 recordings
+  found; 68 target segments (Bubo bubo 18, A. funereus 50), location
+  VERBUKY, VERPRALIS2, VERCENTER. Probe: `scripts/probe_tetiana_owl_segments.py`
+  (read-only), output in `logs/probe_tetiana_owl_segments_20261126.log`.
+- Finding: she had already voted in the app on 64 of the 68 segments
+  (15–16.11.2026), all "yes" except segment 31860 (A. funereus, she voted
+  "don't know" = 2). Only four Bubo bubo segments had no vote from her
+  (31916, 31908 in VERPRALIS2_20260307_031500; 31902 in
+  VERPRALIS2_20260312_061102; 31933 in VERBUKY_20260413_044202).
+- Done: `scripts/apply_tetiana_owl_votes.py --apply` inserted a positive
+  vote from user 14 on those four (dry run first, committed). Trigger set
+  them to vc=1, pos=1, still pending (need a second verifier). Log:
+  `logs/apply_tetiana_owl_votes_20261126.log`.
+- Not touched: 31860 (her explicit in-app "don't know" was left as is, the
+  owner decides). Caveat: a file-level verdict says the species is somewhere
+  in the 5 min, not necessarily inside a given 3-s segment.
+- Open: 34 A. funereus segments are split 1:1 (owner, user 1, voted "no";
+  Tetiana "yes") and stay pending until a third voter.
