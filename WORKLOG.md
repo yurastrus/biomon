@@ -6849,5 +6849,5 @@ sitemap URLs. 5xx = 9 with validation "Not started"; all 42 sitemap URLs return
 - Not touched: 31860 (her explicit in-app "don't know" was left as is, the
   owner decides). Caveat: a file-level verdict says the species is somewhere
   in the 5 min, not necessarily inside a given 3-s segment.
-- Open: 34 A. funereus segments are split 1:1 (owner, user 1, voted "no";
+- Open: 23 A. funereus segments are split 1:1 (owner, user 1, voted "no";
   Tetiana "yes") and stay pending until a third voter.
