@@ -6862,3 +6862,10 @@ Tests: 7 new in `tests/test_pam_segment_sampling.py`; full suite 3214 passed, 1 
 (`test_docs.py::test_menu_link_for_everyone`, fails without this change too, pre-existing), log
 `logs/pytest_window_list_20261126.log`. shared-pam commit 4ee5cd0. myproject pins an older shared-pam and is not affected
 until its submodule is bumped.
+
+## 2026-11-26: PAM verify page, flag no longer skips the segment
+
+- **Problem:** on `/pam/verification/verify` the 🚩 button saved the flag + comment and immediately loaded the next segment, so the verifier could not also give their own answer.
+- **Change (shared-pam, template only):** after a successful flag the segment stays on screen, a confirmation message appears, and the flag button is locked for that segment (`flaggedSegments` set, `updateFlagButton()`, called from `setBusy` and `displaySegment`). The verifier then answers or presses Skip. The flag is still not a vote; the API (`api_flag_segment`) is unchanged.
+- **Test:** `tests/test_pam_verify_flag_stays.py` (source guard: no `loadNextSegment` in the handler, per-segment lock, declared before first load).
+- **State:** committed + pushed (shared-pam, biomon pointer). Not deployed; not clicked through in a browser (needs live PAM DB).
