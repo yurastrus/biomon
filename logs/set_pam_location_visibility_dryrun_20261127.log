@@ -1,0 +1,108 @@
+  420  azazellj             Жорниська-1
+  421  azazellj             Брюховичі-1
+  428  azazellj             Збиранка-1
+  437  azazellj             Брюховичі-2
+  438  azazellj             Брюховичі-3
+  439  azazellj             Знесіння-1
+  440  azazellj             Знесіння-2
+  506  azazellj             LYPYNSKOHO
+  507  azazellj             OBROSHYN
+  508  azazellj             ZBYRANKA
+  509  azazellj             PATONA
+  510  azazellj             Кожичі-1
+  511  azazellj             Домажир-1
+  512  azazellj             Пляшівка-1
+  447  CHNNP                16_009
+  448  CHNNP                16_058
+  449  CHNNP                16_068
+  469  CHNNP                16_008
+  470  CHNNP                16_059
+  471  CHNNP                16_064
+  472  CHNNP                16_063
+  473  CHNNP                16_074
+  474  CHNNP                16_071
+  475  CHNNP                16_070
+  450  HNNP                 10_328
+  451  HNNP                 10_320
+  452  HNNP                 10_319
+  453  HNNP                 10_326
+  454  HNNP                 10_325
+  455  HNNP                 10_324
+  456  HNNP                 10_207
+  457  HNNP                 10_222
+  458  HNNP                 10_330
+  459  HNNP                 10_331
+  402  northpeatlands       Долина р. Яричівки, с. В. Грибовичі
+  403  northpeatlands       Долина р. Яричівки №2, с. В. Грибовичі
+  409  OBROSHYNE            OBROSHYNE-1
+  410  OBROSHYNE            OBROSHYNE-2
+  411  OBROSHYNE            OBROSHYNE-3
+  412  OBROSHYNE            OBROSHYNE-4
+  413  OBROSHYNE            OBROSHYNE-5
+  406  POTELYCH             Потелицький заказник т.1
+  407  POTELYCH             Потелицький заказник т.2
+  408  POTELYCH             Потелицький заказник т.3
+  476  RVSNR                06_001
+  477  RVSNR                06_010
+  478  RVSNR                06_011
+  479  RVSNR                06_012
+  480  RVSNR                06_013
+  481  RVSNR                06_014
+  482  RVSNR                06_015
+  483  RVSNR                06_016
+  484  RVSNR                06_017
+  485  RVSNR                06_018
+  486  RVSNR                06_019
+  487  RVSNR                06_002
+  488  RVSNR                06_020
+  489  RVSNR                06_021
+  490  RVSNR                06_022
+  491  RVSNR                06_023
+  492  RVSNR                06_024
+  493  RVSNR                06_025
+  494  RVSNR                06_026
+  495  RVSNR                06_027
+  496  RVSNR                06_028
+  497  RVSNR                06_029
+  498  RVSNR                06_003
+  499  RVSNR                06_030
+  500  RVSNR                06_004
+  501  RVSNR                06_005
+  502  RVSNR                06_006
+  503  RVSNR                06_007
+  504  RVSNR                06_008
+  505  RVSNR                06_009
+  442  SBNNP                03_248
+  443  SBNNP                03_260
+  444  SBNNP                03_296
+  445  SBNNP                03_308
+  446  SBNNP                03_307
+   62  SNVLK                Розточчя - Страдчівський НВЛК - колонія
+  429  VNNP                 21_111
+  430  VNNP                 21_124
+  431  VNNP                 21_133
+  432  VNNP                 21_134
+  433  VNNP                 21_143
+  434  VNNP                 21_N01
+  435  VNNP                 21_N02
+  436  VNNP                 21_N03
+  414  VYNLIS               VL2_MIXED
+  415  VYNLIS               VL3_YAR
+  416  VYNLIS               VL4_SVITLYI
+  417  VYNLIS               VL1_BEECH
+  418  VYNLIS               VF1_VERBA
+  419  VYNLIS               VL5_SOSNSHYL
+  460  ZKNNP                11_050
+  461  ZKNNP                11_049
+  462  ZKNNP                11_055
+  463  ZKNNP                11_054
+  464  ZKNNP                11_038
+  465  ZKNNP                11_037
+  466  ZKNNP                11_045
+  467  ZKNNP                11_044
+  468  ZKNNP                11_043
+
+103 public locations outside RSNR -> private
+ids: 420,421,428,437,438,439,440,506,507,508,509,510,511,512,447,448,449,469,470,471,472,473,474,475,450,451,452,453,454,455,456,457,458,459,402,403,409,410,411,412,413,406,407,408,476,477,478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,442,443,444,445,446,62,429,430,431,432,433,434,435,436,414,415,416,417,418,419,460,461,462,463,464,465,466,467,468
+dry run, nothing written (use --apply)
+visibility_level counts now: [(0, 161), (1, 25)]

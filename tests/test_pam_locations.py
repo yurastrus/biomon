@@ -664,6 +664,25 @@ class TestPamCreateLocationAccess(PamLocationTestBase):
         self.assertTrue(data['success'])
         self.assertEqual(data['location_id'], 42)
 
+    def test_new_location_is_private(self):
+        """New PAM locations are private (visibility_level 1), as in CT.
+
+        Hard-coded 0 made every recorder of every institution public, so
+        anonymous visitors saw all PAM data (fixed 2026-11-27).
+        """
+        mock_conn = _make_pam_conn_for_create(new_id=42)
+        _login(self.client, self.manager.id)
+        with patch('app.pam.routes.get_pam_db_connection', return_value=mock_conn):
+            resp = self.client.post(
+                self.URL,
+                json=self._valid_payload(institution_ids=[self.inst_a.id])
+            )
+        self.assertEqual(resp.status_code, 200)
+        insert_sql = str(mock_conn.execute.call_args_list[0].args[0])
+        self.assertIn('INSERT INTO locations', insert_sql)
+        values = insert_sql.split('VALUES', 1)[1]
+        self.assertRegex(values, r"4326\),\s*1,\s*:state_province")
+
     def test_admin_can_create_location(self):
         mock_conn = _make_pam_conn_for_create(new_id=99)
         _login(self.client, self.admin.id)

@@ -6869,3 +6869,33 @@ until its submodule is bumped.
 - **Change (shared-pam, template only):** after a successful flag the segment stays on screen, a confirmation message appears, and the flag button is locked for that segment (`flaggedSegments` set, `updateFlagButton()`, called from `setBusy` and `displaySegment`). The verifier then answers or presses Skip. The flag is still not a vote; the API (`api_flag_segment`) is unchanged.
 - **Test:** `tests/test_pam_verify_flag_stays.py` (source guard: no `loadNextSegment` in the handler, per-segment lock, declared before first load).
 - **State:** committed + pushed; deployed to biomon.app 2026-11-26 (git pull + graceful HUP, smoke: CT 200, verify page 302 to login, template has the new code; log `logs/deploy_pam_flag_stays_biomon_*.log`). Not clicked through in a browser yet.
+
+## 2026-11-27: PAM data hidden from anonymous visitors (location visibility)
+
+**Problem.** Anonymous visitors saw all PAM data. The access code was already
+the same as in camera traps (anonymous → `locations.visibility_level = 0`,
+logged in → public + own institutions, admin → all), but the PAM location form
+inserted every new location with `visibility_level = 0`, so 161 of 186 PAM
+locations were public. CT creates locations private (model default 1); 30 of
+808 CT locations are public.
+
+**Fix.**
+- `shared-pam` `api_create_pam_location`: new locations are inserted with
+  `visibility_level = 1` (private). Test `test_new_location_is_private`.
+- Data, applied on prod 2026-11-27 at the owner's request:
+  `scripts/set_pam_location_visibility.py --apply` made 81 locations private.
+  Public stay only locations of RSNR, POTELYCH, azazellj, OBROSHYNE (80).
+  Changed ids are in `logs/set_pam_location_visibility_apply_20261127.log`
+  (revert = `UPDATE locations SET visibility_level = 0 WHERE location_id IN (…)`).
+- Checked on biomon.app: anonymous `/api/pam/get-filters-data` lists those 4
+  institutions plus SNVLK and YNNP, which appear only through 5 recorders they
+  co-own with RSNR (ids 8, 327, 399, 400, 401).
+
+**Side effects to know.**
+- Self-registered verifiers with no institution verify only segments from
+  public locations (`_segment_access_sql`), so their queue shrinks to the 4
+  institutions above.
+- There is no UI to toggle PAM location visibility; a new location of a public
+  institution (e.g. a new RSNR recorder) stays private until set by SQL.
+
+**Not done.** Code change not deployed yet (the data fix is already live).
