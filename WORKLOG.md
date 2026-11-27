@@ -6913,3 +6913,13 @@ locations were public. CT creates locations private (model default 1); 30 of
   `test_atlas_scope_reaches_all_verification_queries` now expects 5 queries.
 - Full suite 3219 passed. Deployed to biomon (pull + HUP); new locations
   private (`f157c45`) went live with it.
+
+## 2026-11-27: PAM verify page, audio stops when the queue ends
+
+- Owner's report: after the last segment of a sample the "no segments left"
+  message appeared, but the last segment kept playing in the hidden panel.
+- Fix (shared-pam template): the load-failure branch of `loadNextSegment`
+  (404 = queue empty, or any error) now calls new `stopAudio()`: pause,
+  loop off, drop `src`. Loop/autoplay cannot restart it.
+- Test: `tests/test_pam_verify_stop_audio.py` (source guard, pytest runs no JS).
+  Not checked in a browser (page needs the PAM DB). Not deployed.
