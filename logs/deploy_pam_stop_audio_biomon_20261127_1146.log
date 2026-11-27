@@ -1,0 +1,9 @@
+Could not request local forwarding.
+Submodule path 'app/pam': checked out '05fba52bf139eed8bfc988e59e4246548667b197'
+20415aa Bump shared-pam: verify page stops audio at end of queue; test; WORKLOG
+05fba52 Verify page: stop audio when the queue ends or a segment fails to load
+2
+pam 404
+verify 302
+/uk/pam 200
+/uk/camera-traps/ 200

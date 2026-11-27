@@ -6922,4 +6922,5 @@ locations were public. CT creates locations private (model default 1); 30 of
   (404 = queue empty, or any error) now calls new `stopAudio()`: pause,
   loop off, drop `src`. Loop/autoplay cannot restart it.
 - Test: `tests/test_pam_verify_stop_audio.py` (source guard, pytest runs no JS).
-  Not checked in a browser (page needs the PAM DB). Not deployed.
+  Not checked in a browser (page needs the PAM DB). Deployed to biomon
+  2026-11-27 (pull + HUP; /uk/pam 200, verify 302 to login).
