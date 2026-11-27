@@ -1,0 +1,7 @@
+Submodule path 'app/pam': checked out '4b3d4ca87dd468a828c3720a427979e5a78488c6'
+fb12f01 Bump shared-pam: verification institution picker follows access; WORKLOG
+4b3d4ca Verification institution picker: public locations plus own institutions
+pam 200
+overview 200
+verify 302
+{"biotopes":[{"id":8,"text":"C/\u0433 \u043f\u043e\u043b\u044f"},{"id":19,"text":"\u0412\u043e\u0434\u043d\u043e-\u0431\u043e\u043b\u043e\u0442\u043d\u0435 \u0443\u0433\u0456\u0434\u0434\u044f"},{"id":9,"text":"\u041a\u0443\u0449\u0456"},{"id":2,"text":"\u041b\u0438\u0441\u0442\u044f\u043d\u0438\u04
