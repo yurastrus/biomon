@@ -6899,3 +6899,17 @@ locations were public. CT creates locations private (model default 1); 30 of
   institution (e.g. a new RSNR recorder) stays private until set by SQL.
 
 **Not done.** Code change not deployed yet (the data fix is already live).
+
+### 2026-11-27 (later): institution pickers follow access, deployed
+- Dashboards (`/api/pam/get-filters-data`, `/api/pam/get-trends-filters`) and
+  the gap-analysis picker already list only institutions with at least one
+  location the person may see (public + own, admin all); checked live as
+  anonymous: the 4 public institutions plus SNVLK/YNNP through shared RSNR recorders.
+- Fixed `/pam/verification/verify` and `/api/verification/filter-options`:
+  the institution list for non-admins was "own institutions only", so a
+  volunteer with no institution got an empty list although their queue is
+  the public pool. Both now use `_segment_access_sql` (same rule as the queue).
+  Tests: `test_filter_options_institutions_public_for_verifier_without_institution`,
+  `test_atlas_scope_reaches_all_verification_queries` now expects 5 queries.
+- Full suite 3219 passed. Deployed to biomon (pull + HUP); new locations
+  private (`f157c45`) went live with it.

@@ -346,6 +346,30 @@ def test_filter_options_species_query_filtered_by_institution(auth_client):
     assert 'location_institutions' in species_sql
 
 
+def test_filter_options_institutions_public_for_verifier_without_institution(auth_client):
+    """A verifier with no institution is offered institutions of PUBLIC
+    locations (their queue is the public pool), not an empty list (2026-11-27)."""
+    cl = auth_client(role='pam_verifier')
+    conn = MagicMock()
+    seen = []
+
+    def _ex(sql, params=None):
+        seen.append((str(sql), params))
+        if 'JOIN species s' in str(sql):
+            return _mapping_result([])
+        return _mapping_result([{'id': 1, 'name_uk': 'ПЗ Розточчя', 'name_en': 'RSNR'}])
+    conn.execute.side_effect = _ex
+
+    with patch('app.pam.routes.get_pam_db_connection', return_value=conn):
+        resp = cl.get('/uk/api/verification/filter-options')
+    body = json.loads(resp.data)
+    assert resp.status_code == 200
+    assert [i['id'] for i in body['institutions']] == [1]
+    inst_sql = next(s for s, p in seen if 'SELECT DISTINCT i.id' in s)
+    assert 'l_pub.visibility_level = 0' in inst_sql
+    assert 'access_inst_ids' not in inst_sql
+
+
 # ── taxonomic class filter (next-segment, stats, cascade) ───────────────────────
 
 def test_next_segment_taxonomy_filters_add_conditions(auth_client):
